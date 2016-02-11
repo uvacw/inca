@@ -111,6 +111,7 @@ def insert_lexisnexis(pathwithlnfiles, recursive):
                 if matchObj:
                     artikel += 1
                     istitle=True #to make sure that text before mentioning of SECTION is regarded as title, not as body
+                    firstdate=True # flag to make sure that only the first time a date is mentioned it is regarded as _the_ date
                     tekst[artikel] = ""
                     title[artikel] = ""
                     while True:
@@ -128,22 +129,28 @@ def insert_lexisnexis(pathwithlnfiles, recursive):
                     length[artikel] = line.replace("LENGTH: ", "").rstrip("\n").rstrip(" woorden")
                 elif line.startswith("LOAD-DATE"):
                     loaddate[artikel] = line.replace("LOAD-DATE: ", "").rstrip("\n")
-                elif matchObj2:
+                elif matchObj2 and firstdate==True:
                     # print matchObj2.string
                     pubdate_day[artikel]=matchObj2.group(1)
                     pubdate_month[artikel]=str(MAAND[matchObj2.group(2)])
                     pubdate_year[artikel]=matchObj2.group(3)
                     pubdate_dayofweek[artikel]=matchObj2.group(4)
-                elif matchObj3:
+                    firstdate=False
+                elif matchObj3 and firstdate==True:
                     pubdate_day[artikel]=matchObj3.group(2)
                     pubdate_month[artikel]=str(MAAND[matchObj3.group(1)])
                     pubdate_year[artikel]=matchObj3.group(3)
                     pubdate_dayofweek[artikel]="NA"
-                elif matchObj4:
+                    firstdate=False
+                elif matchObj4 and firstdate==True:
                     pubdate_day[artikel]=matchObj4.group(1)
                     pubdate_month[artikel]=str(MAAND[matchObj4.group(2)])
                     pubdate_year[artikel]=matchObj4.group(3)
                     pubdate_dayofweek[artikel]=matchObj4.group(4)
+                    firstdate=False
+                elif (matchObj2 or matchObj3 or matchObj4) and firstdate==False:
+                    # if there is a line starting with a date later in the article, treat it as normal text
+                    tekst[artikel] = tekst[artikel] + " " + line.rstrip("\n")
                 elif line.startswith("LANGUAGE"):
                     language[artikel] = line.replace("LANGUAGE: ", "").rstrip("\n")
                 elif line.startswith("PUBLICATION-TYPE"):
