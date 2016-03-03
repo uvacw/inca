@@ -212,15 +212,15 @@ def insert_lexisnexis(pathwithlnfiles, recursive):
         try:
             art_pubdate_day = pubdate_day[i + 1]
         except:
-            art_pubdate_day = ""
+            art_pubdate_day = "1"
         try:
             art_pubdate_month = pubdate_month[i + 1]
         except:
-            art_pubdate_month = ""
+            art_pubdate_month = "1"
         try:
             art_pubdate_year = pubdate_year[i + 1]
         except:
-            art_pubdate_year = ""
+            art_pubdate_year = "1900"
         try:
             art_pubdate_dayofweek = pubdate_dayofweek[i + 1]
         except:
