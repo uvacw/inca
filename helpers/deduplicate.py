@@ -55,12 +55,24 @@ def createdupfile(source,start,end):
 
 
 
-tasks=[('nrc (print)',datetime(1990,1,1),datetime(2016,1,1)),('volkskrant (print)',datetime(1990,1,1),datetime(2016,1,1))]
+def removeduplicates(dedupfile):
+    print('Now removing the first instance of the elements of {}'.format(dedupfile))
+    print("MAKE SURE YOU DON'T DO THIS TWICE!")
+    with open(dedupfile, encoding='utf-8', mode='r') as fi:
+        data = json.load(fi)
+        for e in data:
+            c=collection.find_one_and_delete({'text':e['_id']})
+            #c=collection.find_one({'text':e['_id']})
+            #print(c)
 
-for task in tasks:
-    print('Processing {} {} {}'.format(task[0],task[1],task[2]))
-    createdupfile(task[0],task[1],task[2])
+print(datetime.now())
+removeduplicates('../output/nrc (print).json')
+print('DONE')
+print(datetime.now())
 
-#x=gendatetuples(datetime(2013,1,1),datetime(2013,1,20))
-#for e in x:
-#    print(e)
+# FOR CREATING FILES OF DUPLICATES
+#tasks=[('nrc (print)',datetime(1990,1,1),datetime(2016,1,1)),('volkskrant (print)',datetime(1990,1,1),datetime(2016,1,1))]
+#for task in tasks:
+#    print('Processing {} {} {}'.format(task[0],task[1],task[2]))
+#    createdupfile(task[0],task[1],task[2])
+
