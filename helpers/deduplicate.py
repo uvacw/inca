@@ -66,7 +66,7 @@ def removeduplicates(dedupfile):
             #print(c)
 
 print(datetime.now())
-removeduplicates('../output/nrc (print).json')
+removeduplicates('../output/volkskrant (print).json')
 print('DONE')
 print(datetime.now())
 

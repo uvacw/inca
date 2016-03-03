@@ -294,6 +294,110 @@ def insert_lexisnexis(pathwithlnfiles, recursive):
 
 
 
+
+def insert_newsreleases(pathwithlnfiles, recursive):
+    """
+    Usage: insert_newsreleases(pathwithlnfiles,recursive)
+    pathwithlnfiles = path to a directory where news releases are stored
+    recursive: TRUE = search recursively all subdirectories, but include only files ending on .txt
+               FALSE = take ALL files from directory supplied, but do not include subdirectories
+    """
+    tekst = {}
+    title ={}
+    source = {}
+    url = {}
+    pubdate_day = {}
+    pubdate_month = {}
+    pubdate_year = {}
+    pubdate_hour = {}
+    pubdate_min = {}
+
+    if recursive:
+        import glob
+        print(pathwithlnfiles)
+        alleinputbestanden = glob.glob(pathwithlnfiles)
+    else:
+        # print  listdir(pathwithlnfiles)
+        alleinputbestanden = [join(pathwithlnfiles, f) for f in listdir(pathwithlnfiles) if
+                              isfile(join(pathwithlnfiles, f)) and splitext(f)[1].lower() == ".txt"]
+        print(alleinputbestanden)
+    artikel = 0
+    for bestand in alleinputbestanden:
+        print("Now processing", bestand)
+        with open(bestand, "r", encoding="utf-8", errors="replace") as f:
+            i = 0
+            for line in f:
+                i = i + 1
+                # print "Regel",i,": ", line
+                line = line.replace("\r", " ")
+                if line == "\n":
+                    continue
+                elif line.startswith('###TITEL'):
+                    artikel += 1
+                    tekst[artikel] = ""
+                    title[artikel] = line.lstrip('###TITEL').strip()
+                elif line.startswith('###DATUM'):
+                    dateline=line.lstrip('###DATUM').strip()
+                    match=match=re.match('(\d{1,2})-(\d{1,2})-(\d\d\d\d)',dateline)
+                    pubdate_day[artikel]=int(match.group(1))
+                    pubdate_month[artikel]=int(match.group(2))
+                    pubdate_year[artikel]=int(match.group(3))
+                elif line.startswith('###TIJD'):
+                    timeline=line.lstrip('###TIJD').strip()
+                    match=match=re.match('(\d{1,2}):(\d\d)',timeline)
+                    pubdate_hour[artikel]=int(match.group(1))
+                    pubdate_min[artikel]=int(match.group(2))
+                elif line.startswith('###BRON'):
+                    source[artikel] = line.lstrip('###BRON').strip()
+                elif line.startswith('###URL'):
+                    url[artikel] = line.lstrip('###URL').strip()
+                else:
+                    tekst[artikel] = tekst[artikel] + " " + line.rstrip("\n")
+
+    print("Done!", artikel, "articles read.")
+
+    for i in range(artikel):
+        art_title = title[i +1]
+        if pubdate_hour:
+            art_pubdate = datetime.datetime(pubdate_year[i+1],pubdate_month[i+1],pubdate_day[i+1],pubdate_hour[i+1],pubdate_min[i+1])
+        else:
+            art_pubdate = datetime.datetime(pubdate_year[i+1],pubdate_month[i+1],pubdate_day[i+1])
+        art_source = source[i + 1]
+        art_url = url[i+1]
+        art_text = tekst[i+1]
+        
+
+        art = {
+            "title":art_title,
+            "source":art_source,
+            "text":art_text,
+            "datum":art_pubdate,
+            "url":art_url,
+            "length_char":len(art_text),
+            "length_words":len(art_text.split()),
+            "addedby":VERSIONSTRING,
+            "addedbydate":datetime.datetime.now(),
+            "addedbyuser":USERSTRING,
+            "pressrelease":True
+               }
+
+        artnoemptykeys={k: v for k, v in art.items() if v}
+
+        #article_id = collection.insert(artnoemptykeys)
+
+        print(artnoemptykeys)
+
+    print('\nInserted',len(tekst),"press releases")
+
+
+
+
+
+
+
+
+
+
 def adhocclean(bestand):
     repldict = {}
     with open(bestand, "r", encoding="utf-8") as fi:
@@ -479,6 +583,8 @@ def main():
                        action="store_true")
     group.add_argument("--insert_ln",
                        help="Inserts LexisNexis articles. Name the folder with the input data after --insert_ln", )
+    group.add_argument("--insert_nr",
+                       help="Inserts news releases. Name the folder with the input data after --insert_nr", )
     group.add_argument("--clean",
                        help="Creates a cleaned version of your collection by removing punctuation and replacing words as specified in the configuration files.",
                        action="store_true")
@@ -534,6 +640,13 @@ def main():
         print("Including subfolders?", args.recursive)
         print("This can take some time...")
         insert_lexisnexis(args.insert_ln, args.recursive)
+
+    if args.insert_nr:
+        print("Starting to insert", args.insert_nr)
+        print("Including subfolders?", args.recursive)
+        print("This can take some time...")
+        insert_newsreleases(args.insert_nr, args.recursive)
+
 
     if args.clean:
         print("Do you REALLY want to clean the whole collection", collectionname, "within the database", databasename, "right now? This can take VERY long, and you might consider doing this overnight.")
