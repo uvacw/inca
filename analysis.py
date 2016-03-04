@@ -9,7 +9,7 @@ from nltk.stem import SnowballStemmer
 from itertools import combinations, chain
 import ast
 from numpy import log
-from gensim import corpora, models, similarities
+# not working -->  from gensim import corpora, models, similarities
 import numpy as np
 from sklearn.metrics import pairwise_distances
 from sklearn.decomposition import PCA
@@ -18,6 +18,7 @@ import os
 from sklearn import preprocessing
 from sklearn.cluster import KMeans
 import ast
+import datetime
 #from cooc_get import usersubset
 
 # TODO
@@ -151,6 +152,13 @@ def frequencies(usersubset):
     returns a counter object of word frequencies
     '''
     
+
+    print("Debugging manually...")
+    print("the subset is...","    ",usersubset)
+    print("Date:   ", usersubset['datum'])
+    print(usersubset['datum']['$gte'])
+    print(usersubset['datum']['$lte'])
+    print(usersubset['$or'][0]['source'])    
     #all=collectioncleaned.find(subset,{"text": 1, "_id":0})
     all=collectioncleaned.find(ast.literal_eval(usersubset),{"text": 1, "_id":0})
     aantal=all.count()
