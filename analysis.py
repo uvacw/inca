@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-
-from io import open
-#from pymongo import MongoClient, Connection, TEXT
 import pymongo
 import argparse
 import configparser
@@ -21,6 +17,8 @@ import os
 # from scipy.spatial.distance import cosine
 from sklearn import preprocessing
 from sklearn.cluster import KMeans
+import ast
+#from cooc_get import usersubset
 
 # TODO
 # bedrijf minimaal twee keer genoemd
@@ -39,15 +37,24 @@ clusteroutputfile=config.get('files','clusteroutput')
 ldaoutputfile=config.get('files','ldaoutput')
 databasename=config.get('mongodb','databasename')
 collectionname=config.get('mongodb','collectionname')
-#collectionnamecleaned=config.get('mongodb','collectionnamecleaned')
-#collectionnamecleanedNJR = config.get('mongodb','collectionnamecleanedNJR')
+collectionnamecleaned=config.get('mongodb','collectionnamecleaned')
+collectionnamecleanedNJR = config.get('mongodb','collectionnamecleanedNJR')
 username=config.get('mongodb','username')
 password=config.get('mongodb','password')
 client = pymongo.MongoClient(config.get('mongodb','url'))
 db = client[databasename]
 db.authenticate(username,password)
 collection = db[collectionname]
-#collectioncleaned = db[collectionnamecleaned]
+collectioncleaned = db[collectionnamecleaned]
+
+
+
+# define presets in case functions are imported from this file and main() is not run 
+#global usersubset
+#subset={usersubset}
+stemming=0
+ngrams=1
+
 
 
 def removezerovariance(A):
@@ -119,7 +126,7 @@ def frequencies_nodict():
     else:
         knownwords = set([stemmed(line.strip().replace(" ","").lower(),stemming_language) for line in open(dictionaryfile,mode="r",encoding="utf-8")])
 
-    all=collection.find(subset,{"textclean": 1, "_id":0})
+    all=collectioncleaned.find(subset,{"text": 1, "_id":0})
     aantal=all.count()
     #print all[50]["text"]
     unknown=[]
@@ -130,43 +137,58 @@ def frequencies_nodict():
        sys.stdout.flush()
 
        if stemming==0:
-           unknown+=[woord for woord in item["textclean"].split() if woord not in knownwords]
+           unknown+=[woord for woord in item["text"].split() if woord not in knownwords]
        else:
-           unknown+=[woord for woord in stemmed(item["textclean"],stemming_language).split() if woord not in knownwords]
+           unknown+=[woord for woord in stemmed(item["text"],stemming_language).split() if woord not in knownwords]
     c=Counter(unknown)
     print()
     return c
 
 
 
-def frequencies():
+def frequencies(usersubset):
     '''
     returns a counter object of word frequencies
     '''
     
-    all=collection.find(subset,{"textclean": 1, "_id":0})
+    #all=collectioncleaned.find(subset,{"text": 1, "_id":0})
+    all=collectioncleaned.find(ast.literal_eval(usersubset),{"text": 1, "_id":0})
     aantal=all.count()
     # print all[50]["text"]
     c=Counter()
     i=0
+    print("The frequencies are being retrieved, this might take a moment if your sample is large, please be patient while the page loads")
     for item in all:
        i+=1
-       print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
+       #print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
        sys.stdout.flush()
        #c.update([woord for woord in item["text"].split()])
        if stemming==0:
-           c.update([woord for woord in split2ngrams(item["textclean"],ngrams)]) 
+           c.update([woord for woord in split2ngrams(item["text"],ngrams)]) 
        else:
-           c.update([woord for woord in split2ngrams(stemmed(item["textclean"],stemming_language),ngrams)])  
+           c.update([woord for woord in split2ngrams(stemmed(item["text"],stemming_language),ngrams)])  
     print()
     return c
 
+def frequenciesweb(n,usersubset):
+    c=frequencies(usersubset)
+    for a,b in c.most_common(n):
+        print("{}:\t\t{} occurences,\n" .format(a,b))
+
+
+def countmatches():
+    '''
+    returns the number of articles that match the subset
+    '''
+
+    all=collectioncleaned.find(subset,{"text": 1, "_id":0})
+    aantal=all.count()
+    return aantal
 
 
 
 
-
-def coocnet(n,minedgeweight):
+def coocnet(n,minedgeweight,usersubset):
     ''' 
     n = top n words
     minedgeweight = minimum number of co-occurances (=edgeweight) to be included
@@ -182,23 +204,24 @@ def coocnet(n,minedgeweight):
     cooc=defaultdict(int)
     
     print("Determining the",n,"most frequent words...\n")
-    c=frequencies()
+    c=frequencies(usersubset)
     topnwords=set([a for a,b in c.most_common(n)])
-   
-    all=collection.find(subset,{"textclean": 1, "_id":0})
+    #debug, volgende regel later weer weghalen
+    #all=collectioncleaned.find(subset,{"text": 1, "_id":0})
+    all=collectioncleaned.find(ast.literal_eval(usersubset),{"text": 1, "_id":0})
     aantal=all.count()
     
     print("\n\nDetermining the cooccurrances of these words with a minimum cooccurance of",minedgeweight,"...\n")
     i=0
     for item in all:
         i+=1
-        print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
+        #print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
         #words=item["text"].split()
 
-    if stemming==0:
-        words=split2ngrams(item["text"],ngrams)
-    else:
-        words=split2ngrams(stemmed(item["text"],stemming_language),ngrams)
+        if stemming==0:
+            words=split2ngrams(item["text"],ngrams)
+        else:
+            words=split2ngrams(stemmed(item["text"],stemming_language),ngrams)
 
         wordsfilterd=[w for w in words if w in topnwords]        
         uniquecombi = set(combinations(wordsfilterd,2))
@@ -236,9 +259,8 @@ def coocnet(n,minedgeweight):
                 f.write(regel+"\n")
 
     print("\nDone. Network file written to",networkoutputfile)
-    
-
-
+    print("The top words are listed below: \n")     
+    print(topnwords)
 
 
 
@@ -253,8 +275,8 @@ def llcompare(corpus1,corpus2,llbestand,llbestand2):
     # e1 = expected value corpus1
     # e2 = expected value corpus2
 
-    c = len(corpus1)
-    d = len(corpus2)
+    c = sum(corpus1.values())
+    d = sum(corpus2.values())
     ll={}
     e1dict={}
     e2dict={}
@@ -289,7 +311,8 @@ def llcompare(corpus1,corpus2,llbestand,llbestand2):
             e2 = d * (a + b) / (c + d)
             llvalue=2 * (b * log(b/e2))
             ll[word]=llvalue
-            e1dict[word]=0
+            e1 = c * (a + b) / (c + d)
+            e1dict[word]=e1
             e2dict[word]=e2
     print("Writing results...")
     with open(llbestand, mode='w', encoding="utf-8") as f, open(llbestand2, mode='w', encoding="utf-8") as f2:
@@ -330,7 +353,7 @@ def ll():
 
 def lda(minfreq,file,ntopics,):
     c=frequencies()
-    all=collection.find(subset)
+    all=collectioncleaned.find(subset)
 
     try:
         allterms=subset['$text']['$search'].decode("utf-8").split()
@@ -384,7 +407,7 @@ def lda(minfreq,file,ntopics,):
 
 
     # TODO: integreren met bovenstaande code, nu moet .find nog een keer worden opgeroepen aangezien het een generator is
-    all=collection.find(subset)
+    all=collectioncleaned.find(subset)
     if stemming==0:
         # oude versie zonder ngrams: texts =[[word for word in item["text"].split()] for item in all]
         texts =[[word for word in split2ngrams(item["text"],ngrams)] for item in all]
@@ -464,7 +487,7 @@ def tfcospca(n,file,comp,varimax):
         topnwords=[line.strip().lower() for line in open(file,mode="r",encoding="utf-8")]
     
     #all=collectioncleaned.find(subset,{"text": 1, "_id":1, "source":1})
-    all=collection.find(subset)
+    all=collectioncleaned.find(subset)
     # TF=np.empty([n,n-1])
     docs=[]
     foroutput_source=[]
@@ -636,7 +659,7 @@ def kmeans(n,file,noclusters,normalize):
     elif n==0 and file!="":
         topnwords=[line.strip().lower() for line in open(file,mode="r",encoding="utf-8")]
 
-    all=collection.find(subset)
+    all=collectioncleaned.find(subset)
     docs=[]
     foroutput_source=[]
     foroutput_firstwords=[]
@@ -748,7 +771,7 @@ def kmeans(n,file,noclusters,normalize):
             fo.write(foroutput_alltermscounts[i])
             fo.write("\n")
             cl=int(clustersolution[i])
-            collection.update({'_id':foroutput_id[i]},{'$set':{'cluster':cl}},upsert=False)
+            collectioncleaned.update({'_id':foroutput_id[i]},{'$set':{'cluster':cl}},upsert=False)
 
 
 
@@ -756,6 +779,7 @@ def kmeans(n,file,noclusters,normalize):
 def main():
     parser=argparse.ArgumentParser("This program is part of VETTE NAAM BEDENKEN EN ZO VERDER")
     group=parser.add_mutually_exclusive_group()
+    group.add_argument("--count",help="Counts the number of articles",action="store_true")
     group.add_argument("--frequencies",metavar="N",help="List the N most common words")
     group.add_argument("--frequencies_nodict",metavar="N",help="List the N most common words, but only those which are NOT in the specified dictionary (i.e., list all non-dutch words)")
     group.add_argument("--lda",metavar=("N1","N2"),help="Perform a Latent Diriclet Allocation analysis  based on words with a minimum frequency of N1 and generate N2 topics",nargs=2)
@@ -805,13 +829,17 @@ def main():
         stemming_language=args.stemmer[0]
 
 
-
-
-    # TODO ENABLE TO USE textcleannjr instead of textclean of text
-
+    # determine which cleaned database to load
+    global collectioncleaned
+    if args.njronly:
+        collectioncleaned = db[collectionnamecleanedNJR]
+    else:
+        collectioncleaned = db[collectionnamecleaned]
     print("Ensure that the articles are properly indexed...")
-    collection.ensure_index([("text", pymongo.TEXT)], cache_for=300,default_language="nl",language_override="nl")
+    collectioncleaned.ensure_index([("text", TEXT)], cache_for=300,default_language="nl",language_override="nl")
     print("Done building index.")
+
+
 
     global subset
     if not args.subset:
@@ -861,6 +889,9 @@ def main():
             print(results["score"],"\t",results["obj"]["source"],"\t",results["obj"]["date"])
 
 
+    if args.count:
+        print("Your query matches",countmatches(),"articles")
+        
     if args.ll:
         ll()
 
@@ -916,3 +947,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
