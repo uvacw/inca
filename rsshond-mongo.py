@@ -63,7 +63,7 @@ urllib.request.install_opener(opener)
 
 
 
-def parse (medium, doc, ids, titel):
+def parse (medium, doc, ids, titel,link):
     '''
     This is a function that calls the right parser
     It returns nothing, but saves the parsed contents to a series of 
@@ -72,46 +72,46 @@ def parse (medium, doc, ids, titel):
 
     if medium=="nunl" or medium=="nunieuw":
         print("I just chose the nu parser")
-        elements=parse_nu(doc,ids,titel)
+        elements=parse_nu(doc,ids,titel,link)
     #elif medium=="ad":
         #print("I just chose ad parser.")
         #elements=parse_ad(doc,ids,titel)
     elif medium=="volkskrantnl":
         print("I just chose the VK-parser")
-        elements=parse_vk(doc,ids,titel)
+        elements=parse_vk(doc,ids,titel,link)
     elif medium=="nrcnl":
         print("I just chose nrc parser")
-        elements=parse_nrc(doc,ids,titel)
+        elements=parse_nrc(doc,ids,titel,link)
     elif medium=="telegraafnl":
         print("I just chose Tele parser")
-        elements=parse_telegraaf(doc,ids,titel)
+        elements=parse_telegraaf(doc,ids,titel,link)
     elif medium=="spitsnl":
         print("I just chose Spits parser")
-        elements=parse_spits(doc,ids,titel)
+        elements=parse_spits(doc,ids,titel,link)
     elif medium=="metronieuwsnl":
         print("I just chose Metro parser")
-        elements=parse_metronieuws(doc,ids,titel)
+        elements=parse_metronieuws(doc,ids,titel,link)
     elif medium=="trouwnl":
         print("I just chose Trouw parser")
-        elements=parse_trouw(doc,ids,titel)
+        elements=parse_trouw(doc,ids,titel,link)
     elif medium=="paroolnl":
         print("I just chose Parool parser")
-        elements=parse_parool(doc,ids,titel)
+        elements=parse_parool(doc,ids,titel,link)
     elif medium=="nosnl":
         print("I just chose NOS parser")
-        elements=parse_nos(doc,ids,titel)
+        elements=parse_nos(doc,ids,titel,link)
     elif medium=="tponl":
         print("I just chose Tpo parser")
-        elements=parse_tpo(doc,ids,titel)
+        elements=parse_tpo(doc,ids,titel,link)
     elif medium=="geenstijlnl":
         print("I just chose Geenstijl parser")
-        elements=parse_geenstijl(doc,ids,titel)
+        elements=parse_geenstijl(doc,ids,titel,link)
     elif medium=="sargassonl":
         print("I just chose Sargasso parser")
-        elements=parse_sargasso(doc,ids,titel)
+        elements=parse_sargasso(doc,ids,titel,link)
     elif medium=="foknl":
         print("I just chose Fok parser")
-        elements=parse_fok(doc,ids,titel)
+        elements=parse_fok(doc,ids,titel,link)
     else:
         print("Er bestaat nog geen parser voor"+medium)
         return
@@ -169,7 +169,7 @@ def checkfeeds(waarvandaan, waarnaartoe,sourcename):
             
             response = urllib.request.urlopen(req)
             
-            title,text,category,byline,bylinesource=parse(waarnaartoestem,response.read().decode(encoding="utf-8",errors="ignore"),identificatie,re.sub(r"\n|\r\|\t"," ",post.title))
+            title,text,category,byline,bylinesource=parse(waarnaartoestem,response.read().decode(encoding="utf-8",errors="ignore"),identificatie,re.sub(r"\n|\r\|\t"," ",post.title),post.link)
 
             try:
                 teaser=re.sub(r"\n|\r\|\t"," ",post.description)
