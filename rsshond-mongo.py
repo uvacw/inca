@@ -133,6 +133,9 @@ def checkfeeds(waarvandaan, waarnaartoe,sourcename):
     artikel_link=[]
     artikel_filename=[]
     
+
+    errorcount=0
+    error_link=[]
     nieuweposts=0
  
     for post in d.entries:
@@ -151,7 +154,7 @@ def checkfeeds(waarvandaan, waarnaartoe,sourcename):
                 print(post.link)
                 mylink=re.sub("/$","",post.link)
                 mylink="http://www.volkskrant.nl//cookiewall/accept?url="+mylink
-                req=urllib.request.Request((mylink))          
+                req=urllib.request.Request((mylink))
             elif waarnaartoestem=="adnl":
                 mylink=re.sub("/$","",post.link)
                 mylink="http://www.ad.nl/ad/acceptCookieCheck.do?url="+mylink
@@ -162,7 +165,7 @@ def checkfeeds(waarvandaan, waarnaartoe,sourcename):
                 req=urllib.request.Request((mylink))
             elif waarnaartoestem=="paroolnl":
                 mylink=re.sub("/$","",post.link)
-                mylink="http://www.parool.nl/parool/acceptCookieCheck.do?url="+mylink
+                mylink="http://www.parool.nl///cookiewall/accept?url="+mylink
                 req=urllib.request.Request((mylink))
             else: 
                 req=urllib.request.Request(re.sub("/$","",post.link), headers={'User-Agent' : "Wget/1.9"})
