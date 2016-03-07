@@ -28,7 +28,7 @@ def polish(textstring):
     return result.strip()
 
 #Parser voor Volkskrant
-def parse_vk(doc,ids,titel):
+def parse_vk(doc,ids,titel,link):
     try:
         tree = html.fromstring(doc)
     except:
@@ -126,7 +126,7 @@ def parse_vk(doc,ids,titel):
 
 
 #Parser voor Nu 
-def parse_nu(doc,ids,titel):
+def parse_nu(doc,ids,titel,link):
     tree = html.fromstring(doc)
     try:
         category = tree.xpath('//*[@class="block breadcrumb "]/div/div/ul/li[2]/a/text()')[0]
@@ -186,7 +186,7 @@ def parse_nu(doc,ids,titel):
 
 
 #Parser for Nrc
-def parse_nrc(doc,ids,titel):
+def parse_nrc(doc,ids,titel,link):
     try:
         tree = html.fromstring(doc)
     except:
@@ -293,7 +293,7 @@ def parse_nrc(doc,ids,titel):
     return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
     
 
-def parse_telegraaf(doc,ids,titel):
+def parse_telegraaf(doc,ids,titel,link):
     try:
         tree = html.fromstring(doc)
     except:
@@ -348,7 +348,7 @@ def parse_telegraaf(doc,ids,titel):
     return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
 
 
-def parse_spits(doc,ids,titel):
+def parse_spits(doc,ids,titel,link):
     try:
         tree = html.fromstring(doc)
     except:
@@ -430,7 +430,7 @@ def parse_spits(doc,ids,titel):
     return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
 
 
-def parse_metronieuws(doc,ids,titel):
+def parse_metronieuws(doc,ids,titel,link):
     try:
         tree = html.fromstring(doc)
     except:
@@ -490,7 +490,7 @@ def parse_metronieuws(doc,ids,titel):
     return(titel,textnew.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
 
 #Parser for Trouw
-def parse_trouw(doc,ids,titel):
+def parse_trouw(doc,ids,titel,link):
     try:
         tree=html.fromstring(doc)
     except:
@@ -571,34 +571,41 @@ def parse_trouw(doc,ids,titel):
     return(titel,textnew.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
 
 #Parser for Parool
-def parse_parool(doc,ids,titel):
+def parse_parool(doc,ids,titel,link):
     try:
         tree=html.fromstring(doc)
     except:
         print("kon dit niet parsen", type(doc),len(doc))
     try:
-        category=tree.xpath('//*[@id="hdr_col4"]//*[@class="active"]/b[2]/text()')[0]
+        category=re.findall("/+[a-z]+/", link)[0]
+        category=category.replace("/","")
     except:
         category="" 
-        print("oops - geen category")
+    if category=="":
+        try:
+            category=re.findall("/+[a-z]+-+[a-z]+-+[a-z]+/", link)[0]
+            category = category.replace("/","")
+        except:
+            category=""
+            print("geen category")
     try:
-        textfirstpara=tree.xpath('//*[@id="art_box2"]//*[@class="intro2"]/text() | //*[@id="art_box2"]//*[@class="intro2"]/a/text()')
+        textfirstpara=tree.xpath('//*[@id="page-main-content"]//*[@class="article__intro"]/text() | //*[@id="art_box2"]//*[@class="intro2"]/a/text()')
         textfirstparanew=" ".join(textfirstpara)
     except:
         textfirstpara=" "
         print("oops - geen textfirstpara")
     try:
-        #1. Regular text
+        #1. Regular text (version 07/03/16)
         #2. Bold text - subtitles
         #3. Link text
         #4. Embedded text subtitle one
         #5. Embedded text subitles rest
-        textrest=tree.xpath('//*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/a/text() | //*[@id="embedding"]/div/div/div/strong/text() |//*[@id="embedding"]/div/div/div/font/strong/text() |  //*[@id="embedding"]/div/div/div/font/text() |  //*[@id="embedding"]/div/div/div/font/a/text()')
+        textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text()')
     except:
         textrest=" "
         print("oops - geen textrest")
     text=textfirstparanew + "\n" + "\n".join(textrest)
-    author_text=tree.xpath('//*[@id="art_box2"]/text()')
+    author_text=tree.xpath('//*[@id="page-main-content"]//*[@class="article__footer"]/span/span/span/text()')
     try:
         author_door=[e for e in author_text if e.find("Door")>=0][0].strip().replace("(","").replace(")","").replace("Door:","")
     except:
@@ -610,7 +617,7 @@ def parse_parool(doc,ids,titel):
             author_door=""
             print("ooops - geen author_door")
     try:
-        bron_text=tree.xpath('//*[@id="art_box2"]//*[@class="time_post gen_left"]/text()')[0]
+        bron_text=tree.xpath('//*[@id="page-main-content"]//*[@class="article__footer"]/span/span/text()')[0]
         author_bron=re.findall(".*?Bron:(.*)", bron_text)[0]
     except:
         author_bron=" "
@@ -632,7 +639,7 @@ def parse_parool(doc,ids,titel):
     return(titel,textnew.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
 
 #Parser voor NOS
-def parse_nos(doc,ids,titel):
+def parse_nos(doc,ids,titel,link):
     try:
         tree = html.fromstring(doc)
     except:
@@ -691,7 +698,7 @@ def parse_nos(doc,ids,titel):
 
 
 #Parser voor Tpo
-def parse_tpo(doc,ids,titel):
+def parse_tpo(doc,ids,titel,link):
     try:
         tree = html.fromstring(doc)
     except:
@@ -747,7 +754,7 @@ def parse_tpo(doc,ids,titel):
 
 
 #Parser for Geenstijl
-def parse_geenstijl(doc,ids,titel):
+def parse_geenstijl(doc,ids,titel,link):
     try:
         tree=html.fromstring(doc)
     except:
@@ -793,7 +800,7 @@ def parse_geenstijl(doc,ids,titel):
 
 
 #Parser voor sargasso
-def parse_sargasso(doc,ids,titel):
+def parse_sargasso(doc,ids,titel,link):
     try:
         tree = html.fromstring(doc)
     except:
@@ -845,7 +852,7 @@ def parse_sargasso(doc,ids,titel):
     return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron)
 
 #Parser vook Fok
-def parse_fok(doc,ids,titel):
+def parse_fok(doc,ids,titel,link):
     try:
         tree = html.fromstring(doc)
     except:
