@@ -119,7 +119,7 @@ def frequencies_nodict():
     else:
         knownwords = set([stemmed(line.strip().replace(" ","").lower(),stemming_language) for line in open(dictionaryfile,mode="r",encoding="utf-8")])
 
-    all=collection.find(subset,{"textclean": 1, "_id":0})
+    all=collection.find(subset,{'text': 1, "_id":0})
     aantal=all.count()
     #print all[50]["text"]
     unknown=[]
@@ -130,9 +130,9 @@ def frequencies_nodict():
        sys.stdout.flush()
 
        if stemming==0:
-           unknown+=[woord for woord in item["textclean"].split() if woord not in knownwords]
+           unknown+=[woord for woord in item['text'].split() if woord not in knownwords]
        else:
-           unknown+=[woord for woord in stemmed(item["textclean"],stemming_language).split() if woord not in knownwords]
+           unknown+=[woord for woord in stemmed(item['text'],stemming_language).split() if woord not in knownwords]
     c=Counter(unknown)
     print()
     return c
@@ -144,7 +144,7 @@ def frequencies():
     returns a counter object of word frequencies
     '''
     
-    all=collection.find(subset,{"textclean": 1, "_id":0})
+    all=collection.find(subset,{'text': 1, "_id":0})
     aantal=all.count()
     # print all[50]["text"]
     c=Counter()
@@ -155,9 +155,9 @@ def frequencies():
        sys.stdout.flush()
        #c.update([woord for woord in item["text"].split()])
        if stemming==0:
-           c.update([woord for woord in split2ngrams(item["textclean"],ngrams)]) 
+           c.update([woord for woord in split2ngrams(item['text'],ngrams)]) 
        else:
-           c.update([woord for woord in split2ngrams(stemmed(item["textclean"],stemming_language),ngrams)])  
+           c.update([woord for woord in split2ngrams(stemmed(item['text'],stemming_language),ngrams)])  
     print()
     return c
 
@@ -185,7 +185,7 @@ def coocnet(n,minedgeweight):
     c=frequencies()
     topnwords=set([a for a,b in c.most_common(n)])
    
-    all=collection.find(subset,{"textclean": 1, "_id":0})
+    all=collection.find(subset,{'text': 1, "_id":0})
     aantal=all.count()
     
     print("\n\nDetermining the cooccurrances of these words with a minimum cooccurance of",minedgeweight,"...\n")
@@ -342,7 +342,7 @@ def lda(minfreq,file,ntopics,):
     foroutput_alltermscounts=[]
 
     foroutput_source=[]
-    foroutput_source2=[]
+    #foroutput_source2=[]
     #TODO ook bij andere methodes source2 opslaan, niet alleen in LDA module
     foroutput_firstwords=[]
     foroutput_id=[]
@@ -359,7 +359,7 @@ def lda(minfreq,file,ntopics,):
     for item in all:
         foroutput_firstwords.append(item["text"][:20])
         foroutput_source.append(item["source"])
-        foroutput_source2.append(item["source2"])
+        #foroutput_source2.append(item["source2"])
         foroutput_id.append(item["_id"])
         foroutput_byline.append(item["byline"])
         foroutput_section.append(item["section"])
@@ -367,14 +367,15 @@ def lda(minfreq,file,ntopics,):
         # sectie=item["section"].split(";")
         #foroutput_section.append(sectie[0]+"\t"+sectie[1].strip("blz. "))
         # end
-        foroutput_length.append(item["length"])
-        foroutput_language.append(item["language"])
-        foroutput_pubdate_day.append(item["pubdate_day"])
-        foroutput_pubdate_month.append(item["pubdate_month"])
-        foroutput_pubdate_year.append(item["pubdate_year"])
-        foroutput_pubdate_dayofweek.append(item["pubdate_dayofweek"])
-        foroutput_subjectivity.append(item["subjectivity"])
-        foroutput_polarity.append(item["polarity"])
+        foroutput_length.append(str(item["length_char"]))
+        #foroutput_language.append(item["language"])
+        foroutput_language.append('dutch')
+        foroutput_pubdate_day.append(str(item["datum"].day))
+        foroutput_pubdate_month.append(str(item["datum"].month))
+        foroutput_pubdate_year.append(str(item["datum"].year))
+        foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
+        foroutput_subjectivity.append('0')
+        foroutput_polarity.append('0')
         termcounts=""
         for term in allterms:
             termcounts+=("\t"+str(item["text"].split().count(term)))
@@ -431,14 +432,14 @@ def lda(minfreq,file,ntopics,):
         topiclabels=""
         for j in range(ntopics):
             topiclabels+=("\tTopic"+str(j+1))
-        fo.write('id\t'+'source\t'+'source2\t'+'firstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek'+topiclabels+"\t"+foroutput_alltermslabels+"\n")
+        fo.write('id\t'+'source\t'+'firstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek'+topiclabels+"\t"+foroutput_alltermslabels+"\n")
         for row in scoresperdoc[0]:
             #print type(row)
             #regel=row.tolist()
             #print len(regel)
             #print type(regel)
             #print regel
-            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_source2[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_polarity[i]+'\t'+foroutput_subjectivity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t')
+            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_polarity[i]+'\t'+foroutput_subjectivity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t')
 
             fo.write('\t'.join(["{:0.3f}".format(loading) for loading in row]))
             fo.write(foroutput_alltermscounts[i])
