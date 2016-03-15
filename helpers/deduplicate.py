@@ -61,17 +61,28 @@ def removeduplicates(dedupfile):
     with open(dedupfile, encoding='utf-8', mode='r') as fi:
         data = json.load(fi)
         for e in data:
-            c=collection.find_one_and_delete({'text':e['_id']})
-            #c=collection.find_one({'text':e['_id']})
-            #print(c)
+            if e['_id'] != None:
+                c=collection.find_one_and_delete({'text':e['_id']})
+                #c=collection.find_one({'text':e['_id']})
+                #print(c)
 
-print(datetime.now())
-removeduplicates('../output/volkskrant (print).json')
-print('DONE')
-print(datetime.now())
+
+#tasks=['../output/fd (print).json','../output/trouw (print).json',
+#       '../output/metro (print).json','../output/telegraaf (print).json']
+#for task in tasks:
+#    print(datetime.now())
+#    removeduplicates(task)
+#    print('DONE')
+#    print(datetime.now())
+
+#createdupfile('ad (print)',datetime(1990,1,1),datetime(2016,1,1))
+removeduplicates('../output/ad (print).json')
 
 # FOR CREATING FILES OF DUPLICATES
-#tasks=[('nrc (print)',datetime(1990,1,1),datetime(2016,1,1)),('volkskrant (print)',datetime(1990,1,1),datetime(2016,1,1))]
+#tasks=[('fd (print)',datetime(1990,1,1),datetime(2016,1,1)),
+#       ('metro (print)',datetime(1990,1,1),datetime(2016,1,1)),
+#       ('telegraaf (print)',datetime(1990,1,1),datetime(2016,1,1)),
+#       ('trouw (print)',datetime(1990,1,1),datetime(2016,1,1)),]
 #for task in tasks:
 #    print('Processing {} {} {}'.format(task[0],task[1],task[2]))
 #    createdupfile(task[0],task[1],task[2])
