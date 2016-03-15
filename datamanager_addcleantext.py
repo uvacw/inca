@@ -73,7 +73,7 @@ def clean_database_njr():
         repldictindien = json.load(fi, object_pairs_hook=OrderedDict)
 
 
-    allarticles = collection.find(subset)
+    allarticles = collection.find(subset).batch_size(30)  # batch size = no of articles that we are sure can be processed in 10 minutes. defaults to 100, that can be problematic
     aantal = collection.find(subset).count()
     i = 0
     for art in allarticles:
@@ -166,13 +166,15 @@ def main():
 
 
     if args.cleannjr:
+        '''
         print "Do you REALLY want to start right now? This can take VERY long, and you might consider doing this overnight."
         cont = raw_input('Type "I have time!" and hit Return if you want to continue: ')
         if cont == "I have time!":
             clean_database_njr()
         else:
             print("OK, maybe next time.")
-
+        '''
+        clean_database_njr()
 
 
 if __name__ == "__main__":
