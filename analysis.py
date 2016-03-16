@@ -352,6 +352,7 @@ def lda(minfreq,file,ntopics,):
     #foroutput_source2=[]
     #TODO ook bij andere methodes source2 opslaan, niet alleen in LDA module
     foroutput_firstwords=[]
+    foroutput_title=[]
     foroutput_id=[]
     foroutput_byline = []
     foroutput_section = []
@@ -367,6 +368,7 @@ def lda(minfreq,file,ntopics,):
     for item in all:
         if 'text' in item:   # do not proceed if article has no text
             foroutput_firstwords.append(item["text"][:20])
+            foroutput_title.append(item["title"])
             foroutput_source.append(item["source"])
             #foroutput_source2.append(item["source2"])
             foroutput_id.append(item["_id"])
@@ -455,14 +457,14 @@ def lda(minfreq,file,ntopics,):
         topiclabels=""
         for j in range(ntopics):
             topiclabels+=("\tTopic"+str(j+1))
-        fo.write('id\t'+'source\t'+'firstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek\tpubdate_weeknr'+topiclabels+"\t"+foroutput_alltermslabels+"\t"+foroutput_alltermsfirstocclabels+"\n")
+        fo.write('id\t'+'source\t'+'title\tfirstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek\tpubdate_weeknr'+topiclabels+"\t"+foroutput_alltermslabels+"\t"+foroutput_alltermsfirstocclabels+"\n")
         for row in scoresperdoc[0]:
             #print type(row)
             #regel=row.tolist()
             #print len(regel)
             #print type(regel)
             #print regel
-            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_polarity[i]+'\t'+foroutput_subjectivity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t'+foroutput_pubdate_weeknr[i]+'\t')
+            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_title[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_polarity[i]+'\t'+foroutput_subjectivity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t'+foroutput_pubdate_weeknr[i]+'\t')
 
             fo.write('\t'.join(["{:0.3f}".format(loading) for loading in row]))
             fo.write(foroutput_alltermscounts[i])
