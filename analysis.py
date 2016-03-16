@@ -21,6 +21,7 @@ import os
 # from scipy.spatial.distance import cosine
 from sklearn import preprocessing
 from sklearn.cluster import KMeans
+import re
 
 # TODO
 # bedrijf minimaal twee keer genoemd
@@ -396,11 +397,17 @@ def lda(minfreq,file,ntopics,):
             foroutput_polarity.append('0')
             termcounts=""
             for term in allterms:
-                termcounts+=("\t"+str(item["text"].split().count(term)))
+                termcounts+=("\t"+str(item["text"].lower().split().count(term)))
             foroutput_alltermscounts.append(termcounts)
             termoccs=''
             for term in allterms:
-                termoccs+=('\t'+str(item['text'].find(term)))
+                # termoccs+=('\t'+str(item['text'].find(term)))
+                r=re.search('\\b'+term+'\\b',item['text'].lower())
+                if r:
+                    position=r.start()
+                else:
+                    position=-1
+                termoccs+=('\t'+str(position))
             foroutput_alltermsfirstocc.append(termoccs)
         else:
             continue
