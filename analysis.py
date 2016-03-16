@@ -37,6 +37,7 @@ cosdistoutputfile=config.get('files','cosdistoutput')
 compscoreoutputfile=config.get('files','compscoreoutput')
 clusteroutputfile=config.get('files','clusteroutput')
 ldaoutputfile=config.get('files','ldaoutput')
+ldatopicfile=config.get('files','ldaoutputtopics')
 databasename=config.get('mongodb','databasename')
 collectionname=config.get('mongodb','collectionname')
 #collectionnamecleaned=config.get('mongodb','collectionnamecleaned')
@@ -48,6 +49,8 @@ db = client[databasename]
 db.authenticate(username,password)
 collection = db[collectionname]
 #collectioncleaned = db[collectionnamecleaned]
+
+
 
 
 def removezerovariance(A):
@@ -150,14 +153,16 @@ def frequencies():
     c=Counter()
     i=0
     for item in all:
-       i+=1
-       print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
-       sys.stdout.flush()
-       #c.update([woord for woord in item["text"].split()])
-       if stemming==0:
-           c.update([woord for woord in split2ngrams(item['text'],ngrams)]) 
-       else:
-           c.update([woord for woord in split2ngrams(stemmed(item['text'],stemming_language),ngrams)])  
+        i+=1
+        print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
+        sys.stdout.flush()
+        if 'text' in item:    # only proceed if there is a 'text' key in the item
+            if stemming==0:
+                c.update([woord for woord in split2ngrams(item['text'],ngrams)]) 
+            else:
+                c.update([woord for woord in split2ngrams(stemmed(item['text'],stemming_language),ngrams)])  
+        else:
+            continue
     print()
     return c
 
@@ -340,6 +345,8 @@ def lda(minfreq,file,ntopics,):
     allterms+=extraterms
     foroutput_alltermslabels="\t".join(allterms)
     foroutput_alltermscounts=[]
+    foroutput_alltermsfirstocc=[]
+    foroutput_alltermsfirstocclabels='\t'.join(['pos_'+t for t in allterms])
 
     foroutput_source=[]
     #foroutput_source2=[]
@@ -357,40 +364,54 @@ def lda(minfreq,file,ntopics,):
     foroutput_subjectivity=[]
     foroutput_polarity=[]
     for item in all:
-        foroutput_firstwords.append(item["text"][:20])
-        foroutput_source.append(item["source"])
-        #foroutput_source2.append(item["source2"])
-        foroutput_id.append(item["_id"])
-        foroutput_byline.append(item["byline"])
-        foroutput_section.append(item["section"])
-        # seperate section and pagenumber instead, tailored to Dutch Lexis Nexis
-        # sectie=item["section"].split(";")
-        #foroutput_section.append(sectie[0]+"\t"+sectie[1].strip("blz. "))
-        # end
-        foroutput_length.append(str(item["length_char"]))
-        #foroutput_language.append(item["language"])
-        foroutput_language.append('dutch')
-        foroutput_pubdate_day.append(str(item["datum"].day))
-        foroutput_pubdate_month.append(str(item["datum"].month))
-        foroutput_pubdate_year.append(str(item["datum"].year))
-        foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
-        foroutput_subjectivity.append('0')
-        foroutput_polarity.append('0')
-        termcounts=""
-        for term in allterms:
-            termcounts+=("\t"+str(item["text"].split().count(term)))
-        foroutput_alltermscounts.append(termcounts)
-
+        if 'text' in item:   # do not proceed if article has no text
+            foroutput_firstwords.append(item["text"][:20])
+            foroutput_source.append(item["source"])
+            #foroutput_source2.append(item["source2"])
+            foroutput_id.append(item["_id"])
+            try:
+                foroutput_byline.append(item["byline"])
+            except:
+                foroutput_byline.append('N/A')
+            try:
+                foroutput_section.append(item["section"])
+            except:
+                foroutput_section.append('N/A') 
+            # seperate section and pagenumber instead, tailored to Dutch Lexis Nexis
+            # sectie=item["section"].split(";")
+            #foroutput_section.append(sectie[0]+"\t"+sectie[1].strip("blz. "))
+            # end
+            foroutput_length.append(str(item["length_char"]))
+            #foroutput_language.append(item["language"])
+            foroutput_language.append('dutch')
+            foroutput_pubdate_day.append(str(item["datum"].day))
+            foroutput_pubdate_month.append(str(item["datum"].month))
+            foroutput_pubdate_year.append(str(item["datum"].year))
+            foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
+            foroutput_subjectivity.append('0')
+            foroutput_polarity.append('0')
+            termcounts=""
+            for term in allterms:
+                termcounts+=("\t"+str(item["text"].split().count(term)))
+            foroutput_alltermscounts.append(termcounts)
+            termoccs=''
+            for term in allterms:
+                termoccs+=('\t'+str(item['text'].find(term)))
+            foroutput_alltermsfirstocc.append(termoccs)
+        else:
+            continue
 
 
 
     # TODO: integreren met bovenstaande code, nu moet .find nog een keer worden opgeroepen aangezien het een generator is
     all=collection.find(subset)
+
+
     if stemming==0:
         # oude versie zonder ngrams: texts =[[word for word in item["text"].split()] for item in all]
-        texts =[[word for word in split2ngrams(item["text"],ngrams)] for item in all]
+        texts =[[word for word in split2ngrams(item["text"],ngrams)] for item in all if 'text' in item]
     else:
-        texts =[[word for word in split2ngrams(stemmed(item["text"],stemming_language),ngrams)] for item in all]
+        texts =[[word for word in split2ngrams(stemmed(item["text"],stemming_language),ngrams)] for item in all if 'text' in item]
 
     if minfreq>0 and file=="":
         # unicode() is neccessary to convert ngram-tuples to strings
@@ -432,7 +453,7 @@ def lda(minfreq,file,ntopics,):
         topiclabels=""
         for j in range(ntopics):
             topiclabels+=("\tTopic"+str(j+1))
-        fo.write('id\t'+'source\t'+'firstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek'+topiclabels+"\t"+foroutput_alltermslabels+"\n")
+        fo.write('id\t'+'source\t'+'firstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek'+topiclabels+"\t"+foroutput_alltermslabels+"\t"+foroutput_alltermsfirstocclabels+"\n")
         for row in scoresperdoc[0]:
             #print type(row)
             #regel=row.tolist()
@@ -443,9 +464,26 @@ def lda(minfreq,file,ntopics,):
 
             fo.write('\t'.join(["{:0.3f}".format(loading) for loading in row]))
             fo.write(foroutput_alltermscounts[i])
+            fo.write(foroutput_alltermsfirstocc[i])
             fo.write("\n")
             i+=1
 
+    print('Also saving the topics themselves at {} ...'.format(ldatopicfile))
+
+    with open(ldatopicfile,'w',encoding='utf-8') as fo:
+        topics=lda.top_topics(mm, num_words=20)
+        toplist=[]
+        for topic in topics[0:20]:
+            top=[]    
+            for t in topic[0]:
+                top.append(t[1])
+            top.append(topic[1])
+            toplist.append(top)
+            fo.write("\n\nTopic")        
+            for outtext in toplist:
+                fo.write("--------------------------\n\n")            
+                for t in outtext:
+                    fo.write(str(t)+ " ")
 
 
 
@@ -851,7 +889,7 @@ def main():
     if not args.extraterms:
             extraterms=[]
     else:
-            extraterms=args.extraterms[0].decode("utf-8").split()
+            extraterms=args.extraterms[0].split()
 
     if args.search:
         query=db.command('text',collectionnamecleaned,search=args.search, language="nl")
