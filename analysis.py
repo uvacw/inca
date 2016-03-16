@@ -361,6 +361,7 @@ def lda(minfreq,file,ntopics,):
     foroutput_pubdate_month = []
     foroutput_pubdate_year = []
     foroutput_pubdate_dayofweek = []
+    foroutput_pubdate_weeknr = []
     foroutput_subjectivity=[]
     foroutput_polarity=[]
     for item in all:
@@ -388,6 +389,7 @@ def lda(minfreq,file,ntopics,):
             foroutput_pubdate_month.append(str(item["datum"].month))
             foroutput_pubdate_year.append(str(item["datum"].year))
             foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
+            foroutput_pubdate_weeknr.append(item['datum'].strftime('%U'))
             foroutput_subjectivity.append('0')
             foroutput_polarity.append('0')
             termcounts=""
@@ -453,14 +455,14 @@ def lda(minfreq,file,ntopics,):
         topiclabels=""
         for j in range(ntopics):
             topiclabels+=("\tTopic"+str(j+1))
-        fo.write('id\t'+'source\t'+'firstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek'+topiclabels+"\t"+foroutput_alltermslabels+"\t"+foroutput_alltermsfirstocclabels+"\n")
+        fo.write('id\t'+'source\t'+'firstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek\tpubdate_weeknr'+topiclabels+"\t"+foroutput_alltermslabels+"\t"+foroutput_alltermsfirstocclabels+"\n")
         for row in scoresperdoc[0]:
             #print type(row)
             #regel=row.tolist()
             #print len(regel)
             #print type(regel)
             #print regel
-            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_polarity[i]+'\t'+foroutput_subjectivity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t')
+            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_polarity[i]+'\t'+foroutput_subjectivity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t'+foroutput_pubdate_weeknr[i]+'\t')
 
             fo.write('\t'.join(["{:0.3f}".format(loading) for loading in row]))
             fo.write(foroutput_alltermscounts[i])
