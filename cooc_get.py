@@ -183,6 +183,11 @@ if form.getvalue('mostpop'):
 else:
 	topwords = "missing value for top words"
 
+if form.getvalue('maxcooc'):
+	maxcooc = form.getvalue('maxcooc')
+else:
+	maxcooc = "missing value for max cooc"
+
 usersubset += ']}'
 
 #THE FOLLOWING IS STILL PROBLEMATIC. ONLY WORKS IF USER DIDN'T ENTER HIS OWN CUSTOMIZED ARGUMENT
@@ -216,12 +221,11 @@ print('''
 <title>This is the demo cooc</title>
 </head>
 <body>
-<h2>We are currently running an analysis on the top %s most common words from the following newspapers:</h2> </br>
-<h3>%s<br>%s</h3>
+<h2>We are currently running an analysis on the top %s most common words from the chosen newspapers:</h2> </br>
 <p>The subset you chose is:%s</p></br>
 <h4> <a href='wordcount.py' target='blank'> Click here to retrieve the most common words alone </a></h4> 
 <h3>Out of those, we will retrieve the top %s co-occurences between them</h3>
-''' % (topwords,nrc_flag,volkskrant_flag,finalsubset,maxcooc))
+''' % (topwords,finalsubset,maxcooc))
 coocnet(int(topwords),int(maxcooc),finalsubset)
 print('''<br><br>
 The file can be downloaded by clicking <a href="http://infra.followthenews-uva.vm.surfsara.nl/tmp/networkoutput.gdf">this link</a>

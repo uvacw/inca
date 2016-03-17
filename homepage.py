@@ -19,6 +19,7 @@ print('''
 <li>
 	<a class='co-occurence analysis' href='cooc.py'>Co-occurence analysis</a>
 </li>
+<li> <a class='analysis' href='pca.py'>Principal Component Analysis (PCA)</a> </li>
 
 <p>Please choose one of the options above to proceed</p> 
 </body>

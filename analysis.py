@@ -38,15 +38,15 @@ clusteroutputfile=config.get('files','clusteroutput')
 ldaoutputfile=config.get('files','ldaoutput')
 databasename=config.get('mongodb','databasename')
 collectionname=config.get('mongodb','collectionname')
-collectionnamecleaned=config.get('mongodb','collectionnamecleaned')
-collectionnamecleanedNJR = config.get('mongodb','collectionnamecleanedNJR')
+#collectionnamecleaned=config.get('mongodb','collectionnamecleaned')
+#collectionnamecleanedNJR = config.get('mongodb','collectionnamecleanedNJR')
 username=config.get('mongodb','username')
 password=config.get('mongodb','password')
 client = pymongo.MongoClient(config.get('mongodb','url'))
 db = client[databasename]
 db.authenticate(username,password)
 collection = db[collectionname]
-collectioncleaned = db[collectionnamecleaned]
+#collectioncleaned = db[collectionnamecleaned]
 
 
 
@@ -146,21 +146,49 @@ def frequencies_nodict():
     return c
 
 
-
-def frequencies(usersubset):
+def frequencies():
     '''
     returns a counter object of word frequencies
     '''
     
 
     print("Debugging manually...")
-    print("the subset is...","    ",usersubset)
-    print("Date:   ", usersubset['datum'])
-    print(usersubset['datum']['$gte'])
-    print(usersubset['datum']['$lte'])
-    print(usersubset['$or'][0]['source'])    
-    #all=collectioncleaned.find(subset,{"text": 1, "_id":0})
-    all=collectioncleaned.find(ast.literal_eval(usersubset),{"text": 1, "_id":0})
+    all=collection.find(subset)
+    aantal=all.count()
+    c=Counter()
+    i=0
+    print("The frequencies are being retrieved, this might take a moment if your sample is large, please be patient while the page loads")
+    for item in all:
+       i+=1
+       print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
+       sys.stdout.flush()
+       #c.update([woord for woord in item["text"].split()])
+       if stemming==0:
+           try:
+               c.update([woord for woord in split2ngrams(item["text"],ngrams)])
+           except:
+               pass 
+       else:
+           try:
+               c.update([woord for woord in split2ngrams(stemmed(item["text"],stemming_language),ngrams)])
+           except:
+               pass  
+    print()
+    return c
+
+
+def frequenciesweb(n,usersubset):
+    '''
+    returns a counter object of word frequencies
+    '''
+    
+
+    print("Debugging manually...")
+   # print(usersubset['$or'][1])
+   # print(usersubset['$or'][0]['source'])    
+    print('the cleaned user subset now looks like:    ',usersubset)
+#    all=collection.find(usersubset)
+    all=collection.find(ast.literal_eval(str(usersubset)),{"text": 1, "_id":0})
     aantal=all.count()
     # print all[50]["text"]
     c=Counter()
@@ -169,17 +197,18 @@ def frequencies(usersubset):
     for item in all:
        i+=1
        #print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
-       sys.stdout.flush()
+       #sys.stdout.flush()
        #c.update([woord for woord in item["text"].split()])
        if stemming==0:
-           c.update([woord for woord in split2ngrams(item["text"],ngrams)]) 
+           try:
+               c.update([woord for woord in split2ngrams(item["text"],ngrams)])
+           except:
+               pass 
        else:
-           c.update([woord for woord in split2ngrams(stemmed(item["text"],stemming_language),ngrams)])  
-    print()
-    return c
-
-def frequenciesweb(n,usersubset):
-    c=frequencies(usersubset)
+           try:
+               c.update([woord for woord in split2ngrams(stemmed(item["text"],stemming_language),ngrams)])
+           except:
+               pass 
     for a,b in c.most_common(n):
         print("{}:\t\t{} occurences,\n" .format(a,b))
 
@@ -212,7 +241,7 @@ def coocnet(n,minedgeweight,usersubset):
     cooc=defaultdict(int)
     
     print("Determining the",n,"most frequent words...\n")
-    c=frequencies(usersubset)
+    c=frequenciesweb(usersubset)
     topnwords=set([a for a,b in c.most_common(n)])
     #debug, volgende regel later weer weghalen
     #all=collectioncleaned.find(subset,{"text": 1, "_id":0})
@@ -519,7 +548,10 @@ def tfcospca(n,file,comp,varimax):
     foroutput_alltermscounts=[]
 
     for item in all:
-        foroutput_firstwords.append(item["text"][:20])
+        try:
+            foroutput_firstwords.append(item["text"][:20])
+        except:
+            pass
         foroutput_source.append(item["source"])
         foroutput_id.append(item["_id"])
         foroutput_byline.append(item["byline"])
@@ -528,20 +560,32 @@ def tfcospca(n,file,comp,varimax):
         # sectie=item["section"].split(";")
         #foroutput_section.append(sectie[0]+"\t"+sectie[1].strip("blz. "))
         # end
-        foroutput_length.append(item["length"])
-        foroutput_language.append(item["language"])
-        foroutput_pubdate_day.append(item["pubdate_day"])
-        foroutput_pubdate_month.append(item["pubdate_month"])
-        foroutput_pubdate_year.append(item["pubdate_year"])
-        foroutput_pubdate_dayofweek.append(item["pubdate_dayofweek"])
+        try:
+            foroutput_length.append(item["length_words"])
+        except:
+            pass
+        #foroutput_language.append(item["language"])
+        #foroutput_pubdate_day.append(item["pubdate_day"])
+        #foroutput_pubdate_month.append(item["pubdate_month"])
+        #foroutput_pubdate_year.append(item["pubdate_year"])
+        #foroutput_pubdate_dayofweek.append(item["pubdate_dayofweek"])
         termcounts=""
         for term in allterms:
-            termcounts+=("\t"+str(item["text"].split().count(term)))
+            try:
+                termcounts+=("\t"+str(item["text"].split().count(term)))
+            except:
+                pass
         foroutput_alltermscounts.append(termcounts)
         if stemming==0:
-            c_item=Counter(split2ngrams(item["text"],ngrams))
+            try:
+                c_item=Counter(split2ngrams(item["text"],ngrams))
+            except:
+                pass
         else:
-            c_item=Counter(split2ngrams(stemmed(item["text"],stemming_language),ngrams))
+            try:
+                c_item=Counter(split2ngrams(stemmed(item["text"],stemming_language),ngrams))
+            except:
+                pass
         tf_item=[]
         for word in topnwords:
             tf_item.append(c_item[word])
@@ -613,7 +657,8 @@ def tfcospca(n,file,comp,varimax):
             pcalabels+=("\tComp"+str(j+1))
         fo.write('id\t'+'source\t'+'firstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek'+pcalabels+"\t"+foroutput_alltermslabels+"\n")
         for row in scoresperdoc:
-            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t')
+            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+str(foroutput_length[i])+'\t')
+            #fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+str(foroutput_length[i])+'\t'+foroutput_language[i]+'\t'+str(foroutput_pubdate_day[i])+'\t'+str(foroutput_pubdate_month[i])+'\t'+str(foroutput_pubdate_year[i])+'\t'+str(foroutput_pubdate_dayofweek[i])+'\t')
             fo.write('\t'.join(["{:0.3f}".format(loading) for loading in row]))
             fo.write(foroutput_alltermscounts[i])
             fo.write("\n")
@@ -842,9 +887,9 @@ def main():
     if args.njronly:
         collectioncleaned = db[collectionnamecleanedNJR]
     else:
-        collectioncleaned = db[collectionnamecleaned]
+        collectioncleaned = db[collectionname]
     print("Ensure that the articles are properly indexed...")
-    collectioncleaned.ensure_index([("text", TEXT)], cache_for=300,default_language="nl",language_override="nl")
+#    collectioncleaned.ensure_index([("text", TEXT)], cache_for=300,default_language="nl",language_override="nl")
     print("Done building index.")
 
 

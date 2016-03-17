@@ -6,27 +6,6 @@ form = cgi.FieldStorage()
 from analysis import *
 
 # read config file and set up MongoDB
-config = configparser.RawConfigParser()
-config.read(os.path.dirname(os.path.abspath(__file__))+'/config.conf')
-dictionaryfile=config.get('files','dictionary')
-#networkoutputfile=config.get('files','networkoutput')
-lloutputfile=config.get('files','loglikelihoodoutput')
-lloutputcorp1file=config.get('files','loglikelihoodoutputoverrepcorp1')
-cosdistoutputfile=config.get('files','cosdistoutput')
-compscoreoutputfile=config.get('files','compscoreoutput')
-clusteroutputfile=config.get('files','clusteroutput')
-ldaoutputfile=config.get('files','ldaoutput')
-databasename=config.get('mongodb','databasename')
-collectionname=config.get('mongodb','collectionname')
-collectionnamecleaned=config.get('mongodb','collectionnamecleaned')
-collectionnamecleanedNJR = config.get('mongodb','collectionnamecleanedNJR')
-username=config.get('mongodb','username')
-password=config.get('mongodb','password')
-client = pymongo.MongoClient(config.get('mongodb','url'))
-db = client[databasename]
-# Deleted the authentification as prob not necessary anymore
-collection = db[collectionname]
-
 
 # GENERAL RULE:
 # FIRST INCLUDE USER GENERATED QUERY + SOURCES + DATES.
@@ -204,7 +183,6 @@ if form.getvalue('year_start') and form.getvalue('month_start') and form.getvalu
 	query_start = datetime.datetime(int(year_start),int(month_start),int(day_start))
 	query_end = datetime.datetime(int(year_end),int(month_end),int(day_end))
 
-#	usersubset += "],'datum':{'$gte':" + "{}".format(query_start) +",'$lte':" + "{}".format(query_end) +"}}"
 	finalsubset['datum']={}
 	finalsubset['datum']['$gte'] = query_start
 	finalsubset['datum']['$lte'] = query_end
