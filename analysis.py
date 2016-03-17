@@ -188,7 +188,7 @@ def frequenciesweb(n,usersubset):
    # print(usersubset['$or'][0]['source'])    
     print('the cleaned user subset now looks like:    ',usersubset)
 #    all=collection.find(usersubset)
-    all=collection.find(ast.literal_eval(str(usersubset)),{"text": 1, "_id":0})
+    all=collection.find(usersubset,{"text": 1, "_id":0})
     aantal=all.count()
     # print all[50]["text"]
     c=Counter()
