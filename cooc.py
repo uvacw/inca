@@ -53,7 +53,7 @@ Day [1-31]: <input type='number' name='day_end' max='31' min='1'>
 
 
 <h4> Amount of words to be retrieved </h4>
-Most popular X words [Between 1 and 100]: <input type="number" name="mostpop", max="10000">  <br>
+Most popular X words [Between 1 and 500]: <input type="number" name="mostpop", max="500">  <br>
 <h4> Amounf of co-occurences to be retrieved </h4>
 Minimum amount of co-occurences [Between 1 and 3000]: <input type="number" name="maxcooc", min="1", max="3000"/><br>
 <h4> Additional segmentation </h4>
