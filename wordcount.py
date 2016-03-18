@@ -43,6 +43,8 @@ print('''
 <input type="checkbox" name="anp" value="on" /> ANP<br>
 <br>
 
+<h4> Choose whether you want to work with whole articles or cleaned ones <br> (<i>Clean articles consist only of nouns, adjectives and adverbs. Stopwords have also been removed</i>):</h4>
+<input type='checkbox' name='clean' value="on" /> Use cleaned articles <br>
 <h4> Please select the date range that you are interested in below:</h4> 
 <h5> Select the start date:</h5> 
 Year [1995-2016]: <input type='number' name='year_start' max='2016' min='1995'>

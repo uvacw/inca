@@ -177,18 +177,15 @@ def frequencies():
     return c
 
 
-def frequenciesweb(n,usersubset):
-    '''
-    returns a counter object of word frequencies
-    '''
-    
+def frequenciesweb(n,clean,usersubset):
 
-    print("Debugging manually...")
-   # print(usersubset['$or'][1])
-   # print(usersubset['$or'][0]['source'])    
     print('the cleaned user subset now looks like:    ',usersubset)
-#    all=collection.find(usersubset)
-    all=collection.find(usersubset,{"text": 1, "_id":0})
+    
+    if clean:
+        all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
+
+    else:
+        all=collection.find(usersubset,{"text": 1, "_id":0})
     aantal=all.count()
     # print all[50]["text"]
     c=Counter()
@@ -196,22 +193,34 @@ def frequenciesweb(n,usersubset):
     print("The frequencies are being retrieved, this might take a moment if your sample is large, please be patient while the page loads")
     for item in all:
        i+=1
-       #print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
-       #sys.stdout.flush()
        #c.update([woord for woord in item["text"].split()])
        if stemming==0:
-           try:
-               c.update([woord for woord in split2ngrams(item["text"],ngrams)])
-           except:
-               pass 
+           if clean:
+               try:
+                   c.update([woord for woord in split2ngrams(item["textclean_njr"],ngrams)])
+               except:
+                   pass
+           else:
+               try:
+                   c.update([woord for woord in split2ngrams(item["text"],ngrams)])
+               except:
+                   pass
+ 
        else:
-           try:
-               c.update([woord for woord in split2ngrams(stemmed(item["text"],stemming_language),ngrams)])
-           except:
-               pass 
+           if clean:
+               try:
+                   c.update([woord for woord in split2ngrams(stemmed(item["textclean_njr"],stemming_language),ngrams)])
+               except:
+                   pass
+           else:
+               try:
+                   c.update([woord for woord in split2ngrams(stemmed(item["text"],stemming_language),ngrams)])
+               except:
+                   pass
+  
     for a,b in c.most_common(n):
         print("{}:\t\t{} occurences,\n" .format(a,b))
-
+    return c
 
 def countmatches():
     '''
@@ -241,25 +250,32 @@ def coocnet(n,minedgeweight,usersubset):
     cooc=defaultdict(int)
     
     print("Determining the",n,"most frequent words...\n")
-    c=frequenciesweb(usersubset)
+    c=frequenciesweb(n,usersubset)
     topnwords=set([a for a,b in c.most_common(n)])
     #debug, volgende regel later weer weghalen
     #all=collectioncleaned.find(subset,{"text": 1, "_id":0})
-    all=collectioncleaned.find(ast.literal_eval(usersubset),{"text": 1, "_id":0})
+    all=collection.find(usersubset,{"text": 1, "_id":0})
     aantal=all.count()
     
     print("\n\nDetermining the cooccurrances of these words with a minimum cooccurance of",minedgeweight,"...\n")
     i=0
+    e=0
     for item in all:
         i+=1
         #print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
         #words=item["text"].split()
 
         if stemming==0:
-            words=split2ngrams(item["text"],ngrams)
+            try:
+                words=split2ngrams(item["text"].encode('utf-8'),ngrams)
+            except:
+                e+=1
         else:
-            words=split2ngrams(stemmed(item["text"],stemming_language),ngrams)
-
+            try: 
+                words=split2ngrams(stemmed(item["text"],stemming_language),ngrams)
+            except:
+                e+=1
+        #print(words) 
         wordsfilterd=[w for w in words if w in topnwords]        
         uniquecombi = set(combinations(wordsfilterd,2))
         for a,b in uniquecombi:
@@ -268,7 +284,7 @@ def coocnet(n,minedgeweight,usersubset):
             if a!=b:
                 cooc[(a,b)]+=1
 
-
+    print("\n\n We're done stemming and combining, please note that {} files did not have a text argument...\n\n".format(e))
     with open(networkoutputfile,mode="w",encoding="utf-8") as f:
         f.write("nodedef>name VARCHAR, width DOUBLE\n")
         algenoemd=[]

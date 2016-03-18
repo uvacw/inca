@@ -187,6 +187,11 @@ if form.getvalue('year_start') and form.getvalue('month_start') and form.getvalu
 	finalsubset['datum']['$gte'] = query_start
 	finalsubset['datum']['$lte'] = query_end
 
+if form.getvalue('clean'):
+	clean = True
+else:
+	clean = False
+
 print('Content-Type: text/html')
 print('''
 
@@ -200,7 +205,7 @@ print('''
 <h4> <a href='cooc.py' target='blank'> Click here to retrieve the co-occurences of your selection </a></h4> 
 <pre><br><br>''' % (topwords,finalsubset))
 
-frequenciesweb(int(topwords),finalsubset)
+frequenciesweb(int(topwords),clean,finalsubset)
 
 print('''<br><br>
 <br></pre>
