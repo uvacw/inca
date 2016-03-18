@@ -17,8 +17,8 @@ import os
 # from scipy.spatial.distance import cosine
 from sklearn import preprocessing
 from sklearn.cluster import KMeans
-import ast
 import datetime
+from nvd3 import discreteBarChart
 #from cooc_get import usersubset
 
 # TODO
@@ -30,6 +30,7 @@ config = configparser.RawConfigParser()
 config.read(os.path.dirname(os.path.abspath(__file__))+'/config.conf')
 dictionaryfile=config.get('files','dictionary')
 networkoutputfile=config.get('files','networkoutput')
+wordcountoutputfile=config.get('files','wordcountoutput')
 lloutputfile=config.get('files','loglikelihoodoutput')
 lloutputcorp1file=config.get('files','loglikelihoodoutputoverrepcorp1')
 cosdistoutputfile=config.get('files','cosdistoutput')
@@ -217,9 +218,38 @@ def frequenciesweb(n,clean,usersubset):
                    c.update([woord for woord in split2ngrams(stemmed(item["text"],stemming_language),ngrams)])
                except:
                    pass
-  
+    
+    xdata = []
+    ydata=[] 
     for a,b in c.most_common(n):
         print("{}:\t\t{} occurences,\n" .format(a,b))
+        # Just using 31 for now as it seems to look good on my screen as a standard width
+        if len(xdata)<31:
+            xdata.append(a)
+            ydata.append(b)
+    
+    print('And now here is a visualization for you') 
+    chart = discreteBarChart(width=1500, height=400, x_axis_format=None)
+#    xdata = ['one', 'two', 'three', 'four']
+#    ydata1 = [6, 12, 9, 16]
+#    ydata2 = [8, 14, 7, 11]
+
+    chart.add_serie(name="Word frequencies", y=ydata, x=xdata)
+#    chart.add_serie(name="Serie 2", y=ydata2, x=xdata)
+
+    chart.buildhtml()
+    print(chart.htmlcontent)
+    
+
+    # Now exporting the raw file
+
+    with open(wordcountoutputfile,mode="w",encoding="utf-8") as f:
+        for a,b in c.most_common():
+            f.write('{},{}\n'.format(a,b))
+	#f.write('Words' + [a for a,b in c] + 'Counts' + [b for a,b in c])
+
+    print("\tDownload the raw data via this file -->",wordcountoutputfile)
+    
     return c
 
 def countmatches():

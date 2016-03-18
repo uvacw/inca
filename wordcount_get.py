@@ -4,6 +4,7 @@ import cgi
 cgitb.enable()
 form = cgi.FieldStorage()
 from analysis import *
+from nvd3 import multiBarChart
 
 # read config file and set up MongoDB
 
@@ -207,8 +208,12 @@ print('''
 
 frequenciesweb(int(topwords),clean,finalsubset)
 
+
 print('''<br><br>
-<br></pre>
+<br>
+</pre>
+The csv file can be downloaded by clicking <a href="http://infra.followthenews-uva.vm.surfsara.nl/tmp/wordcountoutput.csv">this link</a>
+<br>
 </body>
 </html>
 ''')
