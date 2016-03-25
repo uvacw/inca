@@ -12,6 +12,8 @@ import argparse
 from collections import defaultdict, OrderedDict
 import os
 import datetime
+import ast
+from io import open
 
 # TODO
 # variabele toon toevoegen
@@ -47,20 +49,15 @@ collection = db[collectionname]
 
 
 # hier wordt de functie voor het vervangen van leestekens gedefinieerd. Ze worden ERUIT gehaald, niet vervangen door spaties, en dat is juist wat we willen: willem-alexander --> willemalexander
-tbl = dict.fromkeys(i for i in range(sys.maxunicode) if unicodedata.category(chr(i)).startswith('P'))
-
+tbl = dict.fromkeys(i for i in xrange(sys.maxunicode) if unicodedata.category(unichr(i)).startswith('P'))
 
 def remove_punctuation(text):
-    return text.replace("`","").replace("´","").translate(tbl)
+    return text.replace("`","").replace("´","").replace("|"," ").translate(tbl)
 
 
 
 
 def clean_database_njr():
-    # TODO: is nu copy-paste an gewone functie, beter doen. misschien integreren?
-
-    # initialize new database for cleaned collection
-    c = Connection()
 
 
     # load replacement lists
@@ -76,14 +73,21 @@ def clean_database_njr():
         repldictindien = json.load(fi, object_pairs_hook=OrderedDict)
 
 
-    allarticles = collection.find()
-    aantal = collection.count()
+    allarticles = collection.find(subset).batch_size(30)  # batch size = no of articles that we are sure can be processed in 10 minutes. defaults to 100, that can be problematic
+    aantal = collection.find(subset).count()
     i = 0
     for art in allarticles:
         i += 1
-        print("\r", i, "/", aantal, " or ", int(i / aantal * 100), "%", end=' ')
+        print "\r", i, "/", aantal, " or ", int(i / aantal * 100), "%",
         sys.stdout.flush()
-        thisartorig = art["text"].replace("\n", " ")
+        try:
+            thisartorig = art["text"].replace("\n", " ")
+        except:
+            # do nothing with this article if it does not have any text
+            print
+            print 'Weird, this article did not have any text body, skipping it'
+            print
+            continue
 
         # hier is t dus interessant
 
@@ -127,7 +131,8 @@ def clean_database_njr():
             if (woord not in stops) and (not woord.isdigit()):
                 thisart = " ".join([thisart, woord])
 
-        r = collection.update({'_id':art['_id']},{'textclean_njr':thisart})
+        r = collection.update({'_id':art['_id']},{"$set": {'textclean_njr':thisart}})
+        print r
 
 
 def main():
@@ -137,20 +142,39 @@ def main():
     group.add_argument("--cleannjr",
                        help="Creates a cleaned version of your collection by removing punctuation and replacing words as specified in the configuration files, but only keeps nouns, adjectives, and adverbs",
                        action="store_true")
+    parser.add_argument("--subset", help="Use MongoDB-style .find() filter in form of a Python dict. E.g.:  --subset=\"{'source':'de Volkskrant'}\" or --subset=\"{'\\$text':{'\\$search':'hema'}\"or a combination of both: --subset=\"{'\\$text':{'\\$search':'hema'}}\",'source':'de Volkskrant'}\"")
 
 
     args = parser.parse_args()
 
+    global subset
+    if not args.subset:
+        subset={}
+    else:
+        try:
+            subset=ast.literal_eval(args.subset)
+        except:
+            print("You specified an invalid filter!")
+            sys.exit()
+
+        if type(subset) is not dict:
+            print("You specified an invalid filter!")
+            sys.exit()
+
+        print("Task will only be performed on the subset ",subset)
+
 
 
     if args.cleannjr:
-        print("Do you REALLY want to clean the whole collection", collectionnamecleanedNJR, "within the database", databasename, "right now? This can take VERY long, and you might consider doing this overnight.")
-        cont = input('Type "I have time!" and hit Return if you want to continue: ')
+        '''
+        print "Do you REALLY want to start right now? This can take VERY long, and you might consider doing this overnight."
+        cont = raw_input('Type "I have time!" and hit Return if you want to continue: ')
         if cont == "I have time!":
             clean_database_njr()
         else:
             print("OK, maybe next time.")
-
+        '''
+        clean_database_njr()
 
 
 if __name__ == "__main__":
