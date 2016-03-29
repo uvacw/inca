@@ -417,6 +417,7 @@ def lda(minfreq,file,ntopics,):
     # TODO: integreren met bovenstaande code, nu moet .find nog een keer worden opgeroepen aangezien het een generator is
     all=collection.find(subset)
 
+    # TODO: in de volgende regels 'text' vervangen door 'text_cleanednjr' oid om LDA los te laten op gecleande data
 
     if stemming==0:
         # oude versie zonder ngrams: texts =[[word for word in item["text"].split()] for item in all]

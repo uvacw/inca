@@ -63,6 +63,10 @@ nohup.out
 # input en output data
 input/
 output/
+*.out
+
+# ad hoc scripts for one-time use
+adhoc/
 
 # geen emacs-backupbestanden committen
 *~

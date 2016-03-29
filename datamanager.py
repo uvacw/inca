@@ -330,6 +330,7 @@ def insert_newsreleases(pathwithlnfiles, recursive):
                 i = i + 1
                 # print "Regel",i,": ", line
                 line = line.replace("\r", " ")
+                print(line)
                 if line == "\n":
                     continue
                 elif line.startswith('###TITEL'):
@@ -338,12 +339,14 @@ def insert_newsreleases(pathwithlnfiles, recursive):
                     title[artikel] = line.lstrip('###TITEL').strip()
                 elif line.startswith('###DATUM'):
                     dateline=line.lstrip('###DATUM').strip()
+                    print(dateline)
                     match=match=re.match('(\d{1,2})-(\d{1,2})-(\d\d\d\d)',dateline)
                     pubdate_day[artikel]=int(match.group(1))
                     pubdate_month[artikel]=int(match.group(2))
                     pubdate_year[artikel]=int(match.group(3))
                 elif line.startswith('###TIJD'):
                     timeline=line.lstrip('###TIJD').strip()
+                    print(timeline)
                     match=match=re.match('(\d{1,2}):(\d\d)',timeline)
                     pubdate_hour[artikel]=int(match.group(1))
                     pubdate_min[artikel]=int(match.group(2))
@@ -358,7 +361,19 @@ def insert_newsreleases(pathwithlnfiles, recursive):
 
     for i in range(artikel):
         art_title = title[i +1]
-        if pubdate_hour:
+        #print (len(pubdate_year))
+        #print (len(pubdate_month))
+        #print (len(pubdate_day))
+        #print (len(pubdate_hour))
+        #print (len(pubdate_min))
+
+        if i+1 in pubdate_hour.keys():
+            #print (pubdate_year[i+1])
+            #print (pubdate_month[i+1])
+            #print (pubdate_day[i+1])
+            #print (pubdate_hour[i+1])
+            #print (pubdate_min[i+1])
+
             art_pubdate = datetime.datetime(pubdate_year[i+1],pubdate_month[i+1],pubdate_day[i+1],pubdate_hour[i+1],pubdate_min[i+1])
         else:
             art_pubdate = datetime.datetime(pubdate_year[i+1],pubdate_month[i+1],pubdate_day[i+1])
@@ -383,7 +398,8 @@ def insert_newsreleases(pathwithlnfiles, recursive):
 
         artnoemptykeys={k: v for k, v in art.items() if v}
 
-        #article_id = collection.insert(artnoemptykeys)
+        print(artnoemptykeys)
+        article_id = collection.insert(artnoemptykeys)
 
         print(artnoemptykeys)
 
