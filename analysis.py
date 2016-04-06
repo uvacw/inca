@@ -19,7 +19,7 @@ from sklearn import preprocessing
 from sklearn.cluster import KMeans
 import datetime
 from nvd3 import discreteBarChart
-#from cooc_get import usersubset
+# import pandas
 
 # TODO
 # bedrijf minimaal twee keer genoemd
@@ -184,7 +184,8 @@ def frequenciesweb(n,clean,usersubset):
     
     if clean:
         all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
-
+        test = collection.aggregate([{'$match':{'$text':{'$search':'hema'}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : { '_id':1,  'year':1   }}])       
+        print('the test looks like:' + str(list(test)))
     else:
         all=collection.find(usersubset,{"text": 1, "_id":0})
     aantal=all.count()
@@ -248,9 +249,12 @@ def frequenciesweb(n,clean,usersubset):
             f.write('{},{}\n'.format(a,b))
 	#f.write('Words' + [a for a,b in c] + 'Counts' + [b for a,b in c])
 
-    print("\tDownload the raw data via this file -->",wordcountoutputfile)
+    #print("\tDownload the raw data via this file -->",wordcountoutputfile)
     
     return c
+
+def timefreq(topwords, days):
+    print('soon')
 
 def countmatches():
     '''
@@ -262,6 +266,50 @@ def countmatches():
     return aantal
 
 
+def basicfreq(topwords):
+    #instead of having year, month and day on three lines, I can create a master loop that iterates over a list with ['year','month','day'] where appropriate.
+
+    # retrieving individual matrices for each top word
+    i=0
+    for word in topwords:
+        worddf_year[i] = collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}])
+        # worddf_month[i] = collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'month':{'$month':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'month':1}}])
+        #worddf_day[i] = collection.find({'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'day' : {'$year':'$datum'}}, 'count' : {'$sum' : 1}}})
+
+    # Converting the retrived elements into dataframes with date and count
+        df_year[i] = pandas.DataFrame({'year': [y['_id']['year'] for y in worddf_year[i]],'count': [c['count'] for c in worddf_year[i]]})
+        # df_month[i] = pandas.DataFrame({'month': [y['_id']['year'] for y in worddf_month[i]],'count': [c['count'] for c in worddf_month[i]]})
+        # df_day[i] = pandas.DataFrame({'Day': [y['_id']['year'] for y in worddf_day[i]],'Count': [c['count'] for c in worddf_day[i]]})
+        i += 1
+
+    #merging dataframes
+    j = 1
+    while j <= i:
+        df_year[0].merge(df_year[j], left_on='year', right_on='year', how='outer')
+        # df_month[0].merge(df_month[j], left_on='month', right_on='month', how='outer')
+        j += 1
+    fulldf_year = df_year[0]
+    # fulldf_month = df_month[0]
+
+    # Creating the line graph
+    chart_year = lineChart(name="basicfreq", x_is_date=False, x_axis_format="")
+    # chart_month = lineChart(name="basicfreq", x_is_date=False, x_axis_format="Month")
+
+    xdata_year = fulldf_year['year']
+    # xdata_month = fulldf_month['month']
+
+    # HOW can I anticipate the name of the word that's gonna be present to select the column?
+    # If I don't and use a default term like 'value', then we don't know what word is mapped.
+    # I will just add the list of topwords inside the name of the value for the nvd3 for now, see below 'name'.
+    k=0
+    ydata_year = []
+    # ydata_month = []
+    extra_serie = {"tooltip": {"y_start": "Amount of times the word", "y_end": "occurs: "}}
+    while k < i:
+        ydata_year[k] = df_year[k]['count']
+        chart_year.add_serie(y=ydata_year[k], x=xdata_year, name=str(topwords[k]), extra=extra_serie)
+
+    chart_year.buildhtml()
 
 
 def coocnet(n,minedgeweight,usersubset):

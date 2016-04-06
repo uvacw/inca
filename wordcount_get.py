@@ -206,14 +206,20 @@ print('''
 <h4> <a href='cooc.py' target='blank'> Click here to retrieve the co-occurences of your selection </a></h4> 
 <pre><br><br>''' % (topwords,finalsubset))
 
-frequenciesweb(int(topwords),clean,finalsubset)
-
+c = frequenciesweb(int(topwords),clean,finalsubset)
+c
+mc = c.most_common(15)
+wl = [w[0] for w in mc]
 
 print('''<br><br>
 <br>
 </pre>
 The csv file can be downloaded by clicking <a href="http://infra.followthenews-uva.vm.surfsara.nl/tmp/wordcountoutput.csv">this link</a>
 <br>
+<h3>Explore the most frequent words across time.</h3>
+''')
+basicfreq(wl)
+print('''
 </body>
 </html>
 ''')
