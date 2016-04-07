@@ -300,7 +300,7 @@ def parse_telegraaf(doc,ids,titel,link):
         print("kon dit niet parsen",type(doc),len(doc))
         return("","","","")
     try:
-        category = tree.xpath('//*[@class="selekt"]/text()')[0]
+        category = tree.xpath('//*[@class="selekt"]/text() | //*[@class="topbar"]/div/a[2]/text()' )[0]
     except:
         category = ""
         print("OOps - geen category?")
@@ -309,9 +309,10 @@ def parse_telegraaf(doc,ids,titel,link):
         #2.path: layout 2 (video): regular first (and mostly only) para
         #3.path: layout 1: second version of first para, fi 2014 11 6
         #4.path layout 1: place found on 2015 11 16
+        #5.path: regular first para found 2016 04 07
         textfirstpara=tree.xpath('//*[@class="zak_normal"]/p/text() \
         | //*[@class="bodyText streamone"]/div/p/text() \
-        | //*[@class="zak_normal"]/text() | //*[@class="zak_normal"]/span/text()')
+        | //*[@class="zak_normal"]/text() | //*[@class="zak_normal"]/span/text() | //*[@id="main"]/div/div/p/text()')
         textfirstpara = " ".join(textfirstpara)
     except:
         textfirstpara=""
@@ -323,13 +324,16 @@ def parse_telegraaf(doc,ids,titel,link):
         #4. path: layout 1: bold text, fi 2014 12 25
         #5. path: layout 1: italic text, fi 2014 09 5200
         #6. path: layout 1: second headings, fi 2014 07 84
-        textrest=tree.xpath('//*[@id="artikelKolom"]/p[not (@class="tiptelegraaflabel")]/text() | //*[@id="artikelKolom"]/p/a/text() | //*[@id="artikelKolom"]/h2/strong/text() | //*[@id="artikelKolom"]/p/strong/text() | //*[@id="artikelKolom"]/p/em/text() | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text() | //*[@class="broodtekst"]/p/text() | //*[@class="broodtext"]/h2/strong/text()')
+        #7. path: layout 2: reagular text, found 2016 04 07                             
+        #8. path: layout 2: italic text, found 2016 04 07                               
+        #9. path: layout 2: bold text, found 2016 04 07 
+        textrest=tree.xpath('//*[@id="artikelKolom"]/p[not (@class="tiptelegraaflabel")]/text() | //*[@id="artikelKolom"]/p/a/text() | //*[@id="artikelKolom"]/h2/strong/text() | //*[@id="artikelKolom"]/p/strong/text() | //*[@id="artikelKolom"]/p/em/text() | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text() | //*[@class="broodtekst"]/p/text() | //*[@class="broodtext"]/h2/strong/text()| //*[@id="artikelKolom"]/div/p/text() | //*[@id="artikelKolom"]/div/p/em/text() | //*[@id="artikelKolom"]/div/p/strong/text() | //*[@id="artikelKolom"]/div/h2/text() | //*[@id="artikelKolom"]/div/p/a/text()')
     except:
         print("oops - geen texttest?")
         textrest = ""
     text = textfirstpara + "\n"+ "\n".join(textrest)
     try:
-        author_door = tree.xpath('//*[@class="auteur"]/text()')[0].strip().lstrip("Van ").lstrip("onze").lstrip("door").strip()
+        author_door = tree.xpath('//*[@class="auteur"]/text() | //*[@class="ui-table ui-gray3"]/span[2]/text()')[0].strip().lstrip("Van ").lstrip("onze").lstrip("door").strip()
     except:
         author_door = ""
     author_bron=""
