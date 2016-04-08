@@ -62,7 +62,7 @@ def parse_vk(doc,ids,titel,link):
         #5. path: old design regular text
         #6. path: old design second heading
         #7. path:old design text with link        
-        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text() | //*/div[@class="article__body"]/h2/text()')
+        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text() | //*/div[@class="article__body"]/h2/text() | //*/p[@class="article__body__paragraph first"]/a/text() | //*/p[@class="article__body__paragraph"]/text() | //*/h3[@class="article__body__container-title"]/text()')
         #print("Text rest: ")
         #print(textrest)
     except:
@@ -70,7 +70,7 @@ def parse_vk(doc,ids,titel,link):
         textrest=""
     text = textfirstpara + "\n"+ "\n".join(textrest)
     try:
-        author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text()')).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
+        author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text() |//*/span[@class="article__author"]/text()' )).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
         # geeft het eerste veld: "Bewerkt \ door: Redactie"  
         if author_door=="edactie":
             author_door = "redactie"
@@ -104,6 +104,12 @@ def parse_vk(doc,ids,titel,link):
             try:
                 bron_text=tree.xpath('//*[@class="time_post"]/text()')[0].replace("\n", "")
                 author_bron=re.findall(".*?bron:(.*)", bron_text)[0]
+            except:
+                author_bron=""
+        if author_bron=="":
+            try:
+                bron_text=tree.xpath('//*[@class="article__meta--v2"]/span/text()')[0].replace("\n","")
+                author_bron=re.findall(".*?Bron:(.*)", bron_text)[0]
             except:
                 author_bron=""
                 print("oops - geen bron")
@@ -604,7 +610,7 @@ def parse_parool(doc,ids,titel,link):
         #3. Link text
         #4. Embedded text subtitle one
         #5. Embedded text subitles rest
-        textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text()')
+        textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text() | //*[@class="article__body__paragraph first"]/text() | //*[@class="article__body__paragraph first"]/strongtext() | //*[@class="article__body__paragraph first"]/a/text()')
     except:
         textrest=" "
         print("oops - geen textrest")
@@ -625,7 +631,13 @@ def parse_parool(doc,ids,titel,link):
         author_bron=re.findall(".*?Bron:(.*)", bron_text)[0]
     except:
         author_bron=" "
-        print("geen bron")
+    if author_bron=="":
+        try:
+            bron_text=tree.xpath('//*/span[@class="author-info__source"]/text()')[0]
+            author_bron=re.findall(".*?Bron:(.*)",bron_text)[0]
+        except:
+            author_bron=""
+            print("geen bron")
     
     textnew=polish(text)
 
