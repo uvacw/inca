@@ -493,12 +493,12 @@ def lda(minfreq,file,ntopics,):
                 top.append(t[1])
             top.append(topic[1])
             toplist.append(top)
-            fo.write("\n\nTopic")        
+            fo.write("\n\nTopic")                       
             for outtext in toplist:
                 fo.write("--------------------------\n\n")            
                 for t in outtext:
                     fo.write(str(t)+ " ")
-
+        
     print('Last but not least, save the topicmodel itselt at {} ...'.format(ldamodelfile))
     print('... and the accompagnying dictionbary at {} ...'.format(ldadictfile))
 
@@ -627,9 +627,9 @@ def lda_apply(minfreq,ntopics):
     # load LDA lode
     lda = models.ldamodel.LdaModel.load(ldamodelfile)
 
-    # Prints the topics.
-    for top in lda.print_topics(num_topics=ntopics, num_words=5):
-        print("\n",top)
+    # Prints the topics. (surpressed b/c we already know them
+    #for top in lda.print_topics(num_topics=ntopics, num_words=5):
+    #    print("\n",top)
 
 
     print("\nFor further analysis, a dataset with the topic score for each document is saved to",ldaoutputfile)
