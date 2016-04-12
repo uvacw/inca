@@ -38,6 +38,7 @@ USERSTRING="damian"
 # read config file and set up MongoDB
 config = configparser.RawConfigParser()
 config.read(os.path.dirname(os.path.abspath(__file__))+'/config.conf')
+#config.read('/home/damian/inca-productie/config.conf')
 databasename = config.get('mongodb', 'databasename')
 collectionname = config.get('mongodb', 'collectionname')
 username=config.get('mongodb','username')
@@ -170,36 +171,37 @@ def checkfeeds(waarvandaan, waarnaartoe,sourcename):
             else: 
                 req=urllib.request.Request(re.sub("/$","",post.link), headers={'User-Agent' : "Wget/1.9"})
             
-            response = urllib.request.urlopen(req)
-            
-            title,text,category,byline,bylinesource=parse(waarnaartoestem,response.read().decode(encoding="utf-8",errors="ignore"),identificatie,re.sub(r"\n|\r\|\t"," ",post.title),post.link)
-
             try:
-                teaser=re.sub(r"\n|\r\|\t"," ",post.description)
+                response = urllib.request.urlopen(req)
+                title,text,category,byline,bylinesource=parse(waarnaartoestem,response.read().decode(encoding="utf-8",errors="ignore"),identificatie,re.sub(r"\n|\r\|\t"," ",post.title),post.link)
+                try:
+                    teaser=re.sub(r"\n|\r\|\t"," ",post.description)
+                except:
+                    teaser=""
+                try:
+                    datum=datetime.datetime(*feedparser._parse_date(post.published)[:6])
+                except:
+                    datum=None
+                art = {"rssidentifier":identificatie, 
+                           "title":post.title,
+                           "teaser":teaser,
+                           "source":sourcename,
+                           "text":text,
+                           "section":category,
+                           "byline":byline,
+                           "bylinesource":bylinesource,
+                           "datum":datum,
+                           "length_char":len(text),
+                           "length_words":len(text.split()),
+                           "addedby":VERSIONSTRING,
+                           "addedbyuser":USERSTRING,
+                           "addedbydate":datetime.datetime.now(),
+                           "url":re.sub("/$","",post.link)}
+                artnoemptykeys={k: v for k, v in art.items() if v}
+                article_id = collection.insert(artnoemptykeys)
             except:
-                teaser=""
-
-
-            art = {"rssidentifier":identificatie, 
-                   "title":post.title,
-                   "teaser":teaser,
-                   "source":sourcename,
-                   "text":text,
-                   "section":category,
-                   "byline":byline,
-                   "bylinesource":bylinesource,
-                   "datum":datetime.datetime(*feedparser._parse_date(post.published)[:6]),
-                   "length_char":len(text),
-                   "length_words":len(text.split()),
-                   "addedby":VERSIONSTRING,
-                   "addedbyuser":USERSTRING,
-                   "addedbydate":datetime.datetime.now(),
-                   "url":re.sub("/$","",post.link)}
-
-            artnoemptykeys={k: v for k, v in art.items() if v}
-
-            article_id = collection.insert(artnoemptykeys)
-
+                print("THERE WENT SOMETHING WRONG DOWNLOADING THIS ARTICLE")
+                pass
 
             i=i=1
     if nieuweposts==0:
