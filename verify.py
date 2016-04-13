@@ -11,6 +11,7 @@ import re, sys, unicodedata
 import configparser
 from collections import defaultdict, OrderedDict
 import os
+from datetime import datetime
 
 
 
@@ -24,6 +25,7 @@ username=config.get('mongodb','username')
 password=config.get('mongodb','password')
 client = MongoClient(config.get('mongodb', 'url'))
 db = client[databasename]
+db.authenticate(username,password)
 
 collection = db[collectionname]
 
@@ -33,10 +35,17 @@ output_irrelevant=[]
 
 
 #Define searchstring here!
-searchstring="ING"
+searchstring='\\bING(?:-.*?)?\\b'
+#Define source here!
+source='volkskrant (www)'
+#Define timeframe here!
+date={"$gte":datetime(2014, 1, 1), "$lte":datetime(2014, 1, 31)}
+#Define your project name here (format: "project_NAME")
+projectname="project_stockrates"
 
-
-allarticles = collection.find({'$text':{'$search':searchstring}}).batch_size(30)  
+allarticles = collection.find({'text':{'$regex':searchstring}, 'source':source, 'datum':date})  
+revelantnr=0
+irrevnr=0
 
 for art in allarticles:
     a=0
@@ -60,7 +69,7 @@ for art in allarticles:
                 answer=input("Is this relevant?")
                 if answer in ["yes","Yes","y","Y"]:
                     print("Dit artikel gaat over "+searchstring)
-                    k = collection.update({'_id':art['_id']},{"$set": {'project_stockrates':True}})
+                    k = collection.update({'_id':art['_id']},{"$set": {projectname:True}})
                     print (k)
                     output.append(art['text'])
                     print(output)
@@ -72,7 +81,7 @@ for art in allarticles:
                 answer=input("Is this relevant?")
                 if answer in ["yes","Yes","y","Y"]:
                     print("Dit artikel gaat over "+searchstring)
-                    k = collection.update({'_id':art['_id']},{"$set": {'project_stockrates':True}})
+                    k = collection.update({'_id':art['_id']},{"$set": {projectname:True}})
                     print (k)
                     output.append(art['text'])
                 else:
@@ -85,7 +94,7 @@ for art in allarticles:
                 if answer in ["yes","Yes","y","Y"]:
                     if art['text'] not in output:
                         print("Dit artikel gaat toch over "+searchstring)
-                        k = collection.update({'_id':art['_id']},{"$set": {'project_stockrates':True}})
+                        k = collection.update({'_id':art['_id']},{"$set": {projectname:True}})
                         print (k)
                 else:
                     print("Artikel gaat niet over "+searchstring)
@@ -96,6 +105,7 @@ for art in allarticles:
         reststring=reststring[r.end():]
         poscount+=r.end()
 
-print(output_irrelevant)
+print("Number of irrelevant articles: ",len(output_irrelevant))
+print("Number of relevant articles: ",len(output))
 
 
