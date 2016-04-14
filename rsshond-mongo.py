@@ -181,7 +181,12 @@ def checkfeeds(waarvandaan, waarnaartoe,sourcename):
                 try:
                     datum=datetime.datetime(*feedparser._parse_date(post.published)[:6])
                 except:
-                    datum=None
+                    try:
+                        # alternative date format as used by nos.nl
+                        datum=datetime.datetime(*feedparser._parse_date(post.published[5:16])[:6])
+                    except:
+                        print("Couldn't parse publishing date")
+                        datum=None
                 art = {"rssidentifier":identificatie, 
                            "title":post.title,
                            "teaser":teaser,
