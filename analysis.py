@@ -552,9 +552,11 @@ def lda_apply(minfreq,ntopics):
     for item in all:
         if 'textclean_njr' in item:   # do not proceed if article has no text
             foroutput_firstwords.append(item["text"][:20])
-            foroutput_title.append(item["title"])
+            try:
+                foroutput_title.append(item["title"])
+            except:
+                foroutput_title.append('N/A')
             foroutput_source.append(item["source"])
-            #foroutput_source2.append(item["source2"])
             foroutput_id.append(item["_id"])
             try:
                 foroutput_byline.append(item["byline"])
