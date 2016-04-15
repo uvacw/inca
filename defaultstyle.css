@@ -1,0 +1,22 @@
+/* CSS default style */
+
+p {
+  font-size: 12px;
+  font-family: helvetica, sans-serif;
+}
+
+h1 {
+  border-bottom: 1px solid black;
+  font-color: blue;
+}
+
+.Homelink {
+  float: right;
+  font-family: helvetica;
+  font-size: 13px;
+}
+
+.form {
+  
+}
+

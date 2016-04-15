@@ -2,10 +2,12 @@
 import cgitb
 import cgi
 cgitb.enable()
+
 print('Content-Type: text/html')
 print('''
 <head>
-(C) ASCOR University of Amsterdam
+<title>(C) ASCOR University of Amsterdam</title>
+<link rel=StyleSheet href="defaultstyle.css" type="text/css">
 </head>
 
 <body>

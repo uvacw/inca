@@ -19,7 +19,7 @@ from sklearn import preprocessing
 from sklearn.cluster import KMeans
 import datetime
 from nvd3 import discreteBarChart
-# import pandas
+import pandas as pd
 
 # TODO
 # bedrijf minimaal twee keer genoemd
@@ -184,8 +184,13 @@ def frequenciesweb(n,clean,usersubset):
     
     if clean:
         all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
-        test = collection.aggregate([{'$match':{'$text':{'$search':'hema'}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : { '_id':1,  'year':1   }}])       
-        print('the test looks like:' + str(list(test)))
+        wordy = 'hema'
+        #listy=[]
+        #test = collection.aggregate([{'$match':{'$text':{'$search':str(wordy)}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : { '_id':1,  'year':1   }}])       
+        #listy.append(list(test)) 
+        #listy = listy[0]
+        #print(listy)
+        #print('the test looks like:' + str(list(test)))
     else:
         all=collection.find(usersubset,{"text": 1, "_id":0})
     aantal=all.count()
@@ -268,27 +273,30 @@ def countmatches():
 
 def basicfreq(topwords):
     #instead of having year, month and day on three lines, I can create a master loop that iterates over a list with ['year','month','day'] where appropriate.
-
-    # retrieving individual matrices for each top word
+    masterdict = {}
+    dflist=[]
     i=0
     for word in topwords:
-        worddf_year[i] = collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}])
-        # worddf_month[i] = collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'month':{'$month':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'month':1}}])
+        print('working on the following word:'+'\t'+word+'<br><br>')
+        check = collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}])
+        masterdict[word+'_year'] = list(check)
+        #masterdict[word+'_'+'month'] = list(collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'month':{'$month':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'month':1}}]))
         #worddf_day[i] = collection.find({'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'day' : {'$year':'$datum'}}, 'count' : {'$sum' : 1}}})
-
-    # Converting the retrived elements into dataframes with date and count
-        df_year[i] = pandas.DataFrame({'year': [y['_id']['year'] for y in worddf_year[i]],'count': [c['count'] for c in worddf_year[i]]})
+        masterdict[word+'_year'] = pd.DataFrame({'year': [y['_id']['year'] for y in masterdict[word+'_year']],'count': [c['count'] for c in masterdict[word+'_year']]})
+        dflist.append(masterdict[word+'_year'])
         # df_month[i] = pandas.DataFrame({'month': [y['_id']['year'] for y in worddf_month[i]],'count': [c['count'] for c in worddf_month[i]]})
         # df_day[i] = pandas.DataFrame({'Day': [y['_id']['year'] for y in worddf_day[i]],'Count': [c['count'] for c in worddf_day[i]]})
-        i += 1
-
+        i+=1 
+    print('Final dict shape: -->'+str(masterdict)+'<br><br>') 
     #merging dataframes
+    print('<br><br>The df list looks like:  '+str(dflist))
     j = 1
     while j <= i:
-        df_year[0].merge(df_year[j], left_on='year', right_on='year', how='outer')
+        dflist[0].merge(dflist[j], left_on='year', right_on='year', how='outer')
         # df_month[0].merge(df_month[j], left_on='month', right_on='month', how='outer')
         j += 1
-    fulldf_year = df_year[0]
+    fulldf = dflist
+    print(fulldf)
     # fulldf_month = df_month[0]
 
     # Creating the line graph
