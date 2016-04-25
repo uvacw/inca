@@ -35,75 +35,82 @@ output_irrelevant=[]
 
 
 #Define searchstring here!
-searchstring='\\bING(?:-.*?)?\\b'
+searchstring='\\bShell(?:-.*?)?\\b'
 #Define source here!
 source='volkskrant (www)'
 #Define timeframe here!
-date={"$gte":datetime(2014, 1, 1), "$lte":datetime(2014, 1, 31)}
+date={"$gte":datetime(2015, 2, 1), "$lte":datetime(2015, 2, 28)}
 #Define your project name here (format: "project_NAME")
 projectname="project_stockrates"
 
-allarticles = collection.find({'text':{'$regex':searchstring}, 'source':source, 'datum':date})  
+allarticles = collection.find({'text':{'$regex':searchstring}, 'source':source, 'datum':date}).batch_size(30)  
 revelantnr=0
 irrevnr=0
 
 for art in allarticles:
-    a=0
-    reststring =art['text']
-    numberofmatches=len(re.findall(searchstring,art['text']))
-    poscount=0
-    for i in range(numberofmatches):
-        print(i)
-        print(art['title'])
-        try:
-            print(art['teaser'])
-        except:
-            print("geen teaser")
-        r=re.search(searchstring,reststring)
-        print(poscount)
-        if i==0:
-            offset=150
-            if poscount+r.start() < offset:
-                offset=poscount
-                print(art['text'][poscount:poscount+r.end()+150])
-                answer=input("Is this relevant?")
-                if answer in ["yes","Yes","y","Y"]:
-                    print("Dit artikel gaat over "+searchstring)
-                    k = collection.update({'_id':art['_id']},{"$set": {projectname:True}})
-                    print (k)
-                    output.append(art['text'])
-                    print(output)
-                else:
-                    print("Artikel gaat niet over "+searchstring)
-                    output_irrelevant.append(art['text'])
-            else:
-                print(art['text'][poscount+r.start()-offset:poscount+r.end()+150])
-                answer=input("Is this relevant?")
-                if answer in ["yes","Yes","y","Y"]:
-                    print("Dit artikel gaat over "+searchstring)
-                    k = collection.update({'_id':art['_id']},{"$set": {projectname:True}})
-                    print (k)
-                    output.append(art['text'])
-                else:
-                    print("Artikel gaat niet over "+searchstring)
-                    output_irrelevant.append(art['text'])
-        else:
-            if art['text'] not in output:
-                print(art['text'][poscount+r.start()-150:poscount+r.end()+150])
-                answer=input("Is this relevant?")
-                if answer in ["yes","Yes","y","Y"]:
-                    if art['text'] not in output:
-                        print("Dit artikel gaat toch over "+searchstring)
+    try:
+        key=art[projectname]
+        print("Key: ", key)
+    except:
+        key=None
+        print("Key is none.")
+    if key==None:
+        a=0
+        reststring =art['text']
+        numberofmatches=len(re.findall(searchstring,art['text']))
+        poscount=0
+        for i in range(numberofmatches):
+            print(i)
+            print(art['title'])
+            try:
+                print(art['teaser'])
+            except:
+                print("geen teaser")
+            r=re.search(searchstring,reststring)
+            print(poscount)
+            if i==0:
+                offset=150
+                if poscount+r.start() < offset:
+                    offset=poscount
+                    print(art['text'][poscount:poscount+r.end()+150])
+                    answer=input("Is this relevant?")
+                    if answer in ["yes","Yes","y","Y"]:
+                        print("Dit artikel gaat over "+searchstring)
                         k = collection.update({'_id':art['_id']},{"$set": {projectname:True}})
                         print (k)
+                        output.append(art['text'])
+                        print(output)
+                    else:
+                        print("Artikel gaat niet over "+searchstring)
+                        output_irrelevant.append(art['text'])
                 else:
-                    print("Artikel gaat niet over "+searchstring)
-                    if art['text'] not in output_irrelevant:
+                    print(art['text'][poscount+r.start()-offset:poscount+r.end()+150])
+                    answer=input("Is this relevant?")
+                    if answer in ["yes","Yes","y","Y"]:
+                        print("Dit artikel gaat over "+searchstring)
+                        k = collection.update({'_id':art['_id']},{"$set": {projectname:True}})
+                        print (k)
+                        output.append(art['text'])
+                    else:
+                        print("Artikel gaat niet over "+searchstring)
                         output_irrelevant.append(art['text'])
             else:
-                print("Dit artikel heeft al een key")
-        reststring=reststring[r.end():]
-        poscount+=r.end()
+                if art['text'] not in output:
+                    print(art['text'][poscount+r.start()-150:poscount+r.end()+150])
+                    answer=input("Is this relevant?")
+                    if answer in ["yes","Yes","y","Y"]:
+                        if art['text'] not in output:
+                            print("Dit artikel gaat toch over "+searchstring)
+                            k = collection.update({'_id':art['_id']},{"$set": {projectname:True}})
+                            print (k)
+                    else:
+                        print("Artikel gaat niet over "+searchstring)
+                        if art['text'] not in output_irrelevant:
+                            output_irrelevant.append(art['text'])
+                else:
+                    print("Dit artikel heeft al een key")
+            reststring=reststring[r.end():]
+            poscount+=r.end()
 
 print("Number of irrelevant articles: ",len(output_irrelevant))
 print("Number of relevant articles: ",len(output))
