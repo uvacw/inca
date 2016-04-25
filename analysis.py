@@ -18,7 +18,7 @@ import os
 from sklearn import preprocessing
 from sklearn.cluster import KMeans
 import datetime
-from nvd3 import discreteBarChart
+from nvd3 import discreteBarChart, lineChart
 import pandas as pd
 
 # TODO
@@ -276,48 +276,48 @@ def basicfreq(topwords):
     masterdict = {}
     dflist=[]
     i=0
+
+
     for word in topwords:
         print('working on the following word:'+'\t'+word+'<br><br>')
         check = collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}])
         masterdict[word+'_year'] = list(check)
-        #masterdict[word+'_'+'month'] = list(collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'month':{'$month':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'month':1}}]))
-        #worddf_day[i] = collection.find({'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'day' : {'$year':'$datum'}}, 'count' : {'$sum' : 1}}})
         masterdict[word+'_year'] = pd.DataFrame({'year': [y['_id']['year'] for y in masterdict[word+'_year']],'count': [c['count'] for c in masterdict[word+'_year']]})
         dflist.append(masterdict[word+'_year'])
-        # df_month[i] = pandas.DataFrame({'month': [y['_id']['year'] for y in worddf_month[i]],'count': [c['count'] for c in worddf_month[i]]})
-        # df_day[i] = pandas.DataFrame({'Day': [y['_id']['year'] for y in worddf_day[i]],'Count': [c['count'] for c in worddf_day[i]]})
         i+=1 
     print('Final dict shape: -->'+str(masterdict)+'<br><br>') 
     #merging dataframes
     print('<br><br>The df list looks like:  '+str(dflist))
+
+
     j = 1
-    while j <= i:
-        dflist[0].merge(dflist[j], left_on='year', right_on='year', how='outer')
-        # df_month[0].merge(df_month[j], left_on='month', right_on='month', how='outer')
+    while j < i:
+        dflist[0] = dflist[0].merge(dflist[j], on='year', suffixes=('','_'+str(topwords[j])) , how='outer')
         j += 1
-    fulldf = dflist
-    print(fulldf)
-    # fulldf_month = df_month[0]
+    fulldf = dflist[0]
+    #print('<br><br>We are dealing with the following types of date and nr: '+str([type(w) for w in fulldf['year']])+'   '+str([type(w) for w in fulldf.ix[:,3:4]])) 
+    fulldf = fulldf.fillna(0)
+    fulldf.rename(columns={'count':'count_'+topwords[0]}, inplace=True)
+    print('<br><br> The full df now looks like: '+fulldf.to_string())
+    print('<br><br><p> Here are a few descriprive statistics about the words: '+fulldf.describe().to_string()+'</p>')
+  
 
-    # Creating the line graph
-    chart_year = lineChart(name="basicfreq", x_is_date=False, x_axis_format="")
-    # chart_month = lineChart(name="basicfreq", x_is_date=False, x_axis_format="Month")
-
-    xdata_year = fulldf_year['year']
-    # xdata_month = fulldf_month['month']
-
-    # HOW can I anticipate the name of the word that's gonna be present to select the column?
-    # If I don't and use a default term like 'value', then we don't know what word is mapped.
-    # I will just add the list of topwords inside the name of the value for the nvd3 for now, see below 'name'.
-    k=0
-    ydata_year = []
-    # ydata_month = []
+  # Creating the line graph
+    chart_year = lineChart(name="basicfreq", x_is_date=False)
+    xdata_year = fulldf['year'].values.tolist()
+    k=1
+    v=0
     extra_serie = {"tooltip": {"y_start": "Amount of times the word", "y_end": "occurs: "}}
-    while k < i:
-        ydata_year[k] = df_year[k]['count']
-        chart_year.add_serie(y=ydata_year[k], x=xdata_year, name=str(topwords[k]), extra=extra_serie)
-
+    while k < len(topwords):
+        ylist = fulldf['count_'+str(topwords[v])].values.tolist()
+        #ylist = fulldf.ix[:,k:k+1]
+        print('<br><br>   '+str(ylist))
+        #ylist = [w.item() for w in ylist[1:]]
+        chart_year.add_serie(y=ylist, x=xdata_year, name=str(topwords[k]), extra=extra_serie)
+        k += 1
+        v += 1
     chart_year.buildhtml()
+    print(chart_year.htmlcontent)
 
 
 def coocnet(n,minedgeweight,usersubset):

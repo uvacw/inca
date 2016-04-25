@@ -7,7 +7,7 @@ print('Content-Type: text/html')
 print('''
 <head>
 <title>(C) ASCOR University of Amsterdam</title>
-<link rel=StyleSheet href="defaultstyle.css" type="text/css">
+<link rel=StyleSheet href="../defaultstyle.css" type="text/css">
 </head>
 
 <body>
