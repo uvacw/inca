@@ -487,19 +487,22 @@ def lda(minfreq,file,ntopics,):
     with open(ldatopicfile,'w',encoding='utf-8') as fo:
         topics=lda.top_topics(mm, num_words=20)
         toplist=[]
-        for topic in topics[0:20]:
+        for topic in topics:
             #print(topic)
             top=[]    
             for t in topic[0]:
                 top.append(t[1])
             top.append(topic[1])
             toplist.append(top)
-        #fo.write("\n\nTopic")                       
+        #fo.write("\n\nTopic")
+        i=0
         for outtext in toplist:
             #fo.write("--------------------------\n\n")            
+            i+=1
+            fo.write(str(i)+'\t')
             for t in outtext:
                 fo.write(str(t)+ " ")
-        
+            fo.write('\n')
     print('Last but not least, save the topicmodel itselt at {} ...'.format(ldamodelfile))
     print('... and the accompagnying dictionbary at {} ...'.format(ldadictfile))
 
