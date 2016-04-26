@@ -35,15 +35,15 @@ output_irrelevant=[]
 
 
 #Define searchstring here!
-searchstring='\\bShell(?:-.*?)?\\b'
+searchstring='\\bING(?:-.*?)?\\b'
 #Define source here!
-source='volkskrant (www)'
+source='metro (www)'
 #Define timeframe here!
-date={"$gte":datetime(2015, 2, 1), "$lte":datetime(2015, 2, 28)}
+date={"$gte":datetime(2015, 1, 1), "$lte":datetime(2015, 7, 31)}
 #Define your project name here (format: "project_NAME")
 projectname="project_stockrates"
 
-allarticles = collection.find({'text':{'$regex':searchstring}, 'source':source, 'datum':date}).batch_size(30)  
+allarticles = collection.find({'text':{'$regex':searchstring}, 'source':source, 'datum':date}) 
 revelantnr=0
 irrevnr=0
 
