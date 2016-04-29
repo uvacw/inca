@@ -43,7 +43,7 @@ date={"$gte":datetime(2014, 1, 1), "$lte":datetime(2015, 12, 31)}
 #Define your project name here (format: "project_NAME")
 projectname="project_stockrates"
 
-allarticles = collection.find({'text':{'$regex':searchstring}, 'source':source, 'datum':date}) 
+allarticles = collection.find({'text':{'$regex':searchstring}, 'source':source, 'datum':date}).batch_size(5) 
 revelantnr=0
 irrevnr=0
 
