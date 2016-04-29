@@ -35,11 +35,11 @@ output_irrelevant=[]
 
 
 #Define searchstring here!
-searchstring='\\bING(?:-.*?)?\\b'
+searchstring='\\bPhilips(?:-.*?)?\\b'
 #Define source here!
 source='metro (www)'
 #Define timeframe here!
-date={"$gte":datetime(2015, 1, 1), "$lte":datetime(2015, 7, 31)}
+date={"$gte":datetime(2014, 1, 1), "$lte":datetime(2015, 12, 31)}
 #Define your project name here (format: "project_NAME")
 projectname="project_stockrates"
 
@@ -61,11 +61,14 @@ for art in allarticles:
         poscount=0
         for i in range(numberofmatches):
             print(i)
-            print(art['title'])
+            try:
+                print(art['title'])
+            except:
+                print('geen title')
             try:
                 print(art['teaser'])
             except:
-                print("geen teaser")
+                print('geen teaser')
             r=re.search(searchstring,reststring)
             print(poscount)
             if i==0:
