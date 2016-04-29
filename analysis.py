@@ -366,8 +366,8 @@ def lda(minfreq,file,ntopics,):
     foroutput_pubdate_year = []
     foroutput_pubdate_dayofweek = []
     foroutput_pubdate_weeknr = []
-    foroutput_subjectivity=[]
-    foroutput_polarity=[]
+    foroutput_positivity=[]
+    foroutput_negativity=[]
     for item in all:
         if 'textclean_njr' in item:   # do not proceed if article has no text
             foroutput_firstwords.append(item["text"][:20])
@@ -395,8 +395,15 @@ def lda(minfreq,file,ntopics,):
             foroutput_pubdate_year.append(str(item["datum"].year))
             foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
             foroutput_pubdate_weeknr.append(item['datum'].strftime('%U'))
-            foroutput_subjectivity.append('0')
-            foroutput_polarity.append('0')
+            try:
+                foroutput_positivity.append(str(item['positivity']))
+            except:
+                foroutput_positivity.append('NA')
+            try:
+                foroutput_negativity.append(str(item['negativity']))
+            except:
+                foroutput_negativity.append('NA')
+
             termcounts=""
             for term in allterms:
                 termcounts+=("\t"+str(item["text"].lower().split().count(term)))
@@ -467,14 +474,14 @@ def lda(minfreq,file,ntopics,):
         topiclabels=""
         for j in range(ntopics):
             topiclabels+=("\tTopic"+str(j+1))
-        fo.write('id\t'+'source\t'+'title\tfirstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek\tpubdate_weeknr'+topiclabels+"\t"+foroutput_alltermslabels+"\t"+foroutput_alltermsfirstocclabels+"\n")
+        fo.write('id\t'+'source\t'+'title\tfirstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'positivity\tnegativity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek\tpubdate_weeknr'+topiclabels+"\t"+foroutput_alltermslabels+"\t"+foroutput_alltermsfirstocclabels+"\n")
         for row in scoresperdoc[0]:
             #print type(row)
             #regel=row.tolist()
             #print len(regel)
             #print type(regel)
             #print regel
-            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_title[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_polarity[i]+'\t'+foroutput_subjectivity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t'+foroutput_pubdate_weeknr[i]+'\t')
+            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_title[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_positivity[i]+'\t'+foroutput_negativity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t'+foroutput_pubdate_weeknr[i]+'\t')
 
             fo.write('\t'.join(["{:0.3f}".format(loading) for loading in row]))
             fo.write(foroutput_alltermscounts[i])
@@ -550,8 +557,8 @@ def lda_apply(minfreq,ntopics):
     foroutput_pubdate_year = []
     foroutput_pubdate_dayofweek = []
     foroutput_pubdate_weeknr = []
-    foroutput_subjectivity=[]
-    foroutput_polarity=[]
+    foroutput_positivity=[]
+    foroutput_negativity=[]
     for item in all:
         if 'textclean_njr' in item:   # do not proceed if article has no text
             foroutput_firstwords.append(item["text"][:20])
@@ -581,8 +588,15 @@ def lda_apply(minfreq,ntopics):
             foroutput_pubdate_year.append(str(item["datum"].year))
             foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
             foroutput_pubdate_weeknr.append(item['datum'].strftime('%U'))
-            foroutput_subjectivity.append('0')
-            foroutput_polarity.append('0')
+            try:
+                foroutput_positivity.append(str(item['positivity']))
+            except:
+                foroutput_positivity.append('NA')
+            try:
+                foroutput_negativity.append(str(item['negativity']))
+            except:
+                foroutput_negativity.append('NA')
+
             termcounts=""
             for term in allterms:
                 termcounts+=("\t"+str(item["text"].lower().split().count(term)))
@@ -648,14 +662,14 @@ def lda_apply(minfreq,ntopics):
         topiclabels=""
         for j in range(ntopics):
             topiclabels+=("\tTopic"+str(j+1))
-        fo.write('id\t'+'source\t'+'title\tfirstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'polarity\tsubjectivity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek\tpubdate_weeknr'+topiclabels+"\t"+foroutput_alltermslabels+"\t"+foroutput_alltermsfirstocclabels+"\n")
+        fo.write('id\t'+'source\t'+'title\tfirstwords\t'+'byline\t'+'section\t'+'length\t'+'language\t'+'positivity\tnegativity\t'+'pubdate_day\t'+'pubdate_month\t'+'pubdate_year\t'+'pubdate_dayofweek\tpubdate_weeknr'+topiclabels+"\t"+foroutput_alltermslabels+"\t"+foroutput_alltermsfirstocclabels+"\n")
         for row in scoresperdoc[0]:
             #print type(row)
             #regel=row.tolist()
             #print len(regel)
             #print type(regel)
             #print regel
-            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_title[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_polarity[i]+'\t'+foroutput_subjectivity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t'+foroutput_pubdate_weeknr[i]+'\t')
+            fo.write(str(foroutput_id[i])+'\t'+foroutput_source[i]+'\t'+foroutput_title[i]+'\t'+foroutput_firstwords[i]+'\t'+foroutput_byline[i]+'\t'+foroutput_section[i]+'\t'+foroutput_length[i]+'\t'+foroutput_language[i]+'\t'+foroutput_positivity[i]+'\t'+foroutput_negativity[i]+'\t'+foroutput_pubdate_day[i]+'\t'+foroutput_pubdate_month[i]+'\t'+foroutput_pubdate_year[i]+'\t'+foroutput_pubdate_dayofweek[i]+'\t'+foroutput_pubdate_weeknr[i]+'\t')
 
             fo.write('\t'.join(["{:0.3f}".format(loading) for loading in row]))
             fo.write(foroutput_alltermscounts[i])
