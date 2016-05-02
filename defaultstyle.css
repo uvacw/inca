@@ -10,6 +10,15 @@ h1 {
   font-color: blue;
 }
 
+h2 {
+  border-bottom: 1px solid grey;
+  text-align: center;
+}
+
+h4 {
+  font-family: helvetica; 
+}
+
 .Homelink {
   float: right;
   font-family: helvetica;
@@ -20,3 +29,9 @@ h1 {
   
 }
 
+input {
+    border: 1px solid grey; 
+    padding: 15px;
+    background: rgba(255,255,255,0.5);
+    margin: 0 0 10px 0;
+}

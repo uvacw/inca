@@ -199,10 +199,11 @@ print('''
 <html>
 <head>
 <title>Wordcount analysis</title>
+<link rel=StyleSheet href="../defaultstyle.css" type="text/css">
 </head>
 <body>
 <h2>We are currently running an analysis on the top %s most common words from your selection of newspapers:</h2> </br>
-<p>The subset you chose is:%s</p></br>
+<p>The subset you chose is: \t\t %s</p></br>
 <h4> <a href='cooc.py' target='blank'> Click here to retrieve the co-occurences of your selection </a></h4> 
 <pre><br><br>''' % (topwords,finalsubset))
 
@@ -214,9 +215,9 @@ wl = [w[0] for w in mc]
 print('''<br><br>
 <br>
 </pre>
-The csv file can be downloaded by clicking <a href="http://infra.followthenews-uva.vm.surfsara.nl/tmp/wordcountoutput.csv">this link</a>
+<h3> Download the list of words and their occurences</h3>
+<p> The csv file can be downloaded by clicking <a href="http://infra.followthenews-uva.vm.surfsara.nl/tmp/wordcountoutput.csv">this link</a></p>
 <br>
-<h3>Explore the most frequent words across time.</h3>
 ''')
 basicfreq(wl)
 print('''

@@ -180,7 +180,7 @@ def frequencies():
 
 def frequenciesweb(n,clean,usersubset):
 
-    print('the cleaned user subset now looks like:    ',usersubset)
+    print('the cleaned user subset now looks like:    ',usersubset,'<br>')
     
     if clean:
         all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
@@ -226,23 +226,20 @@ def frequenciesweb(n,clean,usersubset):
                    pass
     
     xdata = []
-    ydata=[] 
+    ydata=[]
     for a,b in c.most_common(n):
-        print("{}:\t\t{} occurences,\n" .format(a,b))
+        print("<li>{}:\t\t{} occurences,\n</li>" .format(a,b))
         # Just using 31 for now as it seems to look good on my screen as a standard width
-        if len(xdata)<31:
+        if len(xdata) < 31:
             xdata.append(a)
             ydata.append(b)
     
     print('And now here is a visualization for you') 
     chart = discreteBarChart(width=1500, height=400, x_axis_format=None)
-#    xdata = ['one', 'two', 'three', 'four']
-#    ydata1 = [6, 12, 9, 16]
-#    ydata2 = [8, 14, 7, 11]
-
     chart.add_serie(name="Word frequencies", y=ydata, x=xdata)
 #    chart.add_serie(name="Serie 2", y=ydata2, x=xdata)
 
+    print('<br><br> <h2> Most frequent words </h2>')
     chart.buildhtml()
     print(chart.htmlcontent)
     
@@ -272,23 +269,22 @@ def countmatches():
 
 
 def basicfreq(topwords):
+    '''Returns a line chart of the most frequent words over time'''
     #instead of having year, month and day on three lines, I can create a master loop that iterates over a list with ['year','month','day'] where appropriate.
     masterdict = {}
     dflist=[]
     i=0
 
-
     for word in topwords:
-        print('working on the following word:'+'\t'+word+'<br><br>')
-        check = collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}])
-        masterdict[word+'_year'] = list(check)
+        # print('working on the following word:'+'\t'+word+'<br><br>')
+        subset = collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}])
+        masterdict[word+'_year'] = list(subset)
         masterdict[word+'_year'] = pd.DataFrame({'year': [y['_id']['year'] for y in masterdict[word+'_year']],'count': [c['count'] for c in masterdict[word+'_year']]})
         dflist.append(masterdict[word+'_year'])
         i+=1 
-    print('Final dict shape: -->'+str(masterdict)+'<br><br>') 
+    #print('Final dict shape: -->'+str(masterdict)+'<br><br>') 
     #merging dataframes
-    print('<br><br>The df list looks like:  '+str(dflist))
-
+    #print('<br><br>The df list looks like:  '+str(dflist))
 
     j = 1
     while j < i:
@@ -298,25 +294,23 @@ def basicfreq(topwords):
     #print('<br><br>We are dealing with the following types of date and nr: '+str([type(w) for w in fulldf['year']])+'   '+str([type(w) for w in fulldf.ix[:,3:4]])) 
     fulldf = fulldf.fillna(0)
     fulldf.rename(columns={'count':'count_'+topwords[0]}, inplace=True)
-    print('<br><br> The full df now looks like: '+fulldf.to_string())
-    print('<br><br><p> Here are a few descriprive statistics about the words: '+fulldf.describe().to_string()+'</p>')
+    #print('<br><br> The full df now looks like: '+fulldf.to_string())
+    #print('<br><br><p> Here are a few descriprive statistics about the words: '+fulldf.describe().to_string()+'</p>')
   
-
   # Creating the line graph
-    chart_year = lineChart(name="basicfreq", x_is_date=False)
+    chart_year = lineChart(name="basicfreq", width=1500, height=500, x_is_date=False)
     xdata_year = fulldf['year'].values.tolist()
-    k=1
     v=0
     extra_serie = {"tooltip": {"y_start": "Amount of times the word", "y_end": "occurs: "}}
-    while k < len(topwords):
+    while v < len(topwords):
         ylist = fulldf['count_'+str(topwords[v])].values.tolist()
         #ylist = fulldf.ix[:,k:k+1]
-        print('<br><br>   '+str(ylist))
+        # print('<br><br>   '+str(ylist))
         #ylist = [w.item() for w in ylist[1:]]
-        chart_year.add_serie(y=ylist, x=xdata_year, name=str(topwords[k]), extra=extra_serie)
-        k += 1
+        chart_year.add_serie(y=ylist, x=xdata_year, name=str(topwords[v]), extra=extra_serie)
         v += 1
     chart_year.buildhtml()
+    print('<br><br> <h2> Evolution of frequent words across time </h2>')
     print(chart_year.htmlcontent)
 
 

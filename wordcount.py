@@ -7,16 +7,17 @@ print('Content-Type: text/html')
 print('''
 <html>
 <head>
-<a href='homepage.py'>Back to Homepage</a>
+<title>(C) ASCOR University of Amsterdam</title>
+<link rel=StyleSheet href="../defaultstyle.css" type="text/css">
 </head>
 <body>
 <h1>Word Counts</h1>
 
-
+<a class='Homelink' href='homepage.py'>Back to Homepage</a>
 
 <h4> Please select the newspaper(s) you wish to analyze below </h4>
 <form action="/cgi-bin/wordcount_get.py" method="get" target="_blank">
-
+<ul>
 <form action="cooc_get.py" method="get" target="_blank">
 <input type="checkbox" name="nrc (www)" value="on" /> NRC (online)<br> 
 <input type="checkbox" name="nrc (print)" value="on" /> NRC (print)<br> 
@@ -41,6 +42,7 @@ print('''
 <input type="checkbox" name="nos (www)" value="on" /> NOS<br>
 <input type="checkbox" name="fok" value="on" /> Fok<br>
 <input type="checkbox" name="anp" value="on" /> ANP<br>
+</ul>
 <br>
 
 <h4> Choose whether you want to work with whole articles or cleaned ones <br> (<i>Clean articles consist only of nouns, adjectives and adverbs. Stopwords have also been removed</i>):</h4>
@@ -59,7 +61,7 @@ Day [1-31]: <input type='number' name='day_end' max='31' min='1'>
 <h4> Amount of words to be retrieved: </h4>
 Most popular X words [Between 1 and 100]: <input type="number" name="mostpop", max="10000">  <br><br>
 <h4> Additional segmentation </h4>
-Subset [Fill in the wanted value without deleting the beginning of the below example. You can add more arguments if needed e.g. "source":"nrc" "author":"Alan Smith"]:<br> <textarea name="usersubset" cols="40" rows="4"> </textarea><br>
+Subset [Fill in the wanted value without deleting the beginning of the below example. You can add more arguments if needed e.g. "source":"nrc" "author":"Alan Smith"]:<br> <textarea name="usersubset" cols="150" rows="4"> </textarea><br>
 <br>
 
 <input type="submit" value="Submit" />
