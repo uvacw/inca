@@ -35,7 +35,7 @@ class Scraper(Document):
         resulting documents. 
         '''
         for doc in self.get():
-            self._add_metadata(doc)
+            doc = self._add_metadata(doc)
             self._verify(doc)
             self._save_document(doc)
             

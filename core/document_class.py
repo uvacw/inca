@@ -24,6 +24,7 @@ class Document(object):
     functiontype = ''
     version      = ''
     date         = ''
+    doctype      = ''
     
     def __init__(self):
         self._check_complete()
@@ -56,6 +57,7 @@ class Document(object):
         '''
         meta = dict(
             ADDED_AT              = datetime.datetime.now(),
+            ADDED_USING           = __name__,
             ADDED_METHOD          = self.get.__doc__,
             FUNCTION_VERSION      = self.version,
             FUNCTION_VERSION_DATE = self.date,
@@ -70,7 +72,9 @@ class Document(object):
             if key == 'META': continue
             if key not in document['META'].keys():
                 document['META'][key] = meta
-        
+
+        return document
+    
     def _verify(self, document):
         '''
         DO NOT OVERWRITE THIS FUNCTION
@@ -78,8 +82,9 @@ class Document(object):
         This method verifies whether yielded documents conform to the specification 
         of the datastore
         '''
-        assert document.has_key('meta')
+        
         assert type(document)==dict
+        assert document.get('META',False), "document lacks a `meta` key"
         for key in document.keys():
             if key=='META': continue
             assert key in document['META']
@@ -91,15 +96,19 @@ class Document(object):
         This method checks whether the appropriate information is present in the subclass. 
         '''
 
-        for attribute in ['functiontype','version','date']:
+        for attribute in ['functiontype','version','date','doctype']:
             if not getattr(self,attribute):
-                logger.warning("%s misses the appropriate `%s` property! Please set these in the class __init__ method as self.%s" %(self.__class__, attribute,attribute))
+                logger.warning("""%s misses the appropriate `%s` property! 
+                Please set these in the class __init__ method as self.%s""" %(
+                    self.__class__, attribute,attribute))
 
-        teststrings = [''' This docstring should explain how documents are transformed ''', ''' This docstring should explain how documents are retrieved ''' ]
+        teststrings = [''' This docstring should explain how documents are transformed ''',
+                       ''' This docstring should explain how documents are retrieved ''' ]
 
         for method in ['process','get']:
             try:
                 if getattr(self,method).__doc__ in teststrings:
-                    logger.warning("%s's %s docstring does not reflect functionality! please update the docstring in your class definition." %(self.__class__, method))
+                    logger.warning("""%s's %s docstring does not reflect functionality! 
+                    Please update the docstring in your class definition.""" %(self.__class__, method))
             except:
                 pass
