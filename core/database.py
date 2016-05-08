@@ -2,6 +2,8 @@
 
 This module provides database access objects.
 
+TODO: factor in settings 
+
 '''
 
 

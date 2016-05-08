@@ -57,7 +57,7 @@ class Document(object):
         '''
         meta = dict(
             ADDED_AT              = datetime.datetime.now(),
-            ADDED_USING           = __name__,
+            ADDED_USING           = str(self.__class__).split("'")[1].split(".")[-1],
             ADDED_METHOD          = self.get.__doc__,
             FUNCTION_VERSION      = self.version,
             FUNCTION_VERSION_DATE = self.date,
