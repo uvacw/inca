@@ -23,6 +23,7 @@ class Scraper(Document):
     '''
 
     functiontype = 'scraper'
+    language = ''
         
     def get(self):
         ''' This docstring should explain how documents are retrieved '''
@@ -35,7 +36,8 @@ class Scraper(Document):
         resulting documents. 
         '''
         for doc in self.get():
-            doc['doctype'] = self.doctype
+            doc['doctype']  = self.doctype
+            doc['language'] = self.language
             doc = self._add_metadata(doc)
             self._verify(doc)
             self._save_document(doc)

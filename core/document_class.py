@@ -26,6 +26,7 @@ class Document(object):
     date         = ''
     doctype      = ''
     
+    
     def __init__(self):
         self._check_complete()
         pass
@@ -87,7 +88,7 @@ class Document(object):
         assert document.get('META',False), "document lacks a `meta` key"
         for key in document.keys():
             if key=='META': continue
-            assert key in document['META']
+            assert key in document['META'], "meta key for %s is missing from documents!" %key
 
     def _check_complete(self):
         '''
