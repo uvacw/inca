@@ -481,9 +481,11 @@ def lda(minfreq,file,ntopics,tfidf=False):
     lda = models.ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=ntopics, alpha="auto")
 
     # Prints the topics.
-    for top in lda.print_topics(num_topics=ntopics, num_words=5):
-        print("\n",top)
-
+    print('Saving the topics themselves at {} ...'.format(ldatopicfile))
+    with open(ldatopicfile,'w',encoding='utf-8') as fo:
+        for top in lda.print_topics(num_topics=ntopics, num_words=10):
+            print("\n",top[0]+1,"\t",top[1])
+            fo.write(str(top[0]+1)+"\t"+top[1]+"\n")
 
     print("\nFor further analysis, a dataset with the topic score for each document is saved to",ldaoutputfile)
     i=0
@@ -510,7 +512,12 @@ def lda(minfreq,file,ntopics,tfidf=False):
             fo.write("\n")
             i+=1
 
-    print('Also saving the topics themselves at {} ...'.format(ldatopicfile))
+    #print('Also saving the topics themselves at {} ...'.format(ldatopicfile))
+
+
+    '''
+    SAVING WITH TOPIC SCORES YIELDED INCORRECT TOPIC NUMBERS
+    HAS TO BE FIXED, DEACTIVED RIGHT NOW AND SAVING WHAT IS PRINTED TO SCREEN SOME LINES BEFORE INSTEAD
 
     with open(ldatopicfile,'w',encoding='utf-8') as fo:
         topics=lda.top_topics(mm, num_words=20)
@@ -531,6 +538,8 @@ def lda(minfreq,file,ntopics,tfidf=False):
             for t in outtext:
                 fo.write(str(t)+ " ")
             fo.write('\n')
+    '''
+
     print('Last but not least, save the topicmodel itselt at {} ...'.format(ldamodelfile))
     print('... and the accompagnying dictionbary at {} ...'.format(ldadictfile))
 
