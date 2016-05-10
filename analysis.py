@@ -53,7 +53,7 @@ db.authenticate(username,password)
 collection = db[collectionname]
 #collectioncleaned = db[collectionnamecleaned]
 
-
+RANDOMSEED=1983
 
 
 def removezerovariance(A):
@@ -338,7 +338,7 @@ def ll():
 
 def lda(minfreq,file,ntopics,):
     c=frequencies()
-    all=collection.find(subset)
+    all=collection.find(subset).sort([('_id',1)])
 
     try:
         allterms=subset['$text']['$search'].decode("utf-8").split()
@@ -371,7 +371,10 @@ def lda(minfreq,file,ntopics,):
     for item in all:
         if 'textclean_njr' in item:   # do not proceed if article has no text
             foroutput_firstwords.append(item["text"][:20])
-            foroutput_title.append(item["title"])
+            try:
+                foroutput_title.append(item["title"])
+            except:
+                foroutput_title.append("NO TITLE")
             foroutput_source.append(item["source"])
             #foroutput_source2.append(item["source2"])
             foroutput_id.append(item["_id"])
@@ -424,7 +427,7 @@ def lda(minfreq,file,ntopics,):
 
 
     # TODO: integreren met bovenstaande code, nu moet .find nog een keer worden opgeroepen aangezien het een generator is
-    all=collection.find(subset)
+    all=collection.find(subset).sort([('_id',1)])
 
     # TODO: in de volgende regels 'text' vervangen door 'text_cleanednjr' oid om LDA los te laten op gecleande data
 
@@ -452,13 +455,17 @@ def lda(minfreq,file,ntopics,):
 
 
     # Create Dictionary.
+    np.random.seed(RANDOMSEED)
     id2word = corpora.Dictionary(texts)
 
     # Creates the Bag of Word corpus.
+    np.random.seed(RANDOMSEED)
     mm =[id2word.doc2bow(text) for text in texts]
     # Trains the LDA models.
     # lda = models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=ntopics, update_every=1, chunksize=10000, passes=1)
+    np.random.seed(RANDOMSEED)
     lda = models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=ntopics, alpha="auto")
+
     # Prints the topics.
     for top in lda.print_topics(num_topics=ntopics, num_words=5):
         print("\n",top)
@@ -642,9 +649,11 @@ def lda_apply(minfreq,ntopics):
     id2word = corpora.Dictionary.load(ldadictfile)
 
     # Creates the Bag of Word corpus.
+    np.random.seed(RANDOMSEED)
     mm =[id2word.doc2bow(text) for text in texts]
     
     # load LDA lode
+    np.random.seed(RANDOMSEED)
     lda = models.ldamodel.LdaModel.load(ldamodelfile)
 
     # Prints the topics. (surpressed b/c we already know them
