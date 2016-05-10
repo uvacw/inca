@@ -336,7 +336,7 @@ def ll():
 
 
 
-def lda(minfreq,file,ntopics,):
+def lda(minfreq,file,ntopics,tfidf=False):
     c=frequencies()
     all=collection.find(subset).sort([('_id',1)])
 
@@ -393,11 +393,18 @@ def lda(minfreq,file,ntopics,):
             foroutput_length.append(str(item["length_char"]))
             #foroutput_language.append(item["language"])
             foroutput_language.append('dutch')
-            foroutput_pubdate_day.append(str(item["datum"].day))
-            foroutput_pubdate_month.append(str(item["datum"].month))
-            foroutput_pubdate_year.append(str(item["datum"].year))
-            foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
-            foroutput_pubdate_weeknr.append(item['datum'].strftime('%U'))
+            try:
+                foroutput_pubdate_day.append(str(item["datum"].day))
+                foroutput_pubdate_month.append(str(item["datum"].month))
+                foroutput_pubdate_year.append(str(item["datum"].year))
+                foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
+                foroutput_pubdate_weeknr.append(item['datum'].strftime('%U'))
+            except:
+                foroutput_pubdate_day.append('N/A')
+                foroutput_pubdate_month.append('N/A')
+                foroutput_pubdate_year.append('N/A')
+                foroutput_pubdate_dayofweek.append('N/A')
+                foroutput_pubdate_weeknr.append('N/A')
             try:
                 foroutput_positivity.append(str(item['positivity']))
             except:
@@ -461,10 +468,17 @@ def lda(minfreq,file,ntopics,):
     # Creates the Bag of Word corpus.
     np.random.seed(RANDOMSEED)
     mm =[id2word.doc2bow(text) for text in texts]
+
+    if tfidf:
+        print('Applying tfidf-transformation')
+        tfidf = models.TfidfModel(mm)
+        corpus = tfidf[mm]
+    else:
+        corpus=mm
     # Trains the LDA models.
     # lda = models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=ntopics, update_every=1, chunksize=10000, passes=1)
     np.random.seed(RANDOMSEED)
-    lda = models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=ntopics, alpha="auto")
+    lda = models.ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=ntopics, alpha="auto")
 
     # Prints the topics.
     for top in lda.print_topics(num_topics=ntopics, num_words=5):
@@ -534,7 +548,7 @@ def lda(minfreq,file,ntopics,):
 
 
 
-def lda_apply(minfreq,ntopics):
+def lda_apply(minfreq,ntopics,tfidf=False):
     c=frequencies()
     all=collection.find(subset)
 
@@ -590,11 +604,18 @@ def lda_apply(minfreq,ntopics):
             foroutput_length.append(str(item["length_char"]))
             #foroutput_language.append(item["language"])
             foroutput_language.append('dutch')
-            foroutput_pubdate_day.append(str(item["datum"].day))
-            foroutput_pubdate_month.append(str(item["datum"].month))
-            foroutput_pubdate_year.append(str(item["datum"].year))
-            foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
-            foroutput_pubdate_weeknr.append(item['datum'].strftime('%U'))
+            try:
+                foroutput_pubdate_day.append(str(item["datum"].day))
+                foroutput_pubdate_month.append(str(item["datum"].month))
+                foroutput_pubdate_year.append(str(item["datum"].year))
+                foroutput_pubdate_dayofweek.append(str(item["datum"].weekday()))
+                foroutput_pubdate_weeknr.append(item['datum'].strftime('%U'))
+            except:
+                foroutput_pubdate_day.append('N/A')
+                foroutput_pubdate_month.append('N/A')
+                foroutput_pubdate_year.append('N/A')
+                foroutput_pubdate_dayofweek.append('N/A')
+                foroutput_pubdate_weeknr.append('N/A')
             try:
                 foroutput_positivity.append(str(item['positivity']))
             except:
@@ -651,6 +672,11 @@ def lda_apply(minfreq,ntopics):
     # Creates the Bag of Word corpus.
     np.random.seed(RANDOMSEED)
     mm =[id2word.doc2bow(text) for text in texts]
+    if tfidf:
+        tfidf = models.TfidfModel(mm)
+        corpus = tfidf[mm]
+    else:
+        corpus=mm
     
     # load LDA lode
     np.random.seed(RANDOMSEED)
@@ -664,7 +690,8 @@ def lda_apply(minfreq,ntopics):
     print("\nFor further analysis, a dataset with the topic score for each document is saved to",ldaoutputfile)
     i=0
 
-    scoresperdoc=lda.inference(mm)
+    np.random.seed(RANDOMSEED)
+    scoresperdoc=lda.inference(corpus)
 
 
     with open(ldaoutputfile,"w",encoding="utf-8") as fo:
@@ -1035,6 +1062,7 @@ def main():
     # ander voorbeeld: --subset="{'section':{'\$regex':'[Ee]conom'},'suspicious':False}"
     parser.add_argument("--subset2", help="Compare the first subset specified not to the whole dataset but to another subset. Only evaluated together with --ll.")
     parser.add_argument("--varimax", help="If specified with --pca or --pca_ownwords, a varimax rotation is performed",action="store_true")
+    parser.add_argument("--tfidf",help="If specified with --lda or --lda_apply, a tf-idf transformation is applied before",action="store_true")
     parser.add_argument("--normalize", help="If specified with --kmeans or --kmeans_ownwords, TF-matrix is normalized before the cluster analysis starts",action="store_true")
     parser.add_argument("--ngrams",metavar="N",help="By default, all operations are carried oud on single words. If you want to use bigrams instead, specify --ngram=2, or 3 for trigrams and so on.",nargs=1)
     parser.add_argument("--stemmer",metavar="language",help='Invokes the snowball stemming algorithm. Specify the language: --stemmer="dutch"',nargs=1)
@@ -1129,13 +1157,13 @@ def main():
         ll()
 
     if args.lda:
-        lda(int(args.lda[0]),"",int(args.lda[1]))
+        lda(int(args.lda[0]),"",int(args.lda[1]),args.tfidf)
 
     if args.lda_apply:
-        lda_apply(int(args.lda_apply[0]),int(args.lda_apply[1]))
+        lda_apply(int(args.lda_apply[0]),int(args.lda_apply[1]),args.tfidf)
 
     if args.lda_ownwords:
-        lda(0,args.lda_ownwords[0],int(args.lda_ownwords[1]))
+        lda(0,args.lda_ownwords[0],int(args.lda_ownwords[1]),args.tfidf)
 
     if args.pca:
         tfcospca(int(args.pca[0]),"",float(args.pca[1]),args.varimax)
