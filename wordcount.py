@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
-# This is the cooc file
+# This is the wordcount file
 import cgitb
 import cgi
 cgitb.enable()
 print('Content-Type: text/html')
 print('''
+
 <html>
+
 <head>
 <title>(C) ASCOR University of Amsterdam</title>
 <link rel=StyleSheet href="../defaultstyle.css" type="text/css">
 </head>
+
 <body>
+
 <h1>Word Counts</h1>
+
 
 <a class='Homelink' href='homepage.py'>Back to Homepage</a>
 

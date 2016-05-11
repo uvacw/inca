@@ -172,7 +172,7 @@ if form.getlist('usersubset'):
 	usersubset = ''.join(usersubset.split(' ',1))
 
 finalsubset = ast.literal_eval(usersubset)
-
+print('<h3>'+str(finalsubset)+'</h3>')
 if form.getvalue('year_start') and form.getvalue('month_start') and form.getvalue('day_start') and form.getvalue('year_end') and form.getvalue('month_end') and form.getvalue('day_end'):
 	year_start = form.getvalue('year_start')
 	month_start = form.getvalue('month_start')
@@ -208,7 +208,6 @@ print('''
 <pre><br><br>''' % (topwords,finalsubset))
 
 c = frequenciesweb(int(topwords),clean,finalsubset)
-c
 mc = c.most_common(15)
 wl = [w[0] for w in mc]
 
@@ -218,7 +217,7 @@ print('''<br><br>
 <h3> Download the list of words and their occurences</h3>
 <p> The csv file can be downloaded by clicking <a href="http://infra.followthenews-uva.vm.surfsara.nl/tmp/wordcountoutput.csv">this link</a></p>
 <br>
-''')
+<p> Checkity check, le type de wl c'est...<br>''')
 basicfreq(wl)
 print('''
 </body>

@@ -180,7 +180,7 @@ def frequencies():
 
 def frequenciesweb(n,clean,usersubset):
 
-    print('the cleaned user subset now looks like:    ',usersubset,'<br>')
+    print('<p>The cleaned user subset now looks like:\t<i>',usersubset,'</i></p><br>')
     
     if clean:
         all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
@@ -197,7 +197,6 @@ def frequenciesweb(n,clean,usersubset):
     # print all[50]["text"]
     c=Counter()
     i=0
-    print("The frequencies are being retrieved, this might take a moment if your sample is large, please be patient while the page loads")
     for item in all:
        i+=1
        #c.update([woord for woord in item["text"].split()])
@@ -227,13 +226,16 @@ def frequenciesweb(n,clean,usersubset):
     
     xdata = []
     ydata=[]
+    i=1
+    print('<br> <table style="width:50%">')
     for a,b in c.most_common(n):
-        print("<li>{}:\t\t{} occurences,\n</li>" .format(a,b))
+        print("<tr><td><p>{}</p></td><td><p>{}</p></td><td><p>{} occurences</p></td></tr>" .format(i,a,b))
         # Just using 31 for now as it seems to look good on my screen as a standard width
         if len(xdata) < 31:
             xdata.append(a)
             ydata.append(b)
-    
+        i+=1
+    print('</table')
     print('And now here is a visualization for you') 
     chart = discreteBarChart(width=1500, height=400, x_axis_format=None)
     chart.add_serie(name="Word frequencies", y=ydata, x=xdata)
@@ -277,7 +279,8 @@ def basicfreq(topwords):
 
     for word in topwords:
         # print('working on the following word:'+'\t'+word+'<br><br>')
-        subset = collection.aggregate([{'$match':{'$text':{'$search':str(word)}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}])
+        subset = collection.aggregate([{'$match':{'$text':{'$search':str(word)},'$or':[{'source':'nu'},{
+'source':'nrc (www)'}]}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}])
         masterdict[word+'_year'] = list(subset)
         masterdict[word+'_year'] = pd.DataFrame({'year': [y['_id']['year'] for y in masterdict[word+'_year']],'count': [c['count'] for c in masterdict[word+'_year']]})
         dflist.append(masterdict[word+'_year'])
@@ -486,7 +489,7 @@ def ll():
 
 def lda(minfreq,file,ntopics,):
     c=frequencies()
-    all=collectioncleaned.find(subset)
+    all=collection.find(subset)
 
     try:
         allterms=subset['$text']['$search'].decode("utf-8").split()
@@ -498,24 +501,20 @@ def lda(minfreq,file,ntopics,):
     foroutput_alltermscounts=[]
 
     foroutput_source=[]
-    foroutput_source2=[]
     #TODO ook bij andere methodes source2 opslaan, niet alleen in LDA module
     foroutput_firstwords=[]
     foroutput_id=[]
     foroutput_byline = []
     foroutput_section = []
-    foroutput_length = []
-    foroutput_language = []
-    foroutput_pubdate_day = []
-    foroutput_pubdate_month = []
-    foroutput_pubdate_year = []
-    foroutput_pubdate_dayofweek = []
-    foroutput_subjectivity=[]
-    foroutput_polarity=[]
-    for item in all:
+    foroutput_length_words = []
+    #foroutput_language = []
+    foroutput_addedbydate = []
+    foroutput_datum = []
+    #foroutput_subjectivity=[]
+    #foroutput_polarity=[]
+    for item in all:	
         foroutput_firstwords.append(item["text"][:20])
         foroutput_source.append(item["source"])
-        foroutput_source2.append(item["source2"])
         foroutput_id.append(item["_id"])
         foroutput_byline.append(item["byline"])
         foroutput_section.append(item["section"])
@@ -523,14 +522,12 @@ def lda(minfreq,file,ntopics,):
         # sectie=item["section"].split(";")
         #foroutput_section.append(sectie[0]+"\t"+sectie[1].strip("blz. "))
         # end
-        foroutput_length.append(item["length"])
-        foroutput_language.append(item["language"])
-        foroutput_pubdate_day.append(item["pubdate_day"])
-        foroutput_pubdate_month.append(item["pubdate_month"])
-        foroutput_pubdate_year.append(item["pubdate_year"])
-        foroutput_pubdate_dayofweek.append(item["pubdate_dayofweek"])
-        foroutput_subjectivity.append(item["subjectivity"])
-        foroutput_polarity.append(item["polarity"])
+        foroutput_length_words.append(item["length_words"])
+        # foroutput_language.append(item["language"])
+        foroutput_datum.append(item["datum"])
+        foroutput_addedbydate.append(item["addedbydate"])
+        #foroutput_subjectivity.append(item["subjectivity"])
+        #foroutput_polarity.append(item["polarity"])
         termcounts=""
         for term in allterms:
             termcounts+=("\t"+str(item["text"].split().count(term)))
@@ -540,7 +537,7 @@ def lda(minfreq,file,ntopics,):
 
 
     # TODO: integreren met bovenstaande code, nu moet .find nog een keer worden opgeroepen aangezien het een generator is
-    all=collectioncleaned.find(subset)
+    all=collection.find(subset)
     if stemming==0:
         # oude versie zonder ngrams: texts =[[word for word in item["text"].split()] for item in all]
         texts =[[word for word in split2ngrams(item["text"],ngrams)] for item in all]
