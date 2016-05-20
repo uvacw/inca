@@ -1,0 +1,11 @@
+{
+    'meta'     : 1,
+    'doctype'  : 1,
+    'language' : 'text'
+    'text'     : 1,
+    'source'   : 1,
+    'uri'      : 1,
+    'authors'  : 1,
+    'links'    : 1
+    
+}
