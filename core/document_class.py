@@ -9,7 +9,6 @@ The basic functionality is adding meta-data
 
 import logging
 import datetime
-import inspect
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,7 @@ class Document(object):
 
     def _add_metadata(self,document, **kwargs):
         '''
-        DO NOT OVERWRITE THIS FUNCTION
+        DO NOT OVERWRITE THIS METHOD
 
         This method generates the metadata for returned documents based on 
         the 'get' function docstring and arguments.
@@ -78,7 +77,7 @@ class Document(object):
     
     def _verify(self, document):
         '''
-        DO NOT OVERWRITE THIS FUNCTION
+        DO NOT OVERWRITE THIS METHOD
 
         This method verifies whether yielded documents conform to the specification 
         of the datastore
@@ -92,7 +91,7 @@ class Document(object):
 
     def _check_complete(self):
         '''
-        DO NOT OVERWRITE THIS FUNCTION
+        DO NOT OVERWRITE THIS METHOD
 
         This method checks whether the appropriate information is present in the subclass. 
         '''

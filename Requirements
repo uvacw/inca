@@ -1,6 +1,8 @@
 appnope==0.1.0
 backports.shutil-get-terminal-size==1.0.0
 decorator==4.0.9
+elasticsearch==2.3.0
+elasticsearch-dsl==2.0.0
 feedparser==5.2.1
 gnureadline==6.3.3
 ipython==4.2.0
@@ -11,6 +13,9 @@ pickleshare==0.7.2
 ptyprocess==0.5.1
 pyflakes==1.2.2
 pymongo==3.2.2
+python-dateutil==2.5.3
 requests==2.10.0
 simplegeneric==0.8.1
+six==1.10.0
 traitlets==4.2.1
+urllib3==1.15.1
