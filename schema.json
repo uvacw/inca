@@ -1,11 +1,50 @@
 {
-    'meta'     : 1,
-    'doctype'  : 1,
-    'language' : 'text'
-    'text'     : 1,
-    'source'   : 1,
-    'uri'      : 1,
-    'authors'  : 1,
-    'links'    : 1
-    
-}
+    "mappings": {
+        "_default_": {
+            "dynamic_templates": [
+                { "es": {
+                      "match":              "*_es", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+                          "analyzer":       "spanish"
+                      }
+                }},
+		
+		{ "nl": {
+                      "match":              "*_nl", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+                          "analyzer":       "dutch"
+                      }
+                }},
+		{ "raw": {
+                      "match":              "*_raw", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+                          "index" :         "not_analyzed"
+                      }
+                }},
+		{ "en": {
+                      "match":              "*_en", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+                          "analyzer" :      "english"
+                      }
+                }},
+
+                { "default": {
+                      "match":              "*", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+                          "analyzer" :     "whitespace",
+			  "filter"  : [ "stop" ],
+			  "fields" : { "exact" : { "type" : "string", "index" : "not_analyzed" }}
+                      }
+                }}
+            ]
+}}}

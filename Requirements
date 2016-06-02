@@ -1,13 +1,14 @@
 appnope==0.1.0
 backports.shutil-get-terminal-size==1.0.0
+coverage==4.1
 decorator==4.0.9
 elasticsearch==2.3.0
 elasticsearch-dsl==2.0.0
 feedparser==5.2.1
-gnureadline==6.3.3
 ipython==4.2.0
 ipython-genutils==0.1.0
 lxml==3.6.0
+nose==1.3.7
 pexpect==4.0.1
 pickleshare==0.7.2
 ptyprocess==0.5.1

@@ -9,14 +9,19 @@ The basic functionality is adding meta-data
 
 import logging
 import datetime
+from celery import Task
 
 logger = logging.getLogger(__name__)
 
-from core.database import document_collection
+from core.database import insert_document
 
-class Document(object):
+class Document(Task):
     '''
-    Scrapers are the generic way of adding new documents to the datastore. 
+    Documents reflect the basic format of documents in the datastore. 
+    On save attempts, this class tries to infer whether required fields 
+    are present. 
+
+    The 'META' key contains a key:description of all other keys in the document. 
     
     '''
 
@@ -33,16 +38,26 @@ class Document(object):
     def _save_document(self, document, forced=False):
         '''
         Documents are saved to the general document collection
-        defined in the core.database file. 
+        defined in the core.database file.
+
+        Update existing documents by passing an elasticsearch results 
+        through the _update_document method. 
 
         Note that by default, documents can only extend, not replace
         old documents. 
 
         '''
-        if document.get('_id',False) and not forced:
-            old_document = document_collection.find_one({'_id':document.get('_id')})
-            document.update(old_document)
-        document_collection.insert(document)
+        if '_id' in document.keys():
+            custom_identifier = document.pop('_id')
+        else :
+            custom_identifier = None
+        insert_document(document, custom_identifier=custom_identifier)
+
+    def _update_document(self, elasticsearch_result, new_document_body):
+        '''
+        This method updates exiting documents. It should map an elasticsearch
+        result to a new body (the old body is in elasticsearch_result['_source']).
+        '''
 
     def _add_metadata(self,document, **kwargs):
         '''

@@ -1,12 +1,19 @@
 import os
+import settings
 
 class Production():
-    MONGO_HOST     = os.environ.get('MONGO_HOST','localhost')
-    MONGO_PORT     = os.environ.get('MONGO_PORT', 27017)
-    MONGO_DATABASE = os.environ.get('MONGO_DATABASE','inca')
-    MONGO_USERNAME = os.environ.get('MONGO_USERNAME','')
-    MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD','')
+    ELASTIC_HOST   = os.environ.get('ELASTIC_HOST','0.0.0.0')
+    ELASTIC_PORT   = os.environ.get('ELASTIC_PORT', 9200)
+    ELASTIC_DATABASE = os.environ.get('ELASTIC_DATABASE','inca')
+
+    # NOT IMPLEMENTED as of now
+    ELASTIC_USERNAME = os.environ.get('ELASTIC_USERNAME','')
+    ELASTIC_PASSWORD = os.environ.get('ELASTIC_PASSWORD','')
+
+
     FLASK_DEBUG    = False
+    # /not implemented
+
     LOGLEVEL       = 'WARNING'
 
 class Debug(Production):
@@ -14,4 +21,7 @@ class Debug(Production):
     LOGLEVEL = 'DEBUG'
     
 class Testing(Debug):
-    MONGO_DATABASE = 'testing'
+    ELASTIC_DATABASE = 'testing'
+
+def get_config(level):
+    return getattr(settings, level)

@@ -8,12 +8,12 @@ from lxml.html import fromstring
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = 'https://zoek.officielebekendmakingen.nl/h-tk-{fromyear}{toyear}-{number}-{subnumber}.xml'
+BASE_URL = 'https://zoek.officielebekendmakingen.nl/ah-tk-{fromyear}{toyear}-{number}.xml'
 BASE_METADATA_URL = 'https://zoek.officielebekendmakingen.nl/h-tk-{fromyear}{toyear}-{number}-{subnumber}'
 
-class tweedekamer_handelingen_scraper(Scraper):
+class tweedekamer_kamerstukken_scraper(Scraper):
 
-    doctype = 'Dutch parlementary acts (Handelingen)'
+    doctype = 'Dutch parlementary items (Kamerstukken)'
     version = '.0'
     date    = datetime.datetime(year=2016,month=6,day=7)
     
@@ -32,7 +32,7 @@ class tweedekamer_handelingen_scraper(Scraper):
                     logger.info('getting {number}-{subnumber} of {toyear}'.format(**locals()))
                     target =  'h-tk-{fromyear}{toyear}-{number}-{subnumber}'.format(**locals())
                     if check_exists(target)[0]: continue
-                    source = BASE_URL.format(**locals())
+                    source  = BASE_URL.format(**locals())
                     attempt = retrieve(source)
                     if not attempt      : continue
                     if attempt == 'stop':
