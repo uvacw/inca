@@ -101,7 +101,7 @@ def handle(function, task, arguments=None):
         print(show_tasks(function))
     else:
         run_method = LOCAL_ONLY and 'run' or 'apply_async'
-        getattr(taskmaster.tasks[task_key],run_method)()
+        getattr(taskmaster.tasks[task_key],run_method)(*arguments)
 
 if __name__ == '__main__':
 

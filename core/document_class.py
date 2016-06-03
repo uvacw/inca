@@ -44,6 +44,7 @@ class Document(Task):
         old documents. 
 
         '''
+        document['doctype'] = ''.join(__name__.split('_')[:-1])
         if '_id' in document.keys():
             custom_identifier = document.pop('_id')
         else :
@@ -69,7 +70,7 @@ class Document(Task):
         '''
         meta = dict(
             ADDED_AT              = datetime.datetime.now(),
-            ADDED_USING           = str(self.__class__).split("'")[1].split(".")[-1],
+            ADDED_USING           =str(self.__class__).split(' ')[1],
             ADDED_METHOD          = self.get.__doc__,
             FUNCTION_VERSION      = self.version,
             FUNCTION_VERSION_DATE = self.date,

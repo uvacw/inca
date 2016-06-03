@@ -45,14 +45,15 @@ class Scraper(Document):
         self._verify(doc)
         self._save_document(doc)
         
-    def run(self):
+    def run(self, *args, **kwargs):
         '''
         DO NOT OVERWRITE THIS METHOD
 
         This is an internal function that calls the 'get' method and saves the 
         resulting documents. 
         '''
-        for doc in self.get():
+        
+        for doc in self.get(*args, **kwargs):
             doc['doctype']  = self.doctype
             doc['language'] = self.language
             doc = self._add_metadata(doc)

@@ -14,15 +14,18 @@ BASE_METADATA_URL = 'https://zoek.officielebekendmakingen.nl/h-tk-{fromyear}{toy
 class tweedekamer_handelingen_scraper(Scraper):
     """Scrapes the Dutch parlementary acts (Handelingen) from the official site as XML blobs with metadata"""
     
-    #doctype = 'Dutch parlementary acts (Handelingen)'
+    doctype = 'Dutch parlementary acts (Handelingen)'
     version = '.0'
     date    = datetime.datetime(year=2016,month=6,day=7)
     
-    def get(self):
+    def get(self, startyear='1990', back_in_time='False'):
         '''Document collected from 'officiëlebekendmakingen.nl' as XML files
         by iterating over document numbers in the url'''
-        
-        years = range(1990, datetime.datetime.now().year)
+
+        years = range(int(startyear), datetime.datetime.now().year)
+        if back_in_time.lower()=="true":
+            years = list(years)
+            years.reverse()
         tries = 0
         for toyear in years:
             fromyear = toyear-1
