@@ -12,8 +12,9 @@ BASE_URL = 'https://zoek.officielebekendmakingen.nl/h-tk-{fromyear}{toyear}-{num
 BASE_METADATA_URL = 'https://zoek.officielebekendmakingen.nl/h-tk-{fromyear}{toyear}-{number}-{subnumber}'
 
 class tweedekamer_handelingen_scraper(Scraper):
-
-    doctype = 'Dutch parlementary acts (Handelingen)'
+    """Scrapes the Dutch parlementary acts (Handelingen) from the official site as XML blobs with metadata"""
+    
+    #doctype = 'Dutch parlementary acts (Handelingen)'
     version = '.0'
     date    = datetime.datetime(year=2016,month=6,day=7)
     

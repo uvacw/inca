@@ -24,12 +24,13 @@ Commandline usage:
 Example: 
         `inca scrapers tweedekamer_handelingen run`
 
+------------------------------------------------------------------------------
 '''
 
 ##### SETTINGS TEMPORARILY DEFINED HERE ######
 
 LOCAL_ONLY = True
-LOGLEVEL   = 'DEBUG'
+LOGLEVEL   = 'WARNING'
 
 ##############################################
 
@@ -42,7 +43,6 @@ import logging
 import argparse
 import core
 
-logging.basicConfig(level=LOGLEVEL)
 logger = logging.getLogger(__name__)
 
 api        = Flask(__name__)
@@ -73,10 +73,15 @@ def show_tasks(function, limit=0):
     for function_task in [taskname for taskname in taskmaster.tasks if taskname.split('.')[0]==function]:
         taskdoc  = taskmaster.tasks[function_task].__doc__
         taskname = function_task.split('.')[-1]
-        helpstring += "\t\t{taskname} : {taskdoc}\n".format(**locals())
+        helpstring += "\t\t{taskname: <40} : {taskdoc}\n".format(**locals())
     return helpstring
 
 def identify_task(function,task):
+    if function not in expose:
+        print("unknown function, please use one of the following:")
+        print(show_functions())
+    
+    if task == "help": return "help"
     options = taskmaster.tasks.keys()
     fit     = [option for option in options if option.split('.')[0]==function and option.split('.')[-1]==task]
     if len(fit)==1:
@@ -99,18 +104,42 @@ def handle(function, task, arguments=None):
         getattr(taskmaster.tasks[task_key],run_method)()
 
 if __name__ == '__main__':
+
+    # prints the banner
     print(__doc__)
+
+    # Parses options
     parser = argparse.ArgumentParser()
-    parser.add_argument('function', help="functions performed by INCA", default=False, nargs="?")
-    parser.add_argument('task', help="a task to be preformed such as tokenizing, expanding urls...", default='list', nargs="?")
-    parser.add_argument('task_args', help='arguments passed to task (not all tasks take arguments!)', nargs='*')
-    parser.add_argument('-p','--port', help='set port for api server', default=5000, type=int)
+    parser.add_argument('function',      help="functions performed by INCA", default=False, nargs="?")
+    parser.add_argument('task',          help="a task to be preformed such as tokenizing, expanding urls...", default='help', nargs="?")
+    parser.add_argument('task_args',     help='arguments passed to task (not all tasks take arguments!)', nargs='*')
+    parser.add_argument('-p','--port',   help='set port for api server', default=5000, type=int)
+    parser.add_argument('-d','--debug',  help='override config to set debug to true', action="store_true")
+    parser.add_argument('--logfile',     help='override config for logfile use and location', default=None)
+    parser.add_argument('-l', '--local', help='override config for local execution', action='store_true')
     
     args = parser.parse_args()
+
+    # Handle some general override arguments for logging
+    if args.debug:   print("OVERRIDE LOGLEVEL")
+    if args.logfile: print("OVERRIDE LOGFILE TO {args.logfile}".format(**locals()))
+
+    logging.basicConfig(level=args.debug and args.debug or LOGLEVEL,
+                        filename=args.logfile,
+                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+    )
+
+    # Basic Celery override
+    if args.local:
+        LOCAL_ONLY = False
+
+    # Run appropriate commands
     if not args.function:
         # run API server
         api.run()
 
+    if args.function=='list':
+        print(show_functions())
     else:
         handle(args.function, args.task, args.task_args)
     

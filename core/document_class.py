@@ -30,12 +30,7 @@ class Document(Task):
     functiontype = ''
     version      = ''
     date         = ''
-    doctype      = ''
     
-    
-    def __init__(self):
-        #self._check_complete()
-        pass
 
     def _save_document(self, document, forced=False):
         '''

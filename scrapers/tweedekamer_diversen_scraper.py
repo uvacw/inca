@@ -12,6 +12,7 @@ BASE_URL = 'https://zoek.officielebekendmakingen.nl/ah-tk-{fromyear}{toyear}-{nu
 BASE_METADATA_URL = 'https://zoek.officielebekendmakingen.nl/h-tk-{fromyear}{toyear}-{number}-{subnumber}'
 
 class tweedekamer_kamerstukken_scraper(Scraper):
+    """Scrapes Dutch parlementary documents (kamerstukken) as XML blobs with metadata from the official website."""
 
     doctype = 'Dutch parlementary items (Kamerstukken)'
     version = '.0'
