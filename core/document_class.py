@@ -25,6 +25,8 @@ class Document(Task):
     
     '''
 
+    
+
     functiontype = ''
     version      = ''
     date         = ''
@@ -32,7 +34,7 @@ class Document(Task):
     
     
     def __init__(self):
-        self._check_complete()
+        #self._check_complete()
         pass
 
     def _save_document(self, document, forced=False):

@@ -12,6 +12,7 @@ TODO: factor in settings
 
 
 import logging
+import json
 from settings import get_config
 from elasticsearch import Elasticsearch, NotFoundError
 
