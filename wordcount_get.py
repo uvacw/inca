@@ -3,7 +3,7 @@ import cgitb
 import cgi
 cgitb.enable()
 form = cgi.FieldStorage()
-from analysis import *
+from analysis import * 
 from nvd3 import multiBarChart
 
 # read config file and set up MongoDB
@@ -165,14 +165,18 @@ else:
 	topwords = "missing value for top words"
 
 usersubset += ']}'
+newssubset = ast.literal_eval(''.join(usersubset.split(',',1)))
 
 #THE FOLLOWING IS STILL PROBLEMATIC. ONLY WORKS IF USER DIDN'T ENTER HIS OWN CUSTOMIZED ARGUMENT
+
 if form.getlist('usersubset'):
 	usersubset = ''.join(usersubset.split(',',1))
 	usersubset = ''.join(usersubset.split(' ',1))
 
+
 finalsubset = ast.literal_eval(usersubset)
-print('<h3>'+str(finalsubset)+'</h3>')
+
+
 if form.getvalue('year_start') and form.getvalue('month_start') and form.getvalue('day_start') and form.getvalue('year_end') and form.getvalue('month_end') and form.getvalue('day_end'):
 	year_start = form.getvalue('year_start')
 	month_start = form.getvalue('month_start')
@@ -204,7 +208,6 @@ print('''
 <body>
 <h2>We are currently running an analysis on the top %s most common words from your selection of newspapers:</h2> </br>
 <p>The subset you chose is: \t\t %s</p></br>
-<h4> <a href='cooc.py' target='blank'> Click here to retrieve the co-occurences of your selection </a></h4> 
 <pre><br><br>''' % (topwords,finalsubset))
 
 c = frequenciesweb(int(topwords),clean,finalsubset)
@@ -217,8 +220,8 @@ print('''<br><br>
 <h3> Download the list of words and their occurences</h3>
 <p> The csv file can be downloaded by clicking <a href="http://infra.followthenews-uva.vm.surfsara.nl/tmp/wordcountoutput.csv">this link</a></p>
 <br>
-<p> Checkity check, le type de wl c'est...<br>''')
-basicfreq(wl)
+''')
+basicfreq(wl,newssubset)
 print('''
 </body>
 </html>

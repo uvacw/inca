@@ -184,7 +184,7 @@ def frequenciesweb(n,clean,usersubset):
     
     if clean:
         all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
-        wordy = 'hema'
+        #wordy = 'hema'
         #listy=[]
         #test = collection.aggregate([{'$match':{'$text':{'$search':str(wordy)}}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : { '_id':1,  'year':1   }}])       
         #listy.append(list(test)) 
@@ -270,25 +270,39 @@ def countmatches():
     return aantal
 
 
-def basicfreq(topwords):
+def basicfreq(topwords,newspapers):
     '''Returns a line chart of the most frequent words over time'''
     #instead of having year, month and day on three lines, I can create a master loop that iterates over a list with ['year','month','day'] where appropriate.
     masterdict = {}
     dflist=[]
+    newslist = []
     i=0
+    j = 0
+    v = 0
+    while j < len(newspapers['$or']):
+        newslist.append(newspapers['$or'][j]['source'])
+        j += 1 
+    if len(newslist) > 9:
+        print('<h3>Error: Too many newspapers for timeline analysis</h3><br><p>We could not provide you with the count for the selection of all newspapers. Please select max 10 news sources and submit again</p>')
+        return
+    npp = (", ".join( repr(e) for e in newspapers['$or']))
+    #print('The newspapers part of the query looks like this:  ',npp)
+  
+    while i < len(topwords): #arbitrarily choosing this value so that the query is not too heavy and the graph not too crowded
+        presub = "[{'$match':{'$text':{'$search':'"+str(topwords[i])+"'},'$or':["+npp+"]}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}]"
+        #print('<br> the presub takes this form:'+presub)
+        subset = ast.literal_eval(presub) #not working yet. 
+        #print('<br> The subset [after literal_eval looks like:  '+str(subset))
+        subset = collection.aggregate(subset)
+        masterdict[topwords[i]+'_year'] = list(subset)
+        masterdict[topwords[i]+'_year'] = pd.DataFrame({'year': [y['_id']['year'] for y in masterdict[topwords[i]+'_year']],'count': [c['count'] for c in masterdict[topwords[i]+'_year']]})
+        dflist.append(masterdict[topwords[i]+'_year'])
+        i+=1
 
-    for word in topwords:
-        # print('working on the following word:'+'\t'+word+'<br><br>')
-        subset = collection.aggregate([{'$match':{'$text':{'$search':str(word)},'$or':[{'source':'nu'},{
-'source':'nrc (www)'}]}},{'$group' : {'_id': {'year':{'$year':'$datum'}}, 'count' : {'$sum' : 1}}},{'$sort' : {'_id': 1, 'year':1}}])
-        masterdict[word+'_year'] = list(subset)
-        masterdict[word+'_year'] = pd.DataFrame({'year': [y['_id']['year'] for y in masterdict[word+'_year']],'count': [c['count'] for c in masterdict[word+'_year']]})
-        dflist.append(masterdict[word+'_year'])
-        i+=1 
     #print('Final dict shape: -->'+str(masterdict)+'<br><br>') 
-    #merging dataframes
     #print('<br><br>The df list looks like:  '+str(dflist))
-
+    
+    # MERGING DATAFRAMES
     j = 1
     while j < i:
         dflist[0] = dflist[0].merge(dflist[j], on='year', suffixes=('','_'+str(topwords[j])) , how='outer')
@@ -303,7 +317,6 @@ def basicfreq(topwords):
   # Creating the line graph
     chart_year = lineChart(name="basicfreq", width=1500, height=500, x_is_date=False)
     xdata_year = fulldf['year'].values.tolist()
-    v=0
     extra_serie = {"tooltip": {"y_start": "Amount of times the word", "y_end": "occurs: "}}
     while v < len(topwords):
         ylist = fulldf['count_'+str(topwords[v])].values.tolist()
