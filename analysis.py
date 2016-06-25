@@ -20,6 +20,7 @@ from sklearn.cluster import KMeans
 import datetime
 from nvd3 import discreteBarChart, lineChart
 import pandas as pd
+import pyLDAvis
 
 # TODO
 # bedrijf minimaal twee keer genoemd
@@ -151,10 +152,13 @@ def frequencies():
     '''
     returns a counter object of word frequencies
     '''
-    
 
-    print("Debugging manually...")
-    all=collection.find(subset)
+    if clean:
+        all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
+    else:
+        all=collection.find(usersubset,{"text": 1, "_id":0})   
+
+
     aantal=all.count()
     c=Counter()
     i=0
@@ -611,6 +615,132 @@ def lda(minfreq,file,ntopics,):
             fo.write("\n")
             i+=1
 
+
+def lda2(minfreq,file,ntopics,):
+    c=frequencies()
+    
+    if clean:
+        all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
+    else:
+        all=collection.find(usersubset,{"text": 1, "_id":0})   
+    
+    try:
+        allterms=subset['$text']['$search'].decode("utf-8").split()
+    except:
+        # voor het geval dat er geen zoektermen zijn gebruikt
+        allterms=[]
+    allterms+=extraterms
+    foroutput_alltermslabels="\t".join(allterms)
+    foroutput_alltermscounts=[]
+
+    foroutput_source=[]
+    #TODO ook bij andere methodes source2 opslaan, niet alleen in LDA module
+    foroutput_firstwords=[]
+    foroutput_id=[]
+    foroutput_byline = []
+    foroutput_section = []
+    foroutput_length_words = []
+    #foroutput_language = []
+    foroutput_addedbydate = []
+    foroutput_datum = []
+    #foroutput_subjectivity=[]
+    #foroutput_polarity=[]
+    for item in all:    
+        foroutput_firstwords.append(item["text"][:20])
+        foroutput_source.append(item["source"])
+        foroutput_id.append(item["_id"])
+        foroutput_byline.append(item["byline"])
+        foroutput_section.append(item["section"])
+        # seperate section and pagenumber instead, tailored to Dutch Lexis Nexis
+        # sectie=item["section"].split(";")
+        #foroutput_section.append(sectie[0]+"\t"+sectie[1].strip("blz. "))
+        # end
+        foroutput_length_words.append(item["length_words"])
+        # foroutput_language.append(item["language"])
+        foroutput_datum.append(item["datum"])
+        foroutput_addedbydate.append(item["addedbydate"])
+        #foroutput_subjectivity.append(item["subjectivity"])
+        #foroutput_polarity.append(item["polarity"])
+        termcounts=""
+        for term in allterms:
+            termcounts+=("\t"+str(item["text"].split().count(term)))
+        foroutput_alltermscounts.append(termcounts)
+
+
+
+    # TODO: integreren met bovenstaande code, nu moet .find nog een keer worden opgeroepen aangezien het een generator is
+    all=collection.find(subset)
+    if stemming==0:
+        # oude versie zonder ngrams: texts =[[word for word in item["text"].split()] for item in all]
+        texts =[[word for word in split2ngrams(item["text"],ngrams)] for item in all]
+    else:
+        texts =[[word for word in split2ngrams(stemmed(item["text"],stemming_language),ngrams)] for item in all]
+
+    if minfreq>0 and file=="":
+        # unicode() is neccessary to convert ngram-tuples to strings
+        texts =[[str(word) for word in text if c[word]>=minfreq] for text in texts]
+
+    elif minfreq==0 and file!="":
+        allowedwords=set(line.strip().lower() for line in open(file,mode="r",encoding="utf-8"))
+        # unicode() is neccessary to convert ngram-tuples to strings
+        texts =[[str(word) for word in text if word in allowedwords] for text in texts]
+
+
+    # TODO NU WORDEN DE EXTRA TERMS (indien gedefinieerd) NIET meegenomen om de topics te bepalen
+    # TODO hier moet een keuzemogelijkheid komen; ook moeten we kijken of dit ueberhaupt zinvol is
+
+    if not extraterms==[]:
+        texts = [[" ".join([w for w in t.split() if w not in set(extraterms)]) for t in tt] for tt in texts]
+
+
+    # Create Dictionary.
+    id2word = corpora.Dictionary(texts)
+
+    # Creates the Bag of Word corpus.
+    mm =[id2word.doc2bow(text) for text in texts]
+    # Trains the LDA models.
+    # lda = models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=ntopics, update_every=1, chunksize=10000, passes=1)
+    lda = models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=ntopics, alpha="auto")
+    # Prints the topics.
+    for top in lda.print_topics(num_topics=ntopics, num_words=5):
+        print("\n",top)
+
+    scoresperdoc=lda.inference(mm)
+
+
+    # Added by Arno because needed for the ldavis:
+    ttd = get_topic_terms(topicid,topn = ntopics)
+
+    return {'topic_term_dist':ttd,'doc_topic_dist':scoresperdoc,'doc_lengths':foroutput_length_words,'vocab':mm,'term_frequency':foroutput_alltermscounts}
+
+
+def ldavis(userminfreq,usertopics):
+
+    '''
+    Returns an html-friendly visualization of the LDA
+    '''
+
+    data = lda2(minfreq=userminfreq,topics=usertopics)
+
+
+    # Adding the topic-term probability
+
+    topic_term_dist =  data['topic_term_dist']
+    doc_topic_dist = data['doc_topic_dist'] # Matrix of document-topic probabilities.
+    doc_lengths = data['doc_lengths'] # The length of each document, i.e. the number of words in each document. The order of the numbers should be consistent with the ordering of the docs in doc_topic_dists.
+    vocab = data['vocab'] # List of all the words in the corpus used to train the model.
+    term_frequency = data['term_frequency'] # The count of each particular term over the entire corpus. The ordering of these counts should correspond with vocab and topic_term_dists.
+
+
+    # check https://pyldavis.readthedocs.io/en/latest/modules/API.html#pyLDAvis.prepare
+    processed_data = pyLDAvis.prepare(topic_term_dist,doc_topic_dist,doc_lengths,vocab,term_frequency)
+    # topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, R=30, lambda_step=0.01, mds=<function js_PCoA>, n_jobs=-1, 
+    # plot_opts={'xlab': 'PC1', 'ylab': 'PC2'}, sort_topics=True
+
+
+    # Note that there are many options for the following, including some customized css sheet if linked to it. 
+    # check https://pyldavis.readthedocs.io/en/latest/modules/API.html#pyLDAvis.prepared_data_to_html
+    pyLDAvis.prepared_data_to_html(processed_data)
 
 
 
