@@ -19,7 +19,7 @@ class tweedekamer_handelingen_scraper(Scraper):
     date    = datetime.datetime(year=2016,month=6,day=7)
     
     def get(self, startyear='1990', back_in_time='False'):
-        '''Document collected from 'officiëlebekendmakingen.nl' as XML files
+        '''Document collected from 'officielebekendmakingen.nl' as XML files
         by iterating over document numbers in the url'''
 
         years = range(int(startyear), datetime.datetime.now().year)
