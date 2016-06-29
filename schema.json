@@ -43,7 +43,7 @@
                           "type":           "string",
                           "analyzer" :     "whitespace",
 			  "filter"  : [ "stop" ],
-			  "fields" : { "exact" : { "type" : "string", "index" : "not_analyzed" }}
+			  "fields" : { "exact" : { "type" : "string", "index" : "whitespace" }}
                       }
                 }}
             ]
