@@ -41,9 +41,8 @@
                       "match_mapping_type": "string",
                       "mapping": {
                           "type":           "string",
-                          "analyzer" :     "whitespace",
 			  "filter"  : [ "stop" ],
-			  "fields" : { "exact" : { "type" : "string", "index" : "whitespace" }}
+			  "fields" : { "exact" : { "type" : "string", "analyzer" : "whitespace"}}
                       }
                 }}
             ]
