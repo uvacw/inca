@@ -13,7 +13,7 @@ from celery import Task
 
 logger = logging.getLogger(__name__)
 
-from core.database import insert_document
+from core.database import insert_document, update_document
 
 class Document(Task):
     '''
@@ -51,11 +51,12 @@ class Document(Task):
             custom_identifier = None
         insert_document(document, custom_identifier=custom_identifier)
 
-    def _update_document(self, elasticsearch_result, new_document_body):
+    def _update_document(self, new_document_body):
         '''
         This method updates exiting documents. It should map an elasticsearch
         result to a new body (the old body is in elasticsearch_result['_source']).
         '''
+        update_document(new_document_body)
 
     def _add_metadata(self,document, **kwargs):
         '''

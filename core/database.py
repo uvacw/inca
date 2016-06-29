@@ -18,6 +18,7 @@ from elasticsearch import Elasticsearch, NotFoundError
 
 config = get_config('Production')
 logger = logging.getLogger(__name__)
+logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
 client = Elasticsearch(
     host=config.ELASTIC_HOST,

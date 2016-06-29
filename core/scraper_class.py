@@ -52,7 +52,7 @@ class Scraper(Document):
         This is an internal function that calls the 'get' method and saves the 
         resulting documents. 
         '''
-        
+        logger.info("Started scraping")
         for doc in self.get(*args, **kwargs):
             doc['doctype']  = self.doctype
             doc['language'] = self.language

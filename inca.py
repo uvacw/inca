@@ -30,7 +30,7 @@ Example:
 ##### SETTINGS TEMPORARILY DEFINED HERE ######
 
 LOCAL_ONLY = True
-LOGLEVEL   = 'WARNING'
+LOGLEVEL   = 'INFO'
 
 ##############################################
 

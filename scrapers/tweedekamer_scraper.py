@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 BASE_URL = 'https://zoek.officielebekendmakingen.nl/h-tk-{fromyear}{toyear}-{number}-{subnumber}.xml'
 BASE_METADATA_URL = 'https://zoek.officielebekendmakingen.nl/h-tk-{fromyear}{toyear}-{number}-{subnumber}'
 
+MAX_TRIES = 100 # maximum number of consecutively missing documents 
+
 class tweedekamer_handelingen_scraper(Scraper):
     """Scrapes the Dutch parlementary acts (Handelingen) from the official site as XML blobs with metadata"""
     
@@ -18,7 +20,7 @@ class tweedekamer_handelingen_scraper(Scraper):
     version = '.0'
     date    = datetime.datetime(year=2016,month=6,day=7)
     
-    def get(self, startyear='1990', back_in_time='False'):
+    def get(self, startyear='1995', back_in_time='False'):
         '''Document collected from 'officielebekendmakingen.nl' as XML files
         by iterating over document numbers in the url'''
 
@@ -31,6 +33,9 @@ class tweedekamer_handelingen_scraper(Scraper):
             fromyear = toyear-1
             tries = 0
             for number in range(1,10000):
+                if tries > MAX_TRIES:
+                    logger.info('Finished {toyear} (presumably)'.format(**locals()))
+                    break
                 subtries = 0
                 for subnumber in range(1,1000):
                     logger.info('getting {number}-{subnumber} of {toyear}'.format(**locals()))
@@ -44,7 +49,7 @@ class tweedekamer_handelingen_scraper(Scraper):
                             subtries += 1
                             continue
                         else:
-                            logger.info('finished {number} in {toyear}'.format(**locals()))
+                            logger.info('finished {number} in {toyear} tries:{tries}'.format(**locals()))
                             tries +=1
                             break
                     tries = 0
@@ -53,9 +58,7 @@ class tweedekamer_handelingen_scraper(Scraper):
                     base.update(metadata)
                     yield base
                     subtries = 0
-            if tries > 150:
-                logger.info('Finished {toyear} (presumably)'.format(**locals()))
-                break
+
 
             
 
