@@ -3,6 +3,9 @@ import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
 from core.database import check_exists
+import logging
+
+logger = logging.getLogger(__name__)
 
 START_URL = "https://zoek.officielebekendmakingen.nl/actueel/30"
 BASE_URL  = "https://zoek.officielebekendmakingen.nl/"
@@ -10,12 +13,14 @@ BASE_URL  = "https://zoek.officielebekendmakingen.nl/"
 class kamerhandelingen_scraper(Scraper):
     """Scrapes Dutch parlementairy and senate proceedings """
     
-    doctype = "Kamerhandelingen NL"
-    version = ".1"
-    date    = datetime.datetime(year=2016, month=6, day=28)
     
     def get(self):
         '''Document collected from officielebekendmakingen.nl by scraping 'bladeren' section  '''
+
+        self.doctype = "Kamerhandelingen NL"
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=6, day=28)
+        
         time_url = START_URL
         while time_url:
             time_page = requests.get(time_url)
@@ -24,6 +29,7 @@ class kamerhandelingen_scraper(Scraper):
             next_url = time_dom.xpath('//div[@class="sub-lijst"]//a[contains(text(),"Handelingen")]/@href')
             if next_url:
                 next_url = next_url[0]
+                logger.debug("@{next_url}".format(**locals()))
                 while next_url: 
                     home = requests.get(next_url)
                     DOM_home = fromstring(home.text)
@@ -63,11 +69,12 @@ class kamerhandelingen_scraper(Scraper):
                     next_url = DOM_home.xpath('//a[.="Volgende"]/@href')
                     if next_url:
                         next_url = next_url[0]
-                        time_url = DOM_home.xpath('//div[@class="periode-paginering"]//@href')
+                    time_url = DOM_home.xpath('//div[@id="Paging"]//a[@class="vorige"]/@href')
+                    logging.debug("at {home.url}, following time: {time_url}".format(**locals()))
                     if time_url:
                         time_url = time_url[0]
 
 
             
 if __name__=="__main__":
-    get()
+    kamerhandelingen_scraper().get()
