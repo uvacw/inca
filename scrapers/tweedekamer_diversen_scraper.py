@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 BASE_URL = 'https://zoek.officielebekendmakingen.nl/ah-tk-{fromyear}{toyear}-{number}.xml'
 BASE_METADATA_URL = 'https://zoek.officielebekendmakingen.nl/h-tk-{fromyear}{toyear}-{number}-{subnumber}'
 
+MAX_RETRIES = 100 # Maximum number of consecutively missing documents 
+
 class tweedekamer_kamerstukken_scraper(Scraper):
     """Scrapes Dutch parlementary documents (kamerstukken) as XML blobs with metadata from the official website."""
 
@@ -25,6 +27,9 @@ class tweedekamer_kamerstukken_scraper(Scraper):
         years = range(1990, datetime.datetime.now().year)
         tries = 0
         for toyear in years:
+            if tries > MAX_RETRIES:
+                logger.info('Finished {toyear} (presumably)'.format(**locals()))
+                break
             fromyear = toyear-1
             tries = 0
             for number in range(1,10000):
@@ -50,9 +55,6 @@ class tweedekamer_kamerstukken_scraper(Scraper):
                     base.update(metadata)
                     yield base
                     subtries = 0
-            if tries > 150:
-                logger.info('Finished {toyear} (presumably)'.format(**locals()))
-                break
 
             
 

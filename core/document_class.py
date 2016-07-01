@@ -30,7 +30,8 @@ class Document(Task):
     functiontype = ''
     version      = ''
     date         = ''
-    
+    doctype      = ''
+
 
     def _save_document(self, document, forced=False):
         '''
@@ -44,7 +45,10 @@ class Document(Task):
         old documents. 
 
         '''
-        document['doctype'] = ''.join(__name__.split('_')[:-1])
+        assert self.doctype, "You need to declare a `self.doctype` in your class!"
+        assert self.version, "You need to declare a `self.version` in your class!"
+        
+        document['doctype'] = self.doctype
         if '_id' in document.keys():
             custom_identifier = document.pop('_id')
         else :

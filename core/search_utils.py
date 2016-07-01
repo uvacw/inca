@@ -1,12 +1,35 @@
 '''
-This file provides basic search functionality for the INCA database
+This file provides basic search functionality for the INCA database. 
 
 '''
+from core.database import client
 
 def doctype_first(doctype):
+    doc = client.search(index="inca",
+                  body={
+                      "sort": [
+                          {"Publicatiedatum" : {"order":"desc"}}
+                          ],
+                      "query":
+                      {"match":
+                       {"doctype":
+                        doctype
+                       }
+                      }}).get('hits',{}).get('hits',[""])[0]
     return doc
 
 def doctype_last(doctype):
+    doc = client.search(index="inca",
+                  body={
+                      "sort": [
+                          {"Publicatiedatum" : {"order":"asc"}}
+                          ],
+                      "query":
+                      {"match":
+                       {"doctype":
+                        doctype
+                       }
+                      }}).get('hits',{}).get('hits',[""])[0]
     return doc
 
 def doctype_example(doctype):
