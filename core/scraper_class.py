@@ -59,5 +59,17 @@ class Scraper(Document):
             doc = self._add_metadata(doc)
             self._verify(doc)
             self._save_document(doc)
-            
+
+    def _test_function(self):
+        '''tests whether a scraper works by seeing if it returns at least one document
+        
+           GENERALLY DON'T OVERWRITE THIS METHOD!
+        '''
+        try:
+            self.check_exists = lambda x: False # overwrite check exists to ensure start conditions
+            for doc in self.get():
+                logger.info("{self.__class__} works!".format(**locals()))
+                return {"{self.__class__}".format(**locals()) :True}
+        except:
+            return {"{self.__class__}".format(**locals()) : False}
         

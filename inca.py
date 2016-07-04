@@ -39,6 +39,7 @@ from flask import Flask
 import sys
 import os
 import scrapers
+import processing
 import logging
 import argparse
 import core
@@ -52,17 +53,20 @@ expose = [ "scrapers", "processors", "analysis"]
 
 def show_functions():
     available_functions = """
-    scrapers   : %s
+    ---scrapers---   : 
+        %s
         includes (`list` to see all options): %s
-    processors : %s
+    ---processors--- : 
+        %s
         includes (`list` to see all options): %s
-    analysis   : %s
+    ---analysis---   : 
+        %s
         includes (`list` to see all options): %s
     """ %(
         core.scraper_class.Scraper.__doc__,
         show_tasks('scrapers',3),
         core.processor_class.Processer.__doc__,
-        show_tasks('processors',3),
+        show_tasks('processing',3),
         'ANALYSIS NOT IMPLEMENTED YET',
         'NO ANALYSIS TASKS AVAILABLE YET'
         )

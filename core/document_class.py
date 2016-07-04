@@ -13,7 +13,7 @@ from celery import Task
 
 logger = logging.getLogger(__name__)
 
-from core.database import insert_document, update_document
+from core.database import insert_document, update_document, check_exists
 
 class Document(Task):
     '''
@@ -45,8 +45,9 @@ class Document(Task):
         old documents. 
 
         '''
-        assert self.doctype, "You need to declare a `self.doctype` in your class!"
-        assert self.version, "You need to declare a `self.version` in your class!"
+        assert self.doctype, "You need to declare a `self.doctype` in your subclass!"
+        assert self.version, "You need to declare a `self.version` in your subclass!"
+        assert self.functiontype, "You need to declare a `self.functiontype` in your subclass!"
         
         document['doctype'] = self.doctype
         if '_id' in document.keys():
@@ -130,3 +131,7 @@ class Document(Task):
                     Please update the docstring in your class definition.""" %(self.__class__, method))
             except:
                 pass
+
+    def _check_exists(self, doc_id):
+        '''Checks whether a document already exists, can be overwritten for testing etc '''
+        return check_exists(doc_id)

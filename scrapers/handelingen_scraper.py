@@ -2,7 +2,6 @@ import requests
 import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
-from core.database import check_exists
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,7 +10,7 @@ START_URL = "https://zoek.officielebekendmakingen.nl/actueel/30"
 BASE_URL  = "https://zoek.officielebekendmakingen.nl/"
 
 class kamerhandelingen_scraper(Scraper):
-    """Scrapes Dutch parlementairy and senate proceedings """
+    """Scrapes Dutch parlementary and senate proceedings """
     
     
     def get(self):
@@ -36,7 +35,7 @@ class kamerhandelingen_scraper(Scraper):
                     DOM_home.make_links_absolute(BASE_URL)
                     for item_link in DOM_home.xpath('//div[@class="lijst"]//li//@href'):
                         _id = item_link.split('/')[-1].split('.')[0]
-                        if check_exists(_id)[0]: continue
+                        if self.check_exists(_id)[0]: continue
                         item_page = requests.get(item_link)
                         item_dom  = fromstring(item_page.text)
                         item_dom.make_links_absolute(BASE_URL)
