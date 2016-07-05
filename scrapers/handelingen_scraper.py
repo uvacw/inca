@@ -24,12 +24,12 @@ class kamerhandelingen_scraper(Scraper):
         while time_url:
             time_page = requests.get(time_url)
             time_dom  = fromstring(time_page.text)
+            time_dom.make_links_absolute(BASE_URL)
+            next_url = time_dom.xpath('//div[@class="sub-lijst"]//a[contains(text(),"Handelingen")]/@href')
             time_url = time_dom.xpath('//div[@id="Paging"]//a[@class="vorige"]/@href')
             logging.debug("at {next_url}, following time: {time_url}".format(**locals()))
             if time_url:
                 time_url = time_url[0] 
-            time_dom.make_links_absolute(BASE_URL)
-            next_url = time_dom.xpath('//div[@class="sub-lijst"]//a[contains(text(),"Handelingen")]/@href')
             if next_url:
                 next_url = next_url[0]
                 logger.debug("@{next_url}".format(**locals()))
