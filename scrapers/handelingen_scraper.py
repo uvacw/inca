@@ -68,10 +68,10 @@ class kamerhandelingen_scraper(Scraper):
                     next_url = DOM_home.xpath('//a[.="Volgende"]/@href')
                     if next_url:
                         next_url = next_url[0]
-                    time_url = DOM_home.xpath('//div[@id="Paging"]//a[@class="vorige"]/@href')
-                    logging.debug("at {home.url}, following time: {time_url}".format(**locals()))
-                    if time_url:
-                        time_url = time_url[0]
+                time_url = DOM_home.xpath('//div[@id="Paging"]//a[@class="vorige"]/@href')
+                logging.debug("at {home.url}, following time: {time_url}".format(**locals()))
+                if time_url:
+                    time_url = time_url[0]
 
 
             

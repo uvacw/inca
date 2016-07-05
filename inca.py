@@ -43,13 +43,14 @@ import processing
 import logging
 import argparse
 import core
+import inspect
 
 logger = logging.getLogger(__name__)
 
 api        = Flask(__name__)
 taskmaster = Celery()
 
-expose = [ "scrapers", "processors", "analysis"]
+expose = [ "scrapers", "processing", "analysis"]
 
 def show_functions():
     available_functions = """
@@ -98,14 +99,22 @@ def identify_task(function,task):
         print("found {n_options} for {function}/{task}!".format(**locals()))
         return "help"
     
-def handle(function, task, arguments=None):
+def handle(function, task, arguments=None, **kwargs):
     ''' this handler function calls the appropriate celery task'''
+    
     task_key = identify_task(function,task)
+    logger.debug("running {function}:{task_key} with arguments {arguments}".format(**locals()))
+    
     if task_key =='help':
         print(show_tasks(function))
     else:
         run_method = LOCAL_ONLY and 'run' or 'apply_async'
-        getattr(taskmaster.tasks[task_key],run_method)(*arguments)
+        result = getattr(taskmaster.tasks[task_key],run_method)(*arguments, **kwargs)
+        if inspect.isgenerator(result):
+            for res in result: print(res)
+        else:
+            print(result)
+
 
 if __name__ == '__main__':
 
