@@ -35,7 +35,7 @@ class kamerhandelingen_scraper(Scraper):
                     DOM_home.make_links_absolute(BASE_URL)
                     for item_link in DOM_home.xpath('//div[@class="lijst"]//li//@href'):
                         _id = item_link.split('/')[-1].split('.')[0]
-                        if self.check_exists(_id)[0]: continue
+                        if self._check_exists(_id)[0]: continue
                         item_page = requests.get(item_link)
                         item_dom  = fromstring(item_page.text)
                         item_dom.make_links_absolute(BASE_URL)

@@ -11,6 +11,7 @@ tweet, blogpost, whatever)
 import logging
 from core.document_class import Document
 from celery.contrib.methods import task_method
+from core.database import check_exists
 
 logger = logging.getLogger(__name__)
 
@@ -73,3 +74,5 @@ class Scraper(Document):
         except:
             return {"{self.__class__}".format(**locals()) : False}
         
+    def _check_exists(self, *args, **kwargs):
+        return check_exists(*args, **kwargs)
