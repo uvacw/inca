@@ -45,7 +45,7 @@ class Processer(Document):
             for result in func(*args, **kwargs):
                 yield result
         else:
-            return func(*args, **kwargs)    
+            yield func(*args,**kwargs)    
         
     def _process_document(self, document, **kwargs):
         '''
