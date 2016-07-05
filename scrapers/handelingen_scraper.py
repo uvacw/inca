@@ -24,6 +24,10 @@ class kamerhandelingen_scraper(Scraper):
         while time_url:
             time_page = requests.get(time_url)
             time_dom  = fromstring(time_page.text)
+            time_url = time_dom.xpath('//div[@id="Paging"]//a[@class="vorige"]/@href')
+            logging.debug("at {next_url}, following time: {time_url}".format(**locals()))
+            if time_url:
+                time_url = time_url[0] 
             time_dom.make_links_absolute(BASE_URL)
             next_url = time_dom.xpath('//div[@class="sub-lijst"]//a[contains(text(),"Handelingen")]/@href')
             if next_url:
@@ -68,10 +72,7 @@ class kamerhandelingen_scraper(Scraper):
                     next_url = DOM_home.xpath('//a[.="Volgende"]/@href')
                     if next_url:
                         next_url = next_url[0]
-            time_url = DOM_home.xpath('//div[@id="Paging"]//a[@class="vorige"]/@href')
-            logging.debug("at {next_url}, following time: {time_url}".format(**locals()))
-            if time_url:
-                time_url = time_url[0]
+
 
 
             
