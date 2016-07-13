@@ -73,9 +73,13 @@ def update_document(document, force=False):
                       body={'doc':document['_source']}
         )
     elif exists and force:
-        logging.info('FORCED UPDATE of {old_document[_id]} from {document} to {old_document}'.format(**locals()))
+        client.delete(index=elastic_index,
+                      doc_type=old_document['_type'],
+                      id=old_document['_id'])
+        
+        logging.info('FORCED UPDATE of {old_document[_id]}'.format(**locals()))
         document = _remove_dots(document)
-        client.update(index=elastic_index,
+        client.index(index=elastic_index,
                       doc_type=old_document['_type'],
                       id=old_document['_id'],
                       body={'doc':document['_source']}

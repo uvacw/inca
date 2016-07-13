@@ -8,7 +8,7 @@ the <function>_processing class should have a `process` method that
 yields a key:value pair per document, but does not need to return the old document
 (the old document will simple be expanded).   
 
-'''
+''' 
 
 import logging
 from core.document_class import Document
@@ -41,7 +41,7 @@ class Processer(Document):
         '''CHANGE THIS METHOD, should return the changed document'''
         return updated_field
 
-    def run(self, document,field ,save=False, *args, **kwargs):
+    def run(self, document,field ,save=False, force=False, *args, **kwargs):
         # 1. check if document or id --> return doc
         if not (type(document)==dict and '_source' in document.keys()):
             if check_exists(document):
@@ -50,10 +50,13 @@ class Processer(Document):
                 logger.debug("document retrieval failure {document}".format(**locals()))
                 return {}
             
-        # 2. process document
-        document['_source'][self.__name__] = self.process(document['_source'][field], *args, **kwargs)
+        # 2. check whether processing can be skipped
+        new_key =  "%s_%s" %(field, self.__name__)
+        if not force and new_key in document['_source'].keys(): return document
+        # 3. process document
+        document['_source'][new_key] = self.process(document['_source'][field], *args, **kwargs)
         # 3. add metadata
-        document['_source']['META'][self.__name__] = self.process.__doc__
+        document['_source']['META'][new_key] = self.process.__doc__
         # 4. check metadata
         self._verify(document['_source'])
         # 5. save if requested
