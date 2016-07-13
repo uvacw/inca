@@ -5,29 +5,41 @@ This module provides database access objects. The idea is
 that all database specific functionality is in this document alone. Other
 classes and functions should interact with the database only through 
 functionality provided here. 
-
-TODO: factor in settings 
-
 '''
 
 
 import logging
 import json
-from settings import get_config
 from elasticsearch import Elasticsearch, NotFoundError
+from elasticsearch.exceptions import ConnectionTimeout
+import configparser
 
-config = get_config('Production')
+config = configparser.ConfigParser()
+config.read_file(open('settings.cfg'))
+
 logger = logging.getLogger(__name__)
 logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
 client = Elasticsearch(
-    host=config.ELASTIC_HOST,
-    port=config.ELASTIC_PORT
+    host=config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
+    port=config.get('elasticsearch','%s.port'%config.get('inca','dependencies') )
 )   # should be updated to reflect config
-elastic_index  = config.ELASTIC_DATABASE    # should be updated to reflect config 
+elastic_index  = config.get("elasticsearch","document_index")
 
-if not elastic_index in client.indices.get_aliases().keys():
-    client.indices.create('inca', json.load(open('schema.json')))
+# initialize mappings if index does not yet exist
+try:
+    if not elastic_index in client.indices.get_aliases().keys():
+        client.indices.create(elastic_index, json.load(open('schema.json')))
+except:
+    raise "Unable to communicate with elasticsearch"
+
+def get_document(doc_id):
+    if not check_exists(doc_id):
+        logger.debug("No document found with id {document_id}".format(**locals()))
+        return {}
+    else:
+        document = client.get(elastic_index, doc_id)
+    return document
 
 def check_exists(document_id):
     index = elastic_index
@@ -38,6 +50,7 @@ def check_exists(document_id):
     except NotFoundError:
         logger.debug('elastic_index {index} - document [{document_id}] NOT found, returning false'.format(**locals()))
         return False, {}
+    # TODO: ADD TIMEOUT HANDLER
     except:
         logger.warning('unable to check for documents in elasticsearch elastic_index [{elastic_index}]'.format(**{'elastic_index':elastic_index}))
     
@@ -82,10 +95,16 @@ def delete_document(document_id):
 def insert_document(document, custom_identifier=''):
     ''' Insert a new document into the default index '''
     document = _remove_dots(document)
-    if not custom_identifier: 
-        doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document)
+    if not custom_identifier:
+        try:
+            doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document)
+        except ConnectionTimeout:
+            insert_document(document, custom_identifier)
     else:
-        doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
+        try:
+            doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
+        except ConnectionTimeout:
+            insert_document(document, custom_identifier)
     logger.debug('added new document [{doc[_id]}], content: {document}'.format(**locals()))
     return doc["_id"]
 

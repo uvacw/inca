@@ -105,7 +105,7 @@ class Document(Task):
         assert type(document)==dict
         assert document.get('META',False), "document lacks a `meta` key"
         for key in document.keys():
-            if key=='META': continue
+            if key=='META' or key=='doctype': continue
             assert key in document['META'], "meta key for %s is missing from documents!" %key
 
     def _check_complete(self):

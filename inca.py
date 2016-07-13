@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 ooooo ooooo      ooo   .oooooo.         .o.       
 `888' `888b.     `8'  d8P'  `Y8b       .888.      
@@ -44,13 +45,24 @@ import logging
 import argparse
 import core
 import inspect
+import configparser
+import core.search_utils
+
+config = configparser.ConfigParser()
+try:    config.read_file(open('settings.cfg'))
+except: print("settings.cfg is missing or corrupt!");exit()
 
 logger = logging.getLogger(__name__)
 
 api        = Flask(__name__)
-taskmaster = Celery()
+taskmaster = Celery(
+    backend = config.get('celery', '%s.backend' %config.get('inca','dependencies')),
+    broker  = config.get('celery', '%s.broker' %config.get('inca','dependencies')),
+)
 
 expose = [ "scrapers", "processing", "analysis"]
+
+
 
 def show_functions():
     available_functions = """
@@ -99,21 +111,18 @@ def identify_task(function,task):
         print("found {n_options} for {function}/{task}!".format(**locals()))
         return "help"
     
-def handle(function, task, arguments=None, **kwargs):
+def handle(function, task, *args, **kwargs):
     ''' this handler function calls the appropriate celery task'''
     
     task_key = identify_task(function,task)
-    logger.debug("running {function}:{task_key} with arguments {arguments}".format(**locals()))
+    logger.debug("running {function}:{task_key} with arguments {args}".format(**locals()))
     
     if task_key =='help':
         print(show_tasks(function))
     else:
         run_method = LOCAL_ONLY and 'run' or 'apply_async'
-        result = getattr(taskmaster.tasks[task_key],run_method)(*arguments, **kwargs)
-        if inspect.isgenerator(result):
-            for res in result: print(res)
-        else:
-            print(result)
+        result = getattr(taskmaster.tasks[task_key],run_method)(*args, **kwargs)
+        return result
 
 
 if __name__ == '__main__':
