@@ -31,7 +31,7 @@ try:
     if not elastic_index in client.indices.get_aliases().keys():
         client.indices.create(elastic_index, json.load(open('schema.json')))
 except:
-    raise "Unable to communicate with elasticsearch"
+    raise Exception("Unable to communicate with elasticsearch")
 
 def get_document(doc_id):
     if not check_exists(doc_id):
