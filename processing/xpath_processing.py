@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class xpath_processing(Processer):
-    '''Extract Xpath fields from html or xml documents '''
+    '''Extract Xpath fields from html or xml documentsxs    '''
 
     def process(self, document_field, extract_dict, **kwargs):
         '''XPath-based extraction was applied to this document '''
@@ -18,19 +18,8 @@ class xpath_processing(Processer):
             parsed_document = parser(document_field)
         except:
             logger.warning('failed to parse document {document._id}! using xpath_parser, dict={extract_dict}'.format(**locals()))
-        parsed_fields = dict()
-        for fieldname, xpath in extract_dict.items():
-            if type(xpath)==str:
-                xpath = [xpath]
-            next_node = parsed_document
-            for step in xpath:
-                try:
-                    parsed_fields[fieldname] = [next_node_item.xpath(step) for next_node_item in unlist(next_node)]
-                    next_node = parsed_fields[fieldname]
-                    logger.debug("parsed document yielding: {parsed_fields}".format(**locals()))
-                except Exception as e :
-                    #raise "ack!"
-                    logger.warning('failed to parse {fieldname}:{xpath} because {e}'.format(**locals()))
+        parsed_fields = parse_dict(parsed_document, extract_dict)
+         
         return parsed_fields
 
 def unlist(thing):
@@ -41,3 +30,47 @@ def unlist(thing):
         else:
             outems.append(t)
     return outems
+
+def parse_dict(dom, parsedict):
+    '''
+    This function parses xpaths from a DOM object iteratively based
+    on a dictionary specification of extracted information.
+    
+    tuples: "for every element in xpath, parse value"
+    dict  : "add key=DOM.xpath(value)"
+    
+    Example
+    ---
+    <speaker>
+        <fn> Alice </fn>
+        <gender> F  </gender>
+    </speaker>
+    <speaker>
+        <fn> Bob </fn>
+        <gender> M </gender>
+    </speaker>
+
+    becomes:
+    { 'speakers' : [ 
+    { 'fn' : 'Alice', 'gender' ; 'F' },
+    { 'fn' : 'Bob', 'gender', 'M' }
+    ] }
+
+    using:
+    
+    { 'speakers' :  ('//speakers',{'fn':'.//fn', 'gender':'.//gender'})}
+    '''
+    if type(parsedict)==dict:
+        return {k:parse_dict(dom,v) for k,v in parsedict.items()}
+    elif type(parsedict)==tuple:
+        listnode, elements = parsedict
+        return [parse_dict(node, elements) for node in dom.xpath(listnode)]
+    elif type(parsedict)==list:
+        if len(parsedict)<1:
+            return "None"
+        if type(parsedict[0])==str or 'Unicode' in str(type(parsedict[0])):
+            return ' '.join(parsedict)
+        else:
+            return ' '.join([e.text_content() for e in parsedict])
+    elif type(parsedict)==str:
+        return parse_dict(dom,dom.xpath(parsedict))

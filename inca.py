@@ -35,7 +35,7 @@ LOGLEVEL   = 'INFO'
 
 ##############################################
 
-from celery import Celery
+from celery import Celery, group 
 from flask import Flask
 import sys
 import os
@@ -124,7 +124,26 @@ def handle(function, task, *args, **kwargs):
         result = getattr(taskmaster.tasks[task_key],run_method)(*args, **kwargs)
         return result
 
+def group_do(query_or_list, function, task,field,force=False, *args, **kwargs):
+    '''
+    input 
+    --- 
+    query_or_list: [ dict : elasticsearch query, list : set of documents or document_ids ]
+    function : string
+    task : specific task to use
+    field : field of the document to process
+    force (False): whether documents should be updated 
+    
 
+    '''
+    if type(query_or_list)==list:
+        documents = query_or_list
+    else:
+        if not force:
+            query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
+        documents = core.search_utils.scroll_query(query_or_list)
+    return group(taskmaster.tasks[identify_task(function,task)].s(doc,field=field,force=force,*args,**kwargs) for doc in documents).apply_async()
+    
 if __name__ == '__main__':
 
     # prints the banner

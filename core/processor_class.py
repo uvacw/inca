@@ -35,7 +35,7 @@ class Processer(Document):
 
     def _test_function(self):
         '''OVERWRITE THIS METHOD, should yield True (if it works) or False (if it doesn't) '''
-        return {self.__name__ : 'UNKNOWN' }
+        return {self.__name__ : {'status':False, 'message':'UNKNOWN' }}
         
     def process(self, document_field, *args, **kwargs):
         '''CHANGE THIS METHOD, should return the changed document'''
@@ -53,13 +53,18 @@ class Processer(Document):
         # 2. check whether processing can be skipped
         new_key =  "%s_%s" %(field, self.__name__)
         if not force and new_key in document['_source'].keys(): return document
-        # 3. process document
+        # 3. return None if key is missing
+        if not field in document['_source'].keys():
+            print(document['_source'].keys())
+            raise "OMG WTF BBQ"
+            return None
+        # 4. process document
         document['_source'][new_key] = self.process(document['_source'][field], *args, **kwargs)
         # 3. add metadata
         document['_source']['META'][new_key] = self.process.__doc__
         # 4. check metadata
         self._verify(document['_source'])
         # 5. save if requested
-        if save: update_document(document)
+        if save: update_document(document, force=force)
         # 6. emit dotkey-field
         return document

@@ -82,7 +82,7 @@ def update_document(document, force=False):
         client.index(index=elastic_index,
                       doc_type=old_document['_type'],
                       id=old_document['_id'],
-                      body={'doc':document['_source']}
+                      body=document['_source']
         )
     else:
         logging.debug('No existing document found for {document}, defering to insert function')
