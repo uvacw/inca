@@ -13,6 +13,7 @@ import json
 from elasticsearch import Elasticsearch, NotFoundError
 from elasticsearch.exceptions import ConnectionTimeout
 import configparser
+import requests
 
 config = configparser.ConfigParser()
 config.read_file(open('settings.cfg'))
@@ -79,11 +80,15 @@ def update_document(document, force=False):
         
         logging.info('FORCED UPDATE of {old_document[_id]}'.format(**locals()))
         document = _remove_dots(document)
-        client.index(index=elastic_index,
-                      doc_type=old_document['_type'],
-                      id=old_document['_id'],
-                      body=document['_source']
-        )
+        try:
+            client.index(index=elastic_index,
+                         doc_type=old_document['_type'],
+                         id=old_document['_id'],
+                         body=document['_source']
+            )
+        except:
+            logging.warning("FAILED TO RE-INSERT DOCUMENT {document._id}, retrying".format(**locals()))
+            update_document(document, force=force)
     else:
         logging.debug('No existing document found for {document}, defering to insert function')
         insert_document(document)
@@ -130,3 +135,35 @@ def _remove_dots(document):
         if type(v)==dict:
             document[k.replace('.','_')]= _remove_dots(v)
     return document
+
+def create_repository(location):
+    '''Creates a repository called 'inca_backup', which is required
+    to save snapshots. The location must be added to the `path.repo` field
+    of elasticsearch.yaml (generally located at the elasticsearch folder)
+    ''' 
+    
+    body = {
+                  "type": "fs",
+                  "settings": {
+                            "compress": "true",
+                            "location": location
+                          }
+                }
+    return client.snapshot.create_repository('inca_backup',body=body)
+
+def check_snapshot_settings(snapshot):
+    return client.snapshot.status(snapshot)
+
+def list_backups():
+    response = requests.get('http://%s:%s/_snapshot/inca_backup/*' %(config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
+                                                                     config.get('elasticsearch','%s.port' %config.get('inca','dependencies'))))
+    return response.json()
+
+def create_backup(name):
+    body = {
+          "indices": "*",
+          "ignore_unavailable": "false",
+          "include_global_state": True
+        }
+    
+    return client.snapshot.create(repository='inca_backup', snapshot=name,body=body)
