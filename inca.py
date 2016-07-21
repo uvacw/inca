@@ -148,22 +148,22 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
     '''
     Applies a function:task combination to all documents given, but saves them in batches to avoid overloading the database. 
     '''
-    documents = _doctype_query_or_list(doctype_query_or_list, force=force)
+    documents = _doctype_query_or_list(doctype_query_or_list, force=force, field=field)
     for batch in _batcher(documents):
         if not batch: continue #ignore empty batches
-        batch_tasks = [taskmaster.tasks[identify_task(function, task )].s(document=doc,field=field, *args, **kwargs)
+        batch_tasks = [taskmaster.tasks[identify_task(function, task )].s(document=doc,field=field, force=force, *args, **kwargs)
                        for doc in batch]
         batch_chord = chord(batch_tasks)
         batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())
         batch_result.get()
 
-def _doctype_query_or_list(doctype_query_or_list,force=False):
+def _doctype_query_or_list(doctype_query_or_list,force=False, field=None):
     if type(doctype_query_or_list)==list:
         documents = doctype_query_or_list
     elif type(doctype_query_or_list)==str:
         documents = core.search_utils.scroll_query({'filter':{'_type':doctype_query_or_list}})
     else:
-        if not force:
+        if not force and field:
             doctype_query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
         documents = core.search_utils.scroll_query(doctype_query_or_list)
                                                   
