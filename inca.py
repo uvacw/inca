@@ -148,7 +148,7 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
     '''
     Applies a function:task combination to all documents given, but saves them in batches to avoid overloading the database. 
     '''
-    documents = _doctype_query_or_list(doctype_query_or_list)
+    documents = _doctype_query_or_list(doctype_query_or_list, force=force)
     for batch in _batcher(documents):
         if not batch: continue #ignore empty batches
         batch_tasks = [taskmaster.tasks[identify_task(function, task )].s(document=doc,field=field, *args, **kwargs)
@@ -157,7 +157,7 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
         batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())
         batch_result.get()
 
-def _doctype_query_or_list(doctype_query_or_list):
+def _doctype_query_or_list(doctype_query_or_list,force=False):
     if type(doctype_query_or_list)==list:
         documents = doctype_query_or_list
     elif type(doctype_query_or_list)==str:
