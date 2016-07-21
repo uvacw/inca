@@ -35,7 +35,7 @@ LOGLEVEL   = 'INFO'
 
 ##############################################
 
-from celery import Celery, group 
+from celery import Celery, group, chain, chord
 from flask import Flask
 import sys
 import os
@@ -143,7 +143,41 @@ def group_do(query_or_list, function, task,field,force=False, *args, **kwargs):
             query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
         documents = core.search_utils.scroll_query(query_or_list)
     return group(taskmaster.tasks[identify_task(function,task)].s(doc,field=field,force=force,*args,**kwargs) for doc in documents).apply_async()
+
+def batch_do(query_or_list, function, task, field, bulksize=50, *args, **kwargs):
+    '''
     
+    '''
+    if type(query_or_list)==list:
+        documents = query_or_list
+    else:
+        if not force:
+            query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
+        documents = core.search_utils.scroll_query(query_or_list)
+    #return group(core.database.bulk_upsert().s(docs) for docs in
+         #  taskmaster.tasks[identify_task(function,task)].chunks([(doc, field, args, kwargs) for doc in documents],
+         #bulksize)().get()).apply_async()
+    for batch in _batcher(documents):
+        if not batch: continue #ignore empty batches
+        batch_tasks = [taskmaster.tasks[identify_task(function, task )].s(document=doc,field=field, *args, **kwargs)
+                       for doc in batch]
+        batch_chord = chord(batch_tasks)
+        batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())
+        batch_result.get()
+                                                  
+
+def _batcher(stuff, batchsize=10):
+    batch = []
+    for num,thing in enumerate(stuff):
+        batch.append(thing)
+        if (num+1) % batchsize == 0:
+            yield_batch = batch
+            batch = []
+            yield yield_batch
+    if batch:
+        yield batch 
+
+   
 if __name__ == '__main__':
 
     # prints the banner

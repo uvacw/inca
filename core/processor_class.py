@@ -43,12 +43,14 @@ class Processer(Document):
 
     def run(self, document,field ,save=False, force=False, *args, **kwargs):
         # 1. check if document or id --> return doc
+        logger.debug("tring to process: ",document)
         if not (type(document)==dict and '_source' in document.keys()):
+            logger.debug("input not a document")
             if check_exists(document):
                 document = get_document(document)
             else:
                 logger.debug("document retrieval failure {document}".format(**locals()))
-                return {}
+                return document
             
         # 2. check whether processing can be skipped
         new_key =  "%s_%s" %(field, self.__name__)
@@ -56,8 +58,8 @@ class Processer(Document):
         # 3. return None if key is missing
         if not field in document['_source'].keys():
             print(document['_source'].keys())
-            raise "OMG WTF BBQ"
-            return None
+            logger.warning("Key not found in document")
+            return document
         # 4. process document
         document['_source'][new_key] = self.process(document['_source'][field], *args, **kwargs)
         # 3. add metadata

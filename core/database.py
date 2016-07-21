@@ -10,10 +10,11 @@ functionality provided here.
 
 import logging
 import json
-from elasticsearch import Elasticsearch, NotFoundError
+from elasticsearch import Elasticsearch, NotFoundError, helpers
 from elasticsearch.exceptions import ConnectionTimeout
 import configparser
 import requests
+from celery import Task
 
 config = configparser.ConfigParser()
 config.read_file(open('settings.cfg'))
@@ -74,10 +75,10 @@ def update_document(document, force=False):
                       body={'doc':document['_source']}
         )
     elif exists and force:
-        client.delete(index=elastic_index,
-                      doc_type=old_document['_type'],
-                      id=old_document['_id'])
-        
+        #client.delete(index=elastic_index,
+        #              doc_type=old_document['_type'],
+        #              id=old_document['_id'])
+        #
         logging.info('FORCED UPDATE of {old_document[_id]}'.format(**locals()))
         document = _remove_dots(document)
         try:
@@ -125,6 +126,17 @@ def update_or_insert_document(document):
             return update_document(document)
     return insert_document(document)
 
+
+class bulk_upsert(Task):
+    '''Processers can generate far more updates than elasticsearch wants to handle.
+       Bulk_upsert reduces the load on elasticsearch by enabeling multiple documents
+       to be updated together, reducing the amount of queries. 
+    '''
+    def run(self, documents):
+        logger.debug(documents)
+        return helpers.bulk(client, documents)
+        
+
 def _remove_dots(document):
     ''' elasticsearch is allergic to dots like '.' in keys.
     if you're not carefull, it may choke!
@@ -135,6 +147,13 @@ def _remove_dots(document):
         if type(v)==dict:
             document[k.replace('.','_')]= _remove_dots(v)
     return document
+
+#####################
+#
+# Database backup functionality
+#
+######################
+
 
 def create_repository(location):
     '''Creates a repository called 'inca_backup', which is required
