@@ -144,19 +144,11 @@ def group_do(query_or_list, function, task,field,force=False, *args, **kwargs):
         documents = core.search_utils.scroll_query(query_or_list)
     return group(taskmaster.tasks[identify_task(function,task)].s(doc,field=field,force=force,*args,**kwargs) for doc in documents).apply_async()
 
-def batch_do(query_or_list, function, task, field, bulksize=50, *args, **kwargs):
+def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize=50, *args, **kwargs):
     '''
-    
+    Applies a function:task combination to all documents given, but saves them in batches to avoid overloading the database. 
     '''
-    if type(query_or_list)==list:
-        documents = query_or_list
-    else:
-        if not force:
-            query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
-        documents = core.search_utils.scroll_query(query_or_list)
-    #return group(core.database.bulk_upsert().s(docs) for docs in
-         #  taskmaster.tasks[identify_task(function,task)].chunks([(doc, field, args, kwargs) for doc in documents],
-         #bulksize)().get()).apply_async()
+    documents = _doctype_query_or_list(doctype_query_or_list)
     for batch in _batcher(documents):
         if not batch: continue #ignore empty batches
         batch_tasks = [taskmaster.tasks[identify_task(function, task )].s(document=doc,field=field, *args, **kwargs)
@@ -164,6 +156,16 @@ def batch_do(query_or_list, function, task, field, bulksize=50, *args, **kwargs)
         batch_chord = chord(batch_tasks)
         batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())
         batch_result.get()
+
+def _doctype_query_or_list(doctype_query_or_list):
+    if type(doctype_query_or_list)==list:
+        documents = doctype_query_or_list
+    elif type(doctype_query_or_list)==str:
+        documents = core.search_utils.scroll_query({'filter':{'_type':doctype_query_or_list}})
+    else:
+        if not force:
+            doctype_query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
+        documents = core.search_utils.scroll_query(doctype_query_or_list)
                                                   
 
 def _batcher(stuff, batchsize=10):
@@ -218,3 +220,4 @@ if __name__ == '__main__':
     else:
         handle(args.function, args.task, args.task_args)
     
+ 
