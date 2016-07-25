@@ -172,6 +172,7 @@ def scroll_query(query,scroll_time='2m'):
                              search_type='scan')
     sid  = scroller['_scroll_id']
     size = scroller['hits']['total']
+    logger.info('scrolling through {size} results'.format(**locals()))
     while size > 0 :
         page = client.scroll(scroll_id = sid,
                              scroll = scroll_time)

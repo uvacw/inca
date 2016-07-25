@@ -69,8 +69,6 @@ def doctype_examples(doctype, seed=42, num=10):
     })
     return docs['hits']['hits']
 
-
-
 def doctype_fields(doctype):
     '''
     returns a summary of fields for documents of `doctype`:
@@ -83,12 +81,14 @@ def doctype_fields(doctype):
     '''
     from collections import Counter
     key_count = Counter()
-    doc_num   = 0
+    doc_num   = client.search(index=elastic_index)['hits']['total']
     mappings = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype,{}).get('properties',{})
-    for num, doc in enumerate(doctype_examples(doctype, num=1000)):
-        doc_num = num+1
-        [key_count.update([key]) for key in doc.get('_source',{}).keys()]
-    summary = {k:{'coverage':v/doc_num,'type':mappings[k].get('type','unknown')} for k,v in key_count.items()}
+    coverage = {key:client.search(elastic_index,body={'query':{'exists':{'field':key}}}).get('hits',{}).get('total',0) for key in mappings.keys()}
+
+    #for num, doc in enumerate(doctype_examples(doctype, num=1000)):
+    #    doc_num = num+1
+    #    [key_count.update([key]) for key in doc.get('_source',{}).keys()]
+    summary = {k:{'coverage':coverage.get(k,'unknown')/float(doc_num),'type':mappings[k].get('type','unknown')} for k in mappings.keys()}
     return summary
 
 def doctype_inspect(doctype):
@@ -101,18 +101,3 @@ def doctype_inspect(doctype):
     )
     return summary
 
-def scroll_query(query,scroll_time='2m'):
-    scroller = client.search(elastic_index,
-                             body=query,
-                             scroll=scroll_time,
-                             search_type='scan')
-    sid  = scroller['_scroll_id']
-    size = scroller['hits']['total']
-    while size > 0 :
-        page = client.scroll(scroll_id = sid,
-                             scroll = scroll_time)
-        sid = page['_scroll_id']
-        size = len(page['hits']['hits'])
-
-        for doc in page['hits']['hits']:
-            yield doc

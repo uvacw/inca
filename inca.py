@@ -111,7 +111,7 @@ def identify_task(function,task):
         print("found {n_options} for {function}/{task}!".format(**locals()))
         return "help"
     
-def handle(function, task, *args, **kwargs):
+def do(function, task, *args, **kwargs):
     ''' this handler function calls the appropriate celery task'''
     
     task_key = identify_task(function,task)
@@ -156,13 +156,18 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
                        for doc in batch]
         batch_chord = chord(batch_tasks)
         batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())
+        batchjobs.append(batch_result)
     return group(batch.s() for batch in batchjobs)
 
 def _doctype_query_or_list(doctype_query_or_list,force=False, field=None, function=None):
     if type(doctype_query_or_list)==list:
         documents = doctype_query_or_list
     elif type(doctype_query_or_list)==str:
-        documents = core.search_utils.scroll_query({'filter':{'match':{'_type':doctype_query_or_list}}})
+        if force or not field:
+            documents = core.database.scroll_query({'filter':{'match':{'_type':doctype_query_or_list}}})
+        elif not force and field:
+            documents = core.database.scroll_query({'query':{'match':{'doctype':doctype_query_or_list}},
+                                                    'filter':{'missing':{'field': '%s_%s' %(field,function) }}})
     else:
         if not force and field and function:
             doctype_query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
@@ -174,6 +179,7 @@ def _batcher(stuff, batchsize=10):
     for num,thing in enumerate(stuff):
         batch.append(thing)
         if (num+1) % batchsize == 0:
+            logger.info('processing batch %s' %(num+1))
             yield_batch = batch
             batch = []
             yield yield_batch
@@ -219,6 +225,6 @@ if __name__ == '__main__':
     if args.function=='list':
         print(show_functions())
     else:
-        handle(args.function, args.task, args.task_args)
+        do(args.function, args.task, args.task_args)
     
  
