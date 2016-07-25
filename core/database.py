@@ -126,6 +126,23 @@ def update_or_insert_document(document):
             return update_document(document)
     return insert_document(document)
 
+def remove_field(query, field):
+    batch = []
+    for num, document in enumerate(scroll_query(query)):
+        try:
+            document['_source'].pop(field)
+        except:
+            logger.info('skipping {document[_id]}'.format(**locals()))
+            continue
+        try: document['_source']['META'].pop(field)
+        except: pass # This field could be missing
+        batch.append(document)
+        if (num+1) % 50 and batch:
+            logger.info("upserting batch %s" %((num+1) % 50 ))
+            bulk_upsert().run(batch)
+            batch = []
+    if batch: # in case of leftovers
+        bulk_upsert().run(batch) 
 
 class bulk_upsert(Task):
     '''Processers can generate far more updates than elasticsearch wants to handle.
@@ -135,8 +152,8 @@ class bulk_upsert(Task):
     def run(self, documents):
         logger.debug(documents)
         return helpers.bulk(client, documents)
-        
 
+    
 def _remove_dots(document):
     ''' elasticsearch is allergic to dots like '.' in keys.
     if you're not carefull, it may choke!
@@ -147,6 +164,23 @@ def _remove_dots(document):
         if type(v)==dict:
             document[k.replace('.','_')]= _remove_dots(v)
     return document
+
+def scroll_query(query,scroll_time='2m'):
+    scroller = client.search(elastic_index,
+                             body=query,
+                             scroll=scroll_time,
+                             search_type='scan')
+    sid  = scroller['_scroll_id']
+    size = scroller['hits']['total']
+    while size > 0 :
+        page = client.scroll(scroll_id = sid,
+                             scroll = scroll_time)
+        sid = page['_scroll_id']
+        size = len(page['hits']['hits'])
+
+        for doc in page['hits']['hits']:
+            yield doc
+
 
 #####################
 #

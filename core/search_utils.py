@@ -92,7 +92,7 @@ def doctype_fields(doctype):
     return summary
 
 def doctype_inspect(doctype):
-
+    '''TODO: provide an overview of doctype collection '''
     summary = dict(
         total_collected=0,
         first_collected=datetime(),
