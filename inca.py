@@ -104,7 +104,7 @@ def identify_task(function,task):
     if len(fit)==1:
         return fit[0]
     elif len(fit)<1:
-        print("Did not find `{task}` ".format(**locals()))
+        print("Did not find `{function}-{task}` ".format(**locals()))
         return "help"
     else:
         n_options = len(fit)

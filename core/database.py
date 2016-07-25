@@ -221,3 +221,8 @@ def create_backup(name):
         }
     
     return client.snapshot.create(repository='inca_backup', snapshot=name,body=body)
+
+def restore_backup(name):
+    if name in [item['snapshot'] for item in list_backup()]:
+        client.indices.close('inca')
+        client.snapshot.restore(repository='inca_backup', snapshot=name)
