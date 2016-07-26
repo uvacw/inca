@@ -2,8 +2,11 @@
 This file provides basic search functionality for the INCA database. 
 
 '''
-from core.database import client
+from core.database import client, scroll_query
 import configparser
+import logging
+
+logger = logging.getLogger(__name__)
 
 config = configparser.ConfigParser()
 config.read_file(open('settings.cfg'))
@@ -15,6 +18,12 @@ def doctypes():
     overview = {doctype:client.search(index=elastic_index,doc_type=doctype).get('hits',{}).get('total',"NA") for
                                                                                         doctype in existing_doctypes}
     return overview
+
+def doctype_generator(doctype):
+    query = {'filter':{'match':{'doctype':doctype}}}
+    for num, doc in enumerate(scroll_query(query)):
+        logger.info("returning {num}".format(**locals()))
+        yield doc
 
 def doctype_first(doctype, num=1):
     docs = client.search(index=elastic_index,
