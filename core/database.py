@@ -15,6 +15,7 @@ from elasticsearch.exceptions import ConnectionTimeout
 import configparser
 import requests
 from celery import Task
+import os
 
 config = configparser.ConfigParser()
 config.read_file(open('settings.cfg'))
@@ -57,7 +58,7 @@ def check_exists(document_id):
         logger.warning('unable to check for documents in elasticsearch elastic_index [{elastic_index}]'.format(**{'elastic_index':elastic_index}))
     
         
-def update_document(document, force=False):
+def update_document(document, force=False, retry=0, max_retries=10):
     '''
     Documents should usually only be appended, not updated. as such.
 
@@ -88,8 +89,11 @@ def update_document(document, force=False):
                          body=document['_source']
             )
         except Exception as e:
-            logging.warning("FAILED TO RE-INSERT DOCUMENT {document[_id]}, {e} retrying".format(**locals()))
-            update_document(document, force=force)
+            if retry < max_retries:
+                logging.warning("FAILED TO RE-INSERT DOCUMENT {document[_id]}, {e} retrying".format(**locals()))
+                update_document(document, force=force, retry=retry+1, max_retries=max_retries)
+            else:
+                raise e
     else:
         logging.debug('No existing document found for {document}, defering to insert function')
         insert_document(document)
@@ -118,12 +122,12 @@ def insert_document(document, custom_identifier=''):
     logger.debug('added new document [{doc[_id]}], content: {document}'.format(**locals()))
     return doc["_id"]
 
-def update_or_insert_document(document):
+def update_or_insert_document(document, force=False):
     ''' Check whether a document exists, update if so '''
     if '_id' in document.keys():
         exists, document = check_exists(document['_id'])
         if exists:
-            return update_document(document)
+            return update_document(document, force=force)
     return insert_document(document)
 
 def remove_field(query, field):
@@ -226,3 +230,17 @@ def restore_backup(name):
     if name in [item['snapshot'] for item in list_backup()]:
         client.indices.close('inca')
         client.snapshot.restore(repository='inca_backup', snapshot=name)
+
+def export_doctype(doctype):
+    if not 'exports' in os.listdir('.'):
+        os.mkdir('exports')
+    for doc in scroll_query({'query':{'match':{'doctype':doctype}}}):
+        outpath = os.path.join('exports',doctype)
+        if doctype not in os.listdir('exports'):
+            os.mkdir(outpath)
+        with open(os.path.join('exports', doctype, '%s.JSON' %doc['_id']),'w') as f:
+            f.write(json.dumps(doc))
+
+def import_documents(source_folder, force=False):
+    for input_file in os.listdir(source_folder):
+        update_or_insert_document(json.load(open(input_file)), force=force)

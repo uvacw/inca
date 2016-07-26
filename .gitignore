@@ -1,6 +1,9 @@
 # Installables
 dependencies/
 
+# Exports
+exports/
+
 *.pid
 
 # Byte-compiled / optimized / DLL files

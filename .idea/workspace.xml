@@ -2,7 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="77bae57b-e54b-448a-aeb2-cf489232b07c" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/processing/alpino.py" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/database.py" afterPath="$PROJECT_DIR$/core/database.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/processing/alpino_processing.py" afterPath="$PROJECT_DIR$/processing/alpino_processing.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scrapers/handelingen_scraper.py" afterPath="$PROJECT_DIR$/scrapers/handelingen_scraper.py" />
     </list>
     <ignored path="inca.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -44,21 +49,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="alpino.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/processing/alpino.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" column="3" selection-start-line="5" selection-start-column="3" selection-end-line="5" selection-end-column="3" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="alpino_processing.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="alpino_processing.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+            <state relative-caret-position="480">
+              <caret line="32" column="8" selection-start-line="32" selection-start-column="8" selection-end-line="32" selection-end-column="8" />
               <folding>
                 <element signature="e#0#42#0" expanded="true" />
               </folding>
@@ -69,8 +64,8 @@
       <file leaf-file-name="search_utils.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/search_utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1050">
-              <caret line="72" column="30" selection-start-line="72" selection-start-column="30" selection-end-line="72" selection-end-column="30" />
+            <state relative-caret-position="45">
+              <caret line="3" column="5" selection-start-line="3" selection-start-column="5" selection-end-line="3" selection-end-column="5" />
               <folding />
             </state>
           </provider>
@@ -108,12 +103,26 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="database.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="database.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/database.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="540">
-              <caret line="89" column="20" selection-start-line="89" selection-start-column="20" selection-end-line="89" selection-end-column="20" />
-              <folding />
+            <state relative-caret-position="435">
+              <caret line="218" column="0" selection-start-line="218" selection-start-column="0" selection-end-line="218" selection-end-column="0" />
+              <folding>
+                <element signature="e#278#292#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="handelingen_scraper.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scrapers/handelingen_scraper.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="420">
+              <caret line="50" column="92" selection-start-line="50" selection-start-column="92" selection-end-line="50" selection-end-column="92" />
+              <folding>
+                <element signature="e#0#15#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -127,23 +136,24 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/processing/.#alpino.py" />
-        <option value="$PROJECT_DIR$/processing/alpino.py" />
         <option value="$PROJECT_DIR$/core/scraper_class.py" />
-        <option value="$PROJECT_DIR$/core/search_utils.py" />
-        <option value="$PROJECT_DIR$/processing/alpino_processing.py" />
         <option value="$PROJECT_DIR$/core/dependency_manager.py" />
         <option value="$PROJECT_DIR$/processing/xpath_processing.py" />
         <option value="$PROJECT_DIR$/core/processor_class.py" />
         <option value="$PROJECT_DIR$/core/document_class.py" />
+        <option value="$PROJECT_DIR$/core/search_utils.py" />
         <option value="$PROJECT_DIR$/core/database.py" />
+        <option value="$PROJECT_DIR$/processing/alpino.py" />
+        <option value="$PROJECT_DIR$/processing/alpino_processing.py" />
+        <option value="$PROJECT_DIR$/scrapers/handelingen_scraper.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-206" />
-    <option name="y" value="-1027" />
-    <option name="width" value="1680" />
-    <option name="height" value="1027" />
+    <option name="x" value="142" />
+    <option name="y" value="43" />
+    <option name="width" value="1400" />
+    <option name="height" value="987" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -173,7 +183,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="SearchEverywhereHistoryKey" value="databas&#9;null&#9;null&#10;do&#9;null&#9;null&#10;process&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/processor_class.py&#10;search&#9;null&#9;null&#10;xpath&#9;null&#9;null&#10;alpin&#9;null&#9;null&#10;inca&#9;null&#9;null&#10;alpino&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/.#alpino.py" />
+    <property name="SearchEverywhereHistoryKey" value="hande&#9;null&#9;null&#10;databas&#9;null&#9;null&#10;do&#9;null&#9;null&#10;process&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/processor_class.py&#10;search&#9;null&#9;null&#10;xpath&#9;null&#9;null&#10;alpin&#9;null&#9;null&#10;inca&#9;null&#9;null&#10;alpino&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/.#alpino.py" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -366,7 +376,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-206" y="-1027" width="1680" height="1027" extended-state="6" />
+    <frame x="142" y="43" width="1400" height="987" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -432,47 +442,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/processing/alpino.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="3" selection-start-line="5" selection-start-column="3" selection-end-line="5" selection-end-column="3" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/processing/core/dependency_utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#42#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/search_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1050">
-          <caret line="72" column="30" selection-start-line="72" selection-start-column="30" selection-end-line="72" selection-end-column="30" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/dependency_manager.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="12" selection-start-line="15" selection-start-column="12" selection-end-line="15" selection-end-column="12" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -494,14 +468,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/processor_class.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="645">
-          <caret line="59" column="37" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/core/document_class.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
@@ -510,11 +476,67 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/core/processor_class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="645">
+          <caret line="59" column="37" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/search_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="5" selection-start-line="3" selection-start-column="5" selection-end-line="3" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/core/database.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="89" column="20" selection-start-line="89" selection-start-column="20" selection-end-line="89" selection-end-column="20" />
+        <state relative-caret-position="435">
+          <caret line="218" column="0" selection-start-line="218" selection-start-column="0" selection-end-line="218" selection-end-column="0" />
+          <folding>
+            <element signature="e#278#292#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/processing/alpino.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="495">
+          <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/dependency_manager.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" column="12" selection-start-line="15" selection-start-column="12" selection-end-line="15" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scrapers/handelingen_scraper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="50" column="92" selection-start-line="50" selection-start-column="92" selection-end-line="50" selection-end-column="92" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="32" column="8" selection-start-line="32" selection-start-column="8" selection-end-line="32" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#42#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

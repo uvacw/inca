@@ -1,15 +1,33 @@
 from core.processor_class import Processer
 from cytoolz import identity, pipe
+import subprocess
 import os
+import datetime
+import re
 
 CMD_PARSE = ["bin/Alpino", "end_hook=dependencies", "-parse"]
 CMD_TOKENIZE = ["Tokenization/tok"]
 
 class alpino(Processer):
-    def process(self, document_field, output="raw"):
-        transf = _output_func(output, interpret_parse)
-        return pipe(document_field, tokenize, parse_raw, transf)
+    def process(self, document_field, splitlines=True):
+        if splitlines:
+            document_field = re.split("[(\r\n).?!\n]",document_field)
+        else:
+            document_field = [document_field]
 
+        line_parses = []
+        for line in document_field:
+            if not line: continue # skip emtpy lines that may result from repeated delimitters
+            p = subprocess.Popen(["bin/Alpino","end_hook=dependencies","-parse"],
+                                 shell=False,
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 cwd=os.environ['ALPINO_HOME'])
+            parsed = p.communicate(line.encode('utf-8'))
+            tree   = interpret_parse(parsed[0])
+            line_parses.append(tree)
+        return line_parses
 
 def _output_func(output, saf_func):
     try:
@@ -31,8 +49,7 @@ def tokenize(text):
     with spaces separating tokens and newlines sentences
     """
     alpino_home = os.environ['ALPINO_HOME']
-    if isinstance(text, unicode):
-        text = text.encode("utf-8")
+    text = text.encode("utf-8")
 
     p = subprocess.Popen(CMD_TOKENIZE, shell=False, stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE,
