@@ -74,10 +74,12 @@ class Document(Task):
         about the script in question. 
 
         '''
+        try:    docstring = self.get.__doc__
+        except: docstring = self.process.__doc__
         meta = dict(
             ADDED_AT              = datetime.datetime.now(),
             ADDED_USING           =str(self.__class__).split(' ')[1],
-            ADDED_METHOD          = self.get.__doc__,
+            ADDED_METHOD          = docstring,
             FUNCTION_VERSION      = self.version,
             FUNCTION_VERSION_DATE = self.date,
             FUNCTION_TYPE         = self.functiontype,
