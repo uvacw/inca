@@ -87,8 +87,8 @@ def update_document(document, force=False):
                          id=old_document['_id'],
                          body=document['_source']
             )
-        except:
-            logging.warning("FAILED TO RE-INSERT DOCUMENT {document._id}, retrying".format(**locals()))
+        except Exception as e:
+            logging.warning("FAILED TO RE-INSERT DOCUMENT {document[_id]}, {e} retrying".format(**locals()))
             update_document(document, force=force)
     else:
         logging.debug('No existing document found for {document}, defering to insert function')
