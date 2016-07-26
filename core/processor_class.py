@@ -63,7 +63,7 @@ class Processer(Document):
         # 4. process document
         document['_source'][new_key] = self.process(document['_source'][field], *args, **kwargs)
         # 3. add metadata
-        document['_source']['META'][new_key] = self.process.__doc__
+        document['_source'] = self._add_metadata(document['_source'])
         # 4. check metadata
         self._verify(document['_source'])
         # 5. save if requested

@@ -1,6 +1,5 @@
 '''
-This file provides basic search functionality for the INCA database. 
-
+This file provides basic search functionality for the INCA database.
 '''
 from core.database import client, scroll_query
 import configparser
@@ -25,11 +24,23 @@ def doctype_generator(doctype):
         logger.info("returning {num}".format(**locals()))
         yield doc
 
-def doctype_first(doctype, num=1):
+def doctype_first(doctype, num=1, by_field=""):
+    '''Returns the first document of a given doctype
+
+    Input
+    ---
+    doctype: string
+        The document type you whish to retrieved
+    num: int
+        The number of documents to retrieve
+    by_field: string
+        The datetime field by which to determine the
+        first document 
+    '''
     docs = client.search(index=elastic_index,
                   body={
                       "sort": [
-                          {"Publicatiedatum" : {"order":"desc"}}
+                          {by_field : {"order":"desc"}}
                           ],
                       "size":num,
                       "query":
@@ -40,11 +51,23 @@ def doctype_first(doctype, num=1):
                       }}).get('hits',{}).get('hits',[""])
     return docs
 
-def doctype_last(doctype,num=1):
+def doctype_last(doctype,num=1, by_field=""):
+    '''Returns the last document of a given doctype
+
+    Input
+    ---
+    doctype: string
+        The document type you whish to retrieved
+    num: int
+        The number of documents to retrieve
+    by_field: string
+        The datetime field by which to determine the
+        last document 
+    '''
     docs = client.search(index=elastic_index,
                   body={
                       "sort": [
-                          {"Publicatiedatum" : {"order":"asc"}}
+                          { by_field : {"order":"asc"}}
                           ],
                       "size":num,
                       "query":

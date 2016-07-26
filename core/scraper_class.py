@@ -31,6 +31,7 @@ class Scraper(Document):
         
     def get(self):
         ''' This docstring should explain how documents are retrieved
+
         '''
         logger.warning("You forgot to overwrite the 'get' method of this scraper!")
         yield dict()

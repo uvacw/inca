@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class xpath_processing(Processer):
+class xpath(Processer):
     '''Extract Xpath fields from html or xml documentsxs    '''
 
     def process(self, document_field, extract_dict, **kwargs):

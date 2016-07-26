@@ -85,7 +85,7 @@ class Document(Task):
             )
 
         if not document.get('META',False):
-            document['META']=dict()
+            document['META']=dict(ADDED=datetime.datetime.now())
 
         for key in document.keys():
             if key == 'META': continue
