@@ -75,7 +75,10 @@ class Document(Task):
 
         '''
         try:    docstring = self.get.__doc__
-        except: docstring = self.process.__doc__
+        except:
+            try: docstring = self.process.__doc__
+            except: docstring = self.run.__doc__
+
         meta = dict(
             ADDED_AT              = datetime.datetime.now(),
             ADDED_USING           =str(self.__class__).split(' ')[1],

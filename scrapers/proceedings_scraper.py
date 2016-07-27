@@ -47,6 +47,9 @@ class proceedings_NL(Scraper):
                         metadata_url = item_dom.xpath('//*[contains(text(), "Technische informatie")]/@href')
                         xml_url      = item_dom.xpath('//*[contains(text(), "Xml-formaat")]/@href')
 
+                        try: metadata_xml = requests.get(item_link.replace('.html','/metadata.xml')).content.decode('utf-8-SIG')
+                        except: metadata_xml = ''
+
                         if xml_url:
                             xml_content = requests.get(xml_url[0]).content.decode('utf-8-SIG')
                             if metadata_url:
@@ -64,7 +67,8 @@ class proceedings_NL(Scraper):
                         doc = dict(
                             _id         = _id,
                             source      = item_link,
-                            xml_content = xml_content
+                            xml_content = xml_content,
+                            xml_metadata= metadata_xml
                         )
                         doc.update(metadata)
                         yield doc

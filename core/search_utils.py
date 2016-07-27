@@ -86,7 +86,7 @@ def doctype_examples(doctype, seed=42, num=10):
                 "filter": {
                        
                         "match": {
-                            "doctype": doctype
+                            "_type": doctype
                             }
                  
                     },

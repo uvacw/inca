@@ -11,8 +11,8 @@ o888o o8o        `8   `Y8bood8P'  o88o     o8888o
 Welcome to INCA
 
 This module provides some data-scraping, searching and analysis functionality. 
-You can run this locally, at a server, or perhaps on a cluster without too much
-hassle. 
+You can run this locally, at a server, or perhaps on a cluster (hopefully) without too much
+hassle.
 
 Please consult the `README.md` file for more information about setting up and
 running INCA. 
