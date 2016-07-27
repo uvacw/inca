@@ -2,16 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="77bae57b-e54b-448a-aeb2-cf489232b07c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/core/import_class.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scrapers/handelingen_scraper.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scrapers/tweedekamer_diversen_scraper.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scrapers/tweedekamer_scraper.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/__init__.py" afterPath="$PROJECT_DIR$/core/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/document_class.py" afterPath="$PROJECT_DIR$/core/document_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/search_utils.py" afterPath="$PROJECT_DIR$/core/search_utils.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/inca.py" afterPath="$PROJECT_DIR$/inca.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scrapers/proceedings_scraper.py" afterPath="$PROJECT_DIR$/scrapers/proceedings_scraper.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/import_class.py" afterPath="$PROJECT_DIR$/core/import_class.py" />
     </list>
     <ignored path="inca.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -31,7 +22,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="inca.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="inca.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/inca.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="210">
@@ -43,11 +34,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="import_class.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="import_class.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/import_class.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="330">
+              <caret line="22" column="67" selection-start-line="22" selection-start-column="67" selection-end-line="22" selection-end-column="67" />
               <folding />
             </state>
           </provider>
@@ -156,6 +147,7 @@
         <option value="$PROJECT_DIR$/core/import.py" />
         <option value="$PROJECT_DIR$/core/__init__.py" />
         <option value="$PROJECT_DIR$/inca.py" />
+        <option value="$PROJECT_DIR$/core/import_class.py" />
       </list>
     </option>
   </component>
@@ -632,14 +624,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/import_class.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/inca.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
@@ -647,6 +631,14 @@
           <folding>
             <element signature="e#1112#1158#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/import_class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="22" column="67" selection-start-line="22" selection-start-column="67" selection-end-line="22" selection-end-column="67" />
+          <folding />
         </state>
       </provider>
     </entry>

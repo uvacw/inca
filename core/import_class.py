@@ -20,5 +20,5 @@ class importer(Document):
             document = self._add_metadata(document)
             self._verify(document)
             if id_field and id_field in document.keys():
-                document['_id'] = document.get(id_field, None)
+                document['_id'] = str(document.get(id_field, None))
             self._save_document(document,forced=force)
