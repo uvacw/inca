@@ -1,3 +1,7 @@
+'''
+Provides ALpino parsing functionality based on the XTAS implementation.
+'''
+
 from core.processor_class import Processer
 from cytoolz import identity, pipe
 import subprocess
@@ -11,7 +15,7 @@ CMD_TOKENIZE = ["Tokenization/tok"]
 class alpino(Processer):
     def process(self, document_field, splitlines=True):
         if splitlines:
-            document_field = re.split("[(\r\n).?!\n]",document_field)
+            document_field = re.split(r"[(\r\n).?!\n\\|]", document_field)
         else:
             document_field = [document_field]
 

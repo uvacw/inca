@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="77bae57b-e54b-448a-aeb2-cf489232b07c" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/import_class.py" afterPath="$PROJECT_DIR$/core/import_class.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/processing/alpino_processing.py" afterPath="$PROJECT_DIR$/processing/alpino_processing.py" />
     </list>
     <ignored path="inca.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -37,9 +38,11 @@
       <file leaf-file-name="import_class.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/import_class.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="22" column="67" selection-start-line="22" selection-start-column="67" selection-end-line="22" selection-end-column="67" />
-              <folding />
+            <state relative-caret-position="345">
+              <caret line="23" column="40" selection-start-line="23" selection-start-column="40" selection-end-line="23" selection-end-column="40" />
+              <folding>
+                <element signature="e#51#91#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -71,10 +74,10 @@
       <file leaf-file-name="alpino_processing.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="7" column="61" selection-start-line="7" selection-start-column="61" selection-end-line="7" selection-end-column="61" />
+            <state relative-caret-position="255">
+              <caret line="17" column="39" selection-start-line="17" selection-start-column="39" selection-end-line="17" selection-end-column="39" />
               <folding>
-                <element signature="e#0#42#0" expanded="true" />
+                <element signature="e#81#123#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -95,8 +98,8 @@
       <file leaf-file-name="document_class.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/document_class.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+            <state relative-caret-position="45">
+              <caret line="68" column="0" selection-start-line="68" selection-start-column="0" selection-end-line="68" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -139,7 +142,6 @@
         <option value="$PROJECT_DIR$/core/processor_class.py" />
         <option value="$PROJECT_DIR$/core/database.py" />
         <option value="$PROJECT_DIR$/processing/alpino.py" />
-        <option value="$PROJECT_DIR$/processing/alpino_processing.py" />
         <option value="$PROJECT_DIR$/scrapers/handelingen_scraper.py" />
         <option value="$PROJECT_DIR$/core/search_utils.py" />
         <option value="$PROJECT_DIR$/scrapers/proceedings_scraper.py" />
@@ -147,6 +149,7 @@
         <option value="$PROJECT_DIR$/core/import.py" />
         <option value="$PROJECT_DIR$/core/__init__.py" />
         <option value="$PROJECT_DIR$/inca.py" />
+        <option value="$PROJECT_DIR$/processing/alpino_processing.py" />
         <option value="$PROJECT_DIR$/core/import_class.py" />
       </list>
     </option>
@@ -186,6 +189,7 @@
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="SearchEverywhereHistoryKey" value="core/__&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/__init__.py&#10;hande&#9;null&#9;null&#10;databas&#9;null&#9;null&#10;do&#9;null&#9;null&#10;process&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/processor_class.py&#10;search&#9;null&#9;null&#10;xpath&#9;null&#9;null&#10;alpin&#9;null&#9;null&#10;inca&#9;null&#9;null&#10;alpino&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/.#alpino.py" />
+    <property name="last.edited.regexp" value="" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -455,7 +459,7 @@
         <state relative-caret-position="405">
           <caret line="32" column="8" selection-start-line="32" selection-start-column="8" selection-end-line="32" selection-end-column="8" />
           <folding>
-            <element signature="e#0#42#0" expanded="true" />
+            <element signature="e#81#123#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -475,7 +479,7 @@
         <state relative-caret-position="75">
           <caret line="8" column="11" selection-start-line="8" selection-start-column="11" selection-end-line="8" selection-end-column="11" />
           <folding>
-            <element signature="e#0#42#0" expanded="true" />
+            <element signature="e#0#42#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -535,7 +539,7 @@
         <state relative-caret-position="75">
           <caret line="8" column="11" selection-start-line="8" selection-start-column="11" selection-end-line="8" selection-end-column="11" />
           <folding>
-            <element signature="e#0#42#0" expanded="true" />
+            <element signature="e#0#42#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -570,16 +574,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="61" selection-start-line="7" selection-start-column="61" selection-end-line="7" selection-end-column="61" />
-          <folding>
-            <element signature="e#0#42#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/core/dependency_manager.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="225">
@@ -587,22 +581,6 @@
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scrapers/proceedings_scraper.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="16" column="97" selection-start-line="16" selection-start-column="97" selection-end-line="16" selection-end-column="97" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/document_class.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -634,11 +612,39 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/scrapers/proceedings_scraper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="16" column="97" selection-start-line="16" selection-start-column="97" selection-end-line="16" selection-end-column="97" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/document_class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="68" column="0" selection-start-line="68" selection-start-column="0" selection-end-line="68" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" column="39" selection-start-line="17" selection-start-column="39" selection-end-line="17" selection-end-column="39" />
+          <folding>
+            <element signature="e#81#123#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/core/import_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="22" column="67" selection-start-line="22" selection-start-column="67" selection-end-line="22" selection-end-column="67" />
-          <folding />
+        <state relative-caret-position="345">
+          <caret line="23" column="40" selection-start-line="23" selection-start-column="40" selection-end-line="23" selection-end-column="40" />
+          <folding>
+            <element signature="e#51#91#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
