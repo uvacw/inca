@@ -416,12 +416,11 @@ def lda(minfreq,file,ntopics,tfidf=False):
 
             termcounts=""
             for term in allterms:
-                termcounts+=("\t"+str(item["text"].lower().split().count(term)))
+                termcounts+=("\t"+str(len(re.findall('\\b'+term+'\\b',item['text']))))
             foroutput_alltermscounts.append(termcounts)
             termoccs=''
             for term in allterms:
-                # termoccs+=('\t'+str(item['text'].find(term)))
-                r=re.search('\\b'+term+'\\b',item['text'].lower())
+                r=re.search('\\b'+term+'\\b',item['text'])
                 if r:
                     position=r.start()
                 else:
