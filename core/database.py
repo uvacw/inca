@@ -119,7 +119,7 @@ def insert_document(document, custom_identifier=''):
             doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
         except ConnectionTimeout:
             insert_document(document, custom_identifier)
-    logger.debug('added new document [{doc[_id]}], content: {document}'.format(**locals()))
+    logger.debug('added new document [{document[_id]}], content: {document}'.format(**locals()))
     return doc["_id"]
 
 def update_or_insert_document(document, force=False):

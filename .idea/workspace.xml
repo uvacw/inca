@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="77bae57b-e54b-448a-aeb2-cf489232b07c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/import_class.py" afterPath="$PROJECT_DIR$/core/import_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/search_utils.py" afterPath="$PROJECT_DIR$/core/search_utils.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/taskmanager.py" afterPath="$PROJECT_DIR$/core/taskmanager.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/inca.py" afterPath="$PROJECT_DIR$/inca.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/processing/alpino_processing.py" afterPath="$PROJECT_DIR$/processing/alpino_processing.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/processing/core/dependency_utils.py" afterPath="$PROJECT_DIR$/processing/core/dependency_utils.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/settings.cfg" afterPath="$PROJECT_DIR$/settings.cfg" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/database.py" afterPath="$PROJECT_DIR$/core/database.py" />
     </list>
     <ignored path="inca.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -51,7 +44,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="taskmanager.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="taskmanager.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="675">
@@ -109,11 +102,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="database.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="database.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/database.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="20" selection-end-column="38" />
+            <state relative-caret-position="495">
+              <caret line="121" column="47" selection-start-line="121" selection-start-column="47" selection-end-line="121" selection-end-column="47" />
               <folding>
                 <element signature="e#278#292#0" expanded="true" />
               </folding>
@@ -154,7 +147,6 @@
         <option value="$PROJECT_DIR$/core/dependency_manager.py" />
         <option value="$PROJECT_DIR$/processing/xpath_processing.py" />
         <option value="$PROJECT_DIR$/core/processor_class.py" />
-        <option value="$PROJECT_DIR$/core/database.py" />
         <option value="$PROJECT_DIR$/processing/alpino.py" />
         <option value="$PROJECT_DIR$/scrapers/handelingen_scraper.py" />
         <option value="$PROJECT_DIR$/scrapers/proceedings_scraper.py" />
@@ -168,6 +160,7 @@
         <option value="$PROJECT_DIR$/core/import_class.py" />
         <option value="$PROJECT_DIR$/processing/alpino_processing.py" />
         <option value="$PROJECT_DIR$/core/taskmanager.py" />
+        <option value="$PROJECT_DIR$/core/database.py" />
       </list>
     </option>
   </component>
@@ -589,16 +582,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/database.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="20" selection-end-column="38" />
-          <folding>
-            <element signature="e#278#292#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/settings.cfg">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
@@ -657,6 +640,16 @@
           <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
           <folding>
             <element signature="e#81#92#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/database.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="495">
+          <caret line="121" column="47" selection-start-line="121" selection-start-column="47" selection-end-line="121" selection-end-column="47" />
+          <folding>
+            <element signature="e#278#292#0" expanded="true" />
           </folding>
         </state>
       </provider>
