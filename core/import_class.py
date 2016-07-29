@@ -29,4 +29,4 @@ class importer(Document):
             try:
                 self._save_document(document,forced=force)
             except Exception as e:
-                print("ACK: {e}".format(**locals()))
+                logger.warning("ACK, unable to import document number {num}: {e}".format(**locals()))

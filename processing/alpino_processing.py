@@ -8,12 +8,19 @@ import subprocess
 import os
 import datetime
 import re
+import configparser
 
-CMD_PARSE = ["bin/Alpino", "end_hook=dependencies", "-parse"]
+config = configparser.ConfigParser()
+config.read_file(open('settings.cfg'))
+
+CMD_PARSE    = ["bin/Alpino", "end_hook=dependencies", "-parse"]
 CMD_TOKENIZE = ["Tokenization/tok"]
+ALPINO_HOME  = config.get("alpino", "alpino.home")
+os.environ['ALPINO_HOME'] = os.path.join(os.getcwd(),ALPINO_HOME)
 
 class alpino(Processer):
     def process(self, document_field, splitlines=True):
+        """Alpino based tokenization and dependency parsing of Dutch texts"""
         if splitlines:
             document_field = re.split(r"[(\r\n).?!\n\\|]", document_field)
         else:
@@ -21,6 +28,7 @@ class alpino(Processer):
 
         line_parses = []
         for line in document_field:
+            line = encode_or_drop(line)
             if not line: continue # skip emtpy lines that may result from repeated delimitters
             p = subprocess.Popen(["bin/Alpino","end_hook=dependencies","-parse"],
                                  shell=False,
@@ -28,10 +36,23 @@ class alpino(Processer):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
                                  cwd=os.environ['ALPINO_HOME'])
-            parsed = p.communicate(line.encode('utf-8'))
+            try:
+                parsed = p.communicate(line)
+            except Exception as e:
+                p.kill()
+                raise e
             tree   = interpret_parse(parsed[0])
             line_parses.append(tree)
         return line_parses
+
+def encode_or_drop(line):
+    safeline = []
+    for char in line:
+        try:
+            char.encode('utf-8', 'replace')
+            safeline.append(char)
+        except: pass
+    return ''.join(safeline).encode('utf-8','replace')
 
 def _output_func(output, saf_func):
     try:

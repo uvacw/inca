@@ -62,7 +62,12 @@ taskmaster = Celery(
 
 expose = [ "scrapers", "processing", "analysis"]
 
-
+@taskmaster.task
+def update_schedule():
+    '''This task should be scheduled to run frequently!'''
+    taskmaster.conf.update(
+        CELERYBEAT_SCHEDULE = json.load(open(config.get('celery','taskfile')))
+    )
 
 def show_functions():
     available_functions = """
@@ -120,11 +125,11 @@ def do(function, task, *args, **kwargs):
     if task_key =='help':
         print(show_tasks(function))
     else:
-        run_method = LOCAL_ONLY and 'run' or 'apply_async'
+        run_method = LOCAL_ONLY and 'run' or 'delay'
         result = getattr(taskmaster.tasks[task_key],run_method)(*args, **kwargs)
         return result
 
-def group_do(query_or_list, function, task,field,force=False, *args, **kwargs):
+def group_do(query_or_list, function, task,field,force=False, skew=0, *args, **kwargs):
     '''
     input 
     --- 
@@ -132,27 +137,31 @@ def group_do(query_or_list, function, task,field,force=False, *args, **kwargs):
     function : string
     task : specific task to use
     field : field of the document to process
-    force (False): whether documents should be updated 
-    
+    force (False): whether documents should be updated
+    skew (0.0): delay between starting tasks (prevents overload of database)
+
 
     '''
-    if type(query_or_list)==list:
-        documents = query_or_list
-    else:
-        if not force:
-            query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
-        documents = core.search_utils.scroll_query(query_or_list)
-    return group(taskmaster.tasks[identify_task(function,task)].s(doc,field=field,force=force,*args,**kwargs) for doc in documents).apply_async()
+    #if type(query_or_list)==list:
+    #    documents = query_or_list
+    #else:
+    #   if not force:
+    #        query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
+    #    documents = core.search_utils.scroll_query(query_or_list)
+    documents = _doctype_query_or_list(query_or_list,force=force,field=field,function=task)
+    return group(taskmaster.tasks[identify_task(function,task)].s(doc,field=field,force=force,*args,**kwargs) for
+                 doc in documents).skew(step=skew).apply_async()
 
 def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize=50, *args, **kwargs):
-    '''
-    Applies a function:task combination to all documents given, but saves them in batches to avoid overloading the database. 
-    '''
+    """
+    Applies a function:task combination to all documents given, but saves them in batches to avoid overloading the database.
+    """
     documents = _doctype_query_or_list(doctype_query_or_list, force=force, field=field, function=function)
     batchjobs = []
     for batch in _batcher(documents, batchsize=bulksize):
         if not batch: continue #ignore empty batches
-        batch_tasks = [taskmaster.tasks[identify_task(function, task )].s(document=doc,field=field, force=force, *args, **kwargs)
+        batch_tasks = [taskmaster.tasks[identify_task(function, task )].s(document=doc,field=field,
+                                                                          force=force, *args, **kwargs)
                        for doc in batch]
         batch_chord = chord(batch_tasks)
         batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())

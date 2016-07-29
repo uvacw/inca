@@ -113,7 +113,7 @@ def doctype_fields(doctype):
     '''
     from collections import Counter
     key_count = Counter()
-    doc_num   = client.search(index=elastic_index, body={'query':{'match':{'_type':doctype}}})['hits']['total']
+    doc_num   = client.search(index=elastic_index, body={'filter':{'match':{'doctype':doctype}}})['hits']['total']
     mappings = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype,{}).get('properties',{})
     coverage = {key:client.search(elastic_index,body={'query':{'exists':{'field':key}},
                                                       'filter':{'match':{'doctype':doctype}}}).get('hits',{}).get('total',0) for key in mappings.keys()}
