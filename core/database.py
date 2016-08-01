@@ -62,7 +62,20 @@ def update_document(document, force=False, retry=0, max_retries=10):
     '''
     Documents should usually only be appended, not updated. as such.
 
-    input documents should be elasticsearch results with added fields. 
+    input documents should be elasticsearch results with added fields.
+
+    input
+    ---
+    document: dict
+        An elasticsearch document
+    force: boolean
+        Indicates whether the document should replace (true) or only
+        expand existing documents (false). Note that partial updates
+        are not supported when forcing.
+    retry (optional): integer [default=0]
+        counter of the number of tries
+    max_retries (optional): integer [default=10]
+        number of attempts to insert documents. Compared to retry integer.
 
     '''
     exists, old_document = check_exists(document['_id'])

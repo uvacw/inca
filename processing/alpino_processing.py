@@ -45,6 +45,14 @@ class alpino(Processer):
             line_parses.append(tree)
         return line_parses
 
+    def _test_function(self):
+        '''tests whether alpino works'''
+        try:
+            self.process("de kat krabt de krullen")
+            return {self.__name__ : {'status':True, 'message':'Alpino is available and working' }}
+        except:
+            return {self.__name__ : {'status':False, 'message':'Alpino is unavailable' }}
+
 def encode_or_drop(line):
     safeline = []
     for char in line:
