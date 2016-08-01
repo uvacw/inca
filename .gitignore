@@ -1,3 +1,11 @@
+# Installables
+dependencies/
+
+# Exports
+exports/
+
+*.pid
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
