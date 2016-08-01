@@ -42,3 +42,19 @@ pip install -r Requirements
 python
 import inca
 ```
+
+6. optional: Install & run AMQP message broker for parallel tasks
+
+  a. start broker
+  
+  ```
+  wget https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.4/rabbitmq-server-mac-standalone-3.6.4.tar.xz
+  tar -zxvf rabbitmq-server-mac-standalone-3.6.4.tar.xz
+  ./rabbitmq/rabbitmq_server-3.6.3/sbin/rabbitmq-server
+  ```
+  
+  b. start a worker
+  
+  ```
+  celery worker -A inca -l INFO
+  ``
