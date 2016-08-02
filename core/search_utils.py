@@ -24,7 +24,7 @@ def doctype_generator(doctype):
         logger.info("returning {num}".format(**locals()))
         yield doc
 
-def doctype_first(doctype, num=1, by_field=""):
+def doctype_first(doctype, num=1, by_field="META.ADDED"):
     '''Returns the first document of a given doctype
 
     Input
@@ -51,7 +51,7 @@ def doctype_first(doctype, num=1, by_field=""):
                       }}).get('hits',{}).get('hits',[""])
     return docs
 
-def doctype_last(doctype,num=1, by_field=""):
+def doctype_last(doctype,num=1, by_field="META.ADDED"):
     '''Returns the last document of a given doctype
 
     Input
