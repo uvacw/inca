@@ -21,10 +21,11 @@ def polish(textstring):
 class nu(rss):
     """Scrapes nu.nl """
 
-    rss_url='http://www.nu.nl/rss'
-    doctype = 'nu'
-    version = ".1"
-    date    = datetime.datetime(year=2016, month=8, day=2)
+    def __init__(self):
+        self.doctype = "nu"
+        self.rss_url='http://www.nu.nl/rss'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
         '''
@@ -85,11 +86,11 @@ class nu(rss):
 
 class nos(rss):
     """Scrapes nos.nl """
-
-    rss_url='http://feeds.nos.nl/nosnieuwsalgemeen'
-    doctype = 'nos (www)'
-    version = ".1"
-    date    = datetime.datetime(year=2016, month=8, day=2)
+    def __init__(self):
+        self.doctype = "nos (www)"
+        self.rss_url='http://feeds.nos.nl/nosnieuwsalgemeen'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
         '''
@@ -149,10 +150,12 @@ class nos(rss):
 class volkskrant(rss):
     """Scrapes volkskrant.nl """
 
-    rss_url='http://www.volkskrant.nl/nieuws/rss.xml'
-    doctype = 'volkskrant (www)'
-    version = ".1"
-    date    = datetime.datetime(year=2016, month=8, day=2)
+    def __init__(self):
+        self.doctype = "volkskrant (www)"
+        self.rss_url='http://www.volkskrant.nl/nieuws/rss.xml'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
+
 
     def parsehtml(self,htmlsource):
         '''
