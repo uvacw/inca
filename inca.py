@@ -28,31 +28,26 @@ Example:
 ------------------------------------------------------------------------------
 '''
 
-##### SETTINGS TEMPORARILY DEFINED HERE ######
-
-LOCAL_ONLY = True
-LOGLEVEL   = 'INFO'
-
-##############################################
 
 from celery import Celery, group, chain, chord
 from flask import Flask
-import sys
-import os
-import scrapers
-import processing
 import logging
 import argparse
 import core
-import inspect
 import configparser
 import core.search_utils
+import core.taskmanager
+import processing # helps celery recognize the processing tasks
+import scrapers   # helps celery recognize the scraping tasks
 
 config = configparser.ConfigParser()
 try:    config.read_file(open('settings.cfg'))
 except: print("settings.cfg is missing or corrupt!");exit()
 
+LOCAL_ONLY = config.get('inca','local_only')=="True"
+
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=config.get("inca","loglevel"))
 
 api        = Flask(__name__)
 taskmaster = Celery(
@@ -60,14 +55,27 @@ taskmaster = Celery(
     broker  = config.get('celery', '%s.broker' %config.get('inca','dependencies')),
 )
 
+taskmaster.conf.update(
+    CELERYBEAT_SCHEDULE = core.celerybeat_schedule.get_scheduler()
+)
+
 expose = [ "scrapers", "processing", "analysis"]
 
 @taskmaster.task
-def update_schedule():
+def run_scheduled(interval="all"):
     '''This task should be scheduled to run frequently!'''
-    taskmaster.conf.update(
-        CELERYBEAT_SCHEDULE = json.load(open(config.get('celery','taskfile')))
-    )
+    tasks = core.taskmanager.get_tasks(interval)
+    logger.info("running schedule tasks for interval [{interval}]".format(**locals()))
+    for taskname, task in tasks.items():
+        taskname = task.get('name','UNKNOWN')
+        logger.info("Running scheduled task [{taskname}]]".format(**locals()))
+        if task.get('tasktype',"single") == "single":
+            do(function=task['function'], task=task['task'],
+                    *task['args'], **task['kwargs'])
+        elif task.get('tasktype','single')=="batch":
+            pass
+    logger.info("Interval processed")
+
 
 def show_functions():
     available_functions = """

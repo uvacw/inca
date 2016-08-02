@@ -119,6 +119,12 @@ def delete_document(document_id):
     response = client.delete(index=elastic_index, id=document['_id'], doc_type=document['_type'])
     return True
 
+def delete_doctype(doctype):
+    '''Delete all documents of a given type'''
+    for doc in scroll_query({'filter':{'match':{'_doctype':doctype}}}):
+        delete_document(doc['_id'])
+    return True
+
 def insert_document(document, custom_identifier=''):
     ''' Insert a new document into the default index '''
     document = _remove_dots(document)
@@ -132,7 +138,7 @@ def insert_document(document, custom_identifier=''):
             doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
         except ConnectionTimeout:
             insert_document(document, custom_identifier)
-    logger.debug('added new document [{document[_id]}], content: {document}'.format(**locals()))
+    logger.debug('added new document, content: {document}'.format(**locals()))
     return doc["_id"]
 
 def update_or_insert_document(document, force=False):

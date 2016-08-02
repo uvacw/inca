@@ -5,7 +5,19 @@ inherit from this class and overwrite the 'get' function with
 a generator. 
 
 Scrapers should yield dicts that contain the document (news article,
-tweet, blogpost, whatever) 
+tweet, blogpost, whatever)
+
+For the following keys, please provide the information specified below:
+
+doctype             : The medium or outlet (e.g. volkskrant, guardian, economist)
+url                 : URL from which data is scraped (e.g. volkskrant.nl/artikel1)
+publication_date    : Date of publication of article/website as specified by outlet, NOT SCRAPING
+text                : Plain (no code/XML or HTML tags) text content
+
+OPTIONAL, BUT RECOMMENDED
+
+_id       : a unique, preferably same as external source identifier of the document (e.g. ISBN, DOI )
+language  : If you can safely assume the language of specified documents, please specify them here
 
 '''
 import logging
@@ -27,7 +39,7 @@ class Scraper(Document):
     '''
 
     functiontype = 'scraper'
-    language = ''
+    #language = ''
         
     def get(self):
         ''' This docstring should explain how documents are retrieved
@@ -43,7 +55,7 @@ class Scraper(Document):
 
         '''
         doc['doctype']  = self.doctype
-        doc['language'] = self.language
+        #doc['language'] = self.language
         doc = self._add_metadata(doc)
         self._verify(doc)
         self._save_document(doc)
@@ -57,10 +69,11 @@ class Scraper(Document):
         '''
         logger.info("Started scraping")
         for doc in self.get(*args, **kwargs):
-            doc['language'] = self.language
+            #doc['language'] = self.language
             doc = self._add_metadata(doc)
             self._verify(doc)
             self._save_document(doc)
+        logger.info('Done scraping')
 
     def _test_function(self):
         '''tests whether a scraper works by seeing if it returns at least one document
