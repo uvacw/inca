@@ -2,20 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="77bae57b-e54b-448a-aeb2-cf489232b07c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/core/celerybeat_schedule.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scrapers/test_scraper.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/echo" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/processing/basic_text_processors.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/scrapers/nu_scraper.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/__init__.py" afterPath="$PROJECT_DIR$/core/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/database.py" afterPath="$PROJECT_DIR$/core/database.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/document_class.py" afterPath="$PROJECT_DIR$/core/document_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/scraper_class.py" afterPath="$PROJECT_DIR$/core/scraper_class.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/search_utils.py" afterPath="$PROJECT_DIR$/core/search_utils.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/taskmanager.py" afterPath="$PROJECT_DIR$/core/taskmanager.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/inca.py" afterPath="$PROJECT_DIR$/inca.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/settings.cfg" afterPath="$PROJECT_DIR$/settings.cfg" />
     </list>
     <ignored path="inca.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,6 +14,7 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
@@ -36,57 +25,23 @@
   <component name="FileEditorManager">
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+        <leaf>
           <file leaf-file-name="import_class.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/core/import_class.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="300">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="22" column="62" selection-start-line="22" selection-start-column="62" selection-end-line="22" selection-end-column="62" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="document_class.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="document_class.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/core/document_class.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-120">
+                <state vertical-scroll-proportion="0.43233082">
                   <caret line="25" column="7" selection-start-line="25" selection-start-column="7" selection-end-line="25" selection-end-column="7" />
                   <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="taskmanager.py" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="510">
-                  <caret line="67" column="38" selection-start-line="67" selection-start-column="38" selection-end-line="67" selection-end-column="38" />
-                  <folding>
-                    <element signature="e#119#130#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="processor_class.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/core/processor_class.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="240">
-                  <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="basic_text_processing.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/processing/basic_text_processing.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="390">
-                  <caret line="26" column="0" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
-                  <folding>
-                    <element signature="e#0#42#0" expanded="true" />
-                  </folding>
                 </state>
               </provider>
             </entry>
@@ -94,7 +49,7 @@
           <file leaf-file-name="scraper_class.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/core/scraper_class.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="570">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="71" column="13" selection-start-line="71" selection-start-column="13" selection-end-line="71" selection-end-column="13" />
                   <folding />
                 </state>
@@ -104,7 +59,7 @@
           <file leaf-file-name="database.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/core/database.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1830">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="122" column="43" selection-start-line="122" selection-start-column="43" selection-end-line="122" selection-end-column="43" />
                   <folding>
                     <element signature="e#278#292#0" expanded="true" />
@@ -116,7 +71,7 @@
           <file leaf-file-name="xpath_processing.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/processing/xpath_processing.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="240">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="19" column="75" selection-start-line="19" selection-start-column="75" selection-end-line="19" selection-end-column="75" />
                   <folding />
                 </state>
@@ -126,7 +81,7 @@
           <file leaf-file-name="proceedings_scraper.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/scrapers/proceedings_scraper.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="195">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
                   <folding />
                 </state>
@@ -140,7 +95,7 @@
           <file leaf-file-name="test_scraper.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/scrapers/test_scraper.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="255">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
                   <folding>
                     <element signature="e#71#88#0" expanded="true" />
@@ -152,7 +107,7 @@
           <file leaf-file-name="inca.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/inca.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="555">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="72" column="12" selection-start-line="72" selection-start-column="12" selection-end-line="72" selection-end-column="12" />
                   <folding>
                     <element signature="e#978#1024#0" expanded="true" />
@@ -164,7 +119,7 @@
           <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/core/__init__.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="45">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="3" column="31" selection-start-line="3" selection-start-column="31" selection-end-line="3" selection-end-column="31" />
                   <folding>
                     <element signature="e#0#25#0" expanded="true" />
@@ -176,7 +131,7 @@
           <file leaf-file-name="celerybeat_schedule.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/core/celerybeat_schedule.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="465">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="31" column="26" selection-start-line="31" selection-start-column="26" selection-end-line="31" selection-end-column="26" />
                   <folding />
                 </state>
@@ -186,7 +141,7 @@
           <file leaf-file-name="search_utils.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/core/search_utils.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="765">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="53" column="52" selection-start-line="53" selection-start-column="52" selection-end-line="53" selection-end-column="52" />
                   <folding />
                 </state>
@@ -196,7 +151,7 @@
           <file leaf-file-name="settings.cfg" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/settings.cfg">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="45">
+                <state vertical-scroll-proportion="0.0">
                   <caret line="3" column="19" selection-start-line="3" selection-start-column="19" selection-end-line="3" selection-end-column="19" />
                   <folding />
                 </state>
@@ -240,11 +195,12 @@
       </list>
     </option>
   </component>
+  <component name="NamedScopeManager">
+    <order />
+  </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-206" />
-    <option name="y" value="-1050" />
-    <option name="width" value="1680" />
-    <option name="height" value="1050" />
+    <option name="width" value="1440" />
+    <option name="height" value="900" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -286,12 +242,8 @@
       <autoscrollToSource />
       <autoscrollFromSource />
       <sortByType />
-      <manualOrder />
-      <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -340,6 +292,8 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -347,6 +301,7 @@
     <property name="SearchEverywhereHistoryKey" value="__init&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/__init__.py&#10;set&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/settings.cfg&#10;taskm&#9;null&#9;null&#10;inca&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/inca.py&#10;search&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/search_utils.py&#10;data&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/database.py&#10;test&#9;null&#9;null&#10;Docume&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/document_class.py&#10;importer&#9;null&#9;null&#10;procee&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/scrapers/proceedings_scraper.py&#10;xpath&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/xpath_processing.py&#10;basic&#9;null&#9;null&#10;scraper&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/scraper_class.py&#10;tas&#9;null&#9;null&#10;processor&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/processor_class.py&#10;util&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/core/dependency_utils.py&#10;settings.c&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/settings.cfg&#10;core/__&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/__init__.py&#10;hande&#9;null&#9;null&#10;databas&#9;null&#9;null&#10;do&#9;null&#9;null&#10;process&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/processor_class.py&#10;alpin&#9;null&#9;null&#10;alpino&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/.#alpino.py" />
     <property name="last.edited.regexp" value="" />
     <property name="FullScreen" value="true" />
+    <property name="recentsLimit" value="5" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -389,18 +344,6 @@
       <option name="SCRIPT_NAME" value="" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="inca" />
       <method />
     </configuration>
     <configuration default="true" type="tests" factoryName="Attests">
@@ -517,9 +460,7 @@
       </list>
     </recent_temporary>
   </component>
-  <component name="ShelveChangesManager" show_recycled="false">
-    <option name="remove_strategy" value="false" />
-  </component>
+  <component name="ShelveChangesManager" show_recycled="false" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -528,13 +469,11 @@
       <changelist id="77bae57b-e54b-448a-aeb2-cf489232b07c" name="Default" comment="" />
       <created>1469530705396</created>
       <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
       <updated>1469530705396</updated>
     </task>
     <task id="LOCAL-00001" summary="trying to fix meta key">
       <created>1469535951853</created>
       <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
       <updated>1469535951853</updated>
     </task>
@@ -542,26 +481,27 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-206" y="-1050" width="1680" height="1050" extended-state="0" />
+    <frame x="0" y="0" width="1440" height="900" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13928571" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39979124" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1388889" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32942554" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39979124" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -592,9 +532,63 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/scrapers/test_scraper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
+          <folding>
+            <element signature="e#71#88#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/inca.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#978#1024#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="3" column="31" selection-start-line="3" selection-start-column="31" selection-end-line="3" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#25#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/celerybeat_schedule.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="31" column="26" selection-start-line="31" selection-start-column="26" selection-end-line="31" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/search_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="53" column="52" selection-start-line="53" selection-start-column="52" selection-end-line="53" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/settings.cfg">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="3" column="19" selection-start-line="3" selection-start-column="19" selection-end-line="3" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="630">
+        <state vertical-scroll-proportion="0.0">
           <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
           <folding>
             <element signature="e#119#130#0" expanded="true" />
@@ -604,17 +598,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
+        <state vertical-scroll-proportion="0.0">
           <caret line="36" column="56" selection-start-line="36" selection-start-column="56" selection-end-line="36" selection-end-column="56" />
-          <folding>
-            <element signature="e#81#123#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/processor_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="795">
+        <state vertical-scroll-proportion="0.0">
           <caret line="55" column="49" selection-start-line="55" selection-start-column="41" selection-end-line="55" selection-end-column="49" />
           <folding />
         </state>
@@ -622,7 +613,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/processing/basic_text_processing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
+        <state vertical-scroll-proportion="0.0">
           <caret line="26" column="0" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
           <folding>
             <element signature="e#0#42#0" expanded="true" />
@@ -632,7 +623,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/scraper_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="690">
+        <state vertical-scroll-proportion="0.0">
           <caret line="49" column="8" selection-start-line="49" selection-start-column="8" selection-end-line="49" selection-end-column="8" />
           <folding />
         </state>
@@ -640,7 +631,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/database.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3750">
+        <state vertical-scroll-proportion="0.0">
           <caret line="257" column="48" selection-start-line="257" selection-start-column="48" selection-end-line="257" selection-end-column="48" />
           <folding>
             <element signature="e#278#292#0" expanded="true" />
@@ -650,7 +641,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/settings.cfg">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
+        <state vertical-scroll-proportion="0.0">
           <caret line="6" column="12" selection-start-line="6" selection-start-column="12" selection-end-line="6" selection-end-column="12" />
           <folding />
         </state>
@@ -658,7 +649,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/inca.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1950">
+        <state vertical-scroll-proportion="0.0">
           <caret line="130" column="0" selection-start-line="130" selection-start-column="0" selection-end-line="130" selection-end-column="0" />
           <folding>
             <element signature="e#978#1024#0" expanded="true" />
@@ -668,7 +659,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/import_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="435">
+        <state vertical-scroll-proportion="0.0">
           <caret line="31" column="35" selection-start-line="31" selection-start-column="35" selection-end-line="31" selection-end-column="35" />
           <folding />
         </state>
@@ -676,7 +667,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="630">
+        <state vertical-scroll-proportion="0.0">
           <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
           <folding>
             <element signature="e#119#130#0" expanded="true" />
@@ -686,17 +677,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
+        <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#81#123#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/search_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
+        <state vertical-scroll-proportion="0.0">
           <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="10" selection-end-column="38" />
           <folding />
         </state>
@@ -704,7 +692,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/processor_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
+        <state vertical-scroll-proportion="0.0">
           <caret line="37" column="71" selection-start-line="37" selection-start-column="15" selection-end-line="37" selection-end-column="71" />
           <folding />
         </state>
@@ -712,7 +700,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/document_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
+        <state vertical-scroll-proportion="0.0">
           <caret line="24" column="4" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
           <folding />
         </state>
@@ -720,7 +708,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/database.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1050">
+        <state vertical-scroll-proportion="0.0">
           <caret line="77" column="74" selection-start-line="77" selection-start-column="74" selection-end-line="77" selection-end-column="74" />
           <folding>
             <element signature="e#278#292#0" expanded="true" />
@@ -730,7 +718,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/settings.cfg">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
+        <state vertical-scroll-proportion="0.0">
           <caret line="6" column="12" selection-start-line="6" selection-start-column="12" selection-end-line="6" selection-end-column="12" />
           <folding />
         </state>
@@ -738,7 +726,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/scrapers/proceedings_scraper.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
+        <state vertical-scroll-proportion="0.0">
           <caret line="25" column="50" selection-start-line="25" selection-start-column="50" selection-end-line="25" selection-end-column="50" />
           <folding />
         </state>
@@ -746,7 +734,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/inca.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
+        <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#978#1024#0" expanded="true" />
@@ -756,24 +744,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/dependency_manager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
+        <state vertical-scroll-proportion="0.0">
           <caret line="15" column="12" selection-start-line="15" selection-start-column="12" selection-end-line="15" selection-end-column="12" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
+        <state vertical-scroll-proportion="0.0">
           <caret line="32" column="8" selection-start-line="32" selection-start-column="8" selection-end-line="32" selection-end-column="8" />
-          <folding>
-            <element signature="e#81#123#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/search_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
+        <state vertical-scroll-proportion="0.0">
           <caret line="3" column="5" selection-start-line="3" selection-start-column="5" selection-end-line="3" selection-end-column="5" />
           <folding />
         </state>
@@ -781,14 +766,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/processing/xpath_processing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
+        <state vertical-scroll-proportion="0.0">
           <caret line="8" column="11" selection-start-line="8" selection-start-column="11" selection-end-line="8" selection-end-column="11" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/processor_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="855">
+        <state vertical-scroll-proportion="0.0">
           <caret line="59" column="37" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
           <folding />
         </state>
@@ -796,7 +781,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/document_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1275">
+        <state vertical-scroll-proportion="0.0">
           <caret line="87" column="0" selection-start-line="87" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
           <folding />
         </state>
@@ -804,7 +789,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/database.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3165">
+        <state vertical-scroll-proportion="0.0">
           <caret line="218" column="0" selection-start-line="218" selection-start-column="0" selection-end-line="218" selection-end-column="0" />
           <folding>
             <element signature="e#278#292#0" expanded="true" />
@@ -814,44 +799,40 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/scrapers/proceedings_scraper.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
+        <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/processing/.#alpino.py" />
-    <entry file="file://$PROJECT_DIR$/processing/alpino.py" />
-    <entry file="file://$PROJECT_DIR$/scrapers/handelingen_scraper.py" />
     <entry file="file://$PROJECT_DIR$/core/dependency_manager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
+        <state vertical-scroll-proportion="0.0">
           <caret line="15" column="12" selection-start-line="15" selection-start-column="12" selection-end-line="15" selection-end-column="12" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/import.py" />
     <entry file="file://$PROJECT_DIR$/processing/core/dependency_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
+        <state vertical-scroll-proportion="0.0">
           <caret line="22" column="39" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
+        <state vertical-scroll-proportion="0.0">
           <caret line="36" column="56" selection-start-line="36" selection-start-column="56" selection-end-line="36" selection-end-column="56" />
-          <folding>
-            <element signature="e#81#123#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
+      <provider editor-type-id="MarkdownFxPreviewEditor">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
         <state split_layout="FIRST">
-          <first_editor relative-caret-position="705">
+          <first_editor vertical-scroll-proportion="0.0">
             <caret line="47" column="17" selection-start-line="47" selection-start-column="17" selection-end-line="47" selection-end-column="17" />
             <folding />
           </first_editor>
@@ -859,34 +840,23 @@
         </state>
       </provider>
       <provider editor-type-id="text-editor">
-        <state relative-caret-position="480">
+        <state vertical-scroll-proportion="0.0">
           <caret line="32" column="11" selection-start-line="32" selection-start-column="11" selection-end-line="32" selection-end-column="11" />
           <folding />
         </state>
       </provider>
-      <provider editor-type-id="MarkdownFxPreviewEditor">
-        <state />
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/processing/xpath_processing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
+        <state vertical-scroll-proportion="0.0">
           <caret line="19" column="75" selection-start-line="19" selection-start-column="75" selection-end-line="19" selection-end-column="75" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/processor_class.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/scrapers/proceedings_scraper.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
+        <state vertical-scroll-proportion="0.0">
           <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
           <folding />
         </state>
@@ -894,7 +864,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/import_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
+        <state vertical-scroll-proportion="0.0">
           <caret line="22" column="62" selection-start-line="22" selection-start-column="62" selection-end-line="22" selection-end-column="62" />
           <folding />
         </state>
@@ -902,7 +872,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/processing/basic_text_processing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
+        <state vertical-scroll-proportion="0.0">
           <caret line="26" column="0" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
           <folding>
             <element signature="e#0#42#0" expanded="true" />
@@ -912,7 +882,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/database.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1830">
+        <state vertical-scroll-proportion="0.0">
           <caret line="122" column="43" selection-start-line="122" selection-start-column="43" selection-end-line="122" selection-end-column="43" />
           <folding>
             <element signature="e#278#292#0" expanded="true" />
@@ -920,33 +890,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/taskmanager.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="56" selection-start-line="18" selection-start-column="56" selection-end-line="18" selection-end-column="56" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/settings.cfg">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
+        <state vertical-scroll-proportion="0.0">
           <caret line="3" column="19" selection-start-line="3" selection-start-column="19" selection-end-line="3" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/celerybeat_schedule.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="1" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/scrapers/test_scraper.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
+        <state vertical-scroll-proportion="0.0">
           <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
           <folding>
             <element signature="e#71#88#0" expanded="true" />
@@ -956,7 +910,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/scraper_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="570">
+        <state vertical-scroll-proportion="0.0">
           <caret line="71" column="13" selection-start-line="71" selection-start-column="13" selection-end-line="71" selection-end-column="13" />
           <folding />
         </state>
@@ -964,7 +918,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/celerybeat_schedule.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="465">
+        <state vertical-scroll-proportion="0.0">
           <caret line="31" column="26" selection-start-line="31" selection-start-column="26" selection-end-line="31" selection-end-column="26" />
           <folding />
         </state>
@@ -972,7 +926,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/search_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="765">
+        <state vertical-scroll-proportion="0.0">
           <caret line="53" column="52" selection-start-line="53" selection-start-column="52" selection-end-line="53" selection-end-column="52" />
           <folding />
         </state>
@@ -980,7 +934,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
+        <state vertical-scroll-proportion="0.0">
           <caret line="3" column="31" selection-start-line="3" selection-start-column="31" selection-end-line="3" selection-end-column="31" />
           <folding>
             <element signature="e#0#25#0" expanded="true" />
@@ -988,17 +942,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/document_class.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-120">
-          <caret line="25" column="7" selection-start-line="25" selection-start-column="7" selection-end-line="25" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/inca.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="555">
+        <state vertical-scroll-proportion="0.0">
           <caret line="72" column="12" selection-start-line="72" selection-start-column="12" selection-end-line="72" selection-end-column="12" />
           <folding>
             <element signature="e#978#1024#0" expanded="true" />
@@ -1008,11 +954,27 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
+        <state vertical-scroll-proportion="1.2593985">
           <caret line="67" column="38" selection-start-line="67" selection-start-column="38" selection-end-line="67" selection-end-column="38" />
           <folding>
             <element signature="e#119#130#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/processor_class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.11278196">
+          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/document_class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.43233082">
+          <caret line="25" column="7" selection-start-line="25" selection-start-column="7" selection-end-line="25" selection-end-column="7" />
+          <folding />
         </state>
       </provider>
     </entry>
