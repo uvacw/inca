@@ -1,4 +1,4 @@
-import requests
+#import requests
 import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
@@ -11,12 +11,27 @@ logger = logging.getLogger(__name__)
 
 
 
+import urllib2
+class MyHTTPRedirectHandler(urllib2.HTTPRedirectHandler):
+    def http_error_302(self, req, fp, code, msg, headers):
+        return urllib2.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)
+    http_error_301 = http_error_303 = http_error_307 = http_error_302
+
+cookieprocessor = urllib2.HTTPCookieProcessor()
+
+opener = urllib2.build_opener(MyHTTPRedirectHandler, cookieprocessor)
+urllib2.install_opener(opener)
+
+
 class rss(Scraper):
     '''
     Reades a generic RSS feed and proceeds if items not already in collection.
     Retrieves full HTML content from link provided in RSS feed
-    Yields docs with keys from RSS entry plus full HTML source of linked content
-    By overwriting the parsehtml function, more keys can be extracted
+    Yields docs with keys from RSS entry plus full HTML source of linked content.
+
+    Subclasses should probably overwrite the following functions:
+        By overwriting the parsehtml function, more keys can be extracted
+        By overwriting the getlink function, modifications to the link can be made, e.g. to bypass cookie walls
     '''
     
     def get(self,**kwargs):
@@ -46,9 +61,12 @@ class rss(Scraper):
             except:
                 _id=post.link
 
+            link=re.sub("/$","",self.getlink(post.link))
+
             if check_exists(_id)[0]==False:
-                req=requests.get(re.sub("/$","",post.link), headers={'User-Agent' : "Wget/1.9"})
-                htmlsource=req.text
+                req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
+                htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+
                 try:
                     teaser=re.sub(r"\n|\r\|\t"," ",post.description)
                 except:
@@ -79,6 +97,13 @@ class rss(Scraper):
         Empty in this generic fallback scraper, should be replaced by more specific scrapers
         '''
         return dict()
-            
+
+    def getlink(self,link):
+        '''
+        Some sites require some modification of the URL, for example to pass a cookie wall.
+        Overwrite this function with a function to do so if neccessary
+        '''
+        return link
+
 if __name__=="__main__":
     rss().get()
