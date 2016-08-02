@@ -1,0 +1,10 @@
+# Requirements to go to alpha
+
+0. Settle on indexing schema
+1. Adapt existing scrapers to new format
+2. implement processing model
+3. design CLI
+4. implement CLI
+5. design analysis model
+...
+

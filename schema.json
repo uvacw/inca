@@ -1,0 +1,68 @@
+{
+    "mappings": {
+        "_default_": {
+	    "properties" :{
+		"doctype": {
+		    "type":"string",
+		    "index" : "not_analyzed"
+		},
+		"functiontype" : {
+		    "type":"string",
+		    "index" : "not_analyzed"
+		},
+		"url" : {
+		    "type":"string",
+		    "index" : "not_analyzed"
+		},
+		"source" : {
+		    "type":"string",
+		    "index" : "not_analyzed"
+		}
+	    },
+	    
+            "dynamic_templates": [
+                { "es": {
+                      "match":              "*_es", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+                          "analyzer":       "spanish"
+                      }
+                }},
+		
+		{ "nl": {
+                      "match":              "*_nl", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+                          "analyzer":       "dutch"
+                      }
+                }},
+		{ "raw": {
+                      "match":              "*_raw", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+                          "index" :         "not_analyzed"
+                      }
+                }},
+		{ "en": {
+                      "match":              "*_en", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+                          "analyzer" :      "english"
+                      }
+                }},
+
+                { "default": {
+                      "match":              "*", 
+                      "match_mapping_type": "string",
+                      "mapping": {
+                          "type":           "string",
+			  "filter"  : [ "stop" ],
+			  "fields" : { "exact" : { "type" : "string", "analyzer" : "whitespace"}}
+                      }
+                }}
+            ]
+}}}
