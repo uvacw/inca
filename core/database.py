@@ -12,6 +12,7 @@ import logging
 import json
 from elasticsearch import Elasticsearch, NotFoundError, helpers
 from elasticsearch.exceptions import ConnectionTimeout
+import time
 import configparser
 import requests
 from celery import Task
@@ -25,7 +26,8 @@ logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
 client = Elasticsearch(
     host=config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
-    port=int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies') ))
+    port=int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies') )),
+    timeout=60
 )   # should be updated to reflect config
 elastic_index  = config.get("elasticsearch","document_index")
 
@@ -54,9 +56,10 @@ def check_exists(document_id):
         logger.debug('elastic_index {index} - document [{document_id}] NOT found, returning false'.format(**locals()))
         return False, {}
     # TODO: ADD TIMEOUT HANDLER
-    except:
+    except ConnectionTimeout:
         logger.warning('unable to check for documents in elasticsearch elastic_index [{elastic_index}]'.format(**{'elastic_index':elastic_index}))
-    
+        time.sleep(1)
+        return check_exists(document_id)
         
 def update_document(document, force=False, retry=0, max_retries=10):
     '''

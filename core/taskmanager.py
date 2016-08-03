@@ -9,7 +9,6 @@ from datetime import timedelta
 import configparser
 import celery
 import os
-from json import JSONDecodeError
 
 config = configparser.ConfigParser()
 config.read_file(open('settings.cfg'))
@@ -35,10 +34,9 @@ def get_tasks(interval="1sec"):
     if taskfile in os.listdir('.'):
         try:
             tasks = json.load(open(taskfile))
-            return tasks
-        except FileNotFoundError:
-            return {}
-        except JSONDecodeError:
+            return [task for task in tasks if task.get('schedule','')==interval]
+        except Exception as e:
+            logger.warn("could not import tasks, empty file? {e}".format(**locals()))
             return {}
     else:
         return {}
