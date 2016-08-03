@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="77bae57b-e54b-448a-aeb2-cf489232b07c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/taskmanager.py" afterPath="$PROJECT_DIR$/core/taskmanager.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/inca.py" afterPath="$PROJECT_DIR$/inca.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/database.py" afterPath="$PROJECT_DIR$/core/database.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scrapers/rss_scraper.py" afterPath="$PROJECT_DIR$/scrapers/rss_scraper.py" />
     </list>
     <ignored path="inca.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -45,11 +45,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="taskmanager.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="taskmanager.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="540">
-                  <caret line="36" column="79" selection-start-line="36" selection-start-column="79" selection-end-line="36" selection-end-column="79" />
+                <state relative-caret-position="75">
+                  <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
                   <folding>
                     <element signature="e#119#130#0" expanded="true" />
                   </folding>
@@ -89,11 +89,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="database.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="database.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/core/database.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1830">
-                  <caret line="122" column="43" selection-start-line="122" selection-start-column="43" selection-end-line="122" selection-end-column="43" />
+                <state relative-caret-position="420">
+                  <caret line="28" column="14" selection-start-line="28" selection-start-column="14" selection-end-line="28" selection-end-column="14" />
                   <folding>
                     <element signature="e#278#292#0" expanded="true" />
                   </folding>
@@ -128,8 +128,8 @@
           <file leaf-file-name="test_scraper.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/scrapers/test_scraper.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="255">
-                  <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
+                <state relative-caret-position="375">
+                  <caret line="25" column="30" selection-start-line="25" selection-start-column="30" selection-end-line="25" selection-end-column="30" />
                   <folding>
                     <element signature="e#71#88#0" expanded="true" />
                   </folding>
@@ -137,7 +137,17 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="inca.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="rss_scraper.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/scrapers/rss_scraper.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="240">
+                  <caret line="22" column="0" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="inca.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/inca.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="375">
@@ -214,7 +224,6 @@
         <option value="$PROJECT_DIR$/processing/alpino_processing.py" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/core/document_class.py" />
-        <option value="$PROJECT_DIR$/core/database.py" />
         <option value="$PROJECT_DIR$/core/search_utils.py" />
         <option value="$PROJECT_DIR$/scrapers/test_scraper.py" />
         <option value="$PROJECT_DIR$/taskmanager.py" />
@@ -225,6 +234,8 @@
         <option value="$PROJECT_DIR$/core/celerybeat_schedule.py" />
         <option value="$PROJECT_DIR$/inca.py" />
         <option value="$PROJECT_DIR$/core/taskmanager.py" />
+        <option value="$PROJECT_DIR$/core/database.py" />
+        <option value="$PROJECT_DIR$/scrapers/rss_scraper.py" />
       </list>
     </option>
   </component>
@@ -332,7 +343,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="SearchEverywhereHistoryKey" value="__init&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/__init__.py&#10;set&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/settings.cfg&#10;taskm&#9;null&#9;null&#10;inca&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/inca.py&#10;search&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/search_utils.py&#10;data&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/database.py&#10;test&#9;null&#9;null&#10;Docume&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/document_class.py&#10;importer&#9;null&#9;null&#10;procee&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/scrapers/proceedings_scraper.py&#10;xpath&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/xpath_processing.py&#10;basic&#9;null&#9;null&#10;scraper&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/scraper_class.py&#10;tas&#9;null&#9;null&#10;processor&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/processor_class.py&#10;util&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/core/dependency_utils.py&#10;settings.c&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/settings.cfg&#10;core/__&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/__init__.py&#10;hande&#9;null&#9;null&#10;databas&#9;null&#9;null&#10;do&#9;null&#9;null&#10;process&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/processor_class.py&#10;alpin&#9;null&#9;null&#10;alpino&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/.#alpino.py" />
+    <property name="SearchEverywhereHistoryKey" value="rss&#9;null&#9;null&#10;datab&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/database.py&#10;__init&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/__init__.py&#10;set&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/settings.cfg&#10;taskm&#9;null&#9;null&#10;inca&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/inca.py&#10;search&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/search_utils.py&#10;data&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/database.py&#10;test&#9;null&#9;null&#10;Docume&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/document_class.py&#10;importer&#9;null&#9;null&#10;procee&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/scrapers/proceedings_scraper.py&#10;xpath&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/xpath_processing.py&#10;basic&#9;null&#9;null&#10;scraper&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/scraper_class.py&#10;tas&#9;null&#9;null&#10;processor&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/processor_class.py&#10;util&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/core/dependency_utils.py&#10;settings.c&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/settings.cfg&#10;core/__&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/__init__.py&#10;hande&#9;null&#9;null&#10;databas&#9;null&#9;null&#10;do&#9;null&#9;null&#10;process&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/core/processor_class.py&#10;alpin&#9;null&#9;null&#10;alpino&#9;FILE&#9;file:///Users/rnvdv/development/inca/inca/processing/.#alpino.py" />
     <property name="last.edited.regexp" value="" />
     <property name="FullScreen" value="true" />
   </component>
@@ -580,16 +591,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="630">
-          <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
-          <folding>
-            <element signature="e#119#130#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/processing/alpino_processing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="450">
@@ -898,16 +899,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/database.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1830">
-          <caret line="122" column="43" selection-start-line="122" selection-start-column="43" selection-end-line="122" selection-end-column="43" />
-          <folding>
-            <element signature="e#278#292#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/taskmanager.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="270">
@@ -929,16 +920,6 @@
         <state relative-caret-position="105">
           <caret line="7" column="1" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scrapers/test_scraper.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
-          <folding>
-            <element signature="e#71#88#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -996,11 +977,39 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="36" column="79" selection-start-line="36" selection-start-column="79" selection-end-line="36" selection-end-column="79" />
+        <state relative-caret-position="75">
+          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
           <folding>
             <element signature="e#119#130#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/database.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="28" column="14" selection-start-line="28" selection-start-column="14" selection-end-line="28" selection-end-column="14" />
+          <folding>
+            <element signature="e#278#292#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scrapers/test_scraper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="25" column="30" selection-start-line="25" selection-start-column="30" selection-end-line="25" selection-end-column="30" />
+          <folding>
+            <element signature="e#71#88#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scrapers/rss_scraper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="22" column="0" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>

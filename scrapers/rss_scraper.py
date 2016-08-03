@@ -11,13 +11,22 @@ logger = logging.getLogger(__name__)
 
 
 
-import urllib2
-class MyHTTPRedirectHandler(urllib2.HTTPRedirectHandler):
+try: # assumes python 2
+    import urllib2
+    from urllib2 import HTTPRedirectHandler
+    from urllib2 import HTTPCookieProcessor
+
+except: # in case of python 3.X
+    import urllib.request as urllib2
+    from urllib.request import HTTPRedirectHandler
+    from urllib.request import HTTPCookieProcessor
+
+class MyHTTPRedirectHandler(HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
-        return urllib2.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)
+        return HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)
     http_error_301 = http_error_303 = http_error_307 = http_error_302
 
-cookieprocessor = urllib2.HTTPCookieProcessor()
+cookieprocessor = HTTPCookieProcessor()
 
 opener = urllib2.build_opener(MyHTTPRedirectHandler, cookieprocessor)
 urllib2.install_opener(opener)

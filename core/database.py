@@ -25,7 +25,8 @@ logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
 client = Elasticsearch(
     host=config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
-    port=int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies') ))
+    port=int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies') )),
+    timeout=60
 )   # should be updated to reflect config
 elastic_index  = config.get("elasticsearch","document_index")
 
