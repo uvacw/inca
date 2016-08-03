@@ -22,8 +22,8 @@ Start an API server:
 
 Commandline usage: 
         `inca <function> <task> <arguments>` 
-Example: 
-        `inca scrapers tweedekamer_handelingen run`
+Example:  TO BE IMPLEMENTED
+        `inca do scrapers proceedings_NL`
 
 ------------------------------------------------------------------------------
 '''

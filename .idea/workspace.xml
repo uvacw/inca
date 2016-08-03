@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="77bae57b-e54b-448a-aeb2-cf489232b07c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/taskmanager.py" afterPath="$PROJECT_DIR$/core/taskmanager.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/inca.py" afterPath="$PROJECT_DIR$/inca.py" />
     </list>
     <ignored path="inca.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -48,8 +48,8 @@
           <file leaf-file-name="taskmanager.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="165">
-                  <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+                <state relative-caret-position="540">
+                  <caret line="36" column="79" selection-start-line="36" selection-start-column="79" selection-end-line="36" selection-end-column="79" />
                   <folding>
                     <element signature="e#119#130#0" expanded="true" />
                   </folding>
@@ -140,10 +140,10 @@
           <file leaf-file-name="inca.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/inca.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1080">
-                  <caret line="72" column="12" selection-start-line="72" selection-start-column="12" selection-end-line="72" selection-end-column="12" />
+                <state relative-caret-position="375">
+                  <caret line="25" column="40" selection-start-line="25" selection-start-column="40" selection-end-line="25" selection-end-column="40" />
                   <folding>
-                    <element signature="e#978#1024#0" expanded="true" />
+                    <element signature="e#986#1032#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -649,7 +649,7 @@
         <state relative-caret-position="1950">
           <caret line="130" column="0" selection-start-line="130" selection-start-column="0" selection-end-line="130" selection-end-column="0" />
           <folding>
-            <element signature="e#978#1024#0" expanded="true" />
+            <element signature="e#986#1032#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -737,7 +737,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#978#1024#0" expanded="true" />
+            <element signature="e#986#1032#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -986,18 +986,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/inca.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1080">
-          <caret line="72" column="12" selection-start-line="72" selection-start-column="12" selection-end-line="72" selection-end-column="12" />
+        <state relative-caret-position="375">
+          <caret line="25" column="40" selection-start-line="25" selection-start-column="40" selection-end-line="25" selection-end-column="40" />
           <folding>
-            <element signature="e#978#1024#0" expanded="true" />
+            <element signature="e#986#1032#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/taskmanager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+        <state relative-caret-position="540">
+          <caret line="36" column="79" selection-start-line="36" selection-start-column="79" selection-end-line="36" selection-end-column="79" />
           <folding>
             <element signature="e#119#130#0" expanded="true" />
           </folding>

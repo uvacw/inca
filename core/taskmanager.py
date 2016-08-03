@@ -34,7 +34,7 @@ def get_tasks(interval="1sec"):
     if taskfile in os.listdir('.'):
         try:
             tasks = json.load(open(taskfile))
-            return tasks
+            return [task for task in tasks if task.get('schedule','')==interval]
         except Exception as e:
             logger.warn("could not import tasks, empty file? {e}".format(**locals()))
             return {}
