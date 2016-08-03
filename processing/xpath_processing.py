@@ -17,7 +17,11 @@ class xpath(Processer):
         try:
             parsed_document = parser(document_field)
         except:
-            logger.warning('failed to parse document {document._id}! using xpath_parser, dict={extract_dict}'.format(**locals()))
+            try:
+                logger.info("attempting to process after utf-8 encoding")
+                parsed_document = parser(document_field.encode('utf-8','replace'))
+            except:
+                logger.warning('failed to parse document! using xpath_parser, dict={extract_dict}'.format(**locals()))
         parsed_fields = parse_dict(parsed_document, extract_dict)
          
         return parsed_fields
