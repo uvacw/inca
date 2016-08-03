@@ -6,6 +6,7 @@ exports/
 
 *.pid
 
+.idea
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -83,3 +84,6 @@ adhoc/
 
 # geen MacOS-bullshit
 .DS_Store
+
+# geen PyCharm-shit
+.idea/

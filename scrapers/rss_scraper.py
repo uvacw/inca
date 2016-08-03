@@ -42,9 +42,14 @@ class rss(Scraper):
         By overwriting the parsehtml function, more keys can be extracted
         By overwriting the getlink function, modifications to the link can be made, e.g. to bypass cookie walls
     '''
-    
+
+    def __init__(self):
+        self.doctype = "rss"
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
+
     def get(self,**kwargs):
-        '''Document collected via {} rss feed reader'''.format(self.doctype)
+        '''Document collected via {} feed reader'''.format(self.doctype)
 
         # This RSS-scraper is a generic fallback option in case we do not have
         # any specific one. Therefore, only use the following generic values
@@ -52,15 +57,10 @@ class rss(Scraper):
         if 'rss_url' in kwargs:
             RSS_URL=kwargs['rss_url']
         else:
-            RSS_URL=self.rss_url
-        if not self.doctype:
-            self.doctype = "rss"
-        if not self.version:
-            self.version = ".1"
-        if not self.date:
-            self.date    = datetime.datetime(year=2016, month=8, day=2)
+            try: RSS_URL=self.rss_url
+            except: RSS_URL='N/A'
 
-        assert RSS_URL,'You need to specify the feed URL. Example: rss_url="http://www.nu.nl/rss"'
+        assert RSS_URL != 'N/A','You need to specify the feed URL. Example: rss_url="http://www.nu.nl/rss"'
 
         d = feedparser.parse(RSS_URL)
 
