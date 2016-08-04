@@ -1,3 +1,6 @@
+# Configuration files that may contain tokens
+settings.cfg
+
 # Installables
 dependencies/
 
