@@ -40,6 +40,11 @@ import core.taskmanager
 import processing # helps celery recognize the processing tasks
 import scrapers   # helps celery recognize the scraping tasks
 
+if not config in os.listdir('.'):
+    logger.inf('No settings found, applying default settings (change in `settings.cfg`)')
+    from shutil import copyfile
+    copyfile('default_settings.cfg','settings.cfg')
+
 config = configparser.ConfigParser()
 try:    config.read_file(open('settings.cfg'))
 except: print("settings.cfg is missing or corrupt!");exit()
