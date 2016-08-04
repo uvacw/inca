@@ -27,11 +27,18 @@ Example:  TO BE IMPLEMENTED
 
 ------------------------------------------------------------------------------
 '''
+import os
+import logging
 
+logger = logging.getLogger(__name__)
+
+if not 'settings.cfg' in os.listdir('.'):
+    logger.info('No settings found, applying default settings (change in `settings.cfg`)')
+    from shutil import copyfile
+    copyfile('default_settings.cfg','settings.cfg')
 
 from celery import Celery, group, chain, chord
 from flask import Flask
-import logging
 import argparse
 import core
 import configparser
@@ -40,19 +47,13 @@ import core.taskmanager
 import processing # helps celery recognize the processing tasks
 import scrapers   # helps celery recognize the scraping tasks
 
-if not config in os.listdir('.'):
-    logger.inf('No settings found, applying default settings (change in `settings.cfg`)')
-    from shutil import copyfile
-    copyfile('default_settings.cfg','settings.cfg')
-
 config = configparser.ConfigParser()
 try:    config.read_file(open('settings.cfg'))
 except: print("settings.cfg is missing or corrupt!");exit()
 
-LOCAL_ONLY = config.get('inca','local_only')=="True"
-
-logger = logging.getLogger(__name__)
 logging.basicConfig(level=config.get("inca","loglevel"))
+
+LOCAL_ONLY = config.get('inca','local_only')=="True"
 
 api        = Flask(__name__)
 taskmaster = Celery(
