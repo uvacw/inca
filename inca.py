@@ -46,6 +46,7 @@ import core.search_utils
 import core.taskmanager
 import processing # helps celery recognize the processing tasks
 import scrapers   # helps celery recognize the scraping tasks
+import clients    # helps celery recognize client tasks
 
 config = configparser.ConfigParser()
 try:    config.read_file(open('settings.cfg'))
@@ -132,6 +133,8 @@ def identify_task(function,task):
     
 def do(function, task, *args, **kwargs):
     ''' this handler function calls the appropriate celery task'''
+
+    # TODO: INSPECT REQUIRED ARGUMENTS BEFORE CALLING FUNCTION!
     
     task_key = identify_task(function,task)
     logger.debug("running {function}:{task_key} with arguments {args}".format(**locals()))
@@ -183,14 +186,27 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
     return group(batch.s() for batch in batchjobs)
 
 def _doctype_query_or_list(doctype_query_or_list,force=False, field=None, function=None):
+    if not force:
+        logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
     if type(doctype_query_or_list)==list:
         documents = doctype_query_or_list
     elif type(doctype_query_or_list)==str:
-        if force or not field:
-            documents = core.database.scroll_query({'filter':{'match':{'_type':doctype_query_or_list}}})
-        elif not force and field:
-            documents = core.database.scroll_query({'query':{'match':{'doctype':doctype_query_or_list}},
+        if doctype_query_or_list in core.database.client.indices.get_mappings.keys():
+            logger.info("assuming documents of given type should be processed")
+            if force or not field:
+                documents = core.database.scroll_query({'filter':{'match':{'_type':doctype_query_or_list}}})
+            elif not force and field:
+                documents = core.database.scroll_query({'query':{'match':{'doctype':doctype_query_or_list}},
                                                     'filter':{'missing':{'field': '%s_%s' %(field,function) }}})
+        else:
+            logger.info("assuming input is a query_string")
+            if force or not field:
+                documents = core.database.scroll_query({'filter':{'query_string':{'query': doctype_query_or_list}}})
+            elif not force and field:
+                documents = core.database.scroll_query({'filter':{'and':[
+                    {'missing':{'field':'%s_%s' %(field,function)}},
+                    {'query_string':{'query':doctype_query_or_list}}
+                ]}})
     else:
         if not force and field and function:
             doctype_query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})

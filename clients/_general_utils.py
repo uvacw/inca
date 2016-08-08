@@ -9,12 +9,12 @@ Mapping : for storing pools in elasticsearch
 from core.database import client
 import datetime
 import logging
-from elasticsearch import NotFoundError, TimeoutError
+from elasticsearch import NotFoundError, ConnectionTimeout
 
 logger = logging.getLogger(__name__)
 
 
-def put_credentials(service_name, pool_name='default', credentials, id, force=False):
+def put_credentials(service_name,  credentials, id, pool_name='default',force=False):
     '''
 
     Parameters
@@ -55,7 +55,7 @@ def put_credentials(service_name, pool_name='default', credentials, id, force=Fa
             "credentials" : credentials
         }
         client.index(index="credentials", doc_type=service_name, id=id, body=credentials)
-    except TimeoutError:
+    except ConnectionTimeout:
         logger.warn("elasticsearch timed out, retrying... ")
         return put_credentials(service_name, pool_name, credentials, id, force)
     return True
@@ -91,14 +91,14 @@ def get_credentials(service_name, pool_name='default', filter=None):
         Elasticsearch string-query with additional filtering option.
         E.g. 'last_response.rate_limit_remaining:>=1'
     '''
-    base_query : "service:'{service_name}' AND pool:'{pool_name}'".format(**locals())
+    base_query = "service:'{service_name}' AND pool:'{pool_name}'".format(**locals())
     if filter:
         full_query= {
             'query':
                 {'string_query': {'query':base_query} },
             'filter':
-                {'string_query'}: {'query':filter}
-        }
+                {'string_query': {'query':filter}
+        }}
     else:
         full_query= {
             'query':
@@ -107,7 +107,7 @@ def get_credentials(service_name, pool_name='default', filter=None):
     try:
         return client.search('credentials',body=full_query)['hits']['hits']
     except Exception as e:
-        info.warn("get_credentials failed {e}")
+        logger.warning("get_credentials failed {e}")
         return []
 
 def get_credentials_by_id(id):
@@ -124,3 +124,27 @@ def get_credentials_by_id(id):
         dictionary typed credentials object, with service specific credentials in the 'credentials' key
     '''
     return client.get(index='credentials', id=id)
+
+def update_credentials_last(id, last_response):
+    '''
+
+    Parameters
+    ----------
+    id: string
+        identifier of the credentials where the last field should be updated
+    last_response
+        contents of the last field, which are probably specific to the client implemented.
+        For instance, for Twitter this would be a 'rate-limit-remaining' dictionary.
+
+    Returns
+    -------
+    Bool
+        indicates update status
+    '''
+    credentials = client.get(id)
+    credentials['_source']['last'] = last_response
+    client.index('credentials', doctype=credentials['_type'], body=credentials['_source']
+                 id=credentials['_id'])
+    logger.info('updated credentials')
+    return True
+

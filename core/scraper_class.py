@@ -69,7 +69,6 @@ class Scraper(Document):
         '''
         logger.info("Started scraping")
         for doc in self.get(*args, **kwargs):
-            #doc['language'] = self.language
             doc = self._add_metadata(doc)
             self._verify(doc)
             self._save_document(doc)
