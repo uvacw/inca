@@ -193,14 +193,23 @@ def _doctype_query_or_list(doctype_query_or_list,force=False, field=None, functi
 
     Parameters
     ----------
-    doctype_query_or_list
-    force
-    field
-    function
+    doctype_query_or_list: list, string or dict
+        specification of input document, either:
+            a list, each element should be an elasticsearch document
+            a dict, should be an elasticsearch query
+            a string, which is either an exact match with doctype (checked against doctype mappings) or
+                alternatively, a query_string for the elasticsearch database
+    force: bool (defautl=False)
+        whether existing fields should be re-computed. Used to subset to documents were field is missing.
+    field: string (default=None)
+        Field on which operations are done, used to check when force=False
+    function: string (default=None)
+        Function for which the documents are used. Argument is used only to generate the expected outcome
+        fieldname, i.e. <field>_<function>
 
     Returns
     -------
-
+    Iterable
     '''
     if not force:
         logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
