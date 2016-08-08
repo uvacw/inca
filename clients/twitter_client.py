@@ -39,7 +39,7 @@ class twitter(Client):
             logger.warning("No non-CLI interface available")
 
     def _get_client(self, credentials):
-        return twitter = Twython(
+        return Twython(
             config.get('twitter', 'Consumer_key'),
             config.get('twitter', 'Consumer_secret'),
             credentials[1]['oauth_token'],
@@ -74,7 +74,7 @@ class twitter_timeline(twitter):
             for num, tweet in enumerate(api.cursor(screen_name=screen_name, max_id=None)):
                 if self._check_exists(tweet['id']) and not force: break
                 if (num+1) % 200:
-                self.update_last(credentials[0], api.get_application_rate_limit_status())
+                    self.update_last(credentials[0], api.get_application_rate_limit_status())
                 yield tweet
         except TwythonRateLimitError:
             logger.info('expended credentials')

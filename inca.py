@@ -186,18 +186,37 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
     return group(batch.s() for batch in batchjobs)
 
 def _doctype_query_or_list(doctype_query_or_list,force=False, field=None, function=None):
+    '''
+    This function helps other functions dynamically interpret the argument for document selection.
+    It allows for either a list of documents, an elasticsearch query, a string-query or a doctype
+    string to be provided and returns an iterable containing these documents.
+
+    Parameters
+    ----------
+    doctype_query_or_list
+    force
+    field
+    function
+
+    Returns
+    -------
+
+    '''
     if not force:
         logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
     if type(doctype_query_or_list)==list:
         documents = doctype_query_or_list
     elif type(doctype_query_or_list)==str:
-        if doctype_query_or_list in core.database.client.indices.get_mappings.keys():
+        if doctype_query_or_list in core.database.client.indices.get_mapping()[config.get('elasticsearch','document_index')]['mappings'].keys():
             logger.info("assuming documents of given type should be processed")
             if force or not field:
-                documents = core.database.scroll_query({'filter':{'match':{'_type':doctype_query_or_list}}})
+                documents = core.database.scroll_query({'filter':{'match':{'_type':"'%s'"%doctype_query_or_list}}})
             elif not force and field:
-                documents = core.database.scroll_query({'query':{'match':{'doctype':doctype_query_or_list}},
-                                                    'filter':{'missing':{'field': '%s_%s' %(field,function) }}})
+                documents = core.database.scroll_query(
+                    {'filter':{'and': [
+                            {'match':{'doctype':doctype_query_or_list}},
+                            {'missing':{'field': '%s_%s' %(field,function) }}]
+                               }})
         else:
             logger.info("assuming input is a query_string")
             if force or not field:

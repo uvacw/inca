@@ -143,7 +143,7 @@ def update_credentials_last(id, last_response):
     '''
     credentials = client.get(id)
     credentials['_source']['last'] = last_response
-    client.index('credentials', doctype=credentials['_type'], body=credentials['_source']
+    client.index('credentials', doctype=credentials['_type'], body=credentials['_source'],
                  id=credentials['_id'])
     logger.info('updated credentials')
     return True
