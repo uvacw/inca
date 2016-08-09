@@ -106,32 +106,38 @@ class twitter_timeline(twitter):
                             timeout_key="last.resources.statuses./statuses/user_timeline.reset",
                             screen_name=screen_name,
                             force=force,
-                            max_id=max_id
+                            max_id=max_id,
+                            since_id = since_id
             )
 
         api = self._get_client(credentials=credentials)
         self.update_last(credentials[0], api.get_application_rate_limit_status())
         if not force:
             since_id = self._first_added().get('_source',{}).get("id",None)
+            logger.info("settings since_id to {since_id}".format(**locals()))
         try:
             batchsize = 1
             while batchsize:
-                for num, tweets in enumerate(api.cursor(api.get_user_timeline,
-                                                   screen_name=screen_name,
-                                                   #max_id=max_id,
-                                                   #since_id=since_id,
-                                                   count=200
-                                                   )):
-                    if self._check_exists(tweet['id_str'])[0] and not force:
-                     logger.info(
-                         "skipping existing {screen_name}-{tweet[id]}".format(**locals())
-                        )
-                    continue
-                tweet['_id'] = tweet['id_str']
-                if not (num+1) % 100:
-                    logger.info("retrieved {num} tweets for {screen_name}, at {tweet[_id]}".format(**locals()))
 
-                yield tweet
+                tweets = api.get_user_timeline(screen_name=screen_name,
+                                               max_id=max_id,
+                                               since_id=since_id,
+                                               count=200)
+                batchsize = len(tweets)
+
+                if not batchsize: continue
+                max_id = min([ tweet.get('id',None) for tweet in tweets ])-1
+                for num, tweet in enumerate(tweets):
+                    if self._check_exists(tweet['id_str'])[0] and not force:
+                        logger.info(
+                             "skipping existing {screen_name}-{tweet[id]}".format(**locals())
+                            )
+                        continue
+                    tweet['_id'] = tweet['id_str']
+                    if not (num+1) % 100:
+                        logger.info("retrieved {num} tweets for {screen_name}, at {tweet[_id]}".format(**locals()))
+
+                    yield tweet
 
             self.update_last(credentials[0], api.get_application_rate_limit_status())
         except TwythonRateLimitError:
