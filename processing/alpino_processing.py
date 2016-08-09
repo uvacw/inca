@@ -50,6 +50,7 @@ class alpino(Processer):
             except subprocess.TimeoutExpired:
                 logger.info("timeout trying to parse line, retrying once")
                 try:
+                    p.kill()
                     p = subprocess.Popen(["bin/Alpino", "end_hook=dependencies", "-parse"],
                                          shell=False,
                                          stdin=subprocess.PIPE,

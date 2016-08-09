@@ -114,26 +114,34 @@ class twitter_timeline(twitter):
         if not force:
             since_id = self._first_added().get('_source',{}).get("id",None)
         try:
-            for num, tweet in enumerate(api.cursor(api.get_user_timeline,
+            batchsize = 1
+            while batchsize:
+                for num, tweets in enumerate(api.cursor(api.get_user_timeline,
                                                    screen_name=screen_name,
-                                                   max_id=max_id,
-                                                   since_id=since_id,
+                                                   #max_id=max_id,
+                                                   #since_id=since_id,
                                                    count=200
                                                    )):
-                if self._check_exists(tweet['id_str'])[0] and not force:
-                    logger.info(
-                        "skipping existing {screen_name}-{tweet[id]}".format(**locals())
-                    )
+                    if self._check_exists(tweet['id_str'])[0] and not force:
+                     logger.info(
+                         "skipping existing {screen_name}-{tweet[id]}".format(**locals())
+                        )
                     continue
                 tweet['_id'] = tweet['id_str']
+                if not (num+1) % 100:
+                    logger.info("retrieved {num} tweets for {screen_name}, at {tweet[_id]}".format(**locals()))
+
                 yield tweet
+
             self.update_last(credentials[0], api.get_application_rate_limit_status())
         except TwythonRateLimitError:
             logger.info('expended credentials')
             self.update_last(credentials[0], api.get_application_rate_limit_status())
+            max_id = self._last_added().get("_source",{}).get("id",None)
             self._set_delay(
                             timeout_key="last.resources.statuses./statuses/user_timeline.reset",
                             screen_name=screen_name,
                             force=force,
-                            max_id=max_id
+                            max_id=max_id,
+                            since_id=since_id
                             )
