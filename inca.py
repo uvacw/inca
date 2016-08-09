@@ -278,7 +278,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=args.debug and logging.DEBUG or LOGLEVEL,
                         filename=args.logfile,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-    )
+                        )
 
     # Basic Celery override
     if args.local:

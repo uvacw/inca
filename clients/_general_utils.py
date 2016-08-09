@@ -76,6 +76,7 @@ def delete_credentials(service_name, pool_name, id):
     -------
     Boolean indicating success
     '''
+    client.delete(service_name, pool_name, id)
 
 def get_credentials(service_name, pool_name='default', filter=None):
     '''get credentials from a specified service pool
@@ -87,27 +88,27 @@ def get_credentials(service_name, pool_name='default', filter=None):
     pool_name : string (default='default')
         Pool of credentials to use, which may be specific (such as credentials collected
         for a specific survey)
-    filter: string (default=None)
-        Elasticsearch string-query with additional filtering option.
-        E.g. 'last_response.rate_limit_remaining:>=1'
+    filter: dict (default=None)
+        Elasticsearch filter-query with additional filtering option.
+        E.g. {"range": {"last.resources.statuses./statuses/user_timeline.remaining": {"gte": 0}}}
     '''
-    base_query = "service:'{service_name}' AND pool:'{pool_name}'".format(**locals())
+    base_query = "service:'{service_name}' AND pools:'{pool_name}'".format(**locals())
     if filter:
         full_query= {
             'query':
-                {'string_query': {'query':base_query} },
+                {'query_string': {'query':base_query} },
             'filter':
-                {'string_query': {'query':filter}
-        }}
+                filter
+        }
     else:
         full_query= {
             'query':
-                {'string_query': {'query': base_query}}
+                {'query_string': {'query': base_query}}
         }
     try:
-        return client.search('credentials',body=full_query)['hits']['hits']
+        return client.search('credentials',body=full_query)['hits']['hits'][0]
     except Exception as e:
-        logger.warning("get_credentials failed {e}")
+        logger.warning("get_credentials failed {e}".format(**locals()))
         return []
 
 def get_credentials_by_id(id):
@@ -141,9 +142,9 @@ def update_credentials_last(id, last_response):
     Bool
         indicates update status
     '''
-    credentials = client.get(id)
+    credentials = client.get(index='credentials', id=id)
     credentials['_source']['last'] = last_response
-    client.index('credentials', doctype=credentials['_type'], body=credentials['_source'],
+    client.index('credentials', doc_type=credentials['_type'], body=credentials['_source'],
                  id=credentials['_id'])
     logger.info('updated credentials')
     return True

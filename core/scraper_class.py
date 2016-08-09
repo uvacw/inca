@@ -22,7 +22,6 @@ language  : If you can safely assume the language of specified documents, please
 '''
 import logging
 from core.document_class import Document
-from celery.contrib.methods import task_method
 from core.database import check_exists
 
 logger = logging.getLogger(__name__)
