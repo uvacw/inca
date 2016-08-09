@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 START_URL = "https://zoek.officielebekendmakingen.nl/kamervragen_aanhangsel/actueel/30"
 BASE_URL  = "https://zoek.officielebekendmakingen.nl/"
 
-class parliamentquestions_NL(Scraper):
+class parliamentanswers_NL(Scraper):
     """Scrapes Dutch parlementary and senate proceedings """
     
     
