@@ -9,6 +9,14 @@ import os
 import datetime
 import re
 import configparser
+import sys
+import logging
+
+logger = logging.getLogger(__name__)
+
+if sys.version_info.major==2:
+    logger.info("Detected python2 environment, using subprocess32 for timeout support")
+    import subprocess32 as subprocess
 
 config = configparser.ConfigParser()
 config.read_file(open('settings.cfg'))
