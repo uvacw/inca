@@ -111,7 +111,9 @@ class twitter_timeline(twitter):
             )
 
         api = self._get_client(credentials=credentials)
-        self.update_last(credentials[0], api.get_application_rate_limit_status())
+        try: self.update_last(credentials[0], api.get_application_rate_limit_status())
+        except TwythonRateLimitError: pass # sometimes you just can't get a rate-limit estimate
+
         if not force:
             since_id = self._first_added().get('_source',{}).get("id",None)
             logger.info("settings since_id to {since_id}".format(**locals()))
@@ -142,7 +144,10 @@ class twitter_timeline(twitter):
             self.update_last(credentials[0], api.get_application_rate_limit_status())
         except TwythonRateLimitError:
             logger.info('expended credentials')
-            self.update_last(credentials[0], api.get_application_rate_limit_status())
+            try: self.update_last(credentials[0], api.get_application_rate_limit_status())
+            except TwythonRateLimitError: # when a ratelimit estimate is unavailable
+                self.postpone(self, delaytime=60*5, screen_name=screen_name,
+                              force=force, max_id=max_id, since_id=since_id)
             max_id = self._last_added().get("_source",{}).get("id",None)
             self._set_delay(
                             timeout_key="last.resources.statuses./statuses/user_timeline.reset",

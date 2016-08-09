@@ -66,7 +66,7 @@ taskmaster.conf.update(
     CELERYBEAT_SCHEDULE = core.celerybeat_schedule.get_scheduler()
 )
 
-expose = [ "scrapers", "processing", "analysis"]
+expose = [ "scrapers", "processing", "analysis", "clients"]
 
 @taskmaster.task
 def run_scheduled(interval="all"):
