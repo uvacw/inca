@@ -37,7 +37,7 @@ class alpino(Processer):
                                  stderr=subprocess.PIPE,
                                  cwd=os.environ['ALPINO_HOME'])
             try:
-                parsed = p.communicate(line)
+                parsed = p.communicate(line, timeout=int(config.get('alpino','alpino.timeout')))
             except Exception as e:
                 p.kill()
                 raise e
