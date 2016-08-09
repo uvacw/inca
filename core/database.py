@@ -124,7 +124,7 @@ def delete_document(document_id):
 
 def delete_doctype(doctype):
     '''Delete all documents of a given type'''
-    for doc in scroll_query({'filter':{'match':{'_doctype':doctype}}}):
+    for doc in scroll_query({'filter':{'match':{'_type':doctype}}}):
         delete_document(doc['_id'])
     return True
 

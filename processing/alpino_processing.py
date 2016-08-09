@@ -46,9 +46,24 @@ class alpino(Processer):
                                  cwd=os.environ['ALPINO_HOME'])
             try:
                 parsed = p.communicate(line, timeout=int(config.get('alpino','alpino.timeout')))
+
+            except subprocess.TimeoutExpired:
+                logger.info("timeout trying to parse line, retrying once")
+                try:
+                    p = subprocess.Popen(["bin/Alpino", "end_hook=dependencies", "-parse"],
+                                         shell=False,
+                                         stdin=subprocess.PIPE,
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE,
+                                         cwd=os.environ['ALPINO_HOME'])
+                    parsed = p.communicate(line, timeout=int(config.get('alpino', 'alpino.timeout')))
+                except:
+                    p.kill()
+                    line_parses.append({})
             except Exception as e:
                 p.kill()
                 raise e
+
             tree   = interpret_parse(parsed[0])
             line_parses.append(tree)
         return line_parses

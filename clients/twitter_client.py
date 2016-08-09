@@ -94,10 +94,10 @@ class twitter_timeline(twitter):
         {"missing": {"field": "last"}}
         ]}
 
-    def get(self, credentials, screen_name, force=False, max_id=None):
-        '''retrieved from the twitter API'''
+    def get(self, credentials, screen_name, force=False, max_id=None, since_id=None):
+        '''retrieved from the twitter user_timeline API'''
 
-        self.doctype =  "tweet"
+        self.doctype =  "tweets"
         self.version = "0.1"
         self.functiontype = "twitter_client"
 
@@ -111,20 +111,26 @@ class twitter_timeline(twitter):
 
         api = self._get_client(credentials=credentials)
         self.update_last(credentials[0], api.get_application_rate_limit_status())
-        max_id = None
+        if not force:
+            since_id = self._first_added().get('_source',{}).get("id",None)
         try:
-            for num, tweet in enumerate(api.cursor(api.get_user_timeline, screen_name=screen_name, max_id=None)):
-                if self._check_exists(tweet['id'])[0] and not force:
+            for num, tweet in enumerate(api.cursor(api.get_user_timeline,
+                                                   screen_name=screen_name,
+                                                   max_id=max_id,
+                                                   since_id=since_id,
+                                                   count=200
+                                                   )):
+                if self._check_exists(tweet['id_str'])[0] and not force:
                     logger.info(
-                        "last tweet reached for {screen_name}-{tweet[id]}".format(**locals())
+                        "skipping existing {screen_name}-{tweet[id]}".format(**locals())
                     )
-                    break
-                if (num+1) % 200:
-                    self.update_last(credentials[0], api.get_application_rate_limit_status())
+                    continue
+                tweet['_id'] = tweet['id_str']
                 yield tweet
             self.update_last(credentials[0], api.get_application_rate_limit_status())
         except TwythonRateLimitError:
             logger.info('expended credentials')
+            self.update_last(credentials[0], api.get_application_rate_limit_status())
             self._set_delay(
                             timeout_key="last.resources.statuses./statuses/user_timeline.reset",
                             screen_name=screen_name,

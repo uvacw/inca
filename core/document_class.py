@@ -10,7 +10,7 @@ The basic functionality is adding meta-data
 import logging
 import datetime
 from celery import Task
-
+from core.search_utils import doctype_last, doctype_first
 logger = logging.getLogger(__name__)
 
 from core.database import insert_document, update_document, check_exists
@@ -140,3 +140,19 @@ class Document(Task):
     def _check_exists(self, doc_id):
         '''Checks whether a document already exists, can be overwritten for testing etc '''
         return check_exists(doc_id)
+
+    def _last_added(self):
+        '''returns last added document of class'''
+        last = doctype_last(self.doctype)
+        if last:
+            return last[0]
+        else:
+            return {}
+
+    def _first_added(self):
+        '''returns the first added document (for backward scraping scrapers)'''
+        first = doctype_first(self.doctype)
+        if first:
+            return first[0]
+        else:
+            return {}
