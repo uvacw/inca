@@ -64,7 +64,7 @@ class alpino(Processer):
             except Exception as e:
                 p.kill()
                 raise e
-
+            p.kill()
             tree   = interpret_parse(parsed[0])
             line_parses.append(tree)
         return line_parses
