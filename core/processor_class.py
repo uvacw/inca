@@ -46,7 +46,7 @@ class Processer(Document):
         logger.debug("tring to process: ",document)
         if not (type(document)==dict and '_source' in document.keys()):
             logger.debug("input not a document")
-            if field==None:
+            if field==None: # This path is used to run examples (ignores save)
                 return self.process(document, *args, **kwargs)
             elif check_exists(document):
                 document = get_document(document)

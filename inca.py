@@ -44,6 +44,7 @@ import core
 import configparser
 import core.search_utils
 import core.taskmanager
+import datetime
 import processing # helps celery recognize the processing tasks
 import scrapers   # helps celery recognize the scraping tasks
 import clients    # helps celery recognize client tasks
@@ -180,15 +181,23 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
     """
     documents = _doctype_query_or_list(doctype_query_or_list, force=force, field=field, function=function)
     batchjobs = []
-    for batch in _batcher(documents, batchsize=bulksize):
-        if not batch: continue #ignore empty batches
-        batch_tasks = [taskmaster.tasks[identify_task(function, task )].s(document=doc,field=field,
-                                                                          force=force, *args, **kwargs)
-                       for doc in batch]
-        batch_chord = chord(batch_tasks)
-        batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())
-        batchjobs.append(batch_result)
-    return group(batch.s() for batch in batchjobs)
+    target_func = taskmaster.tasks[identify_task(function, task )]
+    if not LOCAL_ONLY:
+        for batch in _batcher(documents, batchsize=bulksize):
+            if not batch: continue #ignore empty batches
+            batch_tasks = [target_func.s(document=doc,field=field,
+                                                                              force=force, *args, **kwargs)
+                           for doc in batch]
+            batch_chord = chord(batch_tasks)
+            batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())
+            batchjobs.append(batch_result)
+        return group(batch.s() for batch in batchjobs)
+    else:
+        for num, batch in enumerate(_batcher(documents, batchsize=bulksize)):
+            core.database.bulk_upsert().run(documents=[target_func.run(document=doc, field=field, force=force, *args, **kwargs) for
+                                       doc in batch ] )
+            now = datetime.datetime.now()
+            logger.info("processed batch {num} {now}".format(**locals()))
 
 def _doctype_query_or_list(doctype_query_or_list,force=False, field=None, function=None):
     '''
