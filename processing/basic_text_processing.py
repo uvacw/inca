@@ -3,13 +3,21 @@ from core.processor_class import Processer
 from core.basic_utils import dotkeys
 import logging
 import re
-from pattern.nl import parse
-# TODO I now use pattern.nl as it was basically copy/paste from the earlier version
-# TODO we might want to port this to Alpino, if we use Alpino anyway
+import sys
 from sys import maxunicode
 import unicodedata
 
 logger = logging.getLogger(__name__)
+
+if sys.version_info.major == 2:
+    from pattern.nl import parse
+else:
+    logger.warn("Pattern is NOT python 3 compatible...skipping")
+    def parse(*args, **kwargs):
+        raise "Unavailable in python3!"
+
+# TODO I now use pattern.nl as it was basically copy/paste from the earlier version
+# TODO we might want to port this to Alpino, if we use Alpino anyway
 
 class clean_whitespace(Processer):
     '''Changes multiple whitespace to single whitespace'''

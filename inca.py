@@ -166,8 +166,13 @@ def group_do(query_or_list, function, task,field,force=False, skew=0, *args, **k
     #        query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
     #    documents = core.search_utils.scroll_query(query_or_list)
     documents = _doctype_query_or_list(query_or_list,force=force,field=field,function=task)
-    return group(taskmaster.tasks[identify_task(function,task)].s(doc,field=field,force=force,*args,**kwargs) for
-                 doc in documents).skew(step=skew).apply_async()
+
+    if LOCAL_ONLY == False:
+        return group(taskmaster.tasks[identify_task(function,task)].s(doc,field=field,force=force,*args,**kwargs) for
+                   doc in documents).skew(step=skew).apply_async()
+    else:
+        return [taskmaster.tasks[identify_task(function,task)](doc, field=field, force=force, *args, **kwargs) for
+                doc in documents]
 
 def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize=50, *args, **kwargs):
     """
@@ -253,7 +258,7 @@ def _batcher(stuff, batchsize=10):
     if batch:
         yield batch 
 
-   
+
 if __name__ == '__main__':
 
     # prints the banner

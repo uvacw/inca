@@ -4,6 +4,7 @@ This file provides basic search functionality for the INCA database.
 from core.database import client, scroll_query
 import configparser
 import logging
+from core.basic_utils import dotkeys
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
                       }}).get('hits',{}).get('hits',[""])
     return docs
 
-def doctype_examples(doctype, seed=42, num=10):
+def doctype_examples(doctype, field=None, seed=42, num=10):
     docs = client.search(index=elastic_index, body={
         'size':num,
         "query": {
@@ -99,7 +100,10 @@ def doctype_examples(doctype, seed=42, num=10):
                     ]
                 }}
     })
-    return docs['hits']['hits']
+    if not field:
+        return docs['hits']['hits']
+    else:
+        return [dotkeys(doc,field) for doc in docs['hits']['hits']]
 
 def doctype_fields(doctype):
     '''
