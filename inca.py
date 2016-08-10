@@ -147,6 +147,54 @@ def do(function, task, *args, **kwargs):
         result = getattr(taskmaster.tasks[task_key],run_method)(*args, **kwargs)
         return result
 
+def asset_do(asset_id, asset_dict, function, task, *args, **kwargs):
+    '''
+
+    This is to run functions with arguments based on values in an asset. For instance,
+    uploading a table with word replacements in table "original", "replacement" and
+    calling a replace function for each row. Or a table including a column with company
+    URLs and scraping each.
+
+    Parameters
+    ----------
+    asset_dict: dict
+        a dictionary including the function argument names [KEY] and the corresponding
+        asset keys [Value]. I.e. { 'retrieve_url':'company_urls'}.
+    args: tuple
+        positional arguments to pass on to other functions
+    kwargs: dict
+        keyword arguments ot pass on to other functions
+
+    Returns
+    -------
+        results of called function
+
+    Examples
+    -------
+    asset with id "1" :
+     [
+        {'from':"foo", "to":"bar"},
+        {'from':'hey', 'to':'go'}
+    ]
+    document with id 'test':
+    {'text':'whiskey foo, lets hey'}
+
+    inca.asset_do("1",asset_dict={'regex':'from'},'processor', 'replace',
+                    document='test', field='text')
+
+    returns {'text_replace': 'whiskey bar, lets go'}
+    '''
+    asset_content = core.assets.get_asset(id=asset_id).get('_source',{}).get("content",[])
+    if not asset_content:
+        logger.warn("empty asset, skipping execution")
+        return
+    else:
+        for num,row in enumerate(asset_content):
+            logger.info("Running {function}-{task} for asset element {num}".format(**locals()))
+            row_args = {k:row[v] for k,v in asset_dict.items()}
+            kwargs.update(row_args)
+            do(function,task, *args, **kwargs)
+
 def group_do(query_or_list, function, task,field,force=False, skew=0, *args, **kwargs):
     '''
     input 
