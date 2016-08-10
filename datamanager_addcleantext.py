@@ -89,17 +89,6 @@ def clean_database_njr():
             print
             continue
 
-        # hier is t dus interessant
-
-        from pattern.nl import parse
-        thisart=""
-        for zin in parse(thisartorig).split():
-                for token in zin:
-                    if token[1].startswith('N') or token[1].startswith('J') or token[1].startswith('R'):
-                        #print token[0],token[1]
-                        thisart+=(" "+token[0])
-        #print thisart
-
 
         numbsub = 0
         for pat in replpatterns:
@@ -121,6 +110,15 @@ def clean_database_njr():
                     #print "checking vv",vv,"and k",k
                     thisart = re.sub("\\b" + vv[0] + "\\b", vv[1], thisart)
                 #print "Replaced", vv[0], "by", vv[1], "because", k, "was mentioned"
+
+
+        from pattern.nl import parse
+        thisart=""
+        for zin in parse(thisartorig).split('.'):
+                for token in zin:
+                    if token[1].startswith('N') or token[1].startswith('J') or token[1].startswith('R'):
+                        #print token[0],token[1]
+                        thisart+=(" "+token[0])
 
 
         thisart = remove_punctuation(thisart.lower())
