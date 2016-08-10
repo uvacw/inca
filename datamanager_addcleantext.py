@@ -92,7 +92,7 @@ def clean_database_njr():
 
         numbsub = 0
         for pat in replpatterns:
-            subst = pat.subn(repldict[pat.pattern[2:-2]], thisart)  #[2:-2] to strip the \b
+            subst = pat.subn(repldict[pat.pattern[2:-2]], thisartorig)  #[2:-2] to strip the \b
             thisart = subst[0]
             numbsub += subst[1]
         # only if sth has been substituted at all, check if it's a last name that has to be substituted as well
@@ -102,19 +102,19 @@ def clean_database_njr():
                 #print "For",k,", there are",len(v),"rules."
                 for vv in v:
                     if vv in thisart:
-                        thisart = re.sub("\\b" + k + "\\b", vv, thisart)
+                        thisart = re.sub("\\b" + k + "\\b", vv, thisartorig)
                         #print "Replaced",k,"by",vv
         for k, v in repldictindien.items():
-            if re.findall("\\b" + k + "\\b",thisart):
+            if re.findall("\\b" + k + "\\b",thisartorig):
                 for vv in v:
                     #print "checking vv",vv,"and k",k
-                    thisart = re.sub("\\b" + vv[0] + "\\b", vv[1], thisart)
+                    thisart = re.sub("\\b" + vv[0] + "\\b", vv[1], thisartorig)
                 #print "Replaced", vv[0], "by", vv[1], "because", k, "was mentioned"
 
 
         from pattern.nl import parse
         thisart=""
-        for zin in parse(thisartorig).split('.'):
+        for zin in parse(thisartorig).split():
                 for token in zin:
                     if token[1].startswith('N') or token[1].startswith('J') or token[1].startswith('R'):
                         #print token[0],token[1]
