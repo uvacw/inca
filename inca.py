@@ -67,7 +67,7 @@ taskmaster.conf.update(
     CELERYBEAT_SCHEDULE = core.celerybeat_schedule.get_scheduler()
 )
 
-expose = [ "scrapers", "processing", "analysis", "clients"]
+expose = [ "scrapers", "processing", "analysis", "clients", "inca"]
 
 @taskmaster.task
 def run_scheduled(interval="all"):
@@ -131,7 +131,8 @@ def identify_task(function,task):
         n_options = len(fit)
         print("found {n_options} for {function}/{task}!".format(**locals()))
         return "help"
-    
+
+@taskmaster.task
 def do(function, task, *args, **kwargs):
     ''' this handler function calls the appropriate celery task'''
 
@@ -147,6 +148,7 @@ def do(function, task, *args, **kwargs):
         result = getattr(taskmaster.tasks[task_key],run_method)(*args, **kwargs)
         return result
 
+@taskmaster.task
 def asset_do(asset_id, asset_dict, function, task, *args, **kwargs):
     '''
 

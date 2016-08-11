@@ -5,12 +5,13 @@ field-to-field etcetera.
 
 from core.processor_class import Processer
 from core.database import update_document, get_document, check_exists
+from dateutil import parser
 import datetime
 import logging
 
 logger = logging.getLogger(__name__)
 
-class string_to_date(Processer):
+class datetime_string_to_date(Processer):
     '''
     Takes a specified date-format and outputs ISO-datetimes
 
@@ -34,6 +35,8 @@ class string_to_date(Processer):
 
     Notes
     ---
+    MAY NOT WORK for timezone parsing...
+
     See Also: https://docs.python.org/2/library/datetime.html
 
     '''
@@ -42,6 +45,34 @@ class string_to_date(Processer):
         '''standardized datetime format'''
         return datetime.datetime.strptime(document_field,input_format)
 
+class dateutil_string_to_date(Processer):
+    '''
+    Takes strings and returns datetime objects based on dateutil parsing.
+
+
+    Parameters
+    ----------
+    document_field: string
+        string that should be parsed
+    year_first: bool (default=False)
+        whether ambiguous strings (12/06/13) should be interpreted as year
+        first. (i.e. 2012 june 13 instead of 2013 june 12)
+    day_first: bool (default=False)
+        Whether ambiguous strings should be interpreted as day_first.
+    fuzzy: bool (default=True)
+        Allows for fuzzy matching
+    kwargs:
+        keyword arguments to pass to dateutil.parser.parse
+
+    Returns
+    -------
+        Datetime
+    '''
+
+    def process(self, document_field, year_first=False, day_first=False, fuzzy=False, **kwargs):
+        '''Extracted datetime from string'''
+        return parser.parse(document_field, yearfirst=year_first,
+                            dayfirst=day_first, fuzzy=fuzzy, **kwargs)
 
 class rename_field(Processer):
     '''
