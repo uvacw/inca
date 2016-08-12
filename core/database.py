@@ -204,8 +204,12 @@ def scroll_query(query,scroll_time='10m', log_interval=None):
     if not log_interval:
         log_interval = min(tot_size / 10000, 100)
     while size > 0 :
-        page = client.scroll(scroll_id = sid,
+        try:
+            page = client.scroll(scroll_id = sid,
                              scroll = scroll_time)
+        except ConnectionTimeout:
+            time.sleep(1)
+            continue
         sid = page['_scroll_id']
         size = len(page['hits']['hits'])
 
