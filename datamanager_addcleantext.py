@@ -93,7 +93,7 @@ def clean_database_njr():
         numbsub = 0
         for pat in replpatterns:
             subst = pat.subn(repldict[pat.pattern[2:-2]], thisartorig)  #[2:-2] to strip the \b
-            thisart = subst[0]
+            thisartorig = subst[0]
             numbsub += subst[1]
         # only if sth has been substituted at all, check if it's a last name that has to be substituted as well
         # functie 1b: als iemand een keer met z'n volledige naam genoemd wordt, ook de volgende keren dat alleen z'n achternaam wordt genoemd deze vervangen
@@ -101,14 +101,14 @@ def clean_database_njr():
             for k, v in repldictpersons.items():
                 #print "For",k,", there are",len(v),"rules."
                 for vv in v:
-                    if vv in thisart:
-                        thisart = re.sub("\\b" + k + "\\b", vv, thisartorig)
+                    if vv in thisartorig:
+                        thisartorig = re.sub("\\b" + k + "\\b", vv, thisartorig)
                         #print "Replaced",k,"by",vv
         for k, v in repldictindien.items():
             if re.findall("\\b" + k + "\\b",thisartorig):
                 for vv in v:
                     #print "checking vv",vv,"and k",k
-                    thisart = re.sub("\\b" + vv[0] + "\\b", vv[1], thisartorig)
+                    thisartorig = re.sub("\\b" + vv[0] + "\\b", vv[1], thisartorig)
                 #print "Replaced", vv[0], "by", vv[1], "because", k, "was mentioned"
 
 
