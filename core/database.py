@@ -135,12 +135,12 @@ def insert_document(document, custom_identifier=''):
         try:
             doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document)
         except ConnectionTimeout:
-            doc = {'id':insert_document(document, custom_identifier)}
+            doc = {'_id':insert_document(document, custom_identifier)}
     else:
         try:
             doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
         except ConnectionTimeout:
-            doc= {'id':insert_document(document, custom_identifier)}
+            doc= {'_id':insert_document(document, custom_identifier)}
     logger.debug('added new document, content: {document}'.format(**locals()))
     return doc["_id"]
 
@@ -191,7 +191,7 @@ def _remove_dots(document):
             document[k.replace('.','_')]= _remove_dots(v)
     return document
 
-def scroll_query(query,scroll_time='10m', log_interval=100):
+def scroll_query(query,scroll_time='10m', log_interval=None):
     scroller = client.search(elastic_index,
                              body=query,
                              scroll=scroll_time,
@@ -201,6 +201,8 @@ def scroll_query(query,scroll_time='10m', log_interval=100):
     tot_size = size # keep total size for logging
     logger.info('scrolling through {size} results'.format(**locals()))
     at_num = 0
+    if not log_interval:
+        log_interval = min(tot_size / 10000, 100)
     while size > 0 :
         page = client.scroll(scroll_id = sid,
                              scroll = scroll_time)
@@ -211,7 +213,7 @@ def scroll_query(query,scroll_time='10m', log_interval=100):
             at_num+=1
             if log_interval and (at_num % log_interval):
                 pos = at_num/float(tot_size)
-                logger.info("At  {:f.2}%{at_num}")
+                logger.info("At  {:f.2}%{at_num}".format(**locals()))
             yield doc
 
 
