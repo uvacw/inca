@@ -216,7 +216,7 @@ def group_do(query_or_list, function, task,field,force=False, skew=0, *args, **k
     #   if not force:
     #        query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
     #    documents = core.search_utils.scroll_query(query_or_list)
-    documents = _doctype_query_or_list(query_or_list,force=force,field=field,function=task)
+    documents = _doctype_query_or_list(query_or_list, force=force, field=field, task=task)
 
     if LOCAL_ONLY == False:
         return group(taskmaster.tasks[identify_task(function,task)].s(doc,field=field,force=force,*args,**kwargs) for
@@ -229,7 +229,7 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
     """
     Applies a function:task combination to all documents given, but saves them in batches to avoid overloading the database.
     """
-    documents = _doctype_query_or_list(doctype_query_or_list, force=force, field=field, function=function)
+    documents = _doctype_query_or_list(doctype_query_or_list, force=force, field=field, task=task)
     batchjobs = []
     target_func = taskmaster.tasks[identify_task(function, task )]
     if not LOCAL_ONLY:
@@ -249,7 +249,7 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
             now = datetime.datetime.now()
             logger.info("processed batch {num} {now}".format(**locals()))
 
-def _doctype_query_or_list(doctype_query_or_list,force=False, field=None, function=None):
+def _doctype_query_or_list(doctype_query_or_list, force=False, field=None, task=None):
     '''
     This function helps other functions dynamically interpret the argument for document selection.
     It allows for either a list of documents, an elasticsearch query, a string-query or a doctype
@@ -267,7 +267,7 @@ def _doctype_query_or_list(doctype_query_or_list,force=False, field=None, functi
         whether existing fields should be re-computed. Used to subset to documents were field is missing.
     field: string (default=None)
         Field on which operations are done, used to check when force=False
-    function: string (default=None)
+    task: string (default=None)
         Function for which the documents are used. Argument is used only to generate the expected outcome
         fieldname, i.e. <field>_<function>
 
@@ -275,8 +275,6 @@ def _doctype_query_or_list(doctype_query_or_list,force=False, field=None, functi
     -------
     Iterable
     '''
-    if not force:
-        logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
     if type(doctype_query_or_list)==list:
         documents = doctype_query_or_list
     elif type(doctype_query_or_list)==str:
@@ -285,23 +283,25 @@ def _doctype_query_or_list(doctype_query_or_list,force=False, field=None, functi
             if force or not field:
                 documents = core.database.scroll_query({'filter':{'match':{'_type':"'%s'"%doctype_query_or_list}}})
             elif not force and field:
+                logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
                 documents = core.database.scroll_query(
                     {'filter':{'and': [
                             {'match':{'doctype':doctype_query_or_list}},
-                            {'missing':{'field': '%s_%s' %(field,function) }}]
+                            {'missing':{'field': '%s_%s' %(field, task)}}]
                                }})
         else:
             logger.info("assuming input is a query_string")
             if force or not field:
                 documents = core.database.scroll_query({'filter':{'query_string':{'query': doctype_query_or_list}}})
             elif not force and field:
+                logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
                 documents = core.database.scroll_query({'filter':{'and':[
-                    {'missing':{'field':'%s_%s' %(field,function)}},
+                    {'missing':{'field':'%s_%s' %(field, task)}},
                     {'query_string':{'query':doctype_query_or_list}}
                 ]}})
     else:
-        if not force and field and function:
-            doctype_query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field,function)}}})
+        if not force and field and task:
+            doctype_query_or_list.update({'filter':{'missing':{'field':'%s_%s' %(field, task)}}})
         documents = core.search_utils.scroll_query(doctype_query_or_list)
     return documents        
 
