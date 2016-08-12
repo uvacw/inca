@@ -126,7 +126,8 @@ def doctype_fields(doctype):
     #for num, doc in enumerate(doctype_examples(doctype, num=1000)):
     #    doc_num = num+1
     #    [key_count.update([key]) for key in doc.get('_source',{}).keys()]
-    summary = {k:{'coverage':coverage.get(k,'unknown')/float(doc_num),'type':mappings[k].get('type','unknown')} for k in mappings.keys()}
+    summary = {k:{'coverage':coverage.get(k,'unknown')/float(doc_num),'type':mappings[k].get('type','unknown')} for
+               k in mappings.keys() if k!="META"}
     return summary
 
 def doctype_inspect(doctype):
