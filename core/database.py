@@ -209,7 +209,7 @@ def scroll_query(query,scroll_time='10m', log_interval=100):
 
         for doc in page['hits']['hits']:
             at_num+=1
-            if log_interval and (num % log_interval):
+            if log_interval and (at_num % log_interval):
                 pos = at_num/float(tot_size)
                 logger.info("At  {:f.2}%{at_num}")
             yield doc
