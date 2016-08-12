@@ -98,7 +98,7 @@ class rename_field(Processer):
                 return document
 
         if old_field not in document['_source'].keys():
-            logger.info("Source field missing: ignoring rename")
+            logger.debug("Source field missing: ignoring rename")
             return document
 
         elif not new_field in document['_source'].keys():
