@@ -191,14 +191,16 @@ def _remove_dots(document):
             document[k.replace('.','_')]= _remove_dots(v)
     return document
 
-def scroll_query(query,scroll_time='2m'):
+def scroll_query(query,scroll_time='10m', log_interval=100):
     scroller = client.search(elastic_index,
                              body=query,
                              scroll=scroll_time,
                              search_type='scan')
     sid  = scroller['_scroll_id']
     size = scroller['hits']['total']
+    tot_size = size # keep total size for logging
     logger.info('scrolling through {size} results'.format(**locals()))
+    at_num = 0
     while size > 0 :
         page = client.scroll(scroll_id = sid,
                              scroll = scroll_time)
@@ -206,6 +208,10 @@ def scroll_query(query,scroll_time='2m'):
         size = len(page['hits']['hits'])
 
         for doc in page['hits']['hits']:
+            at_num+=1
+            if log_interval and (num % log_interval):
+                pos = at_num/float(tot_size)
+                logger.info("At  {:f.2}%{at_num}")
             yield doc
 
 
