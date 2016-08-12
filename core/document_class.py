@@ -54,6 +54,7 @@ class Document(Task):
             custom_identifier = document.pop('_id')
         else :
             custom_identifier = None
+        self._verify(document)
         insert_document(document, custom_identifier=custom_identifier)
 
     def _update_document(self, new_document_body):

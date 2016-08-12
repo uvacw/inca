@@ -281,7 +281,7 @@ def _doctype_query_or_list(doctype_query_or_list, force=False, field=None, task=
         if doctype_query_or_list in core.database.client.indices.get_mapping()[config.get('elasticsearch','document_index')]['mappings'].keys():
             logger.info("assuming documents of given type should be processed")
             if force or not field:
-                documents = core.database.scroll_query({'filter':{'match':{'_type':"'%s'"%doctype_query_or_list}}})
+                documents = core.database.scroll_query({'filter':{'match':{'doctype':"'%s'"%doctype_query_or_list}}})
             elif not force and field:
                 logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
                 documents = core.database.scroll_query(
