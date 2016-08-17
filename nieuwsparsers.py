@@ -27,6 +27,62 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
+def parse_ad(doc, ids,titel,link):
+    try:
+        tree = html.fromstring(doc)
+    except:
+        print("kon dit niet parsen",type(doc),len(doc), ids)
+        print(doc)
+        return("","","", "")
+    try:
+        category = tree.xpath('//*[@class="container"]/h1/text()')[0]
+    except:
+        category=""
+        print("OOps - geen category for", ids, "?")
+    #1. path: regular intro                                                             
+    #2. path: intro when in <b>; found in a2014 04 130                                  
+    textfirstpara=tree.xpath('//*[@id="detail_content"]/p/text() | //*[@class="intro"]/b/text() | //*/p[@class="article__intro"]/text()')
+    #1. path: regular text                                                              
+    #2. path: text with link behind (shown in blue underlined); found in 2014 12 1057   
+    #3. path: second hadings found in 2014 11 1425                                      
+    textrest = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*[@id="detail_content"]/section/p/a/text() | //*[@id="detail_content"]/section/p/strong/text() | //*/p[@class="article__paragraph"]/strong/text()')
+    text = "\n".join(textfirstpara) + "\n" + "\n".join(textrest)
+    try:
+        author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
+    except:
+        author_door=""
+    if author_door=="":
+        try:
+            author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
+        except:
+            author_door==""
+    if author_door=="":
+        try:
+            author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
+        except:
+            author_door=""
+            print("geen author door voor", ids)
+    try:
+        brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
+        author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
+    except:
+        author_bron=""
+    text=polish(text)
+    if text=="" and category=="" and author_door=="":
+        print("No article-page for", ids, "?")
+    print("Category: ")
+    print(category)
+    print("Title: ")
+    print(titel)
+    print("Text: ")
+    print(text)
+    print("Auhtor: ")
+    print(author_door)
+    print("Bron: ")
+    print(author_bron)
+    return(titel,text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.strip())
+
+
 #Parser voor Volkskrant
 def parse_vk(doc,ids,titel,link):
     try:
@@ -52,7 +108,12 @@ def parse_vk(doc,ids,titel,link):
         try:
             textfirstpara=tree.xpath('//*/header/p/text()')[1].replace("\n", "").strip()
         except:
-            textfirstpara=" "
+            textfirstpara=""
+    if textfirstpara=="":
+        try:
+            textfirstpara=" ".join(tree.xpath('//*[@class="article__intro--v2"]/p/text()')).replace("\n", "").strip()
+        except:
+            textfirstpara=""
             print("oops - geen first para")
     try:
         #1. path: regular textrest 
@@ -83,6 +144,11 @@ def parse_vk(doc,ids,titel,link):
                 author_door = "redactie"
         except:
             author_door=""
+    if author_door=="":
+        try:
+            author_door=" ".join(tree.xpath('//*[@class="article__meta--v2"]/span/span[2]/text()')).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:")
+            print(author_door)
+        except:
             print("oops - geen auhtor?")
     try:
         author_bron=" ".join(tree.xpath('//*/span[@class="article__meta"][*]/text()')).strip().lstrip("Bron:").strip()
@@ -610,7 +676,7 @@ def parse_parool(doc,ids,titel,link):
         #3. Link text
         #4. Embedded text subtitle one
         #5. Embedded text subitles rest
-        textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text() | //*[@class="article__body__paragraph first"]/text() | //*[@class="article__body__paragraph first"]/strongtext() | //*[@class="article__body__paragraph first"]/a/text()')
+        textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text() | //*[@class="article__body__paragraph first"]/text() | //*[@class="article__body__paragraph first"]/strong/text() | //*[@class="article__body__paragraph first"]/a/text() | //*[@class="article__body__paragraph"]/text() | //*[@class="article__body__paragraph"]/strong/text()')
     except:
         textrest=" "
         print("oops - geen textrest")
