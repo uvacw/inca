@@ -122,14 +122,29 @@ def doctype_fields(doctype):
     coverage = {key:client.search(elastic_index,body={'query':{'exists':{'field':key}},
                                                       'filter':{'match':{'doctype':doctype}}}).get('hits',{}).get('total',0) for
                 key in mappings.keys() if key!="META"}
-
-    #for num, doc in enumerate(doctype_examples(doctype, num=1000)):
-    #    doc_num = num+1
-    #    [key_count.update([key]) for key in doc.get('_source',{}).keys()]
     summary = {k:{'coverage':coverage.get(k,'unknown')/float(doc_num),'type':mappings[k].get('type','unknown')} for
                k in mappings.keys() if k!="META"}
     return summary
 
+def missing_field(doctype=None, field='_source', stats_only=True):
+    query = {'filter':{'missing':{'field':field}}}
+    if not doctype:
+        result = client.search(elastic_index, body=query)
+    else:
+        result = client.search(elastic_index, doctype, body=query)
+    if not stats_only:
+        return result['hits']['hits']
+    else:
+        total = doctype and client.search(elastic_index, doctype)['hits']['total'] or client.search(elastic_index)['hits']['total']
+        stats = {
+            'doctype' : doctype and doctype or '*',
+            'field' : field,
+            'missing': result['hits']['total'],
+            'total'  : total,
+            'percentage' : ((result['hits']['total'])/(total*1.))*100
+        }
+
+        return stats
 def doctype_inspect(doctype):
     '''TODO: provide an overview of doctype collection '''
     summary = dict(

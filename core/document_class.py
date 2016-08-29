@@ -112,7 +112,9 @@ class Document(Task):
         assert document.get('META',False), "document lacks a `meta` key"
         for key in document.keys():
             if key=='META' or key=='doctype': continue
-            assert key in document['META'], "meta key for %s is missing from documents!" %key
+            #assert key in document['META'], "meta key for %s is missing from documents!" %key
+            if key not in document['META']:
+                logger.warn("{key} is missing from META !".format(**locals()))
 
     def _check_complete(self):
         '''

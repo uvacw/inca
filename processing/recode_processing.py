@@ -101,6 +101,10 @@ class rename_field(Processer):
             logger.debug("Source field missing: ignoring rename")
             return document
 
+        elif new_field in document['_source'].keys():
+            logger.info("Existing *original* (non moved) field: ignoring rename!")
+            return document
+
         elif not new_field in document['_source'].keys():
             document['_source'][new_field] = document['_source'][old_field]
             document['_source']['META'][new_field] = document['_source']['META'][old_field]
@@ -112,9 +116,6 @@ class rename_field(Processer):
             document['_source']['META'][new_field] = document['_source']['META'][old_field]
             document['_source']['META'][new_field]['MOVED_FROM'] = old_field
 
-        else:
-            logger.info("Existing *original* (non moved) field: ignoring rename!")
-            return document
 
         self._verify(document['_source'])
         if save: update_document(document, force=True)

@@ -236,12 +236,12 @@ def batch_do(doctype_query_or_list, function, task, field, force=False, bulksize
         for batch in _batcher(documents, batchsize=bulksize):
             if not batch: continue #ignore empty batches
             batch_tasks = [target_func.s(document=doc,field=field,
-                                                                              force=force, *args, **kwargs)
+                                        force=force, *args, **kwargs)
                            for doc in batch]
             batch_chord = chord(batch_tasks)
             batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())
             batchjobs.append(batch_result)
-        return group(batch.s() for batch in batchjobs)
+        return group(batch for batch in batchjobs)
     else:
         for num, batch in enumerate(_batcher(documents, batchsize=bulksize)):
             core.database.bulk_upsert().run(documents=[target_func.run(document=doc, field=field, force=force, *args, **kwargs) for
