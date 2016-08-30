@@ -6,7 +6,7 @@ from core.scraper_class import Scraper
 from random import randint
 
 class testdocs(Scraper):
-
+    '''Generates test documents'''
     doctype = "test_documents"
     version = "0.1"
     functiontype = "testcase_generator"

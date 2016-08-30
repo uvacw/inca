@@ -109,9 +109,12 @@ def show_functions():
 def show_tasks(function, limit=0):
     helpstring = "{function} provides the following tasks:\n\n".format(**locals())
     for function_task in [taskname for taskname in taskmaster.tasks if taskname.split('.')[0]==function]:
-        taskdoc  = taskmaster.tasks[function_task].__doc__
+        taskdoc  = taskmaster.tasks[function_task].__doc__ and taskmaster.tasks[function_task].__doc__ or "DOCSTRING MISSING"
+        taskdoc = taskdoc.replace('\n',' ').replace('\t',' ')
+        if len(taskdoc)>50:
+            taskdoc = taskdoc[:47]+"..."
         taskname = function_task.split('.')[-1]
-        helpstring += "\t\t{taskname: <40} : {taskdoc}\n".format(**locals())
+        helpstring += "\t\t{taskname: <40} : {taskdoc:.50}\n".format(**locals())
     return helpstring
 
 def identify_task(function,task):
@@ -133,10 +136,20 @@ def identify_task(function,task):
         return "help"
 
 @taskmaster.task
-def do(function, task, *args, **kwargs):
+def do(function, task, schedule=None, *args, **kwargs):
     ''' this handler function calls the appropriate celery task'''
 
     # TODO: INSPECT REQUIRED ARGUMENTS BEFORE CALLING FUNCTION!
+
+    if schedule:
+        return core.taskmanager.add_task({
+            'name' : "{function}_{task}_{schedule}".format(**locals()),
+            'function':  function,
+            'task' :     task,
+            'schedule' : schedule,
+            'args' :     args,
+            'kwargs' :   kwargs
+        })
     
     task_key = identify_task(function,task)
     logger.debug("running {function}:{task_key} with arguments {args}".format(**locals()))

@@ -141,7 +141,7 @@ def missing_field(doctype=None, field='_source', stats_only=True):
             'field' : field,
             'missing': result['hits']['total'],
             'total'  : total,
-            'percentage' : ((result['hits']['total'])/(total*1.))*100
+            'percentage_missing' : ((result['hits']['total'])/(total*1.))*100
         }
 
         return stats

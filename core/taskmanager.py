@@ -9,6 +9,9 @@ from datetime import timedelta
 import configparser
 import celery
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 config = configparser.ConfigParser()
 config.read_file(open('settings.cfg'))
@@ -30,11 +33,12 @@ def verify_task(task):
 
     return all_checks_out
 
-def get_tasks(interval="1sec"):
+def get_tasks(interval="all"):
     if taskfile in os.listdir('.'):
         try:
             tasks = json.load(open(taskfile))
-            return [task for task in tasks if task.get('schedule','')==interval]
+            return {taskname:task for taskname, task in tasks.items() if
+                    interval=='all' or task.get('schedule','')==interval}
         except Exception as e:
             logger.warn("could not import tasks, empty file? {e}".format(**locals()))
             return {}
@@ -42,6 +46,24 @@ def get_tasks(interval="1sec"):
         return {}
 
 def add_task(task):
+    '''
+    Schedules tasks for recurrent execution
+
+    Parameters
+    ----------
+    task: dict
+        a task to be scheduled. Should be configured as follows:
+            name : string naming this job
+            schedule: string, from {TASK_INTERVALS}
+            function : required function, e.g. 'scrapers'
+            task    : required task, e.g. 'proceedings_NL'
+            args    : tuple of optional positional arguments
+            kwargs  : dict of optional keyword arguments
+
+    Returns
+    -------
+
+    '''
     if not 'args' in task.keys():
         task['args']=()
     if not 'kwargs' in task.keys():
@@ -62,8 +84,8 @@ def remove_task(taskname):
         tasks.pop(taskname)
         json.dump(tasks, open(taskfile,'w'))
     else:
-        return "task not found"
-    return "task removed from schedule"
+        return "task [{taskname}]not found".format(**locals())
+    return "task [{taskname}] removed from schedule".format(**locals())
 
 ############
 #
