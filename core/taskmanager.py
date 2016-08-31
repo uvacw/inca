@@ -97,14 +97,16 @@ task_mapping = {
     "mappings" :{
         "task":{
             "name":        { "type" : "string"},
+            "type":         { "type" : "string"},
             "description": { "type" : "string"},
             "schedule":    { "type" :  "string"},
             "function":    { "type" :  "string"},
             "task":        { "type" : "string"},
             "owner":       { "type" : "string"},
             "added_date":  { "type" : "strict_date_optional_time||epoch_millis"},
+            "last_update": { "type" : "strict_date_optional_time||epoch_millis"},
             "args":        { "type" : "object"},
-            "kwargs":      { "type" : "object"},
+            "kwargs":      { "type" : "object"}
         }
     }
 
