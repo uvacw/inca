@@ -48,6 +48,7 @@ import datetime
 import processing # helps celery recognize the processing tasks
 import scrapers   # helps celery recognize the scraping tasks
 import clients    # helps celery recognize client tasks
+import analysis   # helps celery recognize analysis tasks
 
 config = configparser.ConfigParser()
 try:    config.read_file(open('settings.cfg'))
@@ -334,6 +335,12 @@ def _batcher(stuff, batchsize=10):
     if batch:
         yield batch 
 
+def switch_project(project='inca'):
+    '''Switch to different project environment'''
+    if project!='inca':
+        project = 'project_{project}'.format(**locals())
+    core.database.elastic_index = project
+    print('you are now working on: {project}'.format(**locals()))
 
 if __name__ == '__main__':
 

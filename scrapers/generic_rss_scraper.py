@@ -7,31 +7,9 @@ import datetime
 
 logger = logging.getLogger(__name__)
 
-# drawn from https://validator.w3.org/feed/docs/rss2.html
-RSS_SPECIFIED_FIELDS = [
-    'title',
-    'link',
-    'description',
-    'language',
-    'copyright',
-    'managingEditor',
-    'webMaster',
-    'pubDate',
-    'lastBuildDate',
-    'category',
-    'generator',
-    'docs',
-    'cloud',
-    'ttl',
-    'image',
-    'textInput',
-    'skipHours',
-    'skipDays'
-]
-
 
 class generic_rss(Scraper):
-
+    """Scrapes provided RSS url"""
     def __init__(self):
         self.doctype = "raw RSS "
         self.version = ".1"
@@ -52,10 +30,9 @@ class generic_rss(Scraper):
         newlinks = []
         for link in links:
             if 'text' in link['type']:
-                page = requests.get(link['href'])
-                content = page.content
-                link.update({'content':content})
+                content = self.retrieve_content(link['href'])
                 newlinks.append(link)
+                link.update({'content': content})
         return newlinks
 
     def feedparser_to_dict(self, nested_dict):
@@ -64,5 +41,13 @@ class generic_rss(Scraper):
         if type(nested_dict) == list: return [self.feedparser_to_dict(thing) for thing in nested_dict]
         if not type(nested_dict)==feedparser.FeedParserDict: return nested_dict
         return {k: self.feedparser_to_dict(v) for k,v in nested_dict.items()}
+
+    def retrieve_content(self, url):
+        '''overwrite with feed-specific logic to parse link content'''
+        page = requests.get(url)
+        content = page.content
+        return content
+
+
 
 KNOWN_REWRITES = {}

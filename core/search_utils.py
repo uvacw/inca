@@ -1,16 +1,11 @@
 '''
 This file provides basic search functionality for the INCA database.
 '''
-from core.database import client, scroll_query
-import configparser
+from core.database import client, scroll_query, elastic_index
 import logging
 from core.basic_utils import dotkeys
 
 logger = logging.getLogger(__name__)
-
-config = configparser.ConfigParser()
-config.read_file(open('settings.cfg'))
-elastic_index = config.get('elasticsearch','document_index')
 
 def doctypes():
     existing_doctypes = [key for key in client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).keys() if
