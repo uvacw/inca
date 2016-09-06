@@ -315,10 +315,7 @@ def _doctype_query_or_list(doctype_query_or_list, force=False, field=None, task=
                 ]}})
     else:
         if not force and field and task:
-            if 'new_field' in kwargs:
-                field = 'new_field'
-            else:
-                field = '%s_%s' %(field, task)
+            field = '%s_%s' %(field, task)
             doctype_query_or_list.update({'filter':{'missing':{'field':field}}})
         documents = core.search_utils.scroll_query(doctype_query_or_list)
     return documents        
