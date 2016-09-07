@@ -95,7 +95,6 @@ class timeline_generator():
             else:
                 target_dataframe = target_dataframe.merge(df[["timestamp",new_name]], on='timestamp', how='outer')
 
-            print(prepend)
             if prepend:
                 colnames = [name for name in target_dataframe.columns if name!="timestamp"]
                 for empty_column in prepend:

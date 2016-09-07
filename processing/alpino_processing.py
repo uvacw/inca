@@ -165,7 +165,8 @@ def interpret_parse(parse):
             func, rel = line[7].split("/")
             yield dict(child=child['id'], parent=parent['id'], relation=rel)
 
-    lines = (line.decode("utf-8").strip().split("|")
+
+    lines = (line.decode("utf-8","ignore").strip().split("|")
              for line in parse.splitlines())
     dependencies = list(get_deps(lines))
 
@@ -238,3 +239,38 @@ _POSMAP = {"pronoun": 'O',
            'sbar': '?',
            '--': '?',
            }
+
+SPEACH_VERBS = ['zeg','vertel','stel','beweer']
+
+class alpino_to_quote(Processer):
+    '''Takes alpino output and extracts quotes'''
+
+    def process(self, alpino_result):
+        '''takes an alpino result and returns a list of {speaker:name,using:verb,quote:text} dicts'''
+
+        quotes = []
+        for line in alpino_result:
+            speach_verbs = [verb for verb in line.get('tokens',[]) if verb.get('lemma') in SPEACH_VERBS]
+            if speach_verbs:
+                speach_verbs = speach_verbs[0]
+                subject_id = [dep.get('child') for dep in line.get('dependencies',[]) if
+                              dep.get('relation')=='su' and dep.get('parent')==speach_verbs.get('id',False) ][0]
+                verb    = speach_verbs.get('lemma','')
+
+                def get_children(parent, exclude=False):
+                    child_ids = [sub['child'] for sub in line.get('dependencies') if
+                                 sub['parent']==parent and not sub['child']==exclude]
+                    for child in child_ids:
+                        child_ids.extend(get_children(child))
+                    return child_ids
+
+                def id_to_word(id):
+                    return [sub['word'] for sub in line.get('tokens') if sub['id']==id][0]
+
+                quote = ' '.join([id_to_word(child) for child in get_children(speach_verbs.get('id'), exclude=subject_id)])
+                quotes.append({
+                'speaker':id_to_word(subject_id),
+                'verb':speach_verbs.get('word'),
+                'quote':quote
+                 })
+        return quotes

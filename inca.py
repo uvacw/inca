@@ -314,7 +314,7 @@ def _doctype_query_or_list(doctype_query_or_list, force=False, field=None, task=
                     {'query_string':{'query':doctype_query_or_list}}
                 ]}})
     else:
-        if not force and field and task:
+        if not force and field and task and not doctype_query_or_list:
             field = '%s_%s' %(field, task)
             doctype_query_or_list.update({'filter':{'missing':{'field':field}}})
         documents = core.search_utils.scroll_query(doctype_query_or_list)
@@ -325,7 +325,7 @@ def _batcher(stuff, batchsize=10):
     for num,thing in enumerate(stuff):
         batch.append(thing)
         if (num+1) % batchsize == 0:
-            logger.info('processing batch %s' %(num+1))
+            logger.debug('processing batch %s' %(num+1))
             yield_batch = batch
             batch = []
             yield yield_batch

@@ -97,8 +97,10 @@ def doctype_examples(doctype, field=None, seed=42, num=10):
     })
     if not field:
         return docs['hits']['hits']
-    else:
+    elif type(field)==str:
         return [dotkeys(doc,field) for doc in docs['hits']['hits']]
+    else:
+        return [{fi:dotkeys(doc,fi) for fi in field} for doc in docs['hits']['hits']]
 
 def doctype_fields(doctype):
     '''
