@@ -167,15 +167,14 @@ else:
 usersubset += ']}'
 newssubset = ast.literal_eval(''.join(usersubset.split(',',1)))
 
-#THE FOLLOWING IS STILL PROBLEMATIC. ONLY WORKS IF USER DIDN'T ENTER HIS OWN CUSTOMIZED ARGUMENT
+# THE FOLLOWING IS STILL PROBLEMATIC. ONLY WORKS IF USER DIDN'T ENTER HIS OWN CUSTOMIZED ARGUMENT
 
 if form.getlist('usersubset'):
 	usersubset = ''.join(usersubset.split(',',1))
 	usersubset = ''.join(usersubset.split(' ',1))
 
-
+# need to safely transform the query into a dict that can be accessed. 
 finalsubset = ast.literal_eval(usersubset)
-
 
 if form.getvalue('year_start') and form.getvalue('month_start') and form.getvalue('day_start') and form.getvalue('year_end') and form.getvalue('month_end') and form.getvalue('day_end'):
 	year_start = form.getvalue('year_start')
@@ -185,6 +184,7 @@ if form.getvalue('year_start') and form.getvalue('month_start') and form.getvalu
 	month_end = form.getvalue('month_end')
 	day_end = form.getvalue('day_end')
 	
+	# transforming the type of elements that were passed as strings
 	query_start = datetime.datetime(int(year_start),int(month_start),int(day_start))
 	query_end = datetime.datetime(int(year_end),int(month_end),int(day_end))
 
@@ -192,6 +192,7 @@ if form.getvalue('year_start') and form.getvalue('month_start') and form.getvalu
 	finalsubset['datum']['$gte'] = query_start
 	finalsubset['datum']['$lte'] = query_end
 
+# decide which database to use.
 if form.getvalue('clean'):
 	clean = True
 else:

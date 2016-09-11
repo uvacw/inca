@@ -9,7 +9,6 @@ from nltk.stem import SnowballStemmer
 from itertools import combinations, chain
 import ast
 from numpy import log
-# not working -->  from gensim import corpora, models, similarities
 import numpy as np
 from sklearn.metrics import pairwise_distances
 from sklearn.decomposition import PCA
@@ -21,6 +20,10 @@ import datetime
 from nvd3 import discreteBarChart, lineChart
 import pandas as pd
 import pyLDAvis
+from gensim.corpora import TextCorpus, MmCorpus, Dictionary
+from gensim.models.ldamodel import LdaModel
+
+
 
 # TODO
 # bedrijf minimaal twee keer genoemd
@@ -148,25 +151,21 @@ def frequencies_nodict():
     return c
 
 
-def frequencies():
+def frequencies(usersubset,stemming=0):
     '''
     returns a counter object of word frequencies
     '''
-
-    if clean:
-        all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
-    else:
-        all=collection.find(usersubset,{"text": 1, "_id":0})   
+    all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
 
 
     aantal=all.count()
     c=Counter()
     i=0
-    print("The frequencies are being retrieved, this might take a moment if your sample is large, please be patient while the page loads")
+    #print("The frequencies are being retrieved, this might take a moment if your sample is large, please be patient while the page loads")
     for item in all:
        i+=1
-       print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
-       sys.stdout.flush()
+       #print("\r",i,"/",aantal," or ",int(i/aantal*100),"%", end=' ')
+       #sys.stdout.flush()
        #c.update([woord for woord in item["text"].split()])
        if stemming==0:
            try:
@@ -239,8 +238,10 @@ def frequenciesweb(n,clean,usersubset):
             xdata.append(a)
             ydata.append(b)
         i+=1
+
     print('</table')
     print('And now here is a visualization for you') 
+
     chart = discreteBarChart(width=1500, height=400, x_axis_format=None)
     chart.add_serie(name="Word frequencies", y=ydata, x=xdata)
 #    chart.add_serie(name="Serie 2", y=ydata2, x=xdata)
@@ -259,6 +260,7 @@ def frequenciesweb(n,clean,usersubset):
 
     #print("\tDownload the raw data via this file -->",wordcountoutputfile)
     
+    # returning the counter for basicfreq   
     return c
 
 def timefreq(topwords, days):
@@ -299,6 +301,7 @@ def basicfreq(topwords,newspapers):
         #print('<br> The subset [after literal_eval looks like:  '+str(subset))
         subset = collection.aggregate(subset)
         masterdict[topwords[i]+'_year'] = list(subset)
+        # Now using pandas to structure data into 2 cols: year & count
         masterdict[topwords[i]+'_year'] = pd.DataFrame({'year': [y['_id']['year'] for y in masterdict[topwords[i]+'_year']],'count': [c['count'] for c in masterdict[topwords[i]+'_year']]})
         dflist.append(masterdict[topwords[i]+'_year'])
         i+=1
@@ -318,7 +321,7 @@ def basicfreq(topwords,newspapers):
     #print('<br><br> The full df now looks like: '+fulldf.to_string())
     #print('<br><br><p> Here are a few descriprive statistics about the words: '+fulldf.describe().to_string()+'</p>')
   
-  # Creating the line graph
+  # Creating the line graph using nvd3 library
     chart_year = lineChart(name="basicfreq", width=1500, height=500, x_is_date=False)
     xdata_year = fulldf['year'].values.tolist()
     extra_serie = {"tooltip": {"y_start": "Amount of times the word", "y_end": "occurs: "}}
@@ -330,9 +333,12 @@ def basicfreq(topwords,newspapers):
         chart_year.add_serie(y=ylist, x=xdata_year, name=str(topwords[v]), extra=extra_serie)
         v += 1
     chart_year.buildhtml()
-    print('<br><br> <h2> Evolution of frequent words across time </h2>')
-    print(chart_year.htmlcontent)
 
+    print('<br><br> <h2> Evolution of frequent words across time </h2>')
+
+    print(chart_year.htmlcontent)
+    # this currently overwrites the previous graph. 
+    
 
 def coocnet(n,minedgeweight,usersubset):
     ''' 
@@ -616,20 +622,16 @@ def lda(minfreq,file,ntopics,):
             i+=1
 
 
-def lda2(minfreq,file,ntopics,):
-    c=frequencies()
+def lda2(minfreq,ntopics,subset):
+    c=frequencies(subset)
     
-    if clean:
-        all = collection.find(usersubset,{'textclean_njr':1, '_id':0})
-    else:
-        all=collection.find(usersubset,{"text": 1, "_id":0})   
-    
+    #all = collection.find(subset) # can't only return the clean part of we loose info
+    all = collection.find(subset,{'textclean_njr':1, '_id':0})
     try:
-        allterms=subset['$text']['$search'].decode("utf-8").split()
+        allterms=subset['$textclean_njr']['$search'].decode("utf-8").split()
     except:
         # voor het geval dat er geen zoektermen zijn gebruikt
         allterms=[]
-    allterms+=extraterms
     foroutput_alltermslabels="\t".join(allterms)
     foroutput_alltermscounts=[]
 
@@ -645,62 +647,76 @@ def lda2(minfreq,file,ntopics,):
     foroutput_datum = []
     #foroutput_subjectivity=[]
     #foroutput_polarity=[]
-    for item in all:    
-        foroutput_firstwords.append(item["text"][:20])
-        foroutput_source.append(item["source"])
-        foroutput_id.append(item["_id"])
-        foroutput_byline.append(item["byline"])
-        foroutput_section.append(item["section"])
+    for item in all:
+        #foroutput_firstwords.append(item["text"][:20])
+        # try: 
+        #     print('item: ',item['textclean_njr'])
+        # except:
+        #     if KeyError:
+        #         pass
+        #     else:
+        #         print(item['textclean_njr'].encode('ascii','ignore'))
+        
+        try:
+            foroutput_source.append(item["source"])
+        except:
+            pass
+        #foroutput_id.append(item["_id"])
+        #foroutput_byline.append(item["byline"])
+        # foroutput_section.append(item["section"])
         # seperate section and pagenumber instead, tailored to Dutch Lexis Nexis
         # sectie=item["section"].split(";")
         #foroutput_section.append(sectie[0]+"\t"+sectie[1].strip("blz. "))
         # end
-        foroutput_length_words.append(item["length_words"])
+        try:
+            foroutput_length_words.append(item["length_words"])
+        except:
+            pass
         # foroutput_language.append(item["language"])
-        foroutput_datum.append(item["datum"])
-        foroutput_addedbydate.append(item["addedbydate"])
+        try:
+            foroutput_datum.append(item["datum"])
+        except:
+            pass
+        #foroutput_addedbydate.append(item["addedbydate"])
         #foroutput_subjectivity.append(item["subjectivity"])
         #foroutput_polarity.append(item["polarity"])
         termcounts=""
         for term in allterms:
-            termcounts+=("\t"+str(item["text"].split().count(term)))
+            termcounts+=("\t"+str(item["textclean_njr"].split().count(term)))
         foroutput_alltermscounts.append(termcounts)
+        #print('alltermscounts look like this: ',foroutput_alltermscounts)
 
 
 
     # TODO: integreren met bovenstaande code, nu moet .find nog een keer worden opgeroepen aangezien het een generator is
-    all=collection.find(subset)
     if stemming==0:
         # oude versie zonder ngrams: texts =[[word for word in item["text"].split()] for item in all]
-        texts =[[word for word in split2ngrams(item["text"],ngrams)] for item in all]
+        texts =[[word for word in split2ngrams(item["textclean_njr"],ngrams)] for item in all]
     else:
-        texts =[[word for word in split2ngrams(stemmed(item["text"],stemming_language),ngrams)] for item in all]
+        texts =[[word for word in split2ngrams(stemmed(item["textclean_njr"],stemming_language),ngrams)] for item in all]
 
-    if minfreq>0 and file=="":
+    if minfreq>0:
         # unicode() is neccessary to convert ngram-tuples to strings
         texts =[[str(word) for word in text if c[word]>=minfreq] for text in texts]
+        print('texts look like ',texts)
 
-    elif minfreq==0 and file!="":
-        allowedwords=set(line.strip().lower() for line in open(file,mode="r",encoding="utf-8"))
-        # unicode() is neccessary to convert ngram-tuples to strings
-        texts =[[str(word) for word in text if word in allowedwords] for text in texts]
-
-
+   
     # TODO NU WORDEN DE EXTRA TERMS (indien gedefinieerd) NIET meegenomen om de topics te bepalen
     # TODO hier moet een keuzemogelijkheid komen; ook moeten we kijken of dit ueberhaupt zinvol is
 
-    if not extraterms==[]:
-        texts = [[" ".join([w for w in t.split() if w not in set(extraterms)]) for t in tt] for tt in texts]
+    # if not extraterms==[]:
+    #     texts = [[" ".join([w for w in t.split() if w not in set(extraterms)]) for t in tt] for tt in texts]
 
 
     # Create Dictionary.
-    id2word = corpora.Dictionary(texts)
+    id2word = Dictionary(texts)
 
     # Creates the Bag of Word corpus.
     mm =[id2word.doc2bow(text) for text in texts]
+    print('the result of mm is ',mm)
     # Trains the LDA models.
     # lda = models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=ntopics, update_every=1, chunksize=10000, passes=1)
-    lda = models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=ntopics, alpha="auto")
+    lda = LdaModel(corpus=mm, id2word=id2word, num_topics=ntopics, alpha="auto")
     # Prints the topics.
     for top in lda.print_topics(num_topics=ntopics, num_words=5):
         print("\n",top)
@@ -713,14 +729,44 @@ def lda2(minfreq,file,ntopics,):
 
     return {'topic_term_dist':ttd,'doc_topic_dist':scoresperdoc,'doc_lengths':foroutput_length_words,'vocab':mm,'term_frequency':foroutput_alltermscounts}
 
+def lda3(minfreq,ntopics,subset):
 
-def ldavis(userminfreq,usertopics):
+    texts = []
+
+    all = collection.find(subset,{'text':1, '_id':0})
+    print('subset is: ',subset)
+    print('all looks like: ',all)
+    for item in all:
+
+        try:
+            texts.append([word for word in item['text'].lower().split()])
+
+        except:
+            if KeyError:
+                pass
+            else:
+                texts.append([word for word in item['text'].encode('ascii','ignore').lower().split()])
+
+    print('texts now looks like: ',texts)
+
+    frequency = defaultdict(int)
+
+    for text in texts:
+        for token in text:
+            frequency[token] += 1
+
+    texts = [[token for token in text if frequency[token] > 1] for text in texts]
+
+    print(texts)
+
+
+def ldavis(usersubset,userminfreq,usertopics):
 
     '''
     Returns an html-friendly visualization of the LDA
     '''
 
-    data = lda2(minfreq=userminfreq,topics=usertopics)
+    data = lda2(minfreq=userminfreq,ntopics=usertopics,subset=usersubset)
 
 
     # Adding the topic-term probability

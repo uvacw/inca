@@ -201,12 +201,12 @@ else:
 	clean = False
 
 if form.getvalue('minfreq'):
-	minfreq = form.getvalue('minfreq')
+	minfreq = int(form.getvalue('minfreq'))
 else:
 	minfreq = 50 #setting default to avoid code breaking.
 
 if form.getvalue('numtopics'):
-	numtopics = form.getvalue('numtopics')
+	numtopics = int(form.getvalue('numtopics'))
 else:
 	numtopics = 5
 
@@ -224,7 +224,7 @@ print('''
 <p>The subset you chose is: \t\t %s</p></br>
 <pre><br><br>''' % (topwords,finalsubset))
 
-ldavis(minfreq,numtopics)
+ldavis(finalsubset,minfreq,numtopics)
 
 print('''<br><br>
 <br>
