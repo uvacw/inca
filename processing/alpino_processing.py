@@ -239,8 +239,8 @@ _POSMAP = {"pronoun": 'O',
            'sbar': '?',
            '--': '?',
            }
-
-SPEACH_VERBS = ['zeg','vertel','stel','beweer']
+# drawn from  van Atteveldt, Sheaferm, Shenhav 2015: "Clause analysis: using syntactic information to enrich frequency-based automatic content analysis"
+SPEACH_VERBS = ["accepteer", "antwoord", "beaam", "bedenk", "bedoel", "begrijp", "beken", "beklemtoon", "bekrachtig", "belijd", "beluister”, ”benadruk", "bereken", "bericht", "beschouw", "beschrijf", "besef", "betuig", "bevestig", "bevroed", "beweer", "bewijs", "bezweer", "biecht", "breng", "brul", "concludeer", "confirmeer", "constateer", "debiteer", "declareer", "demonstreer", "denk", "draag_uit", "email", "erken", "expliceer", "expliciteer", "fantaseer", "formuleer", "geef_aan", "geloof", "hoor", "hamer", "herinner", "houd_vol", "kondig_aan", "kwetter", "licht_toe", "maak_bekend", "maak_hard", "meld", "merk", "merk_op", "motiveer", "noem", "nu- anceer", "observeer", "onderschrijf", "onderstreep", "onthul", "ontsluier", "ontval", "ontvouw", "oordeel", "parafraseer", "pos- tuleer", "preciseer", "presumeer", "pretendeer", "publiceer", "rapporteer", "realiseer", "redeneer", "refereer", "reken", "roep", "roer_aan", "ruik", "schat", "schets", "schilder", "schreeuw", "schrijf", "signaleer", "snap", "snater", "specificeer", "spreek_uit", "staaf", "stel", "stip_aan", "suggereer", "tater", "teken_aan", "toon_aan", "twitter", "verbaas", "verhaal", "verklaar", "verklap", "verkondig", "vermoed", "veronderstel", "verraad", "vertel", "vertel_na", "verwacht", "verwittig", "verwonder", "verzeker", "vind", "voel", "voel_aan", "waarschuw", "wed", "weet", "wijs_aan", "wind", "zeg", "zet_uiteen", "zie", "twitter"]
 
 class alpino_to_quote(Processer):
     '''Takes alpino output and extracts quotes'''
@@ -249,7 +249,7 @@ class alpino_to_quote(Processer):
         '''takes an alpino result and returns a list of {speaker:name,using:verb,quote:text} dicts'''
 
         quotes = []
-        for line in alpino_result:
+        for num, line in enumerate(alpino_result):
             speach_verbs = [verb for verb in line.get('tokens',[]) if verb.get('lemma') in SPEACH_VERBS]
             if speach_verbs:
                 speach_verbs = speach_verbs[0]
