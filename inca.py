@@ -50,9 +50,7 @@ import scrapers   # helps celery recognize the scraping tasks
 import clients    # helps celery recognize client tasks
 import analysis   # helps celery recognize analysis tasks
 
-config = configparser.ConfigParser()
-try:    config.read_file(open('settings.cfg'))
-except: print("settings.cfg is missing or corrupt!");exit()
+from core.database import config
 
 logging.basicConfig(level=config.get("inca","loglevel"))
 
