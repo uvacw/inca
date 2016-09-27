@@ -101,9 +101,10 @@ class nos(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
-
-        tree = fromstring(htmlsource)
-
+        try: 
+            tree = fromstring(htmlsource)
+        except:
+            print("It goes wrong here")
         try:
             category="".join(tree.xpath('//*[@id="content"]/article/header/div/div/div/div/span/a/text()'))
         except:
@@ -264,9 +265,531 @@ class volkskrant(rss):
         '''modifies the link to the article to bypass the cookie wall'''
         link=re.sub("/$","",link)
         link="http://www.volkskrant.nl//cookiewall/accept?url="+link
+        return link 
+ 
+
+
+class nrc(rss):
+    """Scrapes nrc.nl """
+    def __init__(self):
+        self.doctype = "nrc (www)"
+        self.rss_url='http://www.nrc.nl/rss.php?n=np'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=9, day=10)
+
+    def parsehtml(self,htmlsource):
+        '''                                                                           
+	Parses the html source to retrieve info that is not in the RSS-keys      
+	In particular, it extracts the following keys (which should be available in most online news:                                                                          
+	section     sth. like economy, sports, ..
+	text        the plain text of the article                               
+	byline      the author, e.g. "Bob Smith"                                 
+	byline_source   sth like ANP                                            
+	'''
+        tree=fromstring(htmlsource)
+	
+        try:
+            category = tree.xpath('//*[@id="broodtekst"]/a[1]/text()')[0]
+        except:
+            category = ""
+        if category=="":
+            try:
+                category=tree.xpath('//*[@class="article__section-branding"]/text()')[0]
+            except:
+                category=""
+        try:
+        #1. path: type 1 layout: regular text                                          
+        #2. path: type 1 layout: text with link behind                                 
+        #3. path: type 1 layout: text bold                                             
+        #4. path: type 1 layout: text bold and italic                                  
+        #5. path: type 2 layout: normal text first paragraph                            
+        #6. path: type 2 layout: text with link behind                                  
+        #7. path: type 1 layout: italic text, found in 2014 11 988                  
+        #8. path for in beeld found 2015 11 13          
+            textfirstpara=tree.xpath('//*[@class="eerste"]/text() | //*[@class="eerste"]/a/text() | //*[@class="eerste"]/strong/text() | //*[@class="eerste"]/strong/em/text() | //*[@id="article-content"]/p[1]/text() | //*[@id="article-content"]/p[1]/a/text() | //*[@class="eerste"]/em/text() | //*[@class="intro"]/text() | //*[@class="intro"]/p/text() | /*[@class="intro"]/p/span/text()')
+            textfirstpara = " ".join(textfirstpara)
+        except:
+            textfirstpara=""
+            print("Ooops geen first para")
+        try:
+        #1. path: type 1 layout: regular text                                         
+        #2. path: type 1 layout: second heading in regular text                         
+        #3. path: type 2 layout: text in different layout, found in 2014 12 11         
+        #4. path: type 2 layout: bold text, found in 2014 12 11                        
+        #5. path: type 2 layout: text with underlying link, found in 2014 12 11        
+        #6. path: type 2 layout: italic text, found in 2014 12 11                      
+        #7. path: type 2 layout: second heading found in 2014 12 11                    
+        #8. path: type 2 layout: text in grey box/ speech bubble                       
+        #9. path: type 1 layout: text with link behind                                 
+        #10.path: type 1 layout: text in grey box/ speech bubble                      
+        #11. path: type 1 layout: bold text found in 2014 12 198                      
+        #12. path: type 1 layout: italix text with link behind, found in 2014 12 198 !!!!!not working :(                                                                       
+        #13. path: type 3 layout: regular text found in 2014 11 62                     
+        #14. path: type 3 layout: text with link behind found in 2014 11 63            
+        #15. path: type 3 layout: italic text with link behind, found in 2014 11 63    
+        #16. path: type 1 layout: italix text, found in 2014 04 500                   
+        #17. path: type 1 layout: found 2015 11 13                                    
+        #17. path: type 1 layout: heading in regular text found 2015 11 13            
+        #18. live feed subheading "old news"                                          
+        #19. live feed text "old news"                                                 
+        #20. live feed textlink "oldnews"                                              
+        #21. live feed list "old news"                                                
+        #21. live feed subheading "new news"                                          
+        #22. live feed text "new news"                                                
+        #23. live feed textlink "new news"                                             
+        #24. live feed names "new news"                                            
+        #24. path type 1 layout: subheading in regular text found 2015 11 16       
+        #25. path type 1 layout: text in link found on 2015 11 16 
+        #26. path regular layout: bold subtitle found 2015 11 16
+            textrest=tree.xpath('//*[@id="broodtekst"]/p[position()>1]/text() | //*[@id="broodtekst"]/h2/text() | //*[@id="article-content"]/p[position()>1]/text() | //*[@id="article-content"]/p[position()>1]/strong/text() | //*[@id="article-content"]/p[position()>1]/a/text() | //*[@id="article-content"]/p[position()>1]/em/text() | //*[@id="article-content"]/h2/text() | //*[@id="article-content"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/a/text() | //*[@id="broodtekst"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/strong/text() | //*[@id="broodtekst"]/p[position()>1]/a/em/text() | //*[@class="beschrijving"]/text() | //*[@class="beschrijving"]/a/text() | //*[@class="beschrijving"]/a/em/text() | //*[@id="broodtekst"]/p[position()>1]/em/text() | //*[@class="content article__content"]/p[position()>0]/text() | //*[@class="content article__content"]/p/strong/text() | //*[@class="content article__content"]/p/a/text() | //*[@class="content article__content"]/blockquote/p/text() | //*[@class="bericht"]/h2/text() | //*[@class="bericht"]/p/text() | //*[@class="bericht"]/p/a/text() |//*[@class="bericht"]/ul/li/text() | //*[@class="bericht bericht--new"]/h2/text() | //*[@class="bericht bericht--new"]/p/text() | //*[@class="bericht bericht--new"]/p/a/text() | //*[@class="bericht bericht--new"]/p/em/text() | //*[@class="content article__content"]/h2/text() | //*[@class="content article__content"]/h3/text() | //*[@class="content article__content"]/p/a/em/text() | //*[@class="content article__content"]/blockquote/p/strong/text() | //*[@class="content article__content"]/p/br/a/strong/text() | //*[@class="content article__content"]/p/em/text()')
+        except:
+            print("oops - geen text?")
+            textrest = ""
+        text = textfirstpara + "\n"+ "\n".join(textrest)
+        textnew=re.sub("Follow @nrc_opinie","",text)
+        try:
+            author_door = tree.xpath('//*[@class="author"]/span/a/text()')[0]
+        except:
+            author_door = ""
+        if author_door == "":
+            try:
+                author_door = tree.xpath('//*[@class="auteur"]/span/a/text()')[0]
+            except:
+                author_door = ""
+        if author_door == "":
+            try:
+                author_door = tree.xpath('//*[@class="authors"]/ul/li/text()')[0]
+            except:
+                author_door = ""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="article__byline__author-and-date"]/a/text()')[0]
+            except:
+                author_door = ""
+        author_bron=""
+        if textnew=="" and category=="" and author_door=="":
+            print("No article-page?")
+            try:
+                if tree.xpath('//*[@class="kies show clearfix"]/h2/text()')[0] == 'Lees dit hele artikel':
+                    text="THIS SEEMS TO BE AN ARTICLE ONLY FOR SUBSCRIBERS"
+                    print(" This seems to be a subscribers-only article")
+            except:
+                    text=""
+        text=polish(text)
+
+        extractedinfo={"category":category.strip(),
+                       "text":text.strip(),
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
+
+class parool(rss):
+    """Scrapes parool.nl """
+
+    def __init__(self):
+        self.doctype = "parool (www)"
+        self.rss_url='http://www.parool.nl/rss.xml'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
+
+    def parsehtml(self,htmlsource):
+        '''                                                                            
+        Parses the html source to retrieve info that is not in the RSS-keys          
+        In particular, it extracts the following keys (which should be available in most online news:                                                                          
+        section    sth. like economy, sports, ...                                      
+        text        the plain text of the article                                      
+        byline      the author, e.g. "Bob Smith"                                       
+        byline_source   sth like ANP                                                   
+        '''
+
+        tree = fromstring(htmlsource)
+        try:
+            category=re.findall("/+[a-z]+/", link)[0]
+            category=category.replace("/","")
+        except:
+            category=""
+        if category=="":
+            try:
+                category=re.findall("/+[a-z]+-+[a-z]+-+[a-z]+/", link)[0]
+                category = category.replace("/","")
+            except:
+                category=""
+                print("geen category")
+        try:
+            textfirstpara=tree.xpath('//*[@id="page-main-content"]//*[@class="article__intro"]/text() | //*[@id="art_box2"]//*[@class="intro2"]/a/text()')
+            textfirstparanew=" ".join(textfirstpara)
+        except:
+            textfirstpara=" "
+            print("oops - geen textfirstpara")
+        try:
+        #1. Regular text (version 07/03/16)                                            
+        #2. Bold text - subtitles                                                      
+        #3. Link text                                                                  
+        #4. Embedded text subtitle one                                                 
+        #5. Embedded text subitles rest                                                
+            textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text() | //*[@class="article__body__paragraph first"]/text() | //*[@class="article__body__paragraph first"]/strong/text() | //*[@class="article__body__paragraph first"]/a/text()')
+        except:
+            textrest=" "
+            print("oops - geen textrest")
+        text=textfirstparanew + "\n" + "\n".join(textrest)
+        author_text=tree.xpath('//*[@id="page-main-content"]//*[@class="article__footer"]/span/span/span/text()')
+        try:
+            author_door=[e for e in author_text if e.find("Door")>=0][0].strip().replace("(","").replace(")","").replace("Door:","")
+        except:
+            author_door=""
+        if author_door=="":
+            try:
+                author_door=[e for e in author_text if e.find("Bewerkt door:")>=0][0].strip().replace("(","").replace(")","").replace("Bewerkt door:","")
+            except:
+                author_door=""
+                print("ooops - geen author_door")
+        try:
+            bron_text=tree.xpath('//*[@id="page-main-content"]//*[@class="article__footer"]/span/span/text()')[0]
+            author_bron=re.findall(".*?Bron:(.*)", bron_text)[0]
+        except:
+            author_bron=" "
+        if author_bron=="":
+            try:
+                bron_text=tree.xpath('//*/span[@class="author-info__source"]/text()')[0]
+                author_bron=re.findall(".*?Bron:(.*)",bron_text)[0]
+            except:
+                author_bron=""
+                print("geen bron")
+        text=polish(text)
+
+        extractedinfo={"category":category.strip(),
+                       "text":text.strip(),
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
+    def getlink(self,link):
+        '''modifies the link to the article to bypass the cookie wall'''
+        link=re.sub("/$","",link)
+        link="http://www.parool.nl///cookiewall/accept?url="+link
         return link
 
 
-            
-if __name__=="__main__":
-    print('Please use these scripts from within inca. EXAMPLE: BLA BLA BLA')
+class trouw(rss):
+    """Scrapes trouw.nl """
+
+    def __init__(self):
+        self.doctype = "trouw (www)"
+        self.rss_url='http://www.trouw.nl/rss.xml'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
+
+
+    def parsehtml(self,htmlsource):
+        '''                                                                            
+        Parses the html source to retrieve info that is not in the RSS-keys            
+        In particular, it extracts the following keys (which should be available in most online news:                                                                          
+        section    sth. like economy, sports, ...                                      
+        text        the plain text of the article                                      
+        byline      the author, e.g. "Bob Smith"                                       
+        byline_source   sth like ANP                                                   
+        '''
+
+        tree = fromstring(htmlsource)
+        try:
+            category=tree.xpath('//*[@id="subnav_nieuws"]/li/a/span/text()')[0]
+        except:
+            category=""
+        if category=="":
+            try:
+                category=tree.xpath('//*[@id="str_cntr2"]//*[@class="dos_default dos_film"]/h2/text()')[0]
+            except:
+                category=""
+        if category=="":
+            try:
+                category=tree.xpath('//*[@id="str_cntr2"]//*[@class="dos_default dos_vluchtelingen"]/span/text()')[0]
+            except:
+                category=""
+                print("oops - geen category")
+        try:
+        #1. Regular text - intro                                                       
+        #2. Bold text - subtitles                                                      
+        #3. Regular  text                                                              
+        #4. Extra box title                                                            
+        #5. Extra box text                                                             
+        #6. Link text                                                                  
+        #7. Explanantion box text                                                      
+        #8. italics                                                                    
+            textrest=tree.xpath('//*[@class="art_box2"]//*[@class="intro"]/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/section/h3/text() | //*[@id="art_box2"]/section/p/text() |  //*[@id="art_box2"]/p/a/text() |  //*[@id="art_box2"]//*[@class="embedded-context embedded-context--inzet"]/text() |  //*[@id="art_box2"]/p/em/text()')
+        except:
+            textrest=" "
+            print("oops - geen textrest")
+        text = "\n".join(textrest)
+        try:
+             author_door=tree.xpath('//*[@class="author"]/text()')[0]               
+        except:
+             author_door=" "
+             print("geen author")
+        try:
+             bron_text=tree.xpath('//*[@class="time_post"]/text()')[1].replace("\n", "")
+             author_bron=re.findall(".*?bron:(.*)", bron_text)[0]
+        except:
+            author_bron=""
+            if author_bron=="":
+                try:
+                    bron_text=tree.xpath('//*[@class="time_post"]/text()')[0].replace("\n", "")
+                    author_bron=re.findall(".*?bron:(.*)", bron_text)[0]
+                except:
+                    author_bron=""
+                    print("geen bron")
+
+        text=polish(text)
+
+        extractedinfo={"category":category.strip(),
+                       "text":text.strip(),
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
+    def getlink(self,link):
+        '''modifies the link to the article to bypass the cookie wall'''
+        link=re.sub("/$","",link)
+        link="http://www.trouw.nl/tr/acceptCookieCheck.do?url="+link
+        return link
+
+class telegraaf(rss):
+    """Scrapes telegraaf.nl """
+    def __init__(self):
+        self.doctype = "telegraaf (www)"
+        self.rss_url='http://rss.feedsportal.com/c/585/fe.ed/www.telegraaf.nl/rss/'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
+
+    def parsehtml(self,htmlsource):
+        '''                                                                            
+        Parses the html source to retrieve info that is not in the RSS-keys            
+        In particular, it extracts the following keys (which should be available in most online news:                                                                          
+        section    sth. like economy, sports, ...                                      
+        text        the plain text of the article                                      
+        byline      the author, e.g. "Bob Smith"                                       
+        byline_source   sth like ANP                                                   
+        '''
+
+        tree = fromstring(htmlsource)
+        print("HEY")
+        try:
+            category = tree.xpath('//*[@class="selekt"]/text() | //*[@class="topbar"]/div/a[2]/text()' )[0]
+        except:
+            category = ""
+            print("OOps - geen category?")
+        try:
+        #1.path: layout 1: regular first para                                          
+        #2.path: layout 2 (video): regular first (and mostly only) para               
+        #3.path: layout 1: second version of first para, fi 2014 11 6                  
+        #4.path layout 1: place found on 2015 11 16                                    
+        #5.path: regular first para found 2016 04 07                                   
+            textfirstpara=tree.xpath('//*[@class="zak_normal"]/p/text() | //*[@class="bodyText streamone"]/div/p/text() | //*[@class="zak_normal"]/text() | //*[@class="zak_normal"]/span/text() | //*[@id="main"]/div/div/p/text()')
+            textfirstpara = " ".join(textfirstpara)
+        except:
+            textfirstpara=""
+            print("OOps - geen textfirstpara?")
+        try:
+        #1. path: layout 1: regular text, fi 2014 12 006                               
+        #2. path: layout 1: text with link, fi 2014 12 006                             
+        #3. path: layout 1: second heading, fi 2014 12 015                             
+        #4. path: layout 1: bold text, fi 2014 12 25                                   
+        #5. path: layout 1: italic text, fi 2014 09 5200                               
+        #6. path: layout 1: second headings, fi 2014 07 84                             
+        #7. path: layout 2: reagular text, found 2016 04 07                             
+        #8. path: layout 2: italic text, found 2016 04 07                               
+        #9. path: layout 2: bold text, found 2016 04 07                                
+            textrest=tree.xpath('//*[@id="artikelKolom"]/p[not (@class="tiptelegraaflabel")]/text() | //*[@id="artikelKolom"]/p/a/text() | //*[@id="artikelKolom"]/h2/strong/text() | //*[@id="artikelKolom"]/p/strong/text() | //*[@id="artikelKolom"]/p/em/text() | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text() | //*[@class="broodtekst"]/p/text() | //*[@class="broodtext"]/h2/strong/text()| //*[@id="artikelKolom"]/div/p/text() | //*[@id="artikelKolom"]/div/p/em/text() | //*[@id="artikelKolom"]/div/p/strong/text() | //*[@id="artikelKolom"]/div/h2/text() | //*[@id="artikelKolom"]/div/p/a/text()')
+        except:
+            print("oops - geen texttest?")
+            textrest = ""
+        text = textfirstpara + "\n"+ "\n".join(textrest)
+        try:
+            author_door = tree.xpath('//*[@class="auteur"]/text() | //*[@class="ui-table ui-gray3"]/span[2]/text()')[0].strip().lstrip("Van ").lstrip("onze").lstrip("door").strip()
+        except:
+            author_door = ""
+        author_bron=""
+        text=polish(text)
+
+        extractedinfo={"category":category.strip(),
+                       "text":text.strip(),
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
+
+class metrnieuwso(rss):
+    """Scrapes metrnieuwso.nl """
+    def __init__(self):
+        self.doctype = "metro (www)"
+        self.rss_url='http://www.metronieuws.nl/rss.xml'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
+
+    def parsehtml(self,htmlsource):
+        '''                                                                            
+        Parses the html source to retrieve info that is not in the RSS-keys             
+        In particular, it extracts the following keys (which should be available in most online news:                                                                          
+        section    sth. like economy, sports, ...                                      
+        text        the plain text of the article                                      
+        byline      the author, e.g. "Bob Smith"                                       
+        byline_source   sth like ANP                                                   
+        '''
+
+        tree = fromstring(htmlsource)
+        try:
+            category = tree.xpath('//*[@class="active"]/text()')[0]
+        except:
+            category = ""
+    #fix: xpath for category in new layout leads to a sentence in old layout:          
+        if len(category.split(" ")) >1:
+            category=""
+        try:
+        #1. path: regular text                                                         
+        #2. path: text with link behind, fi 2014 12 646                                
+        #3. path: italic text, fi 2014 12 259                                          
+        #4. path: second headings, fi 2014 12 222                                      
+        #5. path: another version of regualr formated text, fi 2014 12 1558            
+        #6. path: another version a second heading, fi 2014 12 1923                    
+        #7. path: italic text with link behind in span environment, fi 2014 11 540     
+        #8. path: italic text with link behind, not in span evir, fi 2014 10 430       
+        #--until here code is just copied from spits                                   
+        #10. path: bold and italic text, fi 2014 12 04                                 
+        #11. path: bold text, fi 2014 12 04                                            
+        #12. path: second headings                                                     
+        #13. path: regular text                                                        
+            textrest=tree.xpath('//*[@class="field-item even"]/p/text() | //*[@class="field-item even"]/p/a/text() | //*[@class="field-item even"]/p/em/text() | //*[@class="field-item even"]/h2/text() | //*[@class="field-item even"]/p/span/text() | //*[@class="field-item even"]/h2/span/text() | //*[@class="field-item even"]/p/span/em/a/text() | //*[@class="field-item even"]/p/em/a/text() | //*[@class="field-item even"]/p/em/strong/text() | //*[@class="field-item even"]/p/b/text() | //*[@class="field-item even"]/div/text() | //*[@class="field-item even"]/p/strong/text()')
+        except:
+            print("oops - geen textrest?")
+            textrest = ""
+        text = "\n".join(textrest)
+        textnew=re.sub("Lees ook:"," ",text)
+        try:
+        #new layout author:                                                            
+            author_door = tree.xpath('//*[@class="username"]/text()')[0].strip().lstrip("door ").lstrip("© ").lstrip("2014 ").strip()
+        except:
+            author_door = ""
+        if author_door=="":
+        #try old layout author                                                         
+            try:
+                author_door = tree.xpath('//*[@class="article-options"]/text()')[0].split("|")[0].replace("\n", "").replace("\t","").strip()
+            except:
+                author_door = ""
+        author_bron=""
+        text=polish(text)
+
+        extractedinfo={"category":category.strip(),
+                       "text":text.strip(),
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
+
+class geenstijl(rss):
+    """Scrapes geenstijl.nl """
+
+    def __init__(self):
+        self.doctype = "geenstijl"
+        self.rss_url='http://www.geenstijl.nl/index.xml'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=9, day=15)
+
+    def parsehtml(self,htmlsource):
+        '''                                                                            
+	Parses the html source to retrieve info that is not in the RSS-keys            
+	In particular, it extracts the following keys (which should be available in most online news:                                                                  
+	section    sth. like economy, sports, ...                                      
+	text        the plain text of the article                                      
+	byline      the author, e.g. "Bob Smith"                                       
+	byline_source   sth like ANP                                                   
+	'''
+
+        tree = fromstring(htmlsource)
+        textrest=tree.xpath('//*[@id="content"]/article/text() | //*[@id="content"]/article/a/text() | //*[@id="content"]/article/em/text() | //*[@id="content"]/article/strong/text() | //*[@id="content"]/article/s/text() |  //*[@id="content"]/article/p/text() | //*[@id="content"]/article/p/a/text() | //*[@id="content"]/article/p/s/text() | //*[@id="content"]/article/p/em/text() | //*[@id="content"]/article/p/strong/text() | //*[@id="content"]/article/p/strong/a/text() | //*[@id="content"]/article/p/em/a/text() | //*[@id="content"]/article/blockquote/p/text() | //*[@id="content"]/article/blockquote/text() | //*[@id="content"]/article/blockquote/a/text()')
+        if textrest=="":
+            print("OOps - empty textrest for?")
+        text="\n".join(textrest)
+        try:
+            author_door=tree.xpath('//*[@id="content"]/article/footer/text()')[0].replace("|","")
+        except:
+            author_door=""
+
+        text=polish(text)
+
+        extractedinfo={"text":text.strip(),
+                       "byline":author_door.replace("\n", " "),
+                       }
+
+        return extractedinfo
+
+class fok(rss):
+    """Scrapes volkskrant.nl """
+
+    def __init__(self):
+        self.doctype = "fok"
+        self.rss_url='http://rss.fok.nl/feeds/nieuws'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
+
+
+    def parsehtml(self,htmlsource):
+        '''                                                                             
+	Parses the html source to retrieve info that is not in the RSS-keys             
+	In particular, it extracts the following keys (which should be available in most online news:                                                                          
+	section    sth. like economy, sports, ...                                      
+	text        the plain text of the article                                      
+	byline      the author, e.g. "Bob Smith"                                       
+	byline_source   sth like ANP                                                   
+	'''
+        tree = fromstring(htmlsource)
+        try:
+            category="".join(tree.xpath('//*[@id="crumbs"]/ul/li/a/text()'))
+        except:
+            category = ""
+        if len(category.split(" ")) >1:
+            category=""
+        try:
+             textrest=tree.xpath('//*[@role="main"]/article/p/text() | //*[@role="main"]/article/p/strong/text() | //*[@role="main"]/article/p/strong/a/text() | //*[@role="main"]/article/p/a/text() | //*[@role="main"]/article/p/em/text()')
+        except:
+            print("oops - geen textrest?")
+            textrest = ""
+        text = "\n".join(textrest)
+        textnew=re.sub("Lees ook:"," ",text)
+        try:
+             author_door = tree.xpath('//*[@class="mainFont"]/text()')[0].strip()
+        except:
+            author_door = ""
+        if author_door=="":
+            try:
+                author_door = tree.xpath('//*[@class="article-options"]/text()')[0].split("|")[0].replace("\n", "").replace("\t","").strip()
+            except:
+                author_door = ""
+        try:
+            author_bron=tree.xpath('//*[@class="bron"]/strong/text()')[0]
+        except:
+            author_bron=""
+        if author_bron=="":
+            try:
+                author_bron=tree.xpath('//*[@class="bron"]/strong/a/text()')[0]
+            except:
+                author_bron=""
+                print("geen bron")
+        textnew=polish(textnew)
+
+        extractedinfo={"category":category.strip(),
+                       "text":text.strip(),
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo

@@ -3,7 +3,13 @@ from core.processor_class import Processer
 from core.basic_utils import dotkeys
 import logging
 import re
-from pattern.nl import parse
+
+try:
+    from pattern.nl import parse
+except:
+    '''sorry, python 2 only'''
+    pass
+
 # TODO I now use pattern.nl as it was basically copy/paste from the earlier version
 # TODO we might want to port this to Alpino, if we use Alpino anyway
 from sys import maxunicode
