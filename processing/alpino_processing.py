@@ -240,7 +240,23 @@ _POSMAP = {"pronoun": 'O',
            '--': '?',
            }
 
-SPEACH_VERBS = ['zeg','vertel','stel','beweer']
+SPEACH_VERBS = ['accepteer','antwoord','beaam','bedenk','bedoel','begrijp','beken','beklemtoon',
+                'bekrachtig','belijd','beluister','benadruk','bereken','bericht','beschouw',
+                'beschrijf','besef','betuig','bevestig','bevroed','beweer','bewijs','bezweer',
+                'biecht','breng','brul','concludeer','confirmeer','constateer','debiteer',
+                'declareer','demonstreer','denk','draag_uit','email','erken','expliceer',
+                'expliciteer','fantaseer','formuleer','geef_aan','geloof','hoor','hamer',
+                'herinner','houd_vol','kondig_aan','kwetter','licht_toe','maak_bekend',
+                'maak_hard','meld','merk','merk_op','motiveer','noem','nuanceer','observeer',
+                'onderschrijf','onderstreep','onthul','ontsluier','ontval','ontvouw','oordeel',
+                'parafraseer','pos- tuleer','preciseer','presumeer','pretendeer','publiceer',
+                'rapporteer','realiseer','redeneer','refereer','reken','roep','roer_aan',
+                'ruik','schat','schets','schilder','schreeuw','schrijf','signaleer','snap',
+                'snater','specificeer','spreek_uit','staaf','stel','stip_aan','suggereer',
+                'tater','teken_aan','toon_aan','twitter','verbaas','verhaal','verklaar',
+                'verklap','verkondig','vermoed','veronderstel','verraad','vertel','vertel_na',
+                'verwacht','verwittig','verwonder','verzeker','vind','voel','voel_aan',
+                'waarschuw','wed','weet','wijs_aan','wind','zeg','zet_uiteen','zie','twitter']
 
 class alpino_to_quote(Processer):
     '''Takes alpino output and extracts quotes'''
@@ -249,28 +265,209 @@ class alpino_to_quote(Processer):
         '''takes an alpino result and returns a list of {speaker:name,using:verb,quote:text} dicts'''
 
         quotes = []
-        for line in alpino_result:
-            speach_verbs = [verb for verb in line.get('tokens',[]) if verb.get('lemma') in SPEACH_VERBS]
-            if speach_verbs:
-                speach_verbs = speach_verbs[0]
-                subject_id = [dep.get('child') for dep in line.get('dependencies',[]) if
-                              dep.get('relation')=='su' and dep.get('parent')==speach_verbs.get('id',False) ][0]
-                verb    = speach_verbs.get('lemma','')
-
-                def get_children(parent, exclude=False):
-                    child_ids = [sub['child'] for sub in line.get('dependencies') if
-                                 sub['parent']==parent and not sub['child']==exclude]
-                    for child in child_ids:
-                        child_ids.extend(get_children(child))
-                    return child_ids
-
-                def id_to_word(id):
-                    return [sub['word'] for sub in line.get('tokens') if sub['id']==id][0]
-
-                quote = ' '.join([id_to_word(child) for child in get_children(speach_verbs.get('id'), exclude=subject_id)])
-                quotes.append({
-                'speaker':id_to_word(subject_id),
-                'verb':speach_verbs.get('word'),
-                'quote':quote
-                 })
+        for num,line in enumerate(alpino_result):
+            mapped, tokens = map_parse(line)
+            line_quotes= []
+            line_quotes.extend(type_a(mapped,tokens))
+            line_quotes.extend(type_b(mapped, tokens))
+            line_quotes.extend(type_c(mapped, tokens))
+            line_quotes.extend(type_d(mapped, tokens))
+            line_quotes.extend(type_e(mapped, tokens))
         return quotes
+
+# map dependency & token list
+def map_parse(alpino_parse):
+    if not alpino_parse.get('tokens',[]): return pandas.DataFrame(), pandas.DataFrame()
+    tokens       = pandas.DataFrame(alpino_parse['tokens'])
+    dependencies = pandas.DataFrame(alpino_parse['dependencies'])
+    mapped = dependencies.merge(tokens[['id','lemma']], left_on='child', right_on='id', suffixes=('','lemma'))
+    mapped.columns = ['child','parent','relation','child_id','child_lemma']
+    mapped = mapped.merge(tokens[['id','lemma']], left_on='parent', right_on='id', suffixes=('','lemma'))
+    mapped.columns = ['child', 'parent', 'relation', 'child_id','child_lemma','parent_id', 'parent_lemma']
+    return mapped, tokens
+
+# relational parser
+def get_relation(mapped, child=True, relation=True, parent=True):
+    id_type = lambda x: type(x)!=str
+    if id_type(child):
+        child_condition = type(child) == bool and (True) or (mapped.child_id ==int(child))
+    else:
+        child_condition    = type(child)  == bool and True or (mapped.child_lemma==child)
+
+    relation_condition = type(relation)     == bool and True or (mapped.relation==relation)
+
+    if id_type(parent):
+        parent_condition = type(parent) == bool and (True) or (mapped.parent_id == int(parent))
+    else:
+        parent_condition   = type(parent) == bool and True or (mapped.parent_lemma==parent)
+
+    return mapped[ (mapped.child==mapped.child) & child_condition & relation_condition & parent_condition]
+
+def get_literal(tokens):
+    r = re.compile(r'[\'"“”„]|,{2,2}')
+    start = min(tokens.offset[[r.search(w)!=None for w in tokens.word]],default=-1)
+    end   = max(tokens.offset[[r.search(w)!=None for w in tokens.word]],default=-1)
+    if start!=-1 and end!=-1 and start!=end:
+        return list(tokens.id[tokens.offset.isin(list(range(start,end+1)))])
+    else:
+        return []
+
+def get_series(tokens, start=0, end=False):
+    if not end:
+        end = max(tokens.offset)
+    return ' '.join(tokens.sort_values('offset')[(tokens.offset>=start)&(tokens.offset<=end)].word)
+
+def get_list(tokens, indices, pos_major=''):
+    return tokens[tokens.id.isin(indices)].sort('offset').word
+
+def tracer(wordid, direction="up", prev=[]):
+    trace = []
+    if direction=="up":
+        parent = get_relation(mapped, child=wordid).parent.values
+    else:
+        parent = get_relation(mapped, parent=wordid).child.values
+    if parent.any():
+        trace.extend([p for p in parent])
+        [trace.extend(tracer(p, direction,prev=trace+prev)) for p in parent if p not in prev]
+    return trace
+
+# extract relations where necessary
+def get_source(verb_id):
+    subject = tokens[tokens.id.isin(get_relation(mapped, relation='su', parent=verb_id).child)]
+    if subject.empty:
+        return ''
+    elif subject.lemma.values[0]=='en':
+        return ';'.join(get_list(tokens, tracer(subject.id,'down')))
+    else:
+        return ''.join(subject.word)
+
+def type_c(mapped,tokens):
+    if mapped.empty or tokens.empty: return []
+    verbs = tokens[tokens.lemma.isin(SPEACH_VERBS)]
+    quotes = []
+    for verb_id in verbs.id:
+        type_c_relation    = get_relation(mapped, child='dat',relation='vc',parent=verb_id)
+        if type_c_relation.empty:
+            type_c_2_relation  = get_relation(mapped, child='hoop', relation='obj1', parent=verb_id)
+            if type_c_2_relation.empty: continue
+            type_c_2b_relation = get_relation(mapped, child='dat', relation='vc', parent=type_c_2_relation.child)
+            if type_c_2b_relation.empty:continue
+            body = get_list(tokens,tracer(type_c_2b_relation.child,'down'))
+        else:
+            body = get_list(tokens, tracer(type_c_relation.child, 'down'))
+        verb_word  = tokens[tokens.id==verb_id].word.values[0]
+        verb_lemma = tokens[tokens.id==verb_id].lemma.values[0]
+        source = get_source(verb_id)
+        quotes.append({
+            'type':'C',
+            'literal':'no',
+            'verb_lemma': verb_lemma,
+            'verb_word': verb_word,
+            'source':source,
+            'body':' '.join(body)
+        })
+    return quotes
+
+def type_a(mapped, tokens):
+    if tokens.empty or mapped.empty: return []
+    quotes = []
+    verbs = tokens[tokens.lemma=="blijk"]
+    if verbs.empty: return []
+    type_a_relation = get_relation(mapped, child='uit', relation='pc', parent=verbs.id.values[0])
+    if type_a_relation.empty: return []
+    source = ' '.join(get_list(tokens,tracer(type_a_relation.child.values[0],'down')))
+    type_a_body_relation = get_relation(mapped, relation='su', parent=verbs.id.values[0])
+    if type_a_body_relation.empty:
+        body = ""
+    else:
+        body  = get_list(tokens, tracer(type_a_body_relation.child,'down'))
+        if body.empty:
+            body = ''
+            pass #Should solve for 'dat' reference
+        else:
+            body = ' '.join(body)
+    quotes.append({
+        'type':'A',
+        'literal':'no',
+        'verb_lemma':'blijk',
+        'verb_word':verbs.word.values[0],
+        'source':source,
+        'body':body
+    })
+    return quotes
+
+def pivot(mapped, series):
+    pivot = set()
+    for element in series:
+        if not pivot:
+            pivot = set(tracer(element,'up'))
+        else:
+            pivot = pivot.intersection(set(tracer(element,'up')))
+    return pivot
+
+def type_b(mapped,tokens):
+    if mapped.empty or tokens.empty: return []
+    accordings = tokens[tokens.lemma.isin(['volgens','aldus'])]
+    if accordings.empty: return []
+    quotes = []
+    for acc in accordings.id:
+        type_b_quote_relation = pandas.concat([get_relation(mapped, relation="tag",child=acc),
+                                              get_relation(mapped, relation="mod", child=acc)])
+        source_ids = tracer(acc,'down')
+        pivot = set(tracer(acc,'up')).intersection(set(tracer(type_b_quote_relation.parent,'up')))
+        quote_ids  = [id for id in tracer(min(pivot),'down') if
+                      id not in source_ids + [acc]]
+        quotes.append({
+            'type':'B',
+            'literal':'no',
+            'verb_lemma':tokens.lemma[tokens.id==acc].values[0],
+            'verb_word': tokens.word[tokens.id == acc].values[0],
+            'source':' '.join(get_list(tokens,source_ids)),
+            'body':' '.join(get_list(tokens,quote_ids))
+        })
+    return quotes
+
+def type_d(mapped, tokens):
+    literal = get_literal(tokens)
+    if literal:
+        name = tokens.word[(tokens.pos=='name')&(tokens.id.isin(literal)==False)]
+        pron = tokens.word[(tokens.pos=='pron')&(tokens.id.isin(literal)==False)]
+
+        verb = tokens[(tokens.lemma.isin(SPEACH_VERBS))&(tokens.id.isin(literal)==False)]
+
+        if not name.empty:
+            source = ' '.join(name)
+        else:
+            source = ' '.join(pron)
+        return [{
+            'type':'D',
+            'literal':'yes',
+            'verb_lemma':' '.join(verb.lemma),
+            'verb_word':' '.join(verb.word),
+            'source':source,
+            'body':' '.join(get_list(tokens,literal))
+        }]
+    else:
+        return []
+
+def type_e(mapped,tokens):
+    quotes = []
+    verbs = tokens[(tokens.lemma.isin(SPEACH_VERBS))&(tokens.pos=='verb')]
+    for token in verbs.id:
+        verb = tokens[(tokens.lemma.isin(SPEACH_VERBS)) & (tokens.id.isin(literal) == False)]
+
+        verb_sub = get_relation(mapped, relation='su', parent=token)
+        verb_source = tracer(verb_sub.child,'down') + list(verb_sub.child)
+
+        verb_obj = get_relation(mapped, relation='obj1', parent=token)
+        verb_body = tracer(verb_obj.child,'down')+list(verb_obj.child)
+
+        quotes.append({
+            'type':'E',
+            'literal':'no',
+            'verb_lemma': ' '.join(verb.lemma),
+            'verb_word':' '.join(verb.word),
+            'source': ' '.join(get_list(tokens,verb_source)),
+            'body': ' '.join(get_list(tokens, verb_body))
+        })
+    return quotes
