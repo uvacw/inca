@@ -217,7 +217,7 @@ class volkskrant(rss):
                     author_door = "redactie"
             except:
                 author_door=""
-                logger.info("oops - geen auhtor?")
+                logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
         try:
             author_bron=" ".join(tree.xpath('//*/span[@class="article__meta"][*]/text()')).strip().lstrip("Bron:").strip()
             # geeft het tweede veld: "Bron: ANP"
@@ -246,7 +246,7 @@ class volkskrant(rss):
                     author_bron=re.findall(".*?Bron:(.*)", bron_text)[0]
                 except:
                     author_bron=""
-                    logger.info("oops - geen bron")
+                    logger.info("No 'press-agency source ('bron')' field encountered - don't worry, maybe it just doesn't exist.")
         if author_door=="" and author_bron=="" and category=="Opinie":
             author_door = "OPINION PIECE OTHER AUTHOR"
         text=polish(text)
@@ -444,7 +444,7 @@ class parool(rss):
                 author_door=[e for e in author_text if e.find("Bewerkt door:")>=0][0].strip().replace("(","").replace(")","").replace("Bewerkt door:","")
             except:
                 author_door=""
-                logger.info(""No 'author (door)' field encountered - don't worry, maybe it just doesn't exist."")
+                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
         try:
             bron_text=tree.xpath('//*[@id="page-main-content"]//*[@class="article__footer"]/span/span/text()')[0]
             author_bron=re.findall(".*?Bron:(.*)", bron_text)[0]
@@ -456,7 +456,7 @@ class parool(rss):
                 author_bron=re.findall(".*?Bron:(.*)",bron_text)[0]
             except:
                 author_bron=""
-                logger.info("geen bron")
+                logger.info("No 'press-agency source ('bron')' field encountered - don't worry, maybe it just doesn't exist.")
         text=polish(text)
 
         extractedinfo={"category":category.strip(),
@@ -540,7 +540,7 @@ class trouw(rss):
                     author_bron=re.findall(".*?bron:(.*)", bron_text)[0]
                 except:
                     author_bron=""
-                    logger.info("geen bron")
+                    logger.info("No 'press-agency source ('bron')' field encountered - don't worry, maybe it just doesn't exist.")
 
         text=polish(text)
 
@@ -781,7 +781,7 @@ class fok(rss):
                 author_bron=tree.xpath('//*[@class="bron"]/strong/a/text()')[0]
             except:
                 author_bron=""
-                logger.info("geen bron")
+                logger.info("No 'press-agency source ('bron')' field encountered - don't worry, maybe it just doesn't exist.")
         textnew=polish(textnew)
 
         extractedinfo={"category":category.strip(),
