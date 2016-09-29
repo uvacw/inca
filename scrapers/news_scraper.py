@@ -11,12 +11,12 @@ logger = logging.getLogger(__name__)
 
 def polish(textstring):
     #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-        lines = textstring.strip().split('\n')
-        lead = lines[0].strip()
-        rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-        if rest: result = lead + ' ||| ' + rest
-        else: result = lead
-        return result.strip()
+    lines = textstring.strip().split('\n')
+    lead = lines[0].strip()
+    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
+    if rest: result = lead + ' ||| ' + rest
+    else: result = lead
+    return result.strip()
 
 class nu(rss):
     """Scrapes nu.nl """
@@ -41,21 +41,21 @@ class nu(rss):
         try:
             category = tree.xpath('//*[@class="block breadcrumb "]/div/div/ul/li[2]/a/text()')[0]
             if category == "":
-                print("OOps - geen category?")
+                logger.warning("OOps - geen category?")
         except:
             category=""
-            print("OOps - geen category?")
+            logger.warning("OOps - geen category?")
         try:
             textfirstpara=tree.xpath('//*[@data-type="article.header"]/div/div[1]/div[2]/text()')[0]
         except:
-            print("OOps - geen eerste alinea?")
+            logger.warning("OOps - geen eerste alinea?")
             textfirstpara=""
         try:
             textrest=tree.xpath('//*[@data-type="article.body"]/div/div/p/text() | //*[@data-type="article.body"]/div/div/p/span/text()| //*[@data-type="article.body"]/div/div/p/em/text() | //*[@data-type="article.body"]/div/div/h2/text() | //*[@data-type="article.body"]/div/div/h3/text() | //*[@data-type="article.body"]/div/div/p/a/em/text() | //*[@data-type="article.body"]/div/div/p/em/a/text() | //*[@data-type="article.body"]/div/div/p/a/text() | //*[@data-type="article.body"]/div/div/p/strong/text()')
             if textrest == "":
-                print("OOps - empty textrest for?")
+                logger.warning("OOps - empty textrest for?")
         except:
-            print("OOps - geen text?")
+            logger.warning("OOps - geen text?")
             textrest=""
         text = textfirstpara + "\n"+ "\n".join(textrest)
         try:
@@ -67,10 +67,10 @@ class nu(rss):
                     author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
                 except:
                     author_door=""
-                    print("OOps - geen author for?")
+                    logger.warning("OOps - geen author for?")
         except:
             author_door=""
-            print("OOps - geen author?")
+            logger.warning("OOps - geen author?")
         author_bron = ""
         text=polish(text)
 
@@ -104,7 +104,7 @@ class nos(rss):
         try: 
             tree = fromstring(htmlsource)
         except:
-            print("It goes wrong here")
+            logger.error("HTML tree cannot be parsed")
         try:
             category="".join(tree.xpath('//*[@id="content"]/article/header/div/div/div/div/span/a/text()'))
         except:
@@ -114,7 +114,7 @@ class nos(rss):
                 category="".join(tree.xpath('//*[@id="content"]/article/header/div/div/div/div/div/div/span/a/text()'))
             except:
                 category=""
-                print("ooops - geen category")
+                logger.warning("ooops - geen category")
         try:
             textfirstpara=tree.xpath('//*/header/p/text()')[0].replace("\n", "").strip()
         except:
@@ -124,18 +124,18 @@ class nos(rss):
                 textfirstpara=tree.xpath('//*[@id="content"]/article/section/div/div/p/text()')[0]
             except:
                 textfirstpara=" "
-                print("oops - geen first para")
+                logger.warning("oops - geen first para")
         try:
             textrest=tree.xpath('//*[@id="content"]/article/section/div/div/p/text() | //*[@id="content"]/article/section/div/div/p/i/text() | //*[@id="content"]/article/section/div/div/p/a/text() | //*[@id="content"]/article/section/div/div/h2/text() | //*[@id="content"]/article/section/div/h2/text() | //*[@id="content"]/article/section/div/div/table/tbody/tr/td/text()')
         except:
-            print("oops - geen text?")
+            logger.warning("oops - geen text?")
             textrest=""
         text ="\n".join(textrest)
         try:
             author_door=tree.xpath('//*[@id="content"]/article/section/div/div/div/span/text()')[0]
         except:
             author_door=""
-            print("ooops - geen author")
+            logger.warning("ooops - geen author")
         author_bron=""
         text=polish(text)
 
@@ -179,7 +179,7 @@ class volkskrant(rss):
                 category=tree.xpath('//*[@class="action-bar__primary"]/a/text()')[0]
             except:
                 category=""
-                print("oops - geen category")
+                logger.warning("oops - geen category")
         try:
             textfirstpara=tree.xpath('//*/header/p/text()')[0].replace("\n", "").strip()
         except:
@@ -189,7 +189,7 @@ class volkskrant(rss):
                 textfirstpara=tree.xpath('//*/header/p/text()')[1].replace("\n", "").strip()
             except:
                 textfirstpara=" "
-                print("oops - geen first para")
+                logger.warning("oops - geen first para")
         try:
             #1. path: regular textrest
             #2. path: textrest version found in 2014 11 16
@@ -199,10 +199,8 @@ class volkskrant(rss):
             #6. path: old design second heading
             #7. path:old design text with link
             textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text() | //*/div[@class="article__body"]/h2/text() | //*/p[@class="article__body__paragraph first"]/a/text() | //*/p[@class="article__body__paragraph"]/text() | //*/h3[@class="article__body__container-title"]/text()')
-            #print("Text rest: ")
-            #print(textrest)
         except:
-            print("oops - geen text?")
+            logger.warning("oops - geen text?")
             textrest=""
         text = textfirstpara + "\n"+ "\n".join(textrest)
         try:
@@ -219,7 +217,7 @@ class volkskrant(rss):
                     author_door = "redactie"
             except:
                 author_door=""
-                print("oops - geen auhtor?")
+                logger.warning("oops - geen auhtor?")
         try:
             author_bron=" ".join(tree.xpath('//*/span[@class="article__meta"][*]/text()')).strip().lstrip("Bron:").strip()
             # geeft het tweede veld: "Bron: ANP"
@@ -248,7 +246,7 @@ class volkskrant(rss):
                     author_bron=re.findall(".*?Bron:(.*)", bron_text)[0]
                 except:
                     author_bron=""
-                    print("oops - geen bron")
+                    logger.warning("oops - geen bron")
         if author_door=="" and author_bron=="" and category=="Opinie":
             author_door = "OPINION PIECE OTHER AUTHOR"
         text=polish(text)
@@ -278,16 +276,17 @@ class nrc(rss):
         self.date    = datetime.datetime(year=2016, month=9, day=10)
 
     def parsehtml(self,htmlsource):
-        '''                                                                           
-	Parses the html source to retrieve info that is not in the RSS-keys      
-	In particular, it extracts the following keys (which should be available in most online news:                                                                          
-	section     sth. like economy, sports, ..
-	text        the plain text of the article                               
-	byline      the author, e.g. "Bob Smith"                                 
-	byline_source   sth like ANP                                            
-	'''
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section     sth. like economy, sports, ..
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+
         tree=fromstring(htmlsource)
-	
+
         try:
             category = tree.xpath('//*[@id="broodtekst"]/a[1]/text()')[0]
         except:
@@ -310,7 +309,7 @@ class nrc(rss):
             textfirstpara = " ".join(textfirstpara)
         except:
             textfirstpara=""
-            print("Ooops geen first para")
+            logger.warning("Ooops geen first para")
         try:
         #1. path: type 1 layout: regular text                                         
         #2. path: type 1 layout: second heading in regular text                         
@@ -343,7 +342,7 @@ class nrc(rss):
         #26. path regular layout: bold subtitle found 2015 11 16
             textrest=tree.xpath('//*[@id="broodtekst"]/p[position()>1]/text() | //*[@id="broodtekst"]/h2/text() | //*[@id="article-content"]/p[position()>1]/text() | //*[@id="article-content"]/p[position()>1]/strong/text() | //*[@id="article-content"]/p[position()>1]/a/text() | //*[@id="article-content"]/p[position()>1]/em/text() | //*[@id="article-content"]/h2/text() | //*[@id="article-content"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/a/text() | //*[@id="broodtekst"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/strong/text() | //*[@id="broodtekst"]/p[position()>1]/a/em/text() | //*[@class="beschrijving"]/text() | //*[@class="beschrijving"]/a/text() | //*[@class="beschrijving"]/a/em/text() | //*[@id="broodtekst"]/p[position()>1]/em/text() | //*[@class="content article__content"]/p[position()>0]/text() | //*[@class="content article__content"]/p/strong/text() | //*[@class="content article__content"]/p/a/text() | //*[@class="content article__content"]/blockquote/p/text() | //*[@class="bericht"]/h2/text() | //*[@class="bericht"]/p/text() | //*[@class="bericht"]/p/a/text() |//*[@class="bericht"]/ul/li/text() | //*[@class="bericht bericht--new"]/h2/text() | //*[@class="bericht bericht--new"]/p/text() | //*[@class="bericht bericht--new"]/p/a/text() | //*[@class="bericht bericht--new"]/p/em/text() | //*[@class="content article__content"]/h2/text() | //*[@class="content article__content"]/h3/text() | //*[@class="content article__content"]/p/a/em/text() | //*[@class="content article__content"]/blockquote/p/strong/text() | //*[@class="content article__content"]/p/br/a/strong/text() | //*[@class="content article__content"]/p/em/text()')
         except:
-            print("oops - geen text?")
+            logger.warning("oops - geen text?")
             textrest = ""
         text = textfirstpara + "\n"+ "\n".join(textrest)
         textnew=re.sub("Follow @nrc_opinie","",text)
@@ -368,11 +367,11 @@ class nrc(rss):
                 author_door = ""
         author_bron=""
         if textnew=="" and category=="" and author_door=="":
-            print("No article-page?")
+            logger.warning("No article-page?")
             try:
                 if tree.xpath('//*[@class="kies show clearfix"]/h2/text()')[0] == 'Lees dit hele artikel':
                     text="THIS SEEMS TO BE AN ARTICLE ONLY FOR SUBSCRIBERS"
-                    print(" This seems to be a subscribers-only article")
+                    logger.warning(" This seems to be a subscribers-only article")
             except:
                     text=""
         text=polish(text)
@@ -417,13 +416,13 @@ class parool(rss):
                 category = category.replace("/","")
             except:
                 category=""
-                print("geen category")
+                logger.warning("geen category")
         try:
             textfirstpara=tree.xpath('//*[@id="page-main-content"]//*[@class="article__intro"]/text() | //*[@id="art_box2"]//*[@class="intro2"]/a/text()')
             textfirstparanew=" ".join(textfirstpara)
         except:
             textfirstpara=" "
-            print("oops - geen textfirstpara")
+            logger.warning("oops - geen textfirstpara")
         try:
         #1. Regular text (version 07/03/16)                                            
         #2. Bold text - subtitles                                                      
@@ -433,7 +432,7 @@ class parool(rss):
             textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text() | //*[@class="article__body__paragraph first"]/text() | //*[@class="article__body__paragraph first"]/strong/text() | //*[@class="article__body__paragraph first"]/a/text()')
         except:
             textrest=" "
-            print("oops - geen textrest")
+            logger.warning("oops - geen textrest")
         text=textfirstparanew + "\n" + "\n".join(textrest)
         author_text=tree.xpath('//*[@id="page-main-content"]//*[@class="article__footer"]/span/span/span/text()')
         try:
@@ -445,7 +444,7 @@ class parool(rss):
                 author_door=[e for e in author_text if e.find("Bewerkt door:")>=0][0].strip().replace("(","").replace(")","").replace("Bewerkt door:","")
             except:
                 author_door=""
-                print("ooops - geen author_door")
+                logger.warning("ooops - geen author_door")
         try:
             bron_text=tree.xpath('//*[@id="page-main-content"]//*[@class="article__footer"]/span/span/text()')[0]
             author_bron=re.findall(".*?Bron:(.*)", bron_text)[0]
@@ -457,7 +456,7 @@ class parool(rss):
                 author_bron=re.findall(".*?Bron:(.*)",bron_text)[0]
             except:
                 author_bron=""
-                print("geen bron")
+                logger.warning("geen bron")
         text=polish(text)
 
         extractedinfo={"category":category.strip(),
@@ -510,7 +509,7 @@ class trouw(rss):
                 category=tree.xpath('//*[@id="str_cntr2"]//*[@class="dos_default dos_vluchtelingen"]/span/text()')[0]
             except:
                 category=""
-                print("oops - geen category")
+                logger.warning("oops - geen category")
         try:
         #1. Regular text - intro                                                       
         #2. Bold text - subtitles                                                      
@@ -523,13 +522,13 @@ class trouw(rss):
             textrest=tree.xpath('//*[@class="art_box2"]//*[@class="intro"]/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/section/h3/text() | //*[@id="art_box2"]/section/p/text() |  //*[@id="art_box2"]/p/a/text() |  //*[@id="art_box2"]//*[@class="embedded-context embedded-context--inzet"]/text() |  //*[@id="art_box2"]/p/em/text()')
         except:
             textrest=" "
-            print("oops - geen textrest")
+            logger.warning("oops - geen textrest")
         text = "\n".join(textrest)
         try:
              author_door=tree.xpath('//*[@class="author"]/text()')[0]               
         except:
              author_door=" "
-             print("geen author")
+             logger.warning("geen author")
         try:
              bron_text=tree.xpath('//*[@class="time_post"]/text()')[1].replace("\n", "")
              author_bron=re.findall(".*?bron:(.*)", bron_text)[0]
@@ -541,7 +540,7 @@ class trouw(rss):
                     author_bron=re.findall(".*?bron:(.*)", bron_text)[0]
                 except:
                     author_bron=""
-                    print("geen bron")
+                    logger.warning("geen bron")
 
         text=polish(text)
 
@@ -578,12 +577,11 @@ class telegraaf(rss):
         '''
 
         tree = fromstring(htmlsource)
-        print("HEY")
         try:
             category = tree.xpath('//*[@class="selekt"]/text() | //*[@class="topbar"]/div/a[2]/text()' )[0]
         except:
             category = ""
-            print("OOps - geen category?")
+            logger.warning("OOps - geen category?")
         try:
         #1.path: layout 1: regular first para                                          
         #2.path: layout 2 (video): regular first (and mostly only) para               
@@ -594,7 +592,7 @@ class telegraaf(rss):
             textfirstpara = " ".join(textfirstpara)
         except:
             textfirstpara=""
-            print("OOps - geen textfirstpara?")
+            logger.warning("OOps - geen textfirstpara?")
         try:
         #1. path: layout 1: regular text, fi 2014 12 006                               
         #2. path: layout 1: text with link, fi 2014 12 006                             
@@ -607,7 +605,7 @@ class telegraaf(rss):
         #9. path: layout 2: bold text, found 2016 04 07                                
             textrest=tree.xpath('//*[@id="artikelKolom"]/p[not (@class="tiptelegraaflabel")]/text() | //*[@id="artikelKolom"]/p/a/text() | //*[@id="artikelKolom"]/h2/strong/text() | //*[@id="artikelKolom"]/p/strong/text() | //*[@id="artikelKolom"]/p/em/text() | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text() | //*[@class="broodtekst"]/p/text() | //*[@class="broodtext"]/h2/strong/text()| //*[@id="artikelKolom"]/div/p/text() | //*[@id="artikelKolom"]/div/p/em/text() | //*[@id="artikelKolom"]/div/p/strong/text() | //*[@id="artikelKolom"]/div/h2/text() | //*[@id="artikelKolom"]/div/p/a/text()')
         except:
-            print("oops - geen texttest?")
+            logger.warning("oops - geen texttest?")
             textrest = ""
         text = textfirstpara + "\n"+ "\n".join(textrest)
         try:
@@ -668,10 +666,10 @@ class metrnieuwso(rss):
         #13. path: regular text                                                        
             textrest=tree.xpath('//*[@class="field-item even"]/p/text() | //*[@class="field-item even"]/p/a/text() | //*[@class="field-item even"]/p/em/text() | //*[@class="field-item even"]/h2/text() | //*[@class="field-item even"]/p/span/text() | //*[@class="field-item even"]/h2/span/text() | //*[@class="field-item even"]/p/span/em/a/text() | //*[@class="field-item even"]/p/em/a/text() | //*[@class="field-item even"]/p/em/strong/text() | //*[@class="field-item even"]/p/b/text() | //*[@class="field-item even"]/div/text() | //*[@class="field-item even"]/p/strong/text()')
         except:
-            print("oops - geen textrest?")
+            logger.warning("oops - geen textrest?")
             textrest = ""
         text = "\n".join(textrest)
-        textnew=re.sub("Lees ook:"," ",text)
+        text=re.sub("Lees ook:"," ",text)
         try:
         #new layout author:                                                            
             author_door = tree.xpath('//*[@class="username"]/text()')[0].strip().lstrip("door ").lstrip("© ").lstrip("2014 ").strip()
@@ -717,7 +715,7 @@ class geenstijl(rss):
         tree = fromstring(htmlsource)
         textrest=tree.xpath('//*[@id="content"]/article/text() | //*[@id="content"]/article/a/text() | //*[@id="content"]/article/em/text() | //*[@id="content"]/article/strong/text() | //*[@id="content"]/article/s/text() |  //*[@id="content"]/article/p/text() | //*[@id="content"]/article/p/a/text() | //*[@id="content"]/article/p/s/text() | //*[@id="content"]/article/p/em/text() | //*[@id="content"]/article/p/strong/text() | //*[@id="content"]/article/p/strong/a/text() | //*[@id="content"]/article/p/em/a/text() | //*[@id="content"]/article/blockquote/p/text() | //*[@id="content"]/article/blockquote/text() | //*[@id="content"]/article/blockquote/a/text()')
         if textrest=="":
-            print("OOps - empty textrest for?")
+            logger.warning("OOps - empty textrest for?")
         text="\n".join(textrest)
         try:
             author_door=tree.xpath('//*[@id="content"]/article/footer/text()')[0].replace("|","")
@@ -744,13 +742,13 @@ class fok(rss):
 
     def parsehtml(self,htmlsource):
         '''                                                                             
-	Parses the html source to retrieve info that is not in the RSS-keys             
-	In particular, it extracts the following keys (which should be available in most online news:                                                                          
-	section    sth. like economy, sports, ...                                      
-	text        the plain text of the article                                      
-	byline      the author, e.g. "Bob Smith"                                       
-	byline_source   sth like ANP                                                   
-	'''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
         tree = fromstring(htmlsource)
         try:
             category="".join(tree.xpath('//*[@id="crumbs"]/ul/li/a/text()'))
@@ -761,7 +759,7 @@ class fok(rss):
         try:
              textrest=tree.xpath('//*[@role="main"]/article/p/text() | //*[@role="main"]/article/p/strong/text() | //*[@role="main"]/article/p/strong/a/text() | //*[@role="main"]/article/p/a/text() | //*[@role="main"]/article/p/em/text()')
         except:
-            print("oops - geen textrest?")
+            logger.warning("oops - geen textrest?")
             textrest = ""
         text = "\n".join(textrest)
         textnew=re.sub("Lees ook:"," ",text)
@@ -783,13 +781,16 @@ class fok(rss):
                 author_bron=tree.xpath('//*[@class="bron"]/strong/a/text()')[0]
             except:
                 author_bron=""
-                print("geen bron")
+                logger.warning("geen bron")
         textnew=polish(textnew)
 
         extractedinfo={"category":category.strip(),
-                       "text":text.strip(),
+                       "text":textnew.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip()
                        }
 
         return extractedinfo
+
+if __name__=="__main__":
+    print('Please use these scripts from within inca. EXAMPLE: BLA BLA BLA')
