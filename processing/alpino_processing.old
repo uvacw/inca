@@ -11,11 +11,14 @@ import re
 import configparser
 import sys
 import logging
+<<<<<<< HEAD
 import string
 import shlex
 import json
 import pandas
+=======
 from core.database import config
+>>>>>>> e1f1d66d2999fd906cc1d7335c7a4cd36e285ee1
 
 logger = logging.getLogger(__name__)
 
@@ -265,10 +268,30 @@ _POSMAP = {"pronoun": 'O',
            'sbar': '?',
            '--': '?',
            }
-#drawn from  van Atteveldt, Sheaferm, Shenhav 2015: "Clause analysis: using syntactic information to enrich frequency-based automatic content analysis"
+<<<<<<< HEAD
 
+SPEACH_VERBS = ['accepteer','antwoord','beaam','bedenk','bedoel','begrijp','beken','beklemtoon',
+                'bekrachtig','belijd','beluister','benadruk','bereken','bericht','beschouw',
+                'beschrijf','besef','betuig','bevestig','bevroed','beweer','bewijs','bezweer',
+                'biecht','breng','brul','concludeer','confirmeer','constateer','debiteer',
+                'declareer','demonstreer','denk','draag_uit','email','erken','expliceer',
+                'expliciteer','fantaseer','formuleer','geef_aan','geloof','hoor','hamer',
+                'herinner','houd_vol','kondig_aan','kwetter','licht_toe','maak_bekend',
+                'maak_hard','meld','merk','merk_op','motiveer','noem','nuanceer','observeer',
+                'onderschrijf','onderstreep','onthul','ontsluier','ontval','ontvouw','oordeel',
+                'parafraseer','pos- tuleer','preciseer','presumeer','pretendeer','publiceer',
+                'rapporteer','realiseer','redeneer','refereer','reken','roep','roer_aan',
+                'ruik','schat','schets','schilder','schreeuw','schrijf','signaleer','snap',
+                'snater','specificeer','spreek_uit','staaf','stel','stip_aan','suggereer',
+                'tater','teken_aan','toon_aan','twitter','verbaas','verhaal','verklaar',
+                'verklap','verkondig','vermoed','veronderstel','verraad','vertel','vertel_na',
+                'verwacht','verwittig','verwonder','verzeker','vind','voel','voel_aan',
+                'waarschuw','wed','weet','wijs_aan','wind','zeg','zet_uiteen','zie','twitter']
+=======
+# drawn from  van Atteveldt, Sheaferm, Shenhav 2015: "Clause analysis: using syntactic information to enrich frequency-based automatic content analysis"
 SPEACH_VERBS = ["accepteer", "antwoord", "beaam", "bedenk", "bedoel", "begrijp", "beken", "beklemtoon", "bekrachtig", "belijd", "beluister", "benadruk", "bereken", "bericht", "beschouw", "beschrijf", "besef", "betuig", "bevestig", "bevroed", "beweer", "bewijs", "bezweer", "biecht", "breng", "brul", "concludeer", "confirmeer", "constateer", "debiteer", "declareer", "demonstreer", "denk", "draag_uit", "email", "erken", "expliceer", "expliciteer", "fantaseer", "formuleer", "geef_aan", "geloof", "hoor", "hamer", "herinner", "houd_vol", "kondig_aan", "kwetter", "licht_toe", "maak_bekend", "maak_hard", "meld", "merk", "merk_op", "motiveer", "noem", "nuanceer", "observeer", "onderschrijf", "onderstreep", "onthul", "ontsluier", "ontval", "ontvouw", "oordeel", "parafraseer", "postuleer", "preciseer", "presumeer", "pretendeer", "publiceer", "rapporteer", "realiseer", "redeneer", "refereer", "reken", "roep", "roer_aan", "ruik", "schat", "schets", "schilder", "schreeuw", "schrijf", "signaleer", "snap", "snater", "specificeer", "spreek_uit", "staaf", "stel", "stip_aan", "suggereer", "tater", "teken_aan", "toon_aan", "twitter", "verbaas", "verhaal", "verklaar", "verklap", "verkondig", "vermoed", "veronderstel", "verraad", "vertel", "vertel_na", "verwacht", "verwittig", "verwonder", "verzeker", "vind", "voel", "voel_aan", "waarschuw", "wed", "weet", "wijs_aan", "wind", "zeg", "zet_uiteen", "zie", "twitter"]
-ANAPHORAS    = ["hij","zij","hun"]
+>>>>>>> e1f1d66d2999fd906cc1d7335c7a4cd36e285ee1
+
 class alpino_to_quote(Processer):
     '''Takes alpino output and extracts quotes'''
 
@@ -276,6 +299,7 @@ class alpino_to_quote(Processer):
         '''takes an alpino result and returns a list of {speaker:name,using:verb,quote:text} dicts'''
 
         quotes = []
+<<<<<<< HEAD
         for num,line in enumerate(alpino_result):
             mapped, tokens = self.map_parse(line)
             line_quotes= []
@@ -287,10 +311,6 @@ class alpino_to_quote(Processer):
             [q.update({'line':num}) for q in line_quotes]
             if line_quotes: quotes.append(line_quotes[0])
         return quotes
-
-    def resolve_anaphora(self,quote,line_num, lines):
-        anaphora_word
-        anaphora_dep
 
     # map dependency & token list
     def map_parse(self, alpino_parse):
@@ -395,7 +415,7 @@ class alpino_to_quote(Processer):
             #    if type_c_2_relation.empty: continue
             #    type_c_2b_relation = self.get_relation(mapped, child='dat', relation='vc', parent=type_c_2_relation.child)
             #    if type_c_2b_relation.empty:continue
-            #    body = self.get_list(diltokens,self.tracer(mapped,type_c_2b_relation.child,'down'))
+            #    body = self.get_list(tokens,self.tracer(mapped,type_c_2b_relation.child,'down'))
             #else:
             body = self.get_list(tokens, self.tracer(mapped,type_c_relation.child, 'down'))
             verb_word  = tokens[tokens.id==verb_id].word.values[0]
@@ -540,4 +560,31 @@ def alpino_to_quote_tests():
   'verb_word': 'spraken'}]
     assert alpino_to_quote().process([testset[0]]) == expected, "testset 0-type E failed"
 
+=======
+        for num, line in enumerate(alpino_result):
+            speach_verbs = [verb for verb in line.get('tokens',[]) if verb.get('lemma') in SPEACH_VERBS]
+            if speach_verbs:
+                speach_verbs = speach_verbs[0]
+                subject_id = [dep.get('child') for dep in line.get('dependencies',[]) if
+                              dep.get('relation')=='su' and dep.get('parent')==speach_verbs.get('id',False) ][0]
+                verb    = speach_verbs.get('lemma','')
+
+                def get_children(parent, exclude=False):
+                    child_ids = [sub['child'] for sub in line.get('dependencies') if
+                                 sub['parent']==parent and not sub['child']==exclude]
+                    for child in child_ids:
+                        child_ids.extend(get_children(child))
+                    return child_ids
+
+                def id_to_word(id):
+                    return [sub['word'] for sub in line.get('tokens') if sub['id']==id][0]
+
+                quote = ' '.join([id_to_word(child) for child in get_children(speach_verbs.get('id'), exclude=subject_id)])
+                quotes.append({
+                'speaker':id_to_word(subject_id),
+                'verb':speach_verbs.get('word'),
+                'quote':quote
+                 })
+        return quotes
+>>>>>>> e1f1d66d2999fd906cc1d7335c7a4cd36e285ee1
 

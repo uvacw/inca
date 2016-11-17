@@ -19,7 +19,7 @@ from celery import Task
 import os
 
 config = configparser.ConfigParser()
-config.read_file(open('settings.cfg'))
+config.read('settings.cfg')
 
 logger = logging.getLogger(__name__)
 logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)

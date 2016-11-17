@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 config = configparser.ConfigParser()
-config.read_file(open('settings.cfg'))
+config.read('settings.cfg')
 
 taskfile = config.get('celery','taskfile')
 
