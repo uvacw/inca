@@ -4,6 +4,15 @@ from core.basic_utils import dotkeys
 import logging
 import re
 import sys
+
+try:
+    from pattern.nl import parse
+except:
+    '''sorry, python 2 only'''
+    pass
+
+# TODO I now use pattern.nl as it was basically copy/paste from the earlier version
+# TODO we might want to port this to Alpino, if we use Alpino anyway
 from sys import maxunicode
 import unicodedata
 
@@ -15,9 +24,6 @@ else:
     logger.warn("Pattern is NOT python 3 compatible...skipping")
     def parse(*args, **kwargs):
         raise "Unavailable in python3!"
-
-# TODO I now use pattern.nl as it was basically copy/paste from the earlier version
-# TODO we might want to port this to Alpino, if we use Alpino anyway
 
 class clean_whitespace(Processer):
     '''Changes multiple whitespace to single whitespace'''
