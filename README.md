@@ -27,7 +27,7 @@ tar -zxvf elasticsearch-2.3.4.tar.gz
 3. Run it
 
 ```
-./elasticsearch-2.3.4/sbin/elasticsearch
+./elasticsearch-2.3.4/bin/elasticsearch
 ```
 
 4. Install INCA dependencies (you should probably do this in a virtual environment!)
