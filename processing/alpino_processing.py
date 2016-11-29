@@ -288,10 +288,6 @@ class alpino_to_quote(Processer):
             if line_quotes: quotes.append(line_quotes[0])
         return quotes
 
-    def resolve_anaphora(self,quote,line_num, lines):
-        anaphora_word
-        anaphora_dep
-
     # map dependency & token list
     def map_parse(self, alpino_parse):
         if not alpino_parse.get('tokens',[]): return pandas.DataFrame(), pandas.DataFrame()
@@ -541,3 +537,20 @@ def alpino_to_quote_tests():
     assert alpino_to_quote().process([testset[0]]) == expected, "testset 0-type E failed"
 
 
+class alpino_anaphora_markup(Processer):
+    '''
+    Implements anaphora resolution as discussed in van Atteveldt et al.
+
+
+    '''
+
+
+    def process(self, document_field, meta_mapper=None):
+        '''
+
+
+        :param document_field:
+
+        :param meta_mapper:
+        :return:
+        '''
