@@ -98,6 +98,7 @@ class dailymail(rss):
                 author      = author_list,
                 source      = byline_source,
                 category    = category,
+                url         = link,
             )
             doc.update(kwargs)
             yield doc
