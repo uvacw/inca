@@ -91,12 +91,8 @@ class handelsblatt(rss):
                 source = ''
             
             author = ''
-            # Retrieving the byline/author if it can be found otherwise, get the one from RSS feed
             # there are no authors in this online newspaper
 
-            # Create iso format date 
-            #loc= locale.setlocale(locale.LC_ALL, 'de_DE') #Fri, 09 Dec 2016 14:55:39 +0100
-            
             try:
                 date = datetime.datetime.strptime(xpath_date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
             except:

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class diewelt(rss):
-    """Scrapes http://www.faz.net/ """
+    """Scrapes http://www.welt.de/ """
 
     def __init__(self):
         self.doctype = "Die Welt"
@@ -106,11 +106,18 @@ class diewelt(rss):
 
             # Create iso format date 
             #loc= locale.setlocale(locale.LC_ALL, 'de_DE') #Fri, 09 Dec 2016 14:55:39 +0100
-            
             try:
                 date = datetime.datetime.strptime(xpath_date[5:],"%d %b %Y %H:%M:%S GMT").isoformat()
             except:
                 date = ''
+
+            # Check if it's a paid article and if so return so in the tags
+            tags = []
+            if tree.xpath("boolean(//*[@data-external-component='Premium.Article.Content'])"):
+                tags.append('paid')
+            # doing the same if it's a video as there's usually no text accompanying. 
+            if tree.xpath("boolean(//*[@class='c-video-article-content'])"):
+                tags.append('video') 
 
 
             doc = dict(
@@ -122,6 +129,7 @@ class diewelt(rss):
                 source      = source,
                 category    = category,
                 subcategory = subcategory,
+                tags        = tags,
                 url         = link,
             )
             doc.update(kwargs)

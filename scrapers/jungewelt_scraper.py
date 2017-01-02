@@ -80,6 +80,9 @@ class jungewelt(rss):
             except:
                 date = ''
 
+            tags = []
+            if tree.xpath("boolean(//div[@id='ID_LoginFormFailed'])"):
+                tags.append('paid')
 
             doc = dict(
                 pub_date    = date,
@@ -89,6 +92,7 @@ class jungewelt(rss):
                 source      = source,
                 category    = category,
                 url         = link,
+                tags        = tags,
             )
             doc.update(kwargs)
             

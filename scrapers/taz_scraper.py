@@ -18,7 +18,7 @@ class taz(rss):
     """Scrapes http://www.handelsblatt.com/ """
 
     def __init__(self):
-        self.doctype = "taz.de"
+        self.doctype = "die tageszeitung"
         self.rss_url='http://www.taz.de/!p4608;rss/'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=25)
@@ -52,7 +52,6 @@ class taz(rss):
             text = ''
             for r in parag:
                 text += ' '+r.strip().replace('\xa0',' ').replace('| ','')
-
         
             # Retrieve author    
             try:

@@ -14,12 +14,11 @@ from lxml import etree
 logger = logging.getLogger(__name__)
 
 
-class neues(rss):
-    """Scrapes http://www.handelsblatt.com/ """
+class zeit(rss):
 
     def __init__(self):
-        self.doctype = "https://www.neues-deutschland.de"
-        self.rss_url='https://www.neues-deutschland.de/rss/aktuell.php'
+        self.doctype = "http://zeit.de"
+        self.rss_url='http://newsfeed.zeit.de/index'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=28)
     
@@ -27,7 +26,7 @@ class neues(rss):
     def get(self,**kwargs):
 
         # creating iteration over the rss feed. 
-        req =request.Request("https://www.neues-deutschland.de/rss/aktuell.php")
+        req =request.Request("http://newsfeed.zeit.de/index")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
         article_urls = tree.xpath("//channel//item//link/text()")
@@ -36,7 +35,7 @@ class neues(rss):
         dates = tree.xpath("//channel//item//pubDate/text()")
         titles = tree.xpath("//channel//item//title/text()")
 
-        for link,xpath_date,title,category,description in zip(article_urls,dates,titles,categories,descriptions):      
+        for link,xpath_date,title,category in zip(article_urls,dates,titles,categories):      
             link = link.strip()
             
             try:
@@ -47,25 +46,36 @@ class neues(rss):
                 logger.error("HTML tree cannot be parsed")
 
 
+            # if article contains multiple plages, go ahead and open the full article in one page:
+            if tree.xpath("boolean(//*[@class='article-pager__all']/a/@href)"):
+                link = tree.xpath("//*[@class='article-pager__all']/a/@href")[0].strip()
+                req = request.Request(link)
+                read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+                tree = fromstring(read)
+
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
-            parag = tree.xpath("//*[@class='Content']/p//text()")
+            parag = tree.xpath("//*[@class='article-page']/p//text() | //*[@class='entry-content']/p//text() | //*[@itemprop='articleBody']/section/h2//text() | //*[@itemprop='articleBody']/section/p//text() ")
             text = ''
             for r in parag:
-                text += ' '+r.strip().replace('\xa0',' ').replace('| ','')
-
+                if len(r) > 0:
+                    text += ' '+r.strip().replace('\xa0',' ').replace('| ','')
+            text = ''.join(text.splitlines()).strip()
 
             # Retrieve source, which is usually the second word of articles containing it, nested inside an <em> element.
             try:
-                if tree.xpath("boolean(//*[@class='Content']/p[last()]/i/text())"):
-                    # Using this arbitrary 15 len character to differentiate the potential existence of a researcher description vs. an actual source. The mag doesn't provide class to differentiate. 
-                    if len(tree.xpath("//*[@class='Content']/p[last()]/i/text()")[0]) < 15:
-                        source = tree.xpath("//*[@class='Content']/p[last()]/i/text()")[0].strip().replace('(','').replace(')','')
-                    else:
-                        source = ''
-                else:
-                    source = ''
+                source = tree.xpath("//*[@class='metadata__source']/text()")[0].replace('Quelle: ','')
             except:
                 source = ''
+
+            try:
+                author = tree.xpath("//*[@class='author vcard']/a/text() | //*[@itemprop='author']/a/span/text()")[0]
+            except:
+                author = ''
+
+            try:
+                description = tree.xpath("//*[@class='summary']/text()")[0].strip()
+            except:
+                description = ''
 
             # Create iso format date 
             try:
@@ -74,9 +84,6 @@ class neues(rss):
             except:
                 date = ''
 
-            tags = []
-            if tree.xpath("boolean(//div[@class='Stopper-Locked'])"):
-                tags.append('paid')
 
             doc = dict(
                 pub_date    = date,
@@ -86,7 +93,6 @@ class neues(rss):
                 source      = source,
                 category    = category,
                 url         = link,
-                tags        = tags,
             )
             doc.update(kwargs)
             
