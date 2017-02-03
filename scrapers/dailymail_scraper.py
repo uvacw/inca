@@ -37,8 +37,11 @@ class dailymail(rss):
         read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
         tree = etree.fromstring(read)
         article_urls = tree.xpath("//channel//item//link/text()")
+        descriptions = tree.xpath("//channel//item//description/text()")
+        dates = tree.xpath("//channel//item//pubDate/text()")
+        titles = tree.xpath("//channel//item//title/text()")
 
-        for link in article_urls: # you go to each article page       
+        for link,title,date in zip(article_urls,titles,dates): # you go to each article page       
             link = link.strip()
             try: 
                 req = request.Request(link)
@@ -48,7 +51,7 @@ class dailymail(rss):
                 logger.error("HTML tree cannot be parsed")
             
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
-            parag = tree.xpath("//*[@class='mol-para-with-font']/font/text() | //*[@class='mol-para-with-font']/font/span/text()")
+            parag = tree.xpath("//div[@itemprop='articleBody']/p//text() | //*[@class='mol-para-with-font']/font/text() | //*[@class='mol-para-with-font']/font/span/text()")
             text = ''
             for r in parag:
                 text += ' '+r.strip()
@@ -56,9 +59,7 @@ class dailymail(rss):
             
             # Retrieving bullet points on top of articles
             bullet = tree.xpath("//*[@class='mol-bullets-with-font']/li/font/strong/text()")
-            
-            # creating total article_text by merging those two elements.
-            article_total = ' '.join(bullet) + ' |||' + text
+
 
             # Retrieving the section/category from url
             matchObj = re.match( r'http://www.dailymail.co.uk/(.*?)/(.*?)/', link, re.M|re.I)
@@ -81,18 +82,17 @@ class dailymail(rss):
                 author_list = myreg.group(1).split(',')
 
             # Create iso format date 
-            xpath_date = tree.xpath("//*[@class='article-timestamp-published']/text() | //*[@class='byline-section']/span/text()")
-            # xpath was troublesome so I only need the last element of the list, minus all the formatting
-            select_date = xpath_date[-1].strip()
-            # now that we have the date, we just need to tell datetime which values are placed where.
-            pub_date = datetime.datetime.strptime(select_date, "%H:%M GMT, %d %B %Y").isoformat()
+            try:
+                pub_date = datetime.datetime.strptime(date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
+            except:
+                pub_date = ''
 
-
-            title = tree.xpath("//*[@id='js-article-text']//h1/text()")
+            # somehow the rss title contains some \n 
+            title = title.strip()
 
             doc = dict(
                 pub_date    = pub_date,
-                title       = title[0],
+                title       = title,
                 text        = text,
                 bullet      = bullet[0] if bullet else '',
                 author      = author_list,

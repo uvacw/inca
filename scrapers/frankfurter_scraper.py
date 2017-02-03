@@ -39,8 +39,10 @@ class frankfurter(rss):
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
         article_urls = tree.xpath("//channel//item//link/text()")
+        dates = tree.xpath("//channel//item//pubDate/text()")
 
-        for link in article_urls: # you go to each article page       
+
+        for link,date in zip(article_urls,dates): # you go to each article page       
             link = link.strip()
             try: 
                 req = request.Request(link)
@@ -96,22 +98,21 @@ class frankfurter(rss):
 
                 
                 # Create iso format date 
-                loc= locale.setlocale(locale.LC_ALL, 'de_DE') #first set the date to German.
-                try:
-                    xpath_date = tree.xpath("//*[@class='storyTmplBottomNav']//*[@class='lastUpdated']/text()")[0]
-                    # convert to datetime object
-                    date = datetime.datetime.strptime(xpath_date,"Veröffentlicht: %d.%m.%Y %H:%M Uhr").isoformat()
-                except:
-                    date = ''
+                pub_date = datetime.datetime.strptime(date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
+
 
                 # get title
                 try:
-                    title = tree.xpath("///*[@class='over ']/h1/text()")[0].strip()
+                    title = tree.xpath("//*[@class='over ']/h1/text()")[0].strip()
                 except:
                     title = ''
 
+                tags = []
+                if link.startswith("http://plus.faz.net"):
+                    tags.append('paid')
+
                 doc = dict(
-                    pub_date    = date,
+                    pub_date    = pub_date,
                     title       = title,
                     text        = text.strip(),
                     summary     = summary,
@@ -120,6 +121,7 @@ class frankfurter(rss):
                     category    = category,
                     subcategory = sub_category,
                     url         = link,
+                    tags        = tags,
                 )
                 doc.update(kwargs)
                 
@@ -128,7 +130,7 @@ class frankfurter(rss):
             else:
 
                 # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
-                parag = tree.xpath("//*[@class='FAZArtikelText']/div[3]/p//text()")
+                parag = tree.xpath("//*[@class='FAZArtikelText']/div[3]/p//text() | //*[@class='FAZArtikelText']/div/p//text()")
                 text = ''   
                 for r in parag:
                     text += ' '+r.strip().replace('\xa0',' ')
@@ -183,13 +185,8 @@ class frankfurter(rss):
 
                 
                 # Create iso format date 
-                loc= locale.setlocale(locale.LC_ALL, 'de_DE') #first set the date to German.
-                try:
-                    xpath_date = tree.xpath("//*[@class='Datum']/@content")[0]
-                    # convert to datetime object
-                    date = datetime.datetime.strptime(xpath_date, "%Y-%m-%dT%H:%M:%S+%f").isoformat()
-                except:
-                    date = ''
+                pub_date = datetime.datetime.strptime(date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
+
 
                 # get title
                 try:
@@ -197,8 +194,12 @@ class frankfurter(rss):
                 except:
                     title = ''
 
+                tags = []
+                if link.startswith("http://plus.faz.net"):
+                    tags.append('paid')
+
                 doc = dict(
-                    pub_date    = date,
+                    pub_date    = pub_date,
                     title       = title,
                     text        = text.strip(),
                     summary     = summary,
@@ -207,6 +208,7 @@ class frankfurter(rss):
                     category    = category,
                     subcategory = sub_category,
                     url         = link,
+                    tags        = tags,
                 )
                 doc.update(kwargs)
                 

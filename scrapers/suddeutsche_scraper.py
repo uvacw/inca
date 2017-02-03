@@ -32,14 +32,16 @@ class suddeutsche(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
-
+        namespaces = {'dc':'http://purl.org/dc/elements/1.1/'}
         # creating iteration over the rss feed. 
         req =request.Request("http://rss.sueddeutsche.de/rss/Topthemen")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
         article_urls = tree.xpath("//channel//item//link/text()")
+        dates = tree.xpath("//channel//item//pubDate/text()")
+        sources = tree.xpath("//channel//item//dc:publisher/text()",namespaces=namespaces)
 
-        for link in article_urls: # you go to each article page       
+        for link,date,source in zip(article_urls,dates,sources): # you go to each article page       
             link = link.strip()
             try: 
                 req = request.Request(link)
@@ -66,15 +68,11 @@ class suddeutsche(rss):
             for r in bullet:
                 bullet_text += ' |||'+r.strip()
 
-            # creating total article_text by merging those two elements.
-            article_total = ' '.join(bullet) + ' |||' + text
 
             # Retrieving the section/category from url
             matchObj = re.match( r'http://www.sueddeutsche.de/(.*?)/', link, re.M|re.I)
             category = matchObj.group(1)
-
-            # Retrieving the byline_source/source from url
-            ''' needs to be added '''    
+ 
                 
             # Retrieving the byline/author
             if tree.xpath("//*[@id='abbr-odg']/text() | //*[@id='abbr-pamu']/text() | //*[@id='abbr-luc']/text()") != []:
@@ -99,20 +97,53 @@ class suddeutsche(rss):
             xpath_date = tree.xpath("//*[@id='sitecontent']/section[1]/time[@datetime]/text()")[0].strip()
             
             # convert to datetime object
-            date= datetime.datetime.strptime(xpath_date, "%d. %B %Y, %H:%M Uhr").isoformat()
+            pub_date = datetime.datetime.strptime(date[5:],"%d %b %Y %H:%M:%S GMT").isoformat()
 
             # get title
-            title = tree.xpath("(//h1)[1]/text()")
+            title = tree.xpath("(//h1)[1]/text()")[0].strip()
+
+            # check if additional pages exist.
+            if tree.xpath("//ol[@class='article-paging-list']"):
+                # returns nr of pages
+                pages_nr = tree.xpath("count(//ol[@class='article-paging-list']/li)")
+                link2 = link+'-2'
+                req = request.Request(link2)
+                read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+                tree = fromstring(read)
+                parag = tree.xpath("//*[@id='article-body']/p//text()")[1:]
+                for r in parag:
+                    text += ' '+r.strip().replace('\xa0',' ')
+
+                if pages_nr >= 3:
+                    link3 = link+'-3'
+                    req = request.Request(link3)
+                    read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+                    tree = fromstring(read)
+                    parag = tree.xpath("//*[@id='article-body']/p//text()")[1:]
+                    for r in parag:
+                        text += ' '+r.strip().replace('\xa0',' ')
+
+                    if pages_nr >= 4:
+                        link4 = link+'-4'
+                        req = request.Request(link4)
+                        read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+                        tree = fromstring(read)
+                        parag = tree.xpath("//*[@id='article-body']/p//text()")[1:]
+                        for r in parag:
+                            text += ' '+r.strip().replace('\xa0',' ')
+
+
 
             doc = dict(
-                pub_date    = date,
-                title       = title[0],
+                pub_date    = pub_date,
+                title       = title,
                 text        = text,
                 bullet      = bullet_text if bullet else '',
                 author      = byline_tree,
-                # source      = byline_source if byline_source else 'NA',
+                source      = source,
                 category    = category,
                 url         = link,
             )
             doc.update(kwargs)
             yield doc
+
