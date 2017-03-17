@@ -33,14 +33,18 @@ elastic_index  = config.get("elasticsearch","document_index")
 
 # initialize mappings if index does not yet exist
 try:
-    if not elastic_index in client.indices.get_aliases().keys():
-        client.indices.create(elastic_index, json.load(open('schema.json')))
-except:
-    raise Exception("Unable to communicate with elasticsearch")
+    #if not elastic_index in client.indices.get_aliases().keys():
+    if not client.indices.exists(elastic_index):
+        # TODO re-activate using the schema, now disabled in order to make existing code
+        # work with ES 5 (at least on my system)
+        # client.indices.create(elastic_index, json.load(open('schema.json')))
+        client.indices.create(elastic_index)
+except Exception as e:
+    raise Exception("Unable to communicate with elasticsearch, {}".format(e))
 
 def get_document(doc_id):
-    if not check_exists(doc_id):
-        logger.debug("No document found with id {document_id}".format(**locals()))
+    if not check_exists(doc_id)[0]:
+        logger.debug("No document found with id {doc_id}".format(**locals()))
         return {}
     else:
         document = client.get(elastic_index, doc_id)
@@ -137,6 +141,12 @@ def insert_document(document, custom_identifier=''):
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
+        # 
+        #print(elastic_index)
+        #print(document['doctype'])
+        #print(document)
+        #print(custom_identifier)
+        #
         try:
             doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
         except ConnectionTimeout:
