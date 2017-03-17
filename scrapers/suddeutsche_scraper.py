@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
 class suddeutsche(rss):
     """Scrapes sueddeutsche.de """
 
-    def __init__(self):
+    def __init__(self,database=True):
+        self.database = database
         self.doctype = "suddeutsche"
         self.rss_url='http://rss.sueddeutsche.de/rss/Topthemen'
         self.version = ".1"

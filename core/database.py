@@ -24,23 +24,28 @@ config.read('settings.cfg')
 logger = logging.getLogger(__name__)
 logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
-client = Elasticsearch(
-    host=config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
-    port=int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies') )),
-    timeout=60
-)   # should be updated to reflect config
-elastic_index  = config.get("elasticsearch","document_index")
-
-# initialize mappings if index does not yet exist
 try:
-    #if not elastic_index in client.indices.get_aliases().keys():
-    if not client.indices.exists(elastic_index):
-        # TODO re-activate using the schema, now disabled in order to make existing code
-        # work with ES 5 (at least on my system)
-        # client.indices.create(elastic_index, json.load(open('schema.json')))
-        client.indices.create(elastic_index)
-except Exception as e:
-    raise Exception("Unable to communicate with elasticsearch, {}".format(e))
+    client = Elasticsearch(
+        host=config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
+        port=int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies') )),
+        timeout=60
+    )   # should be updated to reflect config
+    elastic_index  = config.get("elasticsearch","document_index")
+
+    # initialize mappings if index does not yet exist
+    try:
+        #if not elastic_index in client.indices.get_aliases().keys():
+        if not client.indices.exists(elastic_index):
+            # TODO re-activate using the schema, now disabled in order to make existing code
+            # work with ES 5 (at least on my system)
+            # client.indices.create(elastic_index, json.load(open('schema.json')))
+            client.indices.create(elastic_index)
+    except Exception as e:
+        raise Exception("Unable to communicate with elasticsearch, {}".format(e))
+except:
+    logger.warning("No database functionality available")
+
+
 
 def get_document(doc_id):
     if not check_exists(doc_id)[0]:

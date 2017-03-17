@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 class dailymail(rss):
     """Scrapes dailymail.co.uk """
 
-    def __init__(self):
+    def __init__(self,database=True):
+        self.database = database
         self.doctype = "dailymail"
         self.rss_url='http://www.dailymail.co.uk/articles.rss'
         self.version = ".1"

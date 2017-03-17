@@ -40,6 +40,10 @@ class Scraper(Document):
     functiontype = 'scraper'
     #language = ''
         
+    def __init__(self,database=True):
+        Document.__init__(self,database)
+
+
     def get(self):
         ''' This docstring should explain how documents are retrieved
 
@@ -67,10 +71,14 @@ class Scraper(Document):
         resulting documents. 
         '''
         logger.info("Started scraping")
-        for doc in self.get(*args, **kwargs):
-            doc = self._add_metadata(doc)
-            self._verify(doc)
-            self._save_document(doc)
+        if self.database == True:
+            for doc in self.get(*args, **kwargs):
+                doc = self._add_metadata(doc)
+                self._verify(doc)
+                self._save_document(doc)
+        else:
+            return [self._add_metadata(doc) for doc in self.get(*args, **kwargs)]
+
         logger.info('Done scraping')
 
     def _test_function(self):

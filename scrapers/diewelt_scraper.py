@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
 class diewelt(rss):
     """Scrapes http://www.welt.de/ """
 
-    def __init__(self):
+    def __init__(self,database=True):
+        self.database=database
         self.doctype = "Die Welt"
         self.rss_url='http://www.welt.de/?service=Rss'
         self.version = ".1"
