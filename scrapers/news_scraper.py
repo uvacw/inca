@@ -18,6 +18,86 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
+class ad(rss):
+    """Scrapes ad.nl"""
+
+    def __init__(self,database=True):
+        self.database=database
+        self.doctype = "ad (www)"
+        self.rss_url='http://www.ad.nl/rss.xml'
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2016, month=8, day=2)
+
+    def parsehtml(self,htmlsource):
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
+        try:
+            category = tree.xpath('//*[@class="container"]/h1/text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+        #1. path: regular intro                                                                                                    
+        #2. path: intro when in <b>; found in a2014 04 130                                                                         
+        textfirstpara=tree.xpath('//*[@id="detail_content"]/p/text() | //*[@class="intro"]/b/text() | //*[@class="intro"]/span/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text()')
+        if textfirstpara=="":
+            logger.info("OOps - geen eerste alinea?")
+        #1. path: regular text                                                                                                     
+        #2. path: text with link behind (shown in blue underlined); found in 2014 12 1057                                          
+        #3. path: second hadings found in 2014 11 1425   
+        textrest = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*[@class="article__paragraph"]/span/text() | //*[@id="detail_content"]/section/p/a/text() | //*[@id="detail_content"]/section/p/strong/text() | //*/p[@class="article__paragraph"]/strong/text()')
+        if textrest=="":
+            logger.info("OOps - empty textrest")
+        text = "\n".join(textfirstpara) + "\n" + "\n".join(textrest)
+        try:
+            author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
+        except:
+            author_door=""
+        if author_door=="":
+            try:
+                author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door==""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door=""
+                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
+            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
+        except:
+            author_bron=""
+        text=polish(text)
+
+        extractedinfo={"category":category.strip(),
+                       "text":text.strip(),
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+  
+
+    def getlink(self,link):
+        '''modifies the link to the article to bypass the cookie wall'''
+        link=re.sub("/$","",link)
+        link="http://www.ad.nl//cookiewall/accept?url="+link
+        return link
+
+
 class nu(rss):
     """Scrapes nu.nl """
 
@@ -201,13 +281,13 @@ class volkskrant(rss):
             #5. path: old design regular text
             #6. path: old design second heading
             #7. path:old design text with link
-            textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text() | //*/div[@class="article__body"]/h2/text() | //*/p[@class="article__body__paragraph first"]/a/text() | //*/p[@class="article__body__paragraph"]/text() | //*/h3[@class="article__body__container-title"]/text()')
+            textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | /*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text() | //*/div[@class="article__body"]/h2/text() | //*/p[@class="article__body__paragraph first"]/a/text() | //*/p[@class="article__body__paragraph"]/text() | //*/h3[@class="article__body__container-title"]/text()')
         except:
             logger.info("oops - geen text?")
             textrest=""
         text = textfirstpara + "\n"+ "\n".join(textrest)
         try:
-            author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text() |//*/span[@class="article__author"]/text()' )).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
+            author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text() |//*/span[@class="article__author"]/span/text()' )).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
             # geeft het eerste veld: "Bewerkt \ door: Redactie"
             if author_door=="edactie":
                 author_door = "redactie"
@@ -220,6 +300,10 @@ class volkskrant(rss):
                     author_door = "redactie"
             except:
                 author_door=""
+        if author_door=="":
+            try:
+                author_door=" ".join(tree.xpath('//*[@class="article__meta--v2"]/span/span[2]/text()')).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:")
+            except:
                 logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
         try:
             author_bron=" ".join(tree.xpath('//*/span[@class="article__meta"][*]/text()')).strip().lstrip("Bron:").strip()
@@ -433,7 +517,7 @@ class parool(rss):
         #3. Link text                                                                  
         #4. Embedded text subtitle one                                                 
         #5. Embedded text subitles rest                                                
-            textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text() | //*[@class="article__body__paragraph first"]/text() | //*[@class="article__body__paragraph first"]/strong/text() | //*[@class="article__body__paragraph first"]/a/text()')
+            textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text() | //*[@class="article__body__paragraph first"]/text() | //*[@class="article__body__paragraph first"]/strong/text() | //*[@class="article__body__paragraph first"]/a/text() | //*[@class="article__body__paragraph"]/text() | //*[@class="article__body__paragraph"]/strong/text()')
         except:
             textrest=" "
             logger.info("oops - geen textrest")
@@ -523,7 +607,7 @@ class trouw(rss):
         #6. Link text                                                                  
         #7. Explanantion box text                                                      
         #8. italics                                                                    
-            textrest=tree.xpath('//*[@class="art_box2"]//*[@class="intro"]/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/section/h3/text() | //*[@id="art_box2"]/section/p/text() |  //*[@id="art_box2"]/p/a/text() |  //*[@id="art_box2"]//*[@class="embedded-context embedded-context--inzet"]/text() |  //*[@id="art_box2"]/p/em/text()')
+            textrest=tree.xpath('//*[@class="article__section-title__text heading-3"]/text() | //*[@class="article__paragraph"]/text() | //*[@class="article__quote__text"]/text() | //*[@class="article__framed-text__title"]/text() | //*[@id="art_box2"]/section/p/text() |  //*[@id="art_box2"]/p/a/text() |  //*[@id="art_box2"]//*[@class="embedded-context embedded-context--inzet"]/text() |  //*[@id="art_box2"]/p/em/text()')
         except:
             textrest=" "
             logger.info("oops - geen textrest")
@@ -559,7 +643,7 @@ class trouw(rss):
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
         link=re.sub("/$","",link)
-        link="http://www.trouw.nl/tr/acceptCookieCheck.do?url="+link
+        link="http://www.trouw.nl/cookiewall/accept?url="+link
         return link
 
 class telegraaf(rss):
@@ -567,7 +651,7 @@ class telegraaf(rss):
     def __init__(self,database=True):
         self.database = database
         self.doctype = "telegraaf (www)"
-        self.rss_url='http://rss.feedsportal.com/c/585/fe.ed/www.telegraaf.nl/rss/'
+        self.rss_url='http://www.telegraaf.nl/rss/'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
@@ -608,7 +692,7 @@ class telegraaf(rss):
         #7. path: layout 2: reagular text, found 2016 04 07                             
         #8. path: layout 2: italic text, found 2016 04 07                               
         #9. path: layout 2: bold text, found 2016 04 07                                
-            textrest=tree.xpath('//*[@id="artikelKolom"]/p[not (@class="tiptelegraaflabel")]/text() | //*[@id="artikelKolom"]/p/a/text() | //*[@id="artikelKolom"]/h2/strong/text() | //*[@id="artikelKolom"]/p/strong/text() | //*[@id="artikelKolom"]/p/em/text() | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text() | //*[@class="broodtekst"]/p/text() | //*[@class="broodtext"]/h2/strong/text()| //*[@id="artikelKolom"]/div/p/text() | //*[@id="artikelKolom"]/div/p/em/text() | //*[@id="artikelKolom"]/div/p/strong/text() | //*[@id="artikelKolom"]/div/h2/text() | //*[@id="artikelKolom"]/div/p/a/text()')
+            textrest=tree.xpath('//*[@id="artikelKolom"]/p[not (@class="tiptelegraaflabel")]/text() | //*[@id="artikelKolom"]/p/a/text() | //*[@id="artikelKolom"]/h2/strong/text() | //*[@id="artikelKolom"]/p/strong/text() | //*[@id="artikelKolom"]/p/em/text() | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text() | //*[@class="broodtekst"]/p/text() | //*[@class="broodtext"]/h2/strong/text() | //*[@id="artikelKolom"]/div/p/text() | //*[@id="artikelKolom"]/div/p/em/text() | //*[@id="artikelKolom"]/div/p/strong/text() | //*[@id="artikelKolom"]/div/h2/text() | //*[@id="artikelKolom"]/div/p/a/text() | //*[@class="ui-abril ui-text-small"]/p/text()')
         except:
             logger.info("oops - geen texttest?")
             textrest = ""
@@ -629,7 +713,7 @@ class telegraaf(rss):
         return extractedinfo
 
 
-class metrnieuwso(rss):
+class metronieuws(rss):
     """Scrapes metrnieuwso.nl """
 
     def __init__(self,database=True):
@@ -766,8 +850,9 @@ class fok(rss):
         if len(category.split(" ")) >1:
             category=""
         try:
-             textrest=tree.xpath('//*[@role="main"]/article/p/text() | //*[@role="main"]/article/p/strong/text() | //*[@role="main"]/article/p/strong/a/text() | //*[@role="main"]/article/p/a/text() | //*[@role="main"]/article/p/em/text()')
+            textrest=tree.xpath('//*[@role="main"]/article/p/text() | //*[@role="main"]/article/p/strong/text() | //*[@role="main"]/article/p/strong/a/text() | //*[@role="main"]/article/p/a/text() | //*[@role="main"]/article/p/em/text() | //*[@id="mainContent"]//*[@role="main"]/article/p/text() | //*[@id="mainContent"]/div[5]/main/article/p/text()')
         except:
+            print("geen text")
             logger.info("oops - geen textrest?")
             textrest = ""
         text = "\n".join(textrest)
