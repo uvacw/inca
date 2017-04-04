@@ -5,6 +5,11 @@ from core.document_class import Document
 import datetime
 import logging
 logger = logging.getLogger(__name__)
+from core.database import config
+try:
+    import pymongo
+except:
+    logger.warning('No MongoDB support')
 
 class importer(Document):
     '''
@@ -30,3 +35,59 @@ class importer(Document):
                 self._save_document(document,forced=force)
             except Exception as e:
                 logger.warning("ACK, unable to import document number {num}: {e}".format(**locals()))
+
+
+class mongoimporter(importer):
+    '''
+    This is an importer to import old-style INCA databases in MongoDB format
+    '''
+
+    def run(self, query = {}, force=False, authenticate=False):
+        '''imported from MongoDB'''
+
+        self.version = '.1'
+        self.functiontype = 'importer'
+        self.date = datetime.datetime(year=2017, month=4, day=4)
+
+        databasename=config.get('mongodb','databasename')
+        collectionname=config.get('mongodb','collectionname')
+        username=config.get('mongodb','username')
+        password=config.get('mongodb','password')
+        client = pymongo.MongoClient(config.get('mongodb','url'))
+        db = client[databasename]
+        if authenticate:
+            db.authenticate(username,password)
+        collection = db[collectionname]
+
+        mapping = {'doctype':'source',
+                   'url':'url',
+                   '_id':'rssidentifier',
+                   'publication_date':'datum',
+                   'text':'text',
+                   'teaser':'teaser',
+                   'title':'title',
+                   'byline':'byline',
+                   'bylinesource':'bylinesource',
+                   'category':'section',
+                   'url':'url'}
+        
+        input_iterable = collection.find(query)
+
+        
+        for num,inputdoc in enumerate(input_iterable):
+            document={}
+            for k,v in mapping.items():
+                try:
+                    document[k] = inputdoc[v]
+                except:
+                    pass
+            logger.info('processing {num}'.format(**locals()))
+            self.doctype = document.get('doctype')
+            document = self._add_metadata(document)
+            self._verify(document)
+            document['_id'] = str(document.get('_id', None))         
+            try:
+                self._save_document(document,forced=force)
+            except Exception as e:
+                logger.warning("ACK, unable to import document number {num}: {e}".format(**locals()))
+
