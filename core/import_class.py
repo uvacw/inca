@@ -30,7 +30,7 @@ class importer(Document):
             document = self._add_metadata(document)
             self._verify(document)
             if id_field and id_field in document.keys():
-                document['_id'] = str(document.get(id_field, None))
+                document['_id'] = str(document.get(id_field, None))  #DO WE REALY WANT THIS? "None" as string?
             try:
                 self._save_document(document,forced=force)
             except Exception as e:
@@ -80,14 +80,16 @@ class mongoimporter(importer):
                 try:
                     document[k] = inputdoc[v]
                 except:
-                    pass
+                    logger.debug('key {} not found'.format(k))
             logger.info('processing {num}'.format(**locals()))
             self.doctype = document.get('doctype')
             document = self._add_metadata(document)
             self._verify(document)
-            document['_id'] = str(document.get('_id', None))         
+            # logger.debug('about to save',document)
+            print('\n'*10)
             try:
                 self._save_document(document,forced=force)
+                logger.debug("Stored document {} in ES".format(num))
             except Exception as e:
                 logger.warning("ACK, unable to import document number {num}: {e}".format(**locals()))
 
