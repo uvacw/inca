@@ -13,6 +13,7 @@ doctype | string | source of the document | nu, nrc, kamervraag | yes
 publication_date | datetime object | date (optionally: time) of publication | datetime(2017,4,1) | yes
 text|string|The full (plain!) text of the document, excluding title etc.|Bij een explosie in een metro in het Russische Sint-Petersburg zijn maa...|yes
 byline|string|author|Jan Jansen|no
+bylinesource|string|some newssites give both a journalist's name (to be stored in `byline`) and also the original source of the material (like a press agency), which can be stored here|ANP|no
 category|string|in case of news: section|economy, sports|no
 feedurl|string|in case of rss-feed: url of feed|http://www.nu.nl/rss |no
 htmlsource|string|the raw html code|`<http><header>...`|yes
@@ -28,8 +29,9 @@ likes_int|int|number of likes,thumbs up etc|42|no
 dislikes_int|int|number of thumbs down etc|42|no
 shares_int|int|number of shares|42|no
 replies_int|int|number of replies|42|no
-imageurls|list of strings|a list of links to relevant images, like photos in a news article|\["http://media.nu.nl/m/7mlxhgda2r7r_wd640.jpg/zeker-tien-doden-bij-explosie-in-metro-sint-petersburg.jpg","http://www.nu.nl/120381/video/metrostation-sint-petersburg-vol-met-rook-na-explosie.html"] | no
+imageurls|list of strings|a list of links to relevant images, like photos in a news article|\["http://media.nu.nl/m/7mlxhgda2r7r_wd640.jpg/zeker-tien-doden-bij-explosie-in-metro-sint-petersburg.jpg", "http://www.nu.nl/120381/video/metrostation-sint-petersburg-vol-met-rook-na-explosie.html"] | no
 paywall | bool | True if article was behind paywall | True | no; if missing, we assume that the document was freely accessible
+
 Still to discuss: How to deal with comments associated with a news article?
 
 
