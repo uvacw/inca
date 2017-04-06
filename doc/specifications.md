@@ -30,7 +30,9 @@ dislikes_int|int|number of thumbs down etc|42|no
 shares_int|int|number of shares|42|no
 replies_int|int|number of replies|42|no
 imageurls|list of strings|a list of links to relevant images, like photos in a news article|\["http://media.nu.nl/m/7mlxhgda2r7r_wd640.jpg/zeker-tien-doden-bij-explosie-in-metro-sint-petersburg.jpg", "http://www.nu.nl/120381/video/metrostation-sint-petersburg-vol-met-rook-na-explosie.html"] | no
-paywall | bool | True if article was behind paywall | True | no; if missing, we assume that the document was freely accessible
+paywall | bool | True if article is fully scraped, but was behind paywall | True | no
+paywall_na | bool | True if full text of the article is not available because it was behind a paywall and we didn't have access (e.g., NRC 2015| True | no
+
 
 Still to discuss: How to deal with comments associated with a news article?
 
