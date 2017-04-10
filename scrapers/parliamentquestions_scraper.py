@@ -12,6 +12,9 @@ BASE_URL  = "https://zoek.officielebekendmakingen.nl/"
 class parliamentquestions_NL(Scraper):
     """Scrapes Dutch parlementary and senate proceedings """
     
+    def __init__(self,database=True):
+        self.database=database
+
     
     def get(self):
         '''Document collected from officielebekendmakingen.nl by scraping 'bladeren' section  '''

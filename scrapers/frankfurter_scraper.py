@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
 class frankfurter(rss):
     """Scrapes http://www.faz.net/ """
 
-    def __init__(self):
+    def __init__(self,database=True):
+        self.database = database
         self.doctype = "frankfurter"
         self.rss_url='http://www.faz.net/rss/aktuell/'
         self.version = ".1"

@@ -22,7 +22,6 @@ class Document(Task):
     are present. 
 
     The 'META' key contains a key:description of all other keys in the document. 
-    
     '''
 
     
@@ -42,6 +41,12 @@ class Document(Task):
         if action == 'delay':
             self.delay(*args, **kwargs)
 
+
+    def __init__(self, database=True):
+        '''
+        intializes the document as either a document to be handled by the database or not
+        '''
+        self.database=database
 
     def _save_document(self, document, forced=False):
         '''

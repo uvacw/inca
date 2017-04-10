@@ -79,7 +79,7 @@ def doctype_examples(doctype, field=None, seed=42, num=10):
         'size':num,
         "query": {
             "function_score": {
-                "filter": {
+                "query": {
                        
                         "match": {
                             "_type": doctype
@@ -114,11 +114,9 @@ def doctype_fields(doctype):
     '''
     from collections import Counter
     key_count = Counter()
-    doc_num   = client.search(index=elastic_index, body={'filter':{'match':{'doctype':doctype}}})['hits']['total']
+    doc_num   = client.search(index=elastic_index, body={'query':{'match':{'doctype':doctype}}})['hits']['total']
     mappings = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype,{}).get('properties',{})
-    coverage = {key:client.search(elastic_index,body={'query':{'exists':{'field':key}},
-                                                      'filter':{'match':{'doctype':doctype}}}).get('hits',{}).get('total',0) for
-                key in mappings.keys() if key!="META"}
+    coverage = {key:client.search(elastic_index,body={'query': {'bool':{'filter':[{'exists':{'field':key}},{'term':{'doctype':doctype}}]}}}).get('hits',{}).get('total',0) for key in mappings.keys() if key!="META"}
     summary = {k:{'coverage':coverage.get(k,'unknown')/float(doc_num),'type':mappings[k].get('type','unknown')} for
                k in mappings.keys() if k!="META"}
     return summary
