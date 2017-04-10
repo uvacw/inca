@@ -41,6 +41,51 @@ class Processer(Document):
         '''CHANGE THIS METHOD, should return the changed document'''
         return updated_field
 
+    def runwrap(self, docs_or_query,action='run' , *args, **kwargs):
+        '''
+        Run a processor by supplying a list of documents, a query or a doctype . 
+        Actions specify the way in which the task should be run. 
+
+        Input
+        ---
+        docs_or_query:
+            either a list of documents, an elasticsearch query or a string specifying the doctype
+        action: on of ['run','delay', 'batch' ]
+
+        '''
+        documents = _doctype_query_or_list(docs_or_query)
+
+        if action == 'run':
+            for doc in documents:
+                yield self.run(doc, *args, **kwargs)
+
+        elif action == 'delay':
+            for doc in documents:
+                for placeholder in self.delay(doc,*args,**kwargs):
+                    yield placeholder
+        elif action == 'batch':
+            for num, batch in enumerate(_batcher(documents, batchsize=bulksize)):
+                core.database.bulk_upsert().run(documents=[target_func.run(document=doc, 
+                                        field=field, force=force, *args, **kwargs) for
+                                       doc in batch ] )
+                now = datetime.datetime.now()
+                logger.info("processed batch {num} {now}".format(**locals()))
+                yield batch
+
+
+        elif action == 'celery_batch':
+            for batch in _batcher(documents, batchsize=bulksize):
+                if not batch: continue #ignore empty batches
+                batch_tasks = [target_func.s(document=doc,field=field,
+                                            force=force, *args, **kwargs)
+                               for doc in batch]
+                batch_chord = chord(batch_tasks)
+                batch_result= batch_chord(taskmaster.tasks['core.database.bulk_upsert'].s())
+                yield batch
+
+            
+        
+
     def run(self, document,field ,save=False, force=False, *args, **kwargs):
         # 1. check if document or id --> return doc
         logger.debug("tring to process: ",document)
@@ -72,3 +117,74 @@ class Processer(Document):
         if save: update_document(document, force=force)
         # 6. emit dotkey-field
         return document
+
+
+def _doctype_query_or_list(doctype_query_or_list, force=False, field=None, task=None):
+    '''
+    This function helps other functions dynamically interpret the argument for document selection.
+    It allows for either a list of documents, an elasticsearch query, a string-query or a doctype
+    string to be provided and returns an iterable containing these documents.
+
+    Parameters
+    ----------
+    doctype_query_or_list: list, string or dict
+        specification of input document, either:
+            a list, each element should be an elasticsearch document
+            a dict, should be an elasticsearch query
+            a string, which is either an exact match with doctype (checked against doctype mappings) or
+                alternatively, a query_string for the elasticsearch database
+    force: bool (defautl=False)
+        whether existing fields should be re-computed. Used to subset to documents were field is missing.
+    field: string (default=None)
+        Field on which operations are done, used to check when force=False
+    task: string (default=None)
+        Function for which the documents are used. Argument is used only to generate the expected outcome
+        fieldname, i.e. <field>_<function>
+
+    Returns
+    -------
+    Iterable
+    '''
+    if type(doctype_query_or_list)==list:
+        documents = doctype_query_or_list
+    elif type(doctype_query_or_list)==str:
+        if doctype_query_or_list in core.database.client.indices.get_mapping()[config.get('elasticsearch','document_index')]['mappings'].keys():
+            logger.info("assuming documents of given type should be processed")
+            if force or not field:
+                documents = core.database.scroll_query({'filter':{'match':{'doctype':"%s"%doctype_query_or_list}}})
+            elif not force and field:
+                logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
+                documents = core.database.scroll_query(
+                    {'filter':{'and': [
+                            {'match':{'doctype':doctype_query_or_list}},
+                            {'missing':{'field': '%s_%s' %(field, task)}}]
+                               }})
+        else:
+            logger.info("assuming input is a query_string")
+            if force or not field:
+                documents = core.database.scroll_query({'filter':{'query_string':{'query': doctype_query_or_list}}})
+            elif not force and field:
+                logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
+                documents = core.database.scroll_query({'filter':{'and':[
+                    {'missing':{'field':'%s_%s' %(field, task)}},
+                    {'query_string':{'query':doctype_query_or_list}}
+                ]}})
+    else:
+        if not force and field and task and not doctype_query_or_list:
+            field = '%s_%s' %(field, task)
+            doctype_query_or_list.update({'filter':{'missing':{'field':field}}})
+        documents = core.search_utils.scroll_query(doctype_query_or_list)
+    return documents
+
+def _batcher(stuff, batchsize=10):
+    batch = []
+    for num,thing in enumerate(stuff):
+        batch.append(thing)
+        if (num+1) % batchsize == 0:
+            logger.debug('processing batch %s' %(num+1))
+            yield_batch = batch
+            batch = []
+            yield yield_batch
+    if batch:
+        yield batch
+

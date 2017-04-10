@@ -7,7 +7,7 @@ from core.basic_utils import dotkeys
 
 logger = logging.getLogger(__name__)
 
-def doctypes():
+def list_doctypes():
     existing_doctypes = [key for key in client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).keys() if
                          key != '_default_' and key != 'core.document']
     overview = {doctype:client.search(index=elastic_index,doc_type=doctype).get('hits',{}).get('total',"NA") for

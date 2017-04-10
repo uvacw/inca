@@ -21,7 +21,7 @@ import os
 config = configparser.ConfigParser()
 config.read('settings.cfg')
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA"+__name__)
 logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
 client = Elasticsearch(
@@ -33,7 +33,7 @@ elastic_index  = config.get("elasticsearch","document_index")
 
 # initialize mappings if index does not yet exist
 try:
-    if not elastic_index in client.indices.get_aliases().keys():
+    if not elastic_index in client.indices.get_alias().keys():
         client.indices.create(elastic_index, json.load(open('schema.json')))
 except:
     raise Exception("Unable to communicate with elasticsearch")

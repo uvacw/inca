@@ -76,7 +76,6 @@ class lowercase(Processer):
         '''converted to lowercase'''
         return document_field.lower()
 
-# TODO: ADD replace_multi (met lijst als input bijvoorbeeld)
 
 class replace(Processer):
     '''Replaces text based on regular expressions.
