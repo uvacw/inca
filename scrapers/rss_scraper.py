@@ -73,7 +73,7 @@ class rss(Scraper):
 
             link=re.sub("/$","",self.getlink(post.link))
 
-            if check_exists(_id)[0]==False:
+            if self.database==False or check_exists(_id)[0]==False:
                 req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
                 htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
 
