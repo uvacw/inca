@@ -9,6 +9,14 @@ out of the way so you can get to work!
 First, Let's be clear about code styles. In the past, changes have been made on
 a pretty ad-hoc basis. No Longer!
 
+Follow these steps when adding code:
+1. Make changes in a seperate branch
+2. Start out small so you understand what you do
+3. Write code in line with our preferred style
+4. Document your code
+5. Test your code **before** you push it to github
+6. Have your code reviewed through a pull request
+
 ## 1. Sandboxing your changes
 
 We want to avoid losing track of what's going on in the code-base. What was added when/how/why are not questions you want to have during a live demo! This is why we want to keep branches separated in the following way:
@@ -51,7 +59,7 @@ It's easy to get lost in code (bring food!). Often, it is best to start out smal
 ```
 
 
-## Write good code
+## 3. Write good code
 
 Code is read more often than it is written! And even your own code will
 be hard to understand when you go back to it after a month. This makes
@@ -100,7 +108,7 @@ clear code paramount. We aim to follow the [Google style guide](https://google.g
   >>>   print("trust me, this will help when conditions are complicated")
   ```
 
-## Write good documentation
+## 4. Write good documentation
 
 Life is weird. Signal yields to noise. What was easy becomes hard. Fight entropy: write documentation!
 
@@ -135,10 +143,10 @@ Documentation is used to describe the purpose of a class, functionality of a fun
 
 With documentation you explain to a reader what your code is doing and where. We also use the docstrings for classes and methods to generate help.
 
-## Testing Testing Testing
+## 5. Testing Testing Testing
 
 *TODO*
 
-## making a "Pull" request
+## 6. making a "Pull" request
 
 *TODO*
