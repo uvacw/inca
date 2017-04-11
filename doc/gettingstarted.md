@@ -25,9 +25,8 @@ Most things you need will also be covered in this book:
 
 - https://github.com/damian0604/bdaca/tree/master/book
 
-To edit text files from the Linux command line, you have several editors at your disposal:
+To edit text files from the Linux command line, you have several editors at your disposal (ranked by ease-of-use):
 
-- `vim' (for the nerdy people among you)
 - `nano' (easy to use, but no advanced functionality)
+- `vim' (for the nerdy people among you)
 - `emacs' (offers a lot of nice things, including syntax highlighting). You can get a nice reference card for printing out and putting on your wall here: https://www.gnu.org/software/emacs/refcards/pdf/refcard.pdf
-
