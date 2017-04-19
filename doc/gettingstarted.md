@@ -45,10 +45,12 @@ Here you find the entire workflow:
 # Installing INCA on your own computer
 In order to contribute to INCA, you need the complete the following steps:
 
--	STEP 1: Install Elasticsearch (i.e., the database where all your files are stored). 
--	STEP 2:	Install Git
--	STEP 3:	Pull (Python) code of INCA to local folder
-
+-  	STEP 1: Local settings (For mac users only)
+-	STEP 2: Install Python 
+-	STEP 3: Install Elastic Search (i.e., the database where all your files are stored). 
+-	STEP 4:	Install Git
+-	STEP 5:	Pull (Python) code of INCA to local folder
+-	STEP 6: Check whether it works
 Below, instructions are provided for the above-mentioned steps in both Ubuntu (Linux) and Mac.
 
 ## STEP 1: ONLY FOR MAC USERS
@@ -161,10 +163,12 @@ NOTE: To exit Elasticsearch, use CTRL C
 More information you can find here:
 -	https://chartio.com/resources/tutorials/how-to-install-elasticsearch-on-mac-os-x/#manual-elasticsearch-installation
 
-## Installing GIT
+
+## STEP 4: Install git
+
 Make sure you have a Github account, remember username and password :-)
 
-## STEP 4: Install git on Ubuntu
+### Install git on Ubuntu
 ```
 sudo apt-get install git
 ```
