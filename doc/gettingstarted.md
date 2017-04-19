@@ -30,7 +30,7 @@ To edit text files from the Linux command line, you have several editors at your
 - `vim' (for the nerdy people among you)
 - `emacs' (offers a lot of nice things, including syntax highlighting). You can get a nice reference card for printing out and putting on your wall here: https://www.gnu.org/software/emacs/refcards/pdf/refcard.pdf
 
-#Workflow INCA
+# Workflow INCA
 Generally, INCA runs on a server. However, if you want to contribute to INCA, it is convenient to have a copy of INCA on a local folder. 
 In this way you can work on INCA in a local folder, before pushing the adjustments you have made to a development branch in Github.
 Here, your work will be approved (or disapproved) by some of the 'senior staff' of INCA. This workflow prevents us from accidentally deleting parts of INCA code or making unfortunate changes.
@@ -111,19 +111,19 @@ Download git here: https://git-scm.com/download/mac
 ### This works for both mac and ubuntu
 
 -	Go to your terminal and check the version of git: 
-```$ git --version``` If the installation failed somehow, you will get an error.
+```git --version``` If the installation failed somehow, you will get an error.
 -	Configure your username:
 ```
-admin$ git config --global user.email <email address>
-admin$ git config --global user.name <username>
+git config --global user.email <email address>
+git config --global user.name <username>
 ```
 
 ### Copy INCA to your local PC using GIT:
 -	Make a new folder on your computer where you want to work on INCA. Go there using your terminal: ```cd /pathtoyourfolder```
--	Clone inca to your local folder, using ```$ git clone https://github.com/uvacw/inca.git```
+-	Clone inca to your local folder, using ```git clone https://github.com/uvacw/inca.git```
 
 ## And now?
 
-Please check the [Contributing Code Guide](inca/doc/Contributing Code Guide.md) for the next steps!
+Please check the [Contributing Code Guide](https://github.com/uvacw/inca/blob/development/doc/Contributing%20Code%20Guide.md) for the next steps!
 
 
