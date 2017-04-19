@@ -189,6 +189,7 @@ git config --global user.name <username>
 ```
 cd inca    # assuming you still are in inca's parent directory
 sudo pip3 install -r Requirements
+```
 
 ## STEP 6: Check whether everything works
 
