@@ -1,5 +1,5 @@
 # Getting started with INCA
-## Hints for everyone who is wants to get involved in helping with the project
+## Hints for everyone who is or wants to get involved in the project
 
 In this document, students and colleagues new to INCA find some useful links for getting started. In particular, it lists some ressources where you can brush up your skills regarding the tools we use. Please add anything you find useful to this doc.
 
