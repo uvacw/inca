@@ -6,6 +6,8 @@
 So you are going to join the team? *Great!*  Let's get some formalities
 out of the way so you can get to work!
 
+This guide assumes you are familiar with markdown, git and commandline. In addition, you should have a copy of INCA installed. If you are unsure about this things, please consult the [getting started guide](/gettingstarted.md)
+
 First, Let's be clear about code styles. In the past, changes have been made on
 a pretty ad-hoc basis. No Longer!
 
