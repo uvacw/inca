@@ -6,8 +6,7 @@
 So you are going to join the team? *Great!*  Let's get some formalities
 out of the way so you can get to work!
 
-First, Let's be clear about code styles. In the past, changes have been made on
-a pretty ad-hoc basis. No Longer!
+First, Let's be clear about code styles. 
 
 Follow these steps when adding code:
 1. Make changes in a seperate branch
@@ -92,6 +91,10 @@ clear code paramount. We aim to follow the [Google style guide](https://google.g
   - instance_var_name
   - function_parameter_name
   - local_var_name
+  
+  Suggestion: provide a short explanation of what these terms represent / when to use them? Or is this considered common knowledge? 
+  In addition to this, would it be helpful to include a short dictionary that explains the most important terms/concepts of the guide?
+  
 - Split up complicated conditions
 
   Don't:
