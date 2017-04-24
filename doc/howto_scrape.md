@@ -172,7 +172,7 @@ Consequently, we have to define the following:
 69.
 70.        return extractedinfo
 ```
-**lines 10**
+**lines 10 - 17**
 
 Next, you are defining the method `parsehtml`. You provide the argument `self`, as the method 
 should refer to the instance that is defined later on. `htmlsource` is defined in the `class rss`. 
@@ -188,6 +188,7 @@ Some handy shortcuts for modifying the xpaths:
 You might want to play around with looking up the xpath, showing the source code, or saving the page in html format. 
 
 **lines 64 - 70**
+
 It does not really matter how you arrive at xpath you are including, as long as you, in the end, succeed in retrieving the extracted info. 
 
 
