@@ -200,7 +200,6 @@ For example, never compile a method using:
 ```
  def run(self,<whatever>):
  ```
-
 When writing scrapers, you should know that we will work in the 
 When you write a scrape for an RSS-based website, please place rss. In this way, you will inherit the 
 functionalities that are already defined by the class rss. In addition, we can write our own methods.
@@ -235,8 +234,8 @@ for example, if you define an object r and assign it mijnscraper, you can now ca
 
 Please note that you have tap completion (this will show you all the methods inside myscraper)
 
-```
+``` python
 len(r)  # check how many articles you scraped.
 r[0].keys() #this will give you all the info you need about the existing keys 
-r[0]['text']
-# of andere keys dus
+r[0]['text']# or use a different key. 
+\\\
