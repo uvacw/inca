@@ -43,7 +43,7 @@ More specifically, we will inherit from pre-defined classes. In fact, each scrap
 
 ## Writing a scraper
 
-### 1.	Scrapers for webpages with RSS feed
+### 1. Scrapers for webpages with RSS feed
 We start with explaining how to write a scraper for rss website. Technically, you are not scraping the pages with an rss feed. 
 The `get` method of the `class rss` already retrieves the html source of the rss page you aim to parse. That's why inheritance is such a cool thing; 
 it saves a lot of work! You will only write code that will parse the content. 
@@ -60,10 +60,10 @@ Below, we explain how you can write a scraper with the example of the ad scraper
 1.	In the first line, you write:
 
 ```python
-1.	class ad(rss):
-2.	"""Scrapes ad.nl"""
+1.class ad(rss):
+2.    """Scrapes ad.nl"""
 3.
-4.	def __init__(self,database=True):
+4.def __init__(self,database=True):
 5.    self.database = database
 6.    self.doctype = "ad (www)"
 7.    self.rss_url='http://www.ad.nl/rss.xml'
@@ -74,9 +74,11 @@ Below, we explain how you can write a scraper with the example of the ad scraper
 **line 1**
 
 `class` indicates that we create a class. `ad` is the name for the class. `(rss)` refers to the class from which `ad` is inheriting. 
+
 **line 2**
 
 denote with double ` """` what the class does: in this case, it scrapes ad.nl. 
+
 **lines 4 - 9**
 
 When creating a new scraper, we need to initialise it. More specifically, we need specify what kind of scraper we are writing. This happens is lines 4 - 9. 
@@ -172,7 +174,8 @@ Consequently, we have to define the following:
 69.
 70.        return extractedinfo
 ```
-**lines 10**
+
+**lines 10 - 17**
 
 Next, you are defining the method `parsehtml`. You provide the argument `self`, as the method 
 should refer to the instance that is defined later on. `htmlsource` is defined in the `class rss`. 
@@ -188,6 +191,7 @@ Some handy shortcuts for modifying the xpaths:
 You might want to play around with looking up the xpath, showing the source code, or saving the page in html format. 
 
 **lines 64 - 70**
+
 It does not really matter how you arrive at xpath you are including, as long as you, in the end, succeed in retrieving the extracted info. 
 
 
@@ -206,7 +210,7 @@ functionalities that are already defined by the class rss. In addition, we can w
 
 In fact, `(rss)` refers to a class defined in the core of inca: `class rss(Scraper)`. 
 
-## 5. Testing
+## Testing your code
 
 As mentioned, it is important to test your scraper before pushing it to github. 
 You can test your scraper on your own system before pushing it. Start Python3 in your terminal (or IDE, what you want),
@@ -234,8 +238,11 @@ for example, if you define an object r and assign it mijnscraper, you can now ca
 
 Please note that you have tap completion (this will show you all the methods inside myscraper)
 
-```
+```python
 len(r)  # check how many articles you scraped.
 r[0].keys() #this will give you all the info you need about the existing keys 
-r[0]['text']
-# of andere keys dus
+r[0]['text'] # or use different key of course.
+```
+
+### 2. Scrapers for webpages without RSS feed
+
