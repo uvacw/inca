@@ -4,18 +4,17 @@
 Before we will explain to you how you can scrape in INCA, it is important that you understand some of the terminology that we will be using,
 and have some knowledge of INCA's structure. In the proceeding, we adress these topics.
 
-## Getting acquainted with terminology: understanding classes, instances and inheritance. 
+## Getting acquainted with terminology: understanding classes, instances, and inheritance. 
 
-By now, you are familiar with some of the more basic data structures in Python, such as lists, strings.. In INCA, we will be working with more complex data structures:
-  * **Class**: a class defines structure - it tells us how someting should be laid out, how data should be structured. That is way, often, they are described as blueprints of creating objects. It is a logical grouping of both data and methods. 
-It does not, however, fill in the content. In Python we define a class with `class`. When creating more complicated data structures, classes are very useful. 
-  * **Instance** (aka object): An instance is a copy of a class; is the realized version of the class. An instance does contain content. 
-Instances have the structure of the class but that the values within an instance may vary from instance to instance. From a *single* class you can create *as many instances* as you'd like (each one of them being unique). 
+By now, you are familiar with some of the more basic data structures in Python, such as lists, strings, etc. ... All of these are also *objects*, but in INCA, we will be working with more complex objects as well.
+  * **Class**: a class defines structure - it tells us how someting should be laid out, how new objects should be structured. That is why, often, they are described as blueprints of creating objects. You can also think of it as a logical grouping of both data and methods. 
+A class does not, however, usually does not fill in the content. In Python, we define a class with `class`. When dealing with more complicated data structures, classes are very useful. 
+  * **Instance** (aka object): An instance is kind of a copy of a class; is the realized version of the class. An instance usually does contain some specific content. 
+ For example, an instance of a class that describes a rss-scraper could be such a scraper with a specific address to scrape.
+Instances have the structure of the class, but the values within an instance may vary from instance to instance. From a *single* class you can create *as many instances* as you'd like (each one of them being unique). 
   * **Function**: For a recap, see [Damian's book](http://www.damiantrilling.net/). With regard to the difference between functions and methods, it is important to know 
-that a function is not directly associated to a variable/ object. Defined in Python with `def`.
-  * **Method**: directly associated to a variable. it can only be called from the object. Defined in Python with `def`. 
-
-As with functions, some methods are build in (i.e., build-in methods), while others are defined by users (i.e., user-defined methods).
+that a function is not directly associated to a variable/object. Defined in Python with `def`.
+  * **Method**: directly associated to a variable. it can only be called from the object. Defined in Python with `def`. If you define a function in a class, it becomes a method of every instance of that class.
 
 The concepts of classes and instances can be a bit tricky. This **example** will maybe help you understand it better:
 
@@ -25,9 +24,10 @@ The concepts of classes and instances can be a bit tricky. This **example** will
 > Your copy of the form with your specific information if like an instance of the class: it specifies what the content actually is._
 [Source + more info here](http://www.jesshamrick.com/2011/05/18/an-introduction-to-classes-and-inheritance-in-python/)
 
+In our case, instead of filling out a form we need to extract information of websites. Let's take the example of one specific scraper class, ``nu''. 
+The info on *how* to extract this information is contained in the class: What's the XPATH of the title? Where to find the main text? And so on. All of this is specified within functions in the class. But the class itself cannot be run; and the specific articles we want to process change every day. 
+If we want to run this scraper, we create a specific instance that can be run.
 
-In our case, instead of filling out a form we need to extract information of websites. For each website, we need the same information, but the content will differ 
-from webpage to webpage and from article to article [--> klopt dit Damian?]
 
 ## Understanding the structure of INCA.
 
@@ -48,12 +48,8 @@ We start with explaining how to write a scraper for rss website. Technically, yo
 The `get` method of the `class rss` already retrieves the html source of the rss page you aim to parse. That's why inheritance is such a cool thing; 
 it saves a lot of work! You will only write code that will parse the content. 
 
-Clone a version of INCA and start working in the file news_scrapers.py. Forgot how? Find it [here](
-@damian: instructies van bob zijn anders. hij zegt; new file beginnen for een nieuwe scraper 
-https://github.com/uvacw/inca/blob/development/doc/Contributing%20Code%20Guide.md --> nummer 2. 
-
-Just add your own code below. 
-Write the code based on examples from already existing scrapers. 
+Clone a version of INCA and start working in the file news_scrapers.py (note: if you are not making a scraper for a rss feed page, please make a new .py file). 
+Just add your own code below the rest of the code. Write the code based on examples from already existing scrapers. 
 
 Below, we explain how you can write a scraper with the example of the ad scraper(i.e., `ad (www)`).
 
@@ -85,24 +81,6 @@ When creating a new scraper, we need to initialise it. More specifically, we nee
 The `__init__(self, database=True)):`  method is a special kind of method that is called whenever an instance of a class is created for the first time. 
 the `self` variable represents the instance of the object (it tells Python basically that the method should be applied to the 'self', to the instance that we have created). 
 As our instance can have different values, we use `self` instead of `ad`.
-
----------------------------------------------------------------------------------------
-
-@damian: dit staat in die code van Bob, maar komt niet overeen met initialization in het document news_scrapers.py..
-
-
-Scrapers should yield dicts that contain the document (news article,
-tweet, blogpost, whatever)
-For the following keys, please provide the information specified below:
-doctype             : The medium or outlet (e.g. volkskrant, guardian, economist)
-url                 : URL from which data is scraped (e.g. volkskrant.nl/artikel1)
-publication_date    : Date of publication of article/website as specified by outlet, NOT SCRAPING
-text                : Plain (no code/XML or HTML tags) text content
-OPTIONAL, BUT RECOMMENDED
-_id       : a unique, preferably same as external source identifier of the document (e.g. ISBN, DOI )
-language  : If you can safely assume the language of specified documents, please specify them here
--------------------------------------------------------------------------------------
-
 
 Consequently, we have to define the following:
 `self.data = database` --> this is always the same. 
