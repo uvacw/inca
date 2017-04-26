@@ -18,10 +18,10 @@ bylinesource|string|some newssites give both a journalist's name (to be stored i
 category|string|in case of news: section|economy, sports|no
 feedurl|string|in case of rss-feed: url of feed|http://www.nu.nl/rss |no
 htmlsource|string|the raw html code|`<http><header>...`|yes
-**teaser**|string|Teaser as used on some overview page, usually between title and text|Bij een explosie in een metro in het Russische Sint-Petersburg zijn maaandag twee mensen om het leven gekomen.|no
-**teaser_rss**|string|teaser that is distributed via feed. Otherwise, if appicable: Teaser as used on some overview page|Bij een explosie in een metro in het Russische Sint-Petersburg zijn maa...|no
-**title**|string|title of the document (as scraped from HTML)|Explosie in Sunt-Petersburg|yes
-**title_rss**|string|title of the document (as retrieved from feed)|Explosie in Sunt-Petersburg|no
+**teaser**|string|Teaser, usually some short paragraph between title and text. Only some outlets have this|Bij een explosie in een metro in het Russische Sint-Petersburg zijn maaandag twee mensen om het leven gekomen.|no
+**teaser_rss**|string|Teaser that is distributed via feed. |Bij een explosie in een metro in het Russische Sint-Petersburg zijn maa...|yes (for rss)
+**title**|string|title of the document (as scraped from HTML)|Explosie in Sint-Petersburg|yes
+**title_rss**|string|title of the document (as retrieved from rss feed)|Explosie in Sint-Petersburg|yes (for rss)
 url|string|source url of the item|http://www.nu.nl/buitenland/4590777/zeker-tien-doden-bij-explosie-in-metro-sint-petersburg.html |yes
 
 In principle, extra fields can be added, but this should be documented. Candidates for inclusion:
