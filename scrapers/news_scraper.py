@@ -43,11 +43,6 @@ class ad(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-        try:
-            category = tree.xpath('//*[@class="container"]/h1/text()')[0]
-        except:
-            category=""
-            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
         #1. path: regular intro                                                                                                    
         #2. path: intro when in <b>; found in a2014 04 130                                                                         
         textfirstpara=tree.xpath('//*[@id="detail_content"]/p/text() | //*[@class="intro"]/b/text() | //*[@class="intro"]/span/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text()')
@@ -154,12 +149,24 @@ class nu(rss):
             logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
         author_bron = ""
         text=polish(text)
+        try:
+            category = tree.xpath('//*[@class="container"]/h1/text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+
+        try:
+            title = tree.xpath('//h1/text()')[0].strip()
+        except:
+            title = None
+            logger.warning("No title encountered")
+
 
         extractedinfo={"category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "title":title}
 
         return extractedinfo
 
