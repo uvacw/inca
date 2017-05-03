@@ -179,9 +179,7 @@ For example, never compile a method using:
 ```
  def run(self,<whatever>):
  ```
-
-When you write a scrape for an RSS-based website, just inherit the 
-functionalities that are already defined by the class rss. In addition, we can write our own methods.
+When you write a scrape for an RSS-based website, just inherit the functionalities that are already defined by the class rss. In addition, we can write our own methods.
 
 In fact, `(rss)` refers to a class defined in the core of inca: `class rss(Scraper)`. 
 
@@ -212,11 +210,10 @@ Please note that you have tab completion (this will show you all the methods ins
 
 ```python
 len(r)  # check how many articles you scraped.
-r[0].keys() #this will give you all the info you need about the existing keys 
+r[0].keys() # this will give you all the info you need about the existing keys 
 r[0]['text'] # or use different key of course.
 ```
 
 ### 2. Scrapers for webpages without RSS feed
 
 [TO BE ADDED]
-
