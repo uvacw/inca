@@ -62,44 +62,47 @@ class rss(Scraper):
             except: RSS_URL='N/A'
 
         assert RSS_URL != 'N/A','You need to specify the feed URL. Example: rss_url="http://www.nu.nl/rss"'
+        
+        if type(RSS_URL) is str:
+            RSS_URL=[RSS_URL]
 
-        d = feedparser.parse(RSS_URL)
-
-        for post in d.entries:
-            try:
-                _id=post.id
-            except:
-                _id=post.link
-
-            link=re.sub("/$","",self.getlink(post.link))
-
-            if self.database==False or check_exists(_id)[0]==False:
-                req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
-                htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
-
+        for thisurl in RSS_URL:
+            d = feedparser.parse(thisurl)
+            for post in d.entries:
                 try:
-                    teaser=re.sub(r"\n|\r\|\t"," ",post.description)
+                    _id=post.id
                 except:
-                    teaser=""
-                try:
-                    datum=datetime.datetime(*feedparser._parse_date(post.published)[:6])
-                except:
+                    _id=post.link
+
+                link=re.sub("/$","",self.getlink(post.link))
+
+                if self.database==False or check_exists(_id)[0]==False:
+                    req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
+                    htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+
                     try:
-                        # alternative date format as used by nos.nl
-                        datum=datetime.datetime(*feedparser._parse_date(post.published[5:16])[:6])
+                        teaser=re.sub(r"\n|\r\|\t"," ",post.description)
                     except:
-                        #print("Couldn't parse publishing date")
-                        datum=None
-                doc = {"_id":_id,
-                       "title":post.title,
-                       "teaser":teaser,
-                       "publication_date":datum,
-                       "htmlsource":htmlsource,
-                       "feedurl":RSS_URL,
-                       "url":re.sub("/$","",post.link)}
-                doc.update(self.parsehtml(doc['htmlsource']))
-                docnoemptykeys={k: v for k, v in doc.items() if v}
-                yield docnoemptykeys
+                        teaser=""
+                    try:
+                        datum=datetime.datetime(*feedparser._parse_date(post.published)[:6])
+                    except:
+                        try:
+                            # alternative date format as used by nos.nl
+                            datum=datetime.datetime(*feedparser._parse_date(post.published[5:16])[:6])
+                        except:
+                            #print("Couldn't parse publishing date")
+                            datum=None
+                    doc = {"_id":_id,
+                           "title_rss":post.title,
+                           "teaser_rss":teaser,
+                           "publication_date":datum,
+                           "htmlsource":htmlsource,
+                           "feedurl":thisurl,
+                           "url":re.sub("/$","",post.link)}
+                    doc.update(self.parsehtml(doc['htmlsource']))
+                    docnoemptykeys={k: v for k, v in doc.items() if v}
+                    yield docnoemptykeys
 
     def parsehtml(self,htmlsource):
         '''

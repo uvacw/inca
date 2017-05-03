@@ -11,6 +11,7 @@ This guide assumes you are familiar with markdown, git and commandline. In addit
 First, Let's be clear about code styles. In the past, changes have been made on
 a pretty ad-hoc basis. No Longer!
 
+
 Follow these steps when adding code:
 1. Make changes in a seperate branch
 2. Start out small so you understand what you do
@@ -94,6 +95,10 @@ clear code paramount. We aim to follow the [Google style guide](https://google.g
   - instance_var_name
   - function_parameter_name
   - local_var_name
+  
+  Suggestion: provide a short explanation of what these terms represent / when to use them? Or is this considered common knowledge? 
+  In addition to this, would it be helpful to include a short dictionary that explains the most important terms/concepts of the guide?
+  
 - Split up complicated conditions
 
   Don't:

@@ -23,6 +23,9 @@ htmlsource|string|the raw html code|`<http><header>...`|yes
 **title**|string|title of the document (as scraped from HTML)|Explosie in Sint-Petersburg|yes
 **title_rss**|string|title of the document (as retrieved from rss feed)|Explosie in Sint-Petersburg|yes (for rss)
 url|string|source url of the item|http://www.nu.nl/buitenland/4590777/zeker-tien-doden-bij-explosie-in-metro-sint-petersburg.html |yes
+images|list of dicts|Ordered list (top to down, left to right) of *editorial* images (thus, no navigation and no ads). Each image has the keys url, width, height, caption, source (the photographer and/or press agency), alt (the alt text), href | ... | (still to be implemented)
+
+
 
 In principle, extra fields can be added, but this should be documented. Candidates for inclusion:
 
