@@ -60,17 +60,9 @@ class walmart(rss):
             logger.info("oops - geen textrest?")
             text = ""
         text = "\n".join(text)
-        try:
-             author_door = tree.xpath('//*[@class="article-byline-text"]/p/a/text()')[0].strip()
-        except:
-            author_door=""
-            logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
-
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
-                       "teaser":teaser.strip(),
                        "text":polish(text).strip(),
-                       "byline_source":author_door.replace("\n"," ").strip()
                        }
 
         return extractedinfo
