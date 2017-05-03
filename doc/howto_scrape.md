@@ -187,6 +187,8 @@ In fact, `(rss)` refers to a class defined in the core of inca: `class rss(Scrap
 
 ## Testing your code
 
+### Testing your code
+
 As mentioned, it is important to test your scraper before pushing it to github. 
 You can test your scraper on your own system before pushing it. Start Python3 in your terminal (or IDE, what you want),
 and import inca. Please note: you do not have to activate Elastic Search for this (as you are just testing the materials).
@@ -213,8 +215,31 @@ Please note that you have tab completion (this will show you all the methods ins
 ```python
 len(r)  # check how many articles you scraped.
 r[0].keys() #this will give you all the info you need about the existing keys 
-r[0]['text'] # or use different key of course.
+r[0]['text'] # or use different key of course, such as:
+r[0]['title']
 ```
+
+### Testing xpaths in ipython
+
+You can also test and adjust your xpaths directly and interactively in Python. This can be helpful, because it allows you to immediately see whether your xpath actually produces any output. 
+
+For this, make sure you have iPython (or Python) running. `import inca` and run your scraper (as illustrated above). Now, type the following:
+
+
+```Python
+from lxml.html import fromstring
+
+tree = fromstring(r[0]['htmlsource']) # this graps the htmlsource of the first item you just scraped (r[0]). Of course, you can also select the second(r[1])... etc. 
+```
+now, you can just start testing your xpaths in the following manner:
+
+```Python
+tree.xpath('<putyourxpathhere') # for example: tree.xpath('//*[@class="article-header-title"]/text()')
+```
+
+Now, you will see whether you xpath actually produced the desired content or not. If needed, you can adjust the xpath, play around with cleaning the output, etc 
+
+
 
 ### 2. Scrapers for webpages without RSS feed
 
