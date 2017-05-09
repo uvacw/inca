@@ -925,7 +925,7 @@ class destentor(rss):
             category=""
             logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")                                                                       
         try:
-            teaser=tree.xpath('//*/header[@class="article__header"]/h1[@class="article__header"]/p[@class="article__intro"]text()')[0]
+            teaser=tree.xpath('//*/p[@class="article__intro"]/text()')[0]
         except:
             teaser=""
             logger.info("OOps - geen eerste alinea?")
@@ -1049,4 +1049,90 @@ class dvhn(rss):
         '''modifies the link to the article to bypass the cookie wall'''
         link=re.sub("/$","",link)
         link="http://www.volkskrant.nl//cookiewall/accept?url="+link
+        return link
+
+class bd(rss):
+    """Scrapes bd.nl"""
+
+    def __init__(self,database=True):
+        self.database=database
+        self.doctype = "bd (www)"
+        self.rss_url="http://www.bd.nl/home/rss.xml"
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2017, month=5, day=9)
+
+    def parsehtml(self,htmlsource):
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
+        try:
+            title = tree.xpath('//*/h1[@class="article__title"]/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+            category = tree.xpath('//*[@class="container"]/ul/li[@class="sub-nav__list-item active"]/a/text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")                                                                       
+        try:
+            teaser=tree.xpath('//*/p[@class="article__intro"]/text()')[0]
+        except:
+            teaser=""
+            logger.info("OOps - geen eerste alinea?")
+        #1. path: regular text                                                                                                     
+        #2. path: text with link behind (shown in blue underlined);                                        
+        #3. path: second headings 
+        text = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*/p[@class="article__paragraph"]/a/text() | //*/p[@class="article__paragraph"]/h2/text()')
+        if text=="":
+            logger.info("OOps - empty text")
+        try:
+            author_door = tree.xpath('//*/span[@class="article__source"]/b/text() | //*/p[@class="article__paragraph"]/b/i/text()') [0]
+        except:
+            author_door=""
+        if author_door=="":
+            try:
+                author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door==""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door=""
+                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
+            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
+        except:
+            author_bron=""
+
+        # text=polish(text)
+
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
+                       "teaser":teaser.strip(),
+                       "text":text,
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+  
+
+    def getlink(self,link):
+        '''modifies the link to the article to bypass the cookie wall'''
+        link=re.sub("/$","",link)
+        link="http://www.bd.nl///cookiewall/accept?url="+link
         return link
