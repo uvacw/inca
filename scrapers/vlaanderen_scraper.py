@@ -39,14 +39,22 @@ class demorgen(rss):
         '''
 
         tree = fromstring(htmlsource)
-# author
+# byline
         try: 
-            author_door = tree.xpath('//*[@class="author-info__name"]/text()')[0]
-            if author_door == "":
+            byline = tree.xpath('//*[@class="author-info__name"]/span/text()')[0]
+            if byline == "":
                 logger.info("No author field encountered - don't worry, maybe it just doesn't exist.")
         except:
-            author_door=""
+            byline=""
             logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
+# bylinesource
+        try:
+            bylinesource = tree.xpath('//*[@class="author-info__source"]/text()')[0]
+            if bylinesource == "":
+                logger.info("No bylinesource")
+        except:
+            bylinesource=""
+            logger.info("No bylinesource")
 # category
         try:    
             category = tree.xpath('//*[@class="breadcrumb__link first last"]/text()')[0]
@@ -57,23 +65,30 @@ class demorgen(rss):
             logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
 # title
         try:
-            title = " ".join(tree.xpath('//h1/text()'))
-            if textrest == "":
-                logger.info("No title?")
+            title = tree.xpath('//*[@class="article__header"]/h1/text()')[0]
         except:
             logger.info("No title?")
             title=""
-# teaser
+# text
         try:
-            teaser = tree.xpath('//*[@class="article__intro fjs-article__intro"]/text()')[0]
+            textfirstpara = tree.xpath('//*[@class="article__intro fjs-article__intro"]/text()')[0].replace("\n","").strip()
         except:
-            logger.info("No teaser")
-            teaser=""
+            logger.info("No first paragraph")
+            textfirstpara=""
+        try:
+            textrest = " ".join(tree.xpath('//*[@class="article__body__paragraph"]//text() | //*[@class="article__body__title"/text()'))
+        except:
+            logger.info("No text?")
+            textrest=""
 
-        extractedinfo={"byline":author_door.strip(),
+        texttotal = textfirstpara + " " + textrest
+        text = texttotal.replace('(+)','').replace('\xa0','').replace('< Lees een maand gratis alle artikels in onze Pluszone via www.demorgen.be/proef','')
+
+        extractedinfo={"byline":byline.replace("Bewerkt door:","").strip(),
+                       "bylinesource":bylinesource.replace("- Bron:","").strip(),
+                       "text":text.strip(),
                        "category":category.strip(),
-                       "title":title.strip(),
-                       "teaser":teaser.strip()
+                       "title":title
                        }
 
         return extractedinfo
