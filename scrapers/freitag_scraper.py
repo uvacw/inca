@@ -34,9 +34,9 @@ class freitag(rss):
         article_urls = tree.xpath("//channel//item//link/text()")
         descriptions = tree.xpath("//channel//item//description/text()")
         dates = tree.xpath("//channel//item//pubDate/text()")
-        titles = tree.xpath("//channel//item//title/text()")
+        
 
-        for link,xpath_date,title in zip(article_urls,dates,titles):      
+        for link,xpath_date in zip(article_urls,dates):      
             link = link.strip()
             
             try:
@@ -46,7 +46,12 @@ class freitag(rss):
             except:
                 logger.error("HTML tree cannot be parsed")
 
-
+#parsing teaser
+            try:
+                teaser = tree.xpath("//div[@class='running-text article']/p/span/text() | //div[@class='running-text article']/p/text()")
+            except:
+                teaser =''
+                 
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
             parag = tree.xpath("//div[@class='text']/p//text()")
             text = ''
@@ -58,6 +63,8 @@ class freitag(rss):
             	author = tree.xpath("//div[@class='inner']/aside/h1/a/text()")[0].strip()
             except:
             	author = ''
+
+            title = tree.xpath("//div[@class='running-text article']/h1/text()")
 
 
             # source needs to be added. Currently appears in parenthesis at the end of last paragraph. 
@@ -73,7 +80,8 @@ class freitag(rss):
             doc = dict(
                 pub_date    = date,
                 title       = title,
-                text        = text,
+                teaser      = teaser,
+                text        = parag,
                 author      = author,
                 source      = source,
                 url         = link,
