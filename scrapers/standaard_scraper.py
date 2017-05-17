@@ -48,39 +48,44 @@ class standaard(rss):
             return("","","", "")
 # category
         try:
-            category = tree.xpath('//*[@class="site-nav__item"]/a/text()')
+            category = tree.xpath('//ol/li[3]/a/b/text()')
         except:
             category=""            
 # teaser
         try:
-            teaser = tree.xpath('//*[@class="intro"]/P/text()')
+            teaser = "".join(tree.xpath('//*[@class="article-full"]/*[@class="article__body"]/*[@class="intro"]//text()'))
         except:
-            teaser = ''
-# text
-# in two different text blocks:
-        try:
-            text1 = tree.xpath('//*[@class="ad__inner"]/P/text()')
-        except:
-            teaser = ''
-        try:
-            text2 = tree.xpath('//[@class="article__image__credits"]/P/text()')
-        except:
-            text2 = ''
-# putting the two text blocks together
+            teaser =""
             
-        text = ' '.join(text1) + " ".join(text2)
+# text
+        try:
+            text = tree.xpath('//*[@class="article-full"]//*[@class="article__body"]/p/text()')
+        except:
+            text =""
             
 # author
         try:
-            author = tree.xpath('//*[@class="avatar"]/h3/text()')
+            author = tree.xpath('//*[@class="article__meta"]/p/a/text()')
         except:
-            author = ""
+            author =""
+ 
+# bylinesource
+# gives a list with either two or one entries: the first one is the date and if there is a second one it is the bylinesource
+        try:
+            sourceorganisation = tree.xpath('//*[@class="blend-in"]/text()')
+            if len(sourceorganisation) == 2:
+                source = sourceorganisation[-1]
+            else:
+                source  = ""
+        except:
+            sourceorganisation = ""
 
 
-        extractedinfo={"category":category,
-                       "teaser":teaser,
-                       "text":text,
-                       "byline":author,
-                       }
+        extractedinfo = {"category":category,
+                         "teaser":teaser.strip(),
+                         "text":text,
+                         "bylinesource":source,
+                         "byline":author
+                        }
 
         return extractedinfo
