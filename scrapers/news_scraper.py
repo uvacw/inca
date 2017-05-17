@@ -1329,6 +1329,416 @@ class ed(rss):
         link="http://www.ed.nl///cookiewall/accept?url="+link
         return link
 
+class bndestem(rss):
+    """Scrapes bndestem.nl"""
+
+    def __init__(self,database=True):
+        self.database=database
+        self.doctype = "bndestem (www)"
+        self.rss_url="http://www.bndestem.nl/home/rss.xml"
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2017, month=5, day=17)
+
+    def parsehtml(self,htmlsource):
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
+        try:
+            title = tree.xpath('//*/h1[@class="article__title"]/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+        # 1. path = normal articles
+        # 2. path = video articles
+        # 3. path = articles that are tagged 'Home'
+            category = tree.xpath('//*[@class="container"]/ul/li[@class="sub-nav__list-item active"]/a/text() | //*[@class="article__section-text"]/a/text() | //*/span[@class="mobile-nav__list-text"]/text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")                                                                       
+        # 1. path = normal intro
+        # 2. path = normal intro version 2
+        # 3. path = normal intro version 3
+        # 4. path = bold intro
+        # 5. path = bold intro version 2
+        # 6. path = intro video
+        # 7. path = intro video version 2
+        # 8. path = links in intro video
+        try:
+            teaser=tree.xpath('//*/p[@class="article__intro"]/span[@class="tag"]/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text() |  //*/p[@class="article__intro"]/span/b/text() | //*/p[@class="article__intro"]/b/text() | //*/p[@class="article__intro video"]/text() | //*/p[@class="article__intro video"]/span/text() | //*/p[@class="article__intro video"]/span/a/text()')[0]
+        except:
+            teaser=""
+            logger.info("OOps - geen eerste alinea?")
+        #1. path: regular text                                                                                                     
+        #2. path: text with link behind (shown in blue underlined);                                        
+        #3. path: second headings
+        #4. path: span paragraphs
+        #5. path: bold paragraph headings
+        #6. path: bold paragraph headings - version 2
+        #6. path: live blogs time
+        #7. path: live blogs intro or heading
+        #8. path: live blogs body text
+        #9. path: live blogs strong body text
+        #10. path: live blogs link body text
+        text = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*/p[@class="article__paragraph"]/a/text() | //*/p[@class="article__paragraph"]/h2/text() | //*/h2[@class="article__subheader"]/text() | //*/p[@class="article__paragraph"]/span/text() | //*/p[@class="article__paragraph"]/b/text() | //*/p[@class="article__paragraph"]/i/text() | //*[@class="s-element-content s-text emojify"]/text() | //*[@class="s-element-content s-text emojify"]/b/text() | //*[@class="s-element-content s-text emojify"]/u/text() | //*[@class="s-element-content s-text emojify"]/u/b/text() | //*[@class="s-element-content s-text emojify"]/a/text() | //*[@class="s-element-content s-text emojify"]/b/a/text()')
+        if text=="":
+            logger.info("OOps - empty text")
+        try:
+            author_door = tree.xpath('//*/span[@class="article__source"]/b/text() | //*/p[@class="article__paragraph"]/b/i/text()') [0]
+        except:
+            author_door=""
+        if author_door=="":
+            try:
+                author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door==""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door=""
+                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
+            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
+        except:
+            author_bron=""
+
+        # text=polish(text)
+
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
+                       "teaser":teaser.strip(),
+                       "text":text,
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+  
+
+    def getlink(self,link):
+        '''modifies the link to the article to bypass the cookie wall'''
+        link=re.sub("/$","",link)
+        link="http://www.bndestem.nl///cookiewall/accept?url="+link
+        return link
+
+class pzc(rss):
+    """Scrapes pzc.nl"""
+
+    def __init__(self,database=True):
+        self.database=database
+        self.doctype = "pzc (www)"
+        self.rss_url="http://www.pzc.nl/home/rss.xml"
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2017, month=5, day=17)
+
+    def parsehtml(self,htmlsource):
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
+        try:
+            title = tree.xpath('//*/h1[@class="article__title"]/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+        # 1. path = normal articles
+        # 2. path = video articles
+        # 3. path = articles that are tagged 'Home'
+            category = tree.xpath('//*[@class="container"]/ul/li[@class="sub-nav__list-item active"]/a/text() | //*[@class="article__section-text"]/a/text() | //*/span[@class="mobile-nav__list-text"]/text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")                                                                       
+        # 1. path = normal intro
+        # 2. path = normal intro version 2
+        # 3. path = normal intro version 3
+        # 4. path = bold intro
+        # 5. path = bold intro version 2
+        # 6. path = intro video
+        # 7. path = intro video version 2
+        # 8. path = links in intro video
+        try:
+            teaser=tree.xpath('//*/p[@class="article__intro"]/span[@class="tag"]/text() | //*/span[@class="tag"]/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text() |  //*/p[@class="article__intro"]/span/b/text() | //*/p[@class="article__intro"]/b/text() | //*/p[@class="article__intro video"]/text() | //*/p[@class="article__intro video"]/span/text() | //*/p[@class="article__intro video"]/span/a/text()')[0]
+        except:
+            teaser=""
+            logger.info("OOps - geen eerste alinea?")
+        #1. path: regular text                                                                                                     
+        #2. path: text with link behind (shown in blue underlined);                                        
+        #3. path: second headings
+        #4. path: span paragraphs
+        #5. path: bold paragraph headings
+        #6. path: live blogs time
+        #7. path: live blogs intro or heading
+        #8. path: live blogs body text
+        #9. path: live blogs strong body text
+        #10. path: live blogs link body text
+        text = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*/p[@class="article__paragraph"]/a/text() | //*/p[@class="article__paragraph"]/h2/text() | //*/p[@class="article__paragraph"]/span/text() | //*/p[@class="article__paragraph"]/b/text() | //*/time[@class="liveblog__time-text"]/text() | //*/p[@class="liveblog__intro"]/text() | //*/p[@class="liveblog__paragraph"]/text() | //*/p[@class="liveblog__paragraph"]/strong/text() | //*/p[@class="liveblog__paragraph"]/a/text()')
+        if text=="":
+            logger.info("OOps - empty text")
+        try:
+            author_door = tree.xpath('//*/span[@class="article__source"]/b/text() | //*/p[@class="article__paragraph"]/b/i/text()') [0]
+        except:
+            author_door=""
+        if author_door=="":
+            try:
+                author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door==""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door=""
+                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
+            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
+        except:
+            author_bron=""
+
+        # text=polish(text)
+
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
+                       "teaser":teaser.strip(),
+                       "text":text,
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+  
+
+    def getlink(self,link):
+        '''modifies the link to the article to bypass the cookie wall'''
+        link=re.sub("/$","",link)
+        link="http://www.pzc.nl///cookiewall/accept?url="+link
+        return link
+
+class tubantia(rss):
+    """Scrapes tubantia.nl"""
+
+    def __init__(self,database=True):
+        self.database=database
+        self.doctype = "tubantia (www)"
+        self.rss_url="http://www.tubantia.nl/home/rss.xml"
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2017, month=5, day=17)
+
+    def parsehtml(self,htmlsource):
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
+        try:
+            title = tree.xpath('//*/h1[@itemprop="name"]/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+        # 1. path = normal articles
+        # 2. path = video articles
+        # 3. path = articles that are tagged 'Home'
+            category = tree.xpath('//*[@class="container"]/ul/li[@class="sub-nav__list-item active"]/a/text() | //*[@class="article__section-text"]/a/text() | //*/span[@class="mobile-nav__list-text"]/text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")                                                                       
+        # 1. path = normal intro
+        # 2. path = normal intro version 2
+        # 3. path = normal intro version 3
+        # 4. path = bold intro
+        # 5. path = bold intro version 2
+        # 6. path = intro video
+        # 7. path = intro video version 2
+        # 8. path = links in intro video
+        try:
+            teaser=tree.xpath('//*/p[@class="article__intro"]/span[@class="tag"]/text() | //*/span[@class="tag"]/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text() |  //*/p[@class="article__intro"]/span/b/text() | //*/p[@class="article__intro"]/b/text() | //*/p[@class="article__intro video"]/text() | //*/p[@class="article__intro video"]/span/text() | //*/p[@class="article__intro video"]/span/a/text()')[0]
+        except:
+            teaser=""
+            logger.info("OOps - geen eerste alinea?")
+        #1. path: regular text                                                                                                     
+        #2. path: text with link behind (shown in blue underlined);                                        
+        #3. path: second headings
+        #4. path: span paragraphs
+        #5. path: bold paragraph headings
+        #6. path: live blogs time
+        #7. path: live blogs intro or heading
+        #8. path: live blogs body text
+        #9. path: live blogs strong body text
+        #10. path: live blogs link body text
+        text = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*/p[@class="article__paragraph"]/a/text() | //*/p[@class="article__paragraph"]/h2/text() | //*/p[@class="article__paragraph"]/span/text() | //*/p[@class="article__paragraph"]/b/text() | //*/time[@class="liveblog__time-text"]/text() | //*/p[@class="liveblog__intro"]/text() | //*/p[@class="liveblog__paragraph"]/text() | //*/p[@class="liveblog__paragraph"]/strong/text() | //*/p[@class="liveblog__paragraph"]/a/text()')
+        if text=="":
+            logger.info("OOps - empty text")
+        try:
+            author_door = tree.xpath('//*/span[@class="article__source"]/b/text() | //*/p[@class="article__paragraph"]/b/i/text()') [0]
+        except:
+            author_door=""
+        if author_door=="":
+            try:
+                author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door==""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door=""
+                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
+            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
+        except:
+            author_bron=""
+
+        # text=polish(text)
+
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
+                       "teaser":teaser.strip(),
+                       "text":text,
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+  
+
+    def getlink(self,link):
+        '''modifies the link to the article to bypass the cookie wall'''
+        link=re.sub("/$","",link)
+        link="http://www.tubantia.nl///cookiewall/accept?url="+link
+        return link
+
+class limburger(rss):
+    """Scrapes limburger.nl"""
+
+    def __init__(self,database=True):
+        self.database=database
+        self.doctype = "limburger (www)"
+        self.rss_url="http://feeds.feedburner.com/Limburgernl-nieuws?format=xml"
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2017, month=5, day=17)
+
+    def parsehtml(self,htmlsource):
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
+        try:
+            title = tree.xpath('//*/h1[@class="article__title"]/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+        # 1. path = normal articles
+        # 2. path = video articles
+        # 3. path = articles that are tagged 'Home'
+            category = tree.xpath('//*[@class="container"]/ul/li[@class="sub-nav__list-item active"]/a/text() | //*[@class="article__section-text"]/a/text() | //*/span[@class="mobile-nav__list-text"]/text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")                                                                       
+        # 1. path = normal intro
+        # 2. path = normal intro version 2
+        # 3. path = normal intro version 3
+        # 4. path = bold intro
+        # 5. path = bold intro version 2
+        # 6. path = intro video
+        # 7. path = intro video version 2
+        # 8. path = links in intro video
+        try:
+            teaser=tree.xpath('//*/p[@class="article__intro"]/span[@class="tag"]/text() | //*/span[@class="tag"]/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text() |  //*/p[@class="article__intro"]/span/b/text() | //*/p[@class="article__intro"]/b/text() | //*/p[@class="article__intro video"]/text() | //*/p[@class="article__intro video"]/span/text() | //*/p[@class="article__intro video"]/span/a/text()')[0]
+        except:
+            teaser=""
+            logger.info("OOps - geen eerste alinea?")
+        #1. path: regular text                                                                                                     
+        #2. path: text with link behind (shown in blue underlined);                                        
+        #3. path: second headings
+        #4. path: span paragraphs
+        #5. path: bold paragraph headings
+        #6. path: live blogs time
+        #7. path: live blogs intro or heading
+        #8. path: live blogs body text
+        #9. path: live blogs strong body text
+        #10. path: live blogs link body text
+        text = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*/p[@class="article__paragraph"]/a/text() | //*/p[@class="article__paragraph"]/h2/text() | //*/p[@class="article__paragraph"]/span/text() | //*/p[@class="article__paragraph"]/b/text() | //*/time[@class="liveblog__time-text"]/text() | //*/p[@class="liveblog__intro"]/text() | //*/p[@class="liveblog__paragraph"]/text() | //*/p[@class="liveblog__paragraph"]/strong/text() | //*/p[@class="liveblog__paragraph"]/a/text()')
+        if text=="":
+            logger.info("OOps - empty text")
+        try:
+            author_door = tree.xpath('//*/span[@class="article__source"]/b/text() | //*/p[@class="article__paragraph"]/b/i/text()') [0]
+        except:
+            author_door=""
+        if author_door=="":
+            try:
+                author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door==""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door=""
+                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
+            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
+        except:
+            author_bron=""
+
+        # text=polish(text)
+
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
+                       "teaser":teaser.strip(),
+                       "text":text,
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
 class frieschdagblad(rss):
     """Scrapes frieschdagblad.nl"""
 
@@ -1355,36 +1765,185 @@ class frieschdagblad(rss):
             print(doc)
             return("","","", "")
         try:
-            title = tree.xpath('//*/[@class="ArtKopStd"]/text()')[0]
+            title = tree.xpath('//*[@class="ArtKopStd"]/b/text()')[0]
         except:
             title=""
             logger.info("OOps - geen titel?")
         try:
         # 1. path = normal articles
-        # 2. path = video articles
-        # 3. path = articles that are tagged 'Home'
-            category = tree.xpath('//*[@class="container"]/ul/li[@class="sub-nav__list-item active"]/a/text() | //*[@class="article__section-text"]/a/text() | //*/span[@class="mobile-nav__list-text"]/text()')[0]
+            category = tree.xpath('//*/span[@class="rubriek"]/text()')[0]
         except:
             category=""
             logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")                                                                       
+        #no teaser
         try:
             teaser=tree.xpath('//*/p[@class="article__intro"]/span[@class="tag"]/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text() | //*/p[@class="article__intro"]/b/text() | //*/p[@class="article__intro video"]/text() | //*/p[@class="article__intro video"]/span/text() | //*/p[@class="article__intro video"]/span/a/text()')[0]
         except:
             teaser=""
             logger.info("OOps - geen eerste alinea?")
         #1. path: regular text                                                                                                     
-        #2. path: text with link behind (shown in blue underlined);                                        
-        #3. path: second headings
-        #4. path: span paragraphs
-        #5. path: bold paragraph headings
-        #6. path: live blogs time
-        #7. path: live blogs intro or heading
-        #8. path: live blogs body text
-        #9. path: live blogs strong body text
-        #10. path: live blogs link body text
-        text = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*/p[@class="article__paragraph"]/a/text() | //*/p[@class="article__paragraph"]/h2/text() | //*/p[@class="article__paragraph"]/span/text() | //*/p[@class="article__paragraph"]/b/text() | //*/time[@class="liveblog__time-text"]/text() | //*/p[@class="liveblog__intro"]/text() | //*/p[@class="liveblog__paragraph"]/text() | //*/p[@class="liveblog__paragraph"]/strong/text() | //*/p[@class="liveblog__paragraph"]/a/text()')
+        text = tree.xpath('//*[@class="ArtTekstStd"]/text()')
         if text=="":
             logger.info("OOps - empty text")
+        #no author
+        try:
+            author_door = tree.xpath('//*/span[@class="article__source"]/b/text() | //*/p[@class="article__paragraph"]/b/i/text()') [0]
+        except:
+            author_door=""
+        if author_door=="":
+            try:
+                author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door==""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door=""
+                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
+            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
+        except:
+            author_bron=""
+
+        # text=polish(text)
+
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
+                       "teaser":teaser.strip(),
+                       "text":text,
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
+class zwartewaterkrant(rss):
+    """Scrapes zwartewaterkrant.nl"""
+
+    def __init__(self,database=True):
+        self.database=database
+        self.doctype = "zwartewaterkrant (www)"
+        self.rss_url="http://www.zwartewaterkrant.nl/rss.php"
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2017, month=5, day=10)
+
+    def parsehtml(self,htmlsource):
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
+        try:
+            title = tree.xpath('//*[@id="containerContent"]/h2/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+        # 1. path = normal articles
+            category = tree.xpath('//*/span[@class="rubriek"]/text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")                                                                       
+        try:
+            teaser=tree.xpath('//*/span[@class="blackbold"]/text()')[0]
+        except:
+            teaser=""
+            logger.info("OOps - geen eerste alinea?")
+        #1. path: regular text                                                                                                     
+        text = tree.xpath('//*[@id="containerContent"]/p/text() | //*[@id="containerContent"]/p/a/text()')
+        if text=="":
+            logger.info("OOps - empty text")
+        #no author
+        try:
+            author_door = tree.xpath('//*/span[@class="article__source"]/b/text() | //*/p[@class="article__paragraph"]/b/i/text()') [0]
+        except:
+            author_door=""
+        if author_door=="":
+            try:
+                author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door==""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
+            except:
+                author_door=""
+                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
+            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
+        except:
+            author_bron=""
+
+        # text=polish(text)
+
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
+                       "teaser":teaser.strip(),
+                       "text":text,
+                       "byline":author_door.replace("\n", " "),
+                       "byline_source":author_bron.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
+class halloleeuwarden(rss):
+    """Scrapes halloleeuwarden.nl"""
+
+    def __init__(self,database=True):
+        self.database=database
+        self.doctype = "halloleeuwarden (www)"
+        self.rss_url="http://rss.halloleeuwarden.nl/rss/nieuws"
+        self.version = ".1"
+        self.date    = datetime.datetime(year=2017, month=5, day=10)
+
+    def parsehtml(self,htmlsource):
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
+        try:
+            title = tree.xpath('//*[@class="newsitem"]/h2/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+        # 1. path = normal articles
+            category = tree.xpath('//*[@class="newsitem"]/h3/a/text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")                                                                       
+        try:
+            teaser=tree.xpath('//*[@class="clearfix message"]/strong/p/text()')[0]
+        except:
+            teaser=""
+            logger.info("OOps - geen eerste alinea?")
+        #1. path: regular text                                                                                                     
+        text = tree.xpath('//*[@class="ArtTekstStd"]/text()')
+        if text=="":
+            logger.info("OOps - empty text")
+        #no author
         try:
             author_door = tree.xpath('//*/span[@class="article__source"]/b/text() | //*/p[@class="article__paragraph"]/b/i/text()') [0]
         except:
