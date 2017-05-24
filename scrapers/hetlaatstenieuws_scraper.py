@@ -37,60 +37,104 @@ class hetlaatstenieuws(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
+        logging.basicConfig(level=logging.INFO)
+        
 
         tree = fromstring(htmlsource)
-# byline
-        try: 
-            byline = tree.xpath('//*[@class="author"]/text()')[0]
-            if byline == "":
-                logger.info("No author field encountered - don't worry, maybe it just doesn't exist.")
-        except:
-            byline=""
-            logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
-# bylinesource NOG PARSEN!!
+        
         try:
-            bylinesource = tree.xpath('//*[@class="author"]/text()')[0]
-            if bylinesource == "":
-                logger.info("No bylinesource")
+            typenews = tree.xpath('//*[@class="regio"]//text()')
+            # if the news is not regional, then the website has a different layout
+            if typenews == [] or typenews =='':
+                try:
+                    category = tree.xpath('//*[@class="actua_nav"]//text()')[1]
+                    if category == "": 
+                        logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+                except:
+                    category=""
+                    logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+                try: 
+                    byline = tree.xpath('//*[@class="author"]/text()')[0]
+                    if byline == "":
+                        logger.info("No author field encountered - don't worry, maybe it just doesn't exist.")
+                except:
+                    byline=""
+                    logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
+                try:
+                    bylinesource = tree.xpath('//*[@class="author"]/text()')[1]
+                    if bylinesource == "":
+                        logger.info("No bylinesource")
+                except:
+                    bylinesource=""
+                    logger.info("No bylinesource")
+                try:
+                    title = tree.xpath('//*[@id="articleDetailTitle"]/text()')[0]
+                except:
+                    logger.info("No title?")
+                    title=""
+                subtitle = ""
+                try:
+                    textfirstpara =" ".join(tree.xpath('//*[@class="intro"]/text() | //*[@class="intro"]/em/text()')).replace("\n","").strip()
+                except:
+                    logger.info("No first paragraph")
+                    textfirstpara=""
+                try:
+                    textrest = " ".join(tree.xpath('//*[@class="clear"]/p/text() | //*[@class="clear"]/p/strong/text() | //*[@class="clear"]/p/em/text() | //*[@class="clear"]/h3/text() | //*[@class="clear"]/p/a/text() | //*[@class="clear"]/p/em/text()'))
+                except:
+                    logger.info("No text?")
+                    textrest=""
+            # for regional news
+            else:
+                category = 'Regio'
+                try: 
+                    byline = tree.xpath('//*[@class="article__author"]//text()')[0]
+                    if byline == "":
+                        logger.info("No author field encountered - don't worry, maybe it just doesn't exist.")
+                except:
+                    byline=""
+                    logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
+                try:
+                    bylinesource = tree.xpath('//*[@class="author"]/text()')[1]
+                    if bylinesource == "":
+                        logger.info("No bylinesource")
+                except:
+                    bylinesource=""
+                    logger.info("No bylinesource")
+                try:
+                    title = tree.xpath('//*[@itemprop="headline"]/text()')[0]
+                except:
+                    logger.info("No title?")
+                    title=""
+                try:
+                    subtitle = tree.xpath('//*[@class="article__subheader"]/text()')[0]
+                except:
+                    logger.info("No subtitle")
+                try:
+                    textfirstpara =" ".join(tree.xpath('//*[@class="article__intro"]/text()')).replace("\n","").strip()
+                except:
+                    logger.info("No first paragraph")
+                    textfirstpara=""
+                try:
+                    textrest = " ".join(tree.xpath('//*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/text()')).strip()
+                except:
+                    logger.info("No text?")
+                    textrest=""
+                
+            texttotal = textfirstpara + " " + textrest
+            text = texttotal.replace('(+)','').replace('\xa0','')
+            title = title + "\n" + subtitle
+            bylinesource2 = "".join(re.findall(r"Bron:(.*)",bylinesource))
+            extractedinfo={"byline":byline.replace("Door:","").replace("\n"," ").replace("Bewerkt door:","").strip(),
+                           "bylinesource":bylinesource2.strip(),
+                           "text":text.replace("\n","").strip(),
+                           "category":category.replace("\n","").strip(),
+                           "title":title.strip()
+                          }
         except:
-            bylinesource=""
-            logger.info("No bylinesource"
-# category WERKT NIET!!
-        try:
-            category = tree.xpath('//*[@class="nieuws_actua_active actua_active"]/text()')[0]  
-            if category == "": 
-                logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
-        except:
-            category=""
-            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
-# title
-        try:
-            title = tree.xpath('//*[@id="articleDetailTitle"]/text()')[0]
-        except:
-            logger.info("No title?")
-            title=""
-# text
-        try:
-            textfirstpara = tree.xpath('//*[@class="intro"]/text()')[0].replace("\n","").strip()
-        except:
-            logger.info("No first paragraph")
-            textfirstpara=""
-        try:
-            textrest = " ".join(tree.xpath('//*[@class="clear"]//text()'))
-        except:
-            logger.info("No text?")
-            textrest=""
-
-        texttotal = textfirstpara + " " + textrest
-        text = texttotal.replace('(+)','')
-
-        extractedinfo={"byline":byline.replace("bewerkt door:","").strip(),
-                       "bylinesource":bylinesource.strip(),
-                       "text":text.strip(),
-                       "category":category.strip(),
-                       "title":title
-                       }
-
+                logger.info('DIT GAAT HELEMAAL MIS')
+                print(' DIT MOETEN WE ECHT FIXEN')
+                extractedinfo={}
+            
         return extractedinfo
 
 
