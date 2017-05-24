@@ -74,8 +74,12 @@ class rss(Scraper):
             link=re.sub("/$","",self.getlink(post.link))
 
             if self.database==False or check_exists(_id)[0]==False:
-                req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
-                htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+                try:
+                    req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
+                    htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+                except:
+                    htmlsource=None
+                    logger.info('Could not open link - will not retrieve full article')
 
                 try:
                     teaser=re.sub(r"\n|\r\|\t"," ",post.description)
@@ -97,7 +101,8 @@ class rss(Scraper):
                        "htmlsource":htmlsource,
                        "feedurl":RSS_URL,
                        "url":re.sub("/$","",post.link)}
-                doc.update(self.parsehtml(doc['htmlsource']))
+                if htmlsource is not None:
+                    doc.update(self.parsehtml(doc['htmlsource']))
                 docnoemptykeys={k: v for k, v in doc.items() if v}
                 yield docnoemptykeys
 
