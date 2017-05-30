@@ -69,6 +69,11 @@ class gazetvanantwerpen(rss):
         except:
             title = ""
             logger.info("No title")
+        try:
+            category = tree.xpath('//*[@class="is-active"]/text()')[0]
+        except:
+            category = ""
+            logger.info("No category")
             
 
         text = textfirstpara + " " + textrest
@@ -76,7 +81,9 @@ class gazetvanantwerpen(rss):
         extractedinfo={"byline":byline.strip(),
                        "bylinesource":bylinesource.strip(),
                        "text":text.strip(),
-                       "title":title.strip()}
+                       "title":title.strip(),
+                       "category":category.strip()
+                       }
 
         return extractedinfo
 
