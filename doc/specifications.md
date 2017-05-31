@@ -5,6 +5,7 @@ This file collects the specifications we use for developing INCA. Think of, for 
 ## Scrapers
 
 Scrapers are expected to return the following keys:
+Changes are in **bold**
 
 key | data type | description | example | mandatory?
 --------|-------|--------|--------|---------------------
@@ -17,9 +18,14 @@ bylinesource|string|some newssites give both a journalist's name (to be stored i
 category|string|in case of news: section|economy, sports|no
 feedurl|string|in case of rss-feed: url of feed|http://www.nu.nl/rss |no
 htmlsource|string|the raw html code|`<http><header>...`|yes
-teaser|string|in case of rss-feed: teaser that is distributed via feed. Otherwise, if appicable: Teaser as used on some overview page|Bij een explosie in een metro in het Russische Sint-Petersburg zijn maa...|no
-title|string|title of the document, if there is a subtitle dived by newline|Explosie in Sunt-Petersburg|yes
+**teaser**|string|Teaser, usually some short paragraph between title and text. Only some outlets have this|Bij een explosie in een metro in het Russische Sint-Petersburg zijn maaandag twee mensen om het leven gekomen.|no
+**teaser_rss**|string|Teaser that is distributed via feed. |Bij een explosie in een metro in het Russische Sint-Petersburg zijn maa...|yes (for rss)
+**title**|string|title of the document (as scraped from HTML). If there is a subtitle, dive it by newline|Explosie in Sint-Petersburg|yes
+**title_rss**|string|title of the document (as retrieved from rss feed)|Explosie in Sint-Petersburg|yes (for rss)
 url|string|source url of the item|http://www.nu.nl/buitenland/4590777/zeker-tien-doden-bij-explosie-in-metro-sint-petersburg.html |yes
+images|list of dicts|Ordered list (top to down, left to right) of *editorial* images (thus, no navigation and no ads). Each image has the keys url, width, height, caption, source (the photographer and/or press agency), alt (the alt text), href | ... | (still to be implemented)
+
+
 
 In principle, extra fields can be added, but this should be documented. Candidates for inclusion:
 
@@ -43,3 +49,28 @@ Processors accept the following arguments: ...
 They return a dict with the modified document, unless .... is specified, in which case the result is stored in the database.
 ...
 ...
+
+
+
+# Old datamodel until May 2016
+
+## Scrapers
+
+Scrapers are expected to return the following keys:
+
+key | data type | description | example | mandatory?
+--------|-------|--------|--------|---------------------
+_id | string | unique id. In case of RSS: use post.id as _id to enable checking whether we already got that article | ewghwu4buwoe, www.nu.nl/-/585605 | no (in case of rss: yes)
+doctype | string | source of the document | nu, nrc, kamervraag | yes
+publication_date | datetime object | date (optionally: time) of publication | datetime(2017,4,1) | yes
+text|string|The full (plain!) text of the document, excluding title etc.|Bij een explosie in een metro in het Russische Sint-Petersburg zijn maa...|yes
+byline|string|author|Jan Jansen|no
+bylinesource|string|some newssites give both a journalist's name (to be stored in `byline`) and also the original source of the material (like a press agency), which can be stored here|ANP|no
+category|string|in case of news: section|economy, sports|no
+feedurl|string|in case of rss-feed: url of feed|http://www.nu.nl/rss |no
+htmlsource|string|the raw html code|`<http><header>...`|yes
+teaser|string|in case of rss-feed: teaser that is distributed via feed. Otherwise, if appicable: Teaser as used on some overview page|Bij een explosie in een metro in het Russische Sint-Petersburg zijn maa...|no
+title|string|title of the document|Explosie in Sunt-Petersburg|yes
+url|string|source url of the item|http://www.nu.nl/buitenland/4590777/zeker-tien-doden-bij-explosie-in-metro-sint-petersburg.html |yes
+
+In principle, extra fields can be added, but this should be documented. Candidates for inclusion:

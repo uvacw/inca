@@ -86,7 +86,26 @@ class Processer(Document):
             
         
 
-    def run(self, document,field ,save=False, force=False, *args, **kwargs):
+    def run(self, document,field,new_key=None,save=False, force=False, *args, **kwargs):
+        '''
+        Run a processor.
+        
+        Input
+        ---
+        document: dict or str
+            document to be processed
+        field: str
+            key of the field to be processed
+        new_key: str
+            if specified, this key will be used as name for new field (instead of field_processorname)
+        save: boolean
+            indicates whether the result will be stored in the database
+        force:
+            indicates whether the document should replace (true) or only
+            expand existing documents (false). Note that partial updates
+            are not supported when forcing.
+        '''
+
         # 1. check if document or id --> return doc
         logger.debug("tring to process: ",document)
         if not (type(document)==dict and '_source' in document.keys()):
@@ -98,9 +117,9 @@ class Processer(Document):
             else:
                 logger.debug("document retrieval failure {document}".format(**locals()))
                 return document
-            
+        if not new_key:
+            new_key =  "%s_%s" %(field, self.__name__)
         # 2. check whether processing can be skipped
-        new_key =  "%s_%s" %(field, self.__name__)
         if not force and new_key in document['_source'].keys(): return document
         # 3. return None if key is missing
         if not field in document['_source'].keys():
