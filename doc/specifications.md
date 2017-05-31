@@ -18,7 +18,7 @@ category|string|in case of news: section|economy, sports|no
 feedurl|string|in case of rss-feed: url of feed|http://www.nu.nl/rss |no
 htmlsource|string|the raw html code|`<http><header>...`|yes
 teaser|string|in case of rss-feed: teaser that is distributed via feed. Otherwise, if appicable: Teaser as used on some overview page|Bij een explosie in een metro in het Russische Sint-Petersburg zijn maa...|no
-title|string|title of the document|Explosie in Sunt-Petersburg|yes
+title|string|title of the document, if there is a subtitle dived by newline|Explosie in Sunt-Petersburg|yes
 url|string|source url of the item|http://www.nu.nl/buitenland/4590777/zeker-tien-doden-bij-explosie-in-metro-sint-petersburg.html |yes
 
 In principle, extra fields can be added, but this should be documented. Candidates for inclusion:
