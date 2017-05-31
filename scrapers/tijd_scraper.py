@@ -18,13 +18,13 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class nieuwsblad(rss):
-    """Scrapes nieuwsblad.be"""
+class tijd(rss):
+    """Scrapes tijd.nl"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "nieuwsblad (www)"
-        self.rss_url='http://feeds.nieuwsblad.be/nieuws/snelnieuws'
+        self.doctype = "ad (www)"
+        self.rss_url=['http://www.tijd.be/rss/ondernemen.xml','http://www.tijd.be/rss/politiek.xml','http://www.tijd.be/rss/markten_live.xml','http://www.tijd.be/rss/opinie.xml','http://www.tijd.be/rss/cultuur.xml','http://www.tijd.be/rss/netto.xml','http://www.tijd.be/rss/sabato.xml']
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
@@ -36,8 +36,6 @@ class nieuwsblad(rss):
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
-
-# html source link
         '''
         try:
             tree = fromstring(htmlsource)
@@ -45,32 +43,34 @@ class nieuwsblad(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-# category
+#author
         try:
-            category = tree.xpath('//*[@class="is-active"]/text()')[0]
+             author = tree.xpath('//*[@class="m-meta__item-container"]//a/text()')
         except:
-            category=""
-# teaser
+             author = ""
+#teaser
         try:
-            teaser = tree.xpath('//article//div//div//P/text()')
+            teaser = tree.xpath('//*[@class="l-main-container-article__intro highlightable "]/text()')
         except:
-            teaser =""
-# text
+            teaser = ""
+             
+#text
         try:
-            text = tree.xpath('//article//div//p/text()')
+             text = "".join(tree.xpath('//*[@class="l-main-container-article__article"]//div//p/text()'))
         except:
-            text =""
+             text =""
+           
+    
+ #category
+        try:
+            category = tree.xpath('//*[@class="m-breadcrumb__item--last"]/a/span/text()')
+        except:
+            category =""
 
-# author
-        try:
-            author = tree.xpath('//article//footer/p/span/text()')[0]
-        except:
-            author =""
-
-        extractedinfo={"category":category.strip(),
-                       "teaser":teaser,
-                       "byline":author.split(),
-                       "text":text.split()
+        extractedinfo={"byline":author,
+                       "text":text.strip(),
+                       "category":category,
+                       "teaser":teaser
                        }
 
         return extractedinfo
