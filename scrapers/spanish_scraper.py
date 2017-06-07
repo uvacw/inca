@@ -148,5 +148,64 @@ class elpais(rss):
 
         return extractedinfo
 
+class elmundo(rss):
+    """Scrapes elmundo"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.doctype = "elmundo (www)"
+        self.rss_url ='http://estaticos.elmundo.es/elmundo/rss/portada.xml'
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=5, day=10)
+
+
+    def parsehtml(self,htmlsource):
+        '''                                                                             
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        print("LET'S GO"*10)
+        tree = fromstring(htmlsource)
+        try:
+            title ="".join(tree.xpath('//*[@class="js-headline"]/text()')).strip()
+        except:
+            print("no title")
+            title = ""
+        try:
+            teaser = "\n".join(tree.xpath('//*[@class="subtitle-items"]//text()')).strip()
+        except:
+            print("no teaser")
+            teaser = ""
+        try:
+            author = "".join(tree.xpath('//*[@class="author-name"]//text()')).strip().replace("| ","\n")
+        except:
+            author = ""
+            print("this prints author:", author)
+        try:
+            category = "".join(tree.xpath('//*[@class="first-level"]//text()')).strip()
+        except:
+            print("no category")
+            category = ""
+        try:
+            text = "".join(tree.xpath('//*[@itemprop="articleBody"]//p/text()')).strip()
+        except:
+            print("geen text")
+            logger.info("oops - geen textrest?")
+            text = ""
+            print("this prints text:", author)
+        print("this prints text", text)
+        extractedinfo={"title":title.strip(),
+                       "teaser":teaser.strip(),
+                       "author":author.strip(),
+                       "category":category.strip(),
+                       "text":polish(text).strip(),
+                       }
+
+        return extractedinfo
+
 if __name__=="__main__":
     print('Please use these scripts from within inca. EXAMPLE: BLA BLA BLA')
