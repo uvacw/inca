@@ -23,7 +23,7 @@ class detijd(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "de tijd"
+        self.doctype = "detijd (www)"
         self.rss_url=['http://www.tijd.be/rss/ondernemen.xml','http://www.tijd.be/rss/politiek.xml','http://www.tijd.be/rss/markten_live.xml','http://www.tijd.be/rss/opinie.xml','http://www.tijd.be/rss/cultuur.xml','http://www.tijd.be/rss/netto.xml','http://www.tijd.be/rss/sabato.xml']
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
