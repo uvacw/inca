@@ -39,7 +39,6 @@ class demorgen(rss):
         '''
 
         tree = fromstring(htmlsource)
-# byline
         try: 
             byline = tree.xpath('//*[@class="author-info__name"]/span/text()')[0]
             if byline == "":
@@ -47,7 +46,6 @@ class demorgen(rss):
         except:
             byline=""
             logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
-# bylinesource
         try:
             bylinesource = tree.xpath('//*[@class="author-info__source"]/text()')[0]
             if bylinesource == "":
@@ -55,41 +53,75 @@ class demorgen(rss):
         except:
             bylinesource=""
             logger.info("No bylinesource")
-# category
-        try:    
-            category = tree.xpath('//*[@class="breadcrumb__link first last"]/text()')[0]
-            if category == "":    # the category can also contain two sections, then it will be in [@class="breadcrumb__link last"]
-                logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+        # two different paths for category:
+        # path 1: when the category exists of a main category and a specific category (only second one needed)
+        # path 2: when there is just one category
+        try:
+            cat = tree.xpath('//*[@class="breadcrumb__link first last"]/text()')
+            if cat == "":
+                try:
+                    category = tree.xpath('//*[@typeof="v:Breadcrumb"]/a/text()')[-1]
+                except:
+                    logger.info("no category")
+                    category = ""
+            else:
+                try:
+                    category = tree.xpath('//*[@class="breadcrumb__link first last"]/text()')[0]
+                except:
+                    logger.info("no category")
+                    category = ""
         except:
             category=""
             logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
-# title
         try:
             title = tree.xpath('//*[@class="article__header"]/h1/text()')[0]
         except:
             logger.info("No title?")
             title=""
-# text
-        try:
-            textfirstpara = tree.xpath('//*[@class="article__intro fjs-article__intro"]/text()')[0].replace("\n","").strip()
-        except:
-            logger.info("No first paragraph")
-            textfirstpara=""
         try:
             textrest = " ".join(tree.xpath('//*[@class="article__body__paragraph"]//text()'))
         except:
             logger.info("No text?")
             textrest=""
+        # two different paths, since the first paragraph is sometimes in the header, meaning it is a teaser.
+        # path 1: when the first paragraph is actually the first paragraph
+        # path 2: when the first paragraph is the teaser (teaser is then embedded in one part together with the subtitle)
+        try:
+            intro = tree.xpath('//*[@class="article__header"]/p/text()')
+            if intro == []:
+                print('intro is leeg, dus ik ga ervan uit dat het xxxxx')
+                try:
+                    textfirstpara = tree.xpath('//*[@class="article__body fjs-article__body"]/p/text()').strip()
+                except:
+                    logger.info("No first paragraph")
+                    textfirstpara = ""
+            else:
+                print('het lijkt een artikel van type B te zijn')
+                try:
+                    subtitle = tree.xpath('//*[@class="article__header"]/p/text()')[0]
+                except:
+                    subtitle = ""
+                    logger.info("No subtitle")
+                try:
+                    teaser = "".join(tree.xpath('//*[@class="article__header"]/p/text()')[1:])
+                    textfirstpara = ""
+                except:
+                    teaser = ""
+                    textfirstpara = ""
+                    logger.info("No teaser")
+        except:
+            textfirstpara =""
 
+        title = title + " \n" + subtitle
         texttotal = textfirstpara + " " + textrest
         text = texttotal.replace('(+)','').replace('\xa0','').replace('< Lees een maand gratis alle artikels in onze Pluszone via www.demorgen.be/proef','')
 
         extractedinfo={"byline":byline.replace("Bewerkt door:","").strip(),
-                       "bylinesource":bylinesource.replace("- Bron:","").strip(),
-                       "text":text.strip(),
-                       "category":category.strip(),
-                       "title":title
-                       }
+                           "bylinesource":bylinesource.replace("- Bron:","").strip(),
+                           "text":text.strip(),
+                           "category":category.strip(),
+                           "title":title.strip(),
+                           "teaser":teaser.strip()}
 
         return extractedinfo
 
