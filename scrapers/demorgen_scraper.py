@@ -89,14 +89,14 @@ class demorgen(rss):
         try:
             intro = tree.xpath('//*[@class="article__header"]/p/text()')
             if intro == []:
-                print('intro is leeg, dus ik ga ervan uit dat het xxxxx')
+                # article type A
                 try:
                     textfirstpara = tree.xpath('//*[@class="article__body fjs-article__body"]/p/text()').strip()
                 except:
                     logger.info("No first paragraph")
                     textfirstpara = ""
             else:
-                print('het lijkt een artikel van type B te zijn')
+                # article type B
                 try:
                     subtitle = tree.xpath('//*[@class="article__header"]/p/text()')[0]
                 except:
