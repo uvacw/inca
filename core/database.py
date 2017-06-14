@@ -10,9 +10,11 @@ functionality provided here.
 
 import logging
 import json
+import csv
 from elasticsearch import Elasticsearch, NotFoundError, helpers
 from elasticsearch.exceptions import ConnectionTimeout
 import time
+from datetime import datetime
 import configparser
 import requests
 from celery import Task
@@ -288,8 +290,31 @@ def export_doctype(doctype):
         outpath = os.path.join('exports',doctype)
         if doctype not in os.listdir('exports'):
             os.mkdir(outpath)
-        with open(os.path.join('exports', doctype, '%s.JSON' %doc['_id']),'w') as f:
+        with open(os.path.join('exports', doctype, '%s.json' %doc['_id']),'w') as f:
             f.write(json.dumps(doc))
+
+def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
+    '''
+    Takes a dict with an elastic search query as input and exports the given keys to a csv file
+
+    input:
+    ---
+
+    query: dict
+        An ElasticSearch query, e.g. query = {'query':{'match':{'doctype':'nu'}}}
+    keys: list
+        A list of keys to be mapped to columns in the csv file. Often used keys include ['doctype', 'publication_date', 'text', 'feedurl', 'teaser', 'title', 'htmlsource', 'byline', 'url']
+    '''
+
+    if not 'exports' in os.listdir('.'):
+        os.mkdir('exports')
+    with open(os.path.join('exports',"{}.csv".format(datetime.now().strftime("%Y%m%d_%H%M%S"))),'w') as f:
+        writer=csv.writer(f)
+        headerrow = keys
+        writer.writerow(headerrow)
+        for doc in scroll_query(query):
+            row = [doc['_source'][k] for k in keys]
+            writer.writerow(row)
 
 def import_documents(source_folder, force=False):
     for input_file in os.listdir(source_folder):
