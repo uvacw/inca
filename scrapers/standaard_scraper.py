@@ -52,19 +52,19 @@ class standaard(rss):
             category=""            
 # teaser
         try:
-            teaser = "".join(tree.xpath('//*[@class="article-full"]/*[@class="article__body"]/*[@class="intro"]//text()'))
+            textfirstpara = "".join(tree.xpath('//*[@class="article-full"]/*[@class="article__body"]/*[@class="intro"]//text()')).strip()
         except:
-            teaser =""
+            textfirstpara =""
             
 # text
         try:
-            text = tree.xpath('//*[@class="article-full"]//*[@class="article__body"]/p/text()')
+            text = "".join(tree.xpath('//*[@class="article-full"]//*[@class="article__body"]/p/text()'))
         except:
             text =""
             
 # author
         try:
-            author = tree.xpath('//*[@class="article__meta"]/p/a/text()')
+            author = "".join(tree.xpath('//*[@itemprop="author"]/text()'))
         except:
             author =""
  
@@ -78,13 +78,19 @@ class standaard(rss):
                 source  = ""
         except:
             source = ""
+        try:
+            title = tree.xpath('//*[@itemprop="name"]/text()')[0]
+        except:
+            title = ""
+            logger.info('no title?')
 
-
+        text = text.replace("\xad","")
+        text = textfirstpara + " " + text
         extractedinfo = {"category":category,
-                         "teaser":teaser.strip(),
-                         "text":text,
-                         "bylinesource":source,
-                         "byline":author
+                         "text":text.strip(),
+                         "bylinesource":source.strip(),
+                         "byline":author.strip(),
+                         "title":title.strip()
                         }
 
         return extractedinfo

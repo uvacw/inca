@@ -18,12 +18,12 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class tijd(rss):
+class detijd(rss):
     """Scrapes tijd.nl"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "ad (www)"
+        self.doctype = "de tijd"
         self.rss_url=['http://www.tijd.be/rss/ondernemen.xml','http://www.tijd.be/rss/politiek.xml','http://www.tijd.be/rss/markten_live.xml','http://www.tijd.be/rss/opinie.xml','http://www.tijd.be/rss/cultuur.xml','http://www.tijd.be/rss/netto.xml','http://www.tijd.be/rss/sabato.xml']
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
@@ -43,34 +43,36 @@ class tijd(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-#author
         try:
-             author = tree.xpath('//*[@class="m-meta__item-container"]//a/text()')
+             author = tree.xpath('//*[@class="m-meta__item-container"]//a/text()')[0]
         except:
              author = ""
-#teaser
         try:
-            teaser = tree.xpath('//*[@class="l-main-container-article__intro highlightable "]/text()')
+            textfirstpara = tree.xpath('//*[@class="l-main-container-article__intro highlightable "]/text()').strip()
         except:
-            teaser = ""
-             
-#text
+            textfirstpara = ""
+            logger.info('No first paragraph?')
         try:
-             text = "".join(tree.xpath('//*[@class="l-main-container-article__article"]//div//p/text()'))
+            textrest = "".join(tree.xpath('//*[@class="l-main-container-article__body clearfix highlightable "]//text()')).strip()
         except:
-             text =""
-           
-    
- #category
+            textrest =""
+            logger.info('No text?')
         try:
-            category = tree.xpath('//*[@class="m-breadcrumb__item--last"]/a/span/text()')
+            category = tree.xpath('//*[@class="m-breadcrumb__item--last"]/a/span/text()')[0]
         except:
             category =""
+            logger.info('No category')
+        try:
+            title = "".join(tree.xpath('//*[@class="l-grid__item desk-big-five-sixths push-desk-big-one-sixth"]//text()')).strip()
+        except:
+            title = ""
+            logger.info('No title')
 
-        extractedinfo={"byline":author,
-                       "text":text.strip(),
-                       "category":category,
-                       "teaser":teaser
+        texttotal = textfirstpara + " " + textrest
+        extractedinfo={"byline":author.strip(),
+                       "text":texttotal.strip(),
+                       "category":category.strip(),
+                       "title":title,
                        }
 
         return extractedinfo
