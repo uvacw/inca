@@ -49,28 +49,41 @@ class nieuwsblad(rss):
         try:
             category = tree.xpath('//*[@class="is-active"]/text()')[0]
         except:
-            category=""
-# teaser
-        try:
-            teaser = tree.xpath('//article//div//div//P/text()')
-        except:
-            teaser =""
+            category= ""
 # text
         try:
-            text = tree.xpath('//article//div//p/text()')
+            textfirstpara = "".join(tree.xpath('//*[@class="article__intro"]/p/text()')).strip()
         except:
-            text =""
-
-# author
+            textfirstpara = ""
+            logger.info('No first paragraph?')
         try:
-            author = tree.xpath('//article//footer/p/span/text()')[0]
+            textrest = "".join(tree.xpath('//*[@class="article__body"]/p/text() | //*[@class="article__body"]/p/a/text() | //*[@class="article__body"]/p/strong/text()')).strip()
         except:
-            author =""
+            textrest = ""
+            logger.info('No text?')
+        try:
+            byline = tree.xpath('//*[@itemprop="author"]/text()')[0]
+        except:
+            byline = ""
+            logger.info('No author; maybe there is no author?')
+        try:
+            title = tree.xpath('//*[@class="article__header"]/h1/text()')[0]
+        except:
+            title = ""
+            logger.info('No title?')
+        try:
+            bylinesource = tree.xpath('//*[@itemprop="sourceOrganization"]/text()')[0]
+        except:
+            bylinesource = ""
+            logger.info('No source')
 
+        text = textfirstpara + " " + textrest
+        text = text.replace("\xa0","")
         extractedinfo={"category":category.strip(),
-                       "teaser":teaser,
-                       "byline":author.split(),
-                       "text":text.split()
+                       "byline":byline.strip(),
+                       "text":text.strip(),
+                       "title":title.strip(),
+                       "bylinesource":bylinesource.strip()
                        }
 
         return extractedinfo
