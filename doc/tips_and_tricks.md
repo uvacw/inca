@@ -58,7 +58,7 @@ ls
 
 ## Testing a scraper
 
-To test a scraper, it has to be placed into an object and run.
+To test a scraper, it has to be instantiated (so that you get an object); then, you can run the .run() method on this object.
 ```
 s = inca.scrapers.vlaanderen_scraper.vlaanderen(database=False)
 data = s.run()
@@ -69,11 +69,11 @@ Now that you have your data, you can test it.
 ```
 len(data)		# is it an appropriate length?
 data[0].keys()		# shows the keys in this element
-data[0]['category']	# shows you the key
+data[0]['category']	# shows you the value associated with the key
 ```
-If the running didn't work, so there are zero elements in the list, then the problem lies with trying to retrieve the rss feed. If there are elements, but not all keys are present, the problem lies with this particular key.
+If the running didn't work, so there are zero elements in the list, then the problem probably lies with trying to retrieve the rss feed. If there are elements, but not all keys are present, the problem lies with this particular key.
 
-You can also call 1 key for a set of elements to check if the scraping worked.
+You can also retrieve 1 specific key for a set of elements to check if the scraping worked.
 ```
 for i in range(30):
     try:
@@ -82,7 +82,7 @@ for i in range(30):
         print('no category')
 ```
 
-## Scraping using a specific article
+## Testing the parser using a specific article
 
 If some of the keys didn't work, you can use the htmlsource of one of the articles in your dataset to try to find the right xpaths for these keys. Try out different xpaths to find what you're trying to scrape.
 ```
