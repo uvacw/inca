@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class fake(rss):
+class _failed(rss):
     """Retrieves RSS feed from hbvl.be, but returns None as parsed content. FOR TESTING AND DEBUGGING ONLY"""
 
     def __init__(self,database=True):
