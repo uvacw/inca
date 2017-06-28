@@ -67,6 +67,7 @@ class walmart(rss):
 
         return extractedinfo
 
+
 class exxonmobil(rss):
     """Scrapes Walmart """
 
@@ -118,6 +119,50 @@ class exxonmobil(rss):
                        }
 
         return extractedinfo
+
+
+##
+
+class hsbc(rss):
+    """Scrapes hsbc"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.doctype = "hsbc (corp)"
+        self.rss_url ='http://www.hsbc.com/rss-feed'
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=5, day=3)
+
+
+    def parsehtml(self,htmlsource):
+        '''                                                                             
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        tree = fromstring(htmlsource)
+        try:
+            title="".join(tree.xpath('//*[@class="title"]/text()')).strip()
+            print("this prints title", title)
+        except:
+            print("no title")
+            title = ""
+        try:
+            text_dirty = "".join(tree.xpath('//*[@class="content"]//text()')).strip()
+            print(text_dirty)
+        except:
+            print("geen text")
+            logger.info("oops - geen textrest?")
+            text_dirty = ""
+        extractedinfo={"title":title.strip(),
+                       "text":text_dirty.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
 
 
 if __name__=="__main__":
