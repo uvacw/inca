@@ -96,3 +96,7 @@ class Scraper(Document):
         
     def _check_exists(self, *args, **kwargs):
         return check_exists(*args, **kwargs)
+
+class UnparsableException(Exception):
+    def __init__(self):
+        logger.warn('Could not parse the content; maybe the string does not contain valid HTML?')
