@@ -6,6 +6,8 @@ import re
 import sys
 from nltk.sentiment import vader
 
+# TODO: make sure that nltk.download('vader_lexicon') is called if lexicon is not available already.
+
 logger = logging.getLogger(__name__)
 
 
@@ -16,5 +18,5 @@ class sentiment_vader_en(Processer):
     def process(self, document_field):
         '''Document was split into paragraphs'''
         senti=vader.SentimentIntensityAnalyzer()
-        sentimentscorres = senti.polarity_scores(document_field)
+        sentimentscores = senti.polarity_scores(document_field)
         return sentimentscores
