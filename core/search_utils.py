@@ -1,13 +1,16 @@
 '''
 This file provides basic search functionality for the INCA database.
 '''
-from core.database import client, scroll_query, elastic_index
+from core.database import client, scroll_query, elastic_index, DATABASE_AVAILABLE
 import logging
 from core.basic_utils import dotkeys
 
 logger = logging.getLogger(__name__)
 
 def list_doctypes():
+    if not DATABASE_AVAILABLE:
+        logger.warning("Could not list documents: No database instance available")
+        return []
     existing_doctypes = [key for key in client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).keys() if
                          key != '_default_' and key != 'core.document']
     overview = {doctype:client.search(index=elastic_index,doc_type=doctype).get('hits',{}).get('total',"NA") for
@@ -17,6 +20,9 @@ def list_doctypes():
 def doctype_generator(doctype):
     query = {'filter':{'match':{'doctype':doctype}}}
     for num, doc in enumerate(scroll_query(query)):
+        if not DATABASE_AVAILABLE:
+            logger.warning("Could not get documents: No database instance available")
+            break
         logger.info("returning {num}".format(**locals()))
         yield doc
 
@@ -31,8 +37,11 @@ def doctype_first(doctype, num=1, by_field="META.ADDED"):
         The number of documents to retrieve
     by_field: string
         The datetime field by which to determine the
-        first document 
+        first document
     '''
+    if not DATABASE_AVAILABLE:
+        logger.warning("Could not get first document: No database instance available")
+        return []
     docs = client.search(index=elastic_index,
                   body={
                       "sort": [
@@ -58,8 +67,11 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
         The number of documents to retrieve
     by_field: string
         The datetime field by which to determine the
-        last document 
+        last document
     '''
+    if not DATABASE_AVAILABLE:
+        logger.warning("Could not get last documents: No database instance available")
+        return []
     docs = client.search(index=elastic_index,
                   body={
                       "sort": [
@@ -75,16 +87,19 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
     return docs
 
 def doctype_examples(doctype, field=None, seed=42, num=10):
+    if not DATABASE_AVAILABLE:
+        logger.warning("Could not get example documents: No database instance available")
+        return []
     docs = client.search(index=elastic_index, body={
         'size':num,
         "query": {
             "function_score": {
                 "query": {
-                       
+
                         "match": {
                             "_type": doctype
                             }
-                 
+
                     },
                 "functions": [
                     {
@@ -107,11 +122,14 @@ def doctype_fields(doctype):
     returns a summary of fields for documents of `doctype`:
     field : type - count (coverage)
 
-    note: 
+    note:
         As elasticsearch does not natively support an 'all fields' query,
         this function runs a 1000 document sample and takes the union of
-        found keys as a proxy of fields shared by all documents. 
+        found keys as a proxy of fields shared by all documents.
     '''
+    if not DATABASE_AVAILABLE:
+        logger.warning("Could not get document information: No database instance available")
+        return []
     from collections import Counter
     key_count = Counter()
     doc_num   = client.search(index=elastic_index, body={'query':{'match':{'doctype':doctype}}})['hits']['total']
@@ -122,6 +140,9 @@ def doctype_fields(doctype):
     return summary
 
 def missing_field(doctype=None, field='_source', stats_only=True):
+    if not DATABASE_AVAILABLE:
+        logger.warning("Could not get documents missing a field: No database instance available")
+        return []
     query = {'filter':{'missing':{'field':field}}}
     if not doctype:
         result = client.search(elastic_index, body=query)
@@ -149,4 +170,3 @@ def doctype_inspect(doctype):
         keys=doctype_fields(doctype)
     )
     return summary
-
