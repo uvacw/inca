@@ -1,10 +1,10 @@
 '''
-Here you find CRUD functionality. 
+Here you find CRUD functionality.
 
 This module provides database access objects. The idea is
 that all database specific functionality is in this document alone. Other
-classes and functions should interact with the database only through 
-functionality provided here. 
+classes and functions should interact with the database only through
+functionality provided here.
 '''
 
 
@@ -71,7 +71,7 @@ def check_exists(document_id):
         logger.warning('unable to check for documents in elasticsearch elastic_index [{elastic_index}]'.format(**{'elastic_index':elastic_index}))
         time.sleep(1)
         return check_exists(document_id)
-        
+
 def update_document(document, force=False, retry=0, max_retries=10):
     '''
     Documents should usually only be appended, not updated. as such.
@@ -148,7 +148,7 @@ def insert_document(document, custom_identifier=''):
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
-        # 
+        #
         #print(elastic_index)
         #print(document['doctype'])
         #print(document)
@@ -185,18 +185,18 @@ def remove_field(query, field):
             bulk_upsert().run(batch)
             batch = []
     if batch: # in case of leftovers
-        bulk_upsert().run(batch) 
+        bulk_upsert().run(batch)
 
 class bulk_upsert(Task):
     '''Processers can generate far more updates than elasticsearch wants to handle.
        Bulk_upsert reduces the load on elasticsearch by enabeling multiple documents
-       to be updated together, reducing the amount of queries. 
+       to be updated together, reducing the amount of queries.
     '''
     def run(self, documents):
         logger.debug(documents)
         return helpers.bulk(client, documents)
 
-    
+
 def _remove_dots(document):
     ''' elasticsearch is allergic to dots like '.' in keys.
     if you're not carefull, it may choke!
@@ -249,9 +249,39 @@ def scroll_query(query,scroll_time='10m', log_interval=None):
 def create_repository(location):
     '''Creates a repository called 'inca_backup', which is required
     to save snapshots. The location must be added to the `path.repo` field
-    of elasticsearch.yaml (generally located at the elasticsearch folder)
-    ''' 
-    
+    of elasticsearch.yml (generally located at the elasticsearch folder)
+
+    Parameters
+    ----------
+    location : string
+        The location of the specified backup path, should match
+        the "path.repo" argument in the "elasticsearch.yml" file
+
+    Returns
+    -------
+    Dictionary
+        Dictionary with ES response to request
+
+    Example
+    -------
+    ```bash
+    echo "path.repo: /path/to/inca/backup" >> /path/to/elasticsearch/config/elasticsearch.yml
+    ```
+    ```python
+    import inca
+    inca.core.database.create_repository("/path/to/inca/backup")
+    >>> {'acknowledged': True}
+    inca.core.database.create_backup("arbitrary_name")
+    >>> {'accepted': True}
+    ```
+
+    Notes
+    -----
+    The repository location must match the `path.repo` argument in the
+    `elasticsearch.yml` file, generally located in the .../elasticsearch/config
+    path. Elasticsearch must be restarted after the `path.repo` is set or changed.
+    '''
+
     body = {
                   "type": "fs",
                   "settings": {
@@ -270,12 +300,40 @@ def list_backups():
     return response.json()
 
 def create_backup(name):
+    """create a backup of the Elasticsearch indices
+
+    Saves a named backup to the specified backup directory. This requires
+    an inca repository to be initialized using the `create_repository` function.
+    That function is required to run only once after setting a (new) path.repo
+    value.
+
+    Parameters
+    ----------
+    name : str
+        A string specifying a designation for the snapshot. Usefull
+        for selectively loading a backup.
+
+    Returns
+    -------
+    dict
+        A dictionary with the elasticsearch response
+
+    Notes
+    -----
+    For this function to run, a 'inca_backup' repository must be instantiated.
+    Please see the `create_repository` function.
+
+    Also note that the function returns before the backup process is completed.
+    Avoid shutting down elasticsearch before the backup has been fully written
+    to disk. 
+
+    """
     body = {
           "indices": "*",
           "ignore_unavailable": "false",
           "include_global_state": True
         }
-    
+
     return client.snapshot.create(repository='inca_backup', snapshot=name,body=body)
 
 def restore_backup(name):
