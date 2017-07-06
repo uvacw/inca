@@ -33,6 +33,7 @@ try:
         timeout=60
     )   # should be updated to reflect config
     elastic_index  = config.get("elasticsearch","document_index")
+    DATABASE_AVAILABLE = True
 
     # initialize mappings if index does not yet exist
     try:
@@ -46,6 +47,7 @@ try:
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
 except:
     logger.warning("No database functionality available")
+    DATABASE_AVAILABLE = False
 
 
 
@@ -58,6 +60,7 @@ def get_document(doc_id):
     return document
 
 def check_exists(document_id):
+    if not DATABASE_AVAILABLE: return False, {}
     index = elastic_index
     try:
         retrieved = client.get(elastic_index,document_id)
@@ -148,12 +151,6 @@ def insert_document(document, custom_identifier=''):
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
-        #
-        #print(elastic_index)
-        #print(document['doctype'])
-        #print(document)
-        #print(custom_identifier)
-        #
         try:
             doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
         except ConnectionTimeout:
@@ -325,7 +322,7 @@ def create_backup(name):
 
     Also note that the function returns before the backup process is completed.
     Avoid shutting down elasticsearch before the backup has been fully written
-    to disk. 
+    to disk.
 
     """
     body = {
