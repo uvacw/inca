@@ -14,10 +14,12 @@ fields:
 2. description
 3. inputs:
   [
+
     a. label
     b. description
     c. help
     d. input type
+    e. choices
   ]
 
 Input types
@@ -95,7 +97,7 @@ def TLI_text(label,minimum=None, maximum=None, default=None, description="", hel
         citeria = "(no longer than {maximum} characters)".format(**locals())
     elif minimum and maximum:
         criteria = "(between {minimum} and {maximum} characters)".format(**locals())
-    response = input('{show_default}> '.format(**locals()))
+    response = input('{show_default}{criteria}> '.format(**locals()))
 
     if not response and default:
         response = default
@@ -148,6 +150,46 @@ def TLI_bool(label,minimum=None, maximum=None, default=None, description="", hel
         return TLI_bool(**locals())
 
     return response
+
+def TLI_radio(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, choices=[],*args, **kwargs):
+
+    if description or show_help:
+        print(label)
+        print('\t'+'\t'.join(description.split('\n')))
+        if show_help:
+            if not help:
+                print("HELP: unavailable...")
+            else:
+                print("HELP: {help}".format(**locals()))
+
+    print("Choices:\n\n"+"\n".join(choices)+"\n")
+
+    show_default = default and "(default: {default})".format(**locals()) or ""
+
+    response = input('{show_default}> '.format(**locals()))
+
+    if not response and default:
+        response = default
+
+    help_requested = [help_found for help_found in HELP_INDICATORS if help_found==response]
+
+    if help_requested:
+        show_help=True
+        return TLI_text(**locals())
+
+    cleanresponse = response.lower().strip()
+
+    # validation
+    valid_choice = response in choices
+
+    if valid_choice:
+        print("Please make sure you stick to provided choices")
+        show_help = True
+        return TLI_radio(**locals())
+
+    choice = [c for c in choices if c == cleanresponse][0]
+
+    return choice
 
 
 def TLI_prompt(prompt_specification, verify=False):
