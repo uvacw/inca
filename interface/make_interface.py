@@ -116,7 +116,38 @@ def TLI_text(label,minimum=None, maximum=None, default=None, description="", hel
 
     return response
 
+def TLI_bool(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, *args, **kwargs):
 
+    if description or show_help:
+        print(label)
+        print('\t'+'\t'.join(description.split('\n')))
+        if show_help:
+            if not help:
+                print("HELP: unavailable...")
+            else:
+                print("HELP: {help}".format(**locals()))
+
+    show_default = default and "(default: {default})".format(**locals()) or ""
+
+    response = input('{show_default}> '.format(**locals()))
+
+    if not response and default:
+        response = default
+    help_requested = [help_found for help_found in HELP_INDICATORS if help_found==response]
+
+    if help_requested:
+        show_help=True
+        return TLI_text(**locals())
+
+    # validation
+    is_bool = response.lower() in ['true','false','t','f']
+
+    if not is_bool:
+        print("Please make sure you provide a boolean")
+        show_help = True
+        return TLI_bool(**locals())
+
+    return response
 
 
 def TLI_prompt(prompt_specification, verify=False):
