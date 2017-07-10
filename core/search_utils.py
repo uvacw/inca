@@ -4,6 +4,7 @@ This file provides basic search functionality for the INCA database.
 from core.database import client, scroll_query, elastic_index, DATABASE_AVAILABLE
 import logging
 from core.basic_utils import dotkeys
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -162,11 +163,43 @@ def missing_field(doctype=None, field='_source', stats_only=True):
 
         return stats
 def doctype_inspect(doctype):
-    '''TODO: provide an overview of doctype collection '''
+    '''Show some information about documents of a specified type
+
+    Parameters
+    ----------
+    doctype : string
+        string specifying the doctype to examine (see list_doctypes for available documents)
+
+    Returns
+    -------
+    dictionary
+        summary of documents of the specified type:
+            total collected : integer
+                the amount of documents of this type (approximation)
+            first_collected : datetime
+                the minimal 'META.ADDED' field of these documents, which
+                specifies the oldest documents
+            last_collected : datetime
+                the maximum 'META.ADDED' field of these documents which
+                specifies when the last document of this type was collected
+            keys : dictionary
+                <keyname> : dictionary
+                    coverage : float
+                        the proportion of documents that have this key
+                    type     : string
+                        the elasticsearch index type of this field
+
+    '''
+
+    firstdocs = doctype_first(doctype, by_field="META.ADDED")
+    lastdocs  = doctype_last(doctype, by_field="META.ADDED")
+
     summary = dict(
-        total_collected=0,
-        first_collected=datetime(),
-        last_collected=datetime(),
+        total_collected = client.search(index=elastic_index, doc_type=doctype)['hits']['total'],
+        first_collected = firstdocs and firstdocs[0].get('_source',{}).get('META',{}).get("ADDED",None) or None,
+        last_collected = lastdocs and lastdocs[0].get('_source',{}).get('META',{}).get("ADDED",None),
         keys=doctype_fields(doctype)
     )
+
+
     return summary
