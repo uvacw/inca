@@ -19,7 +19,7 @@ fields:
     b. description
     c. help
     d. input type
-    e. choices
+    e. options
   ]
 
 Input types
@@ -45,16 +45,15 @@ time (minimum, maximum, default):
 Example
 -------
 
-prompt_specification = {
-    description = "this is an example of input.
-    header = 'Test input'
-    just see for yourself."
+prompt_specification = dict(
+    description = "this is an example of input.\njust see for yourself.",
+    header = "Test input",
     inputs = [
         {"label":'enter text', "description":'nothing happens', "help":'', "input_type":'text', "minimum":None, "maximum":None, "default":None} ,
         {"label": 'pick a letter', "description":'any letter', "input_type":'radio', "options":['a','b','c'], "default":'a'},
     ]
 
-}
+)
 
 Should generate something like:
 
@@ -74,186 +73,440 @@ Should generate something like:
 
 
 """
+import time
+from collections import OrderedDict
 
-HELP_INDICATORS = ['h','help','?']
+class TLI():
 
-def TLI_text(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, *args, **kwargs):
+    HELP_INDICATORS = ['h','help','?']
 
-    if description or show_help:
-        print(label)
-        print('\t'+'\t'.join(description.split('\n')))
-        if show_help:
-            if not help:
-                print("HELP: unavailable...")
-            else:
-                print("HELP: {help}".format(**locals()))
+    def TLI_text(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, *args, **kwargs):
 
-    show_default = default and "(default: {default})".format(**locals()) or ""
-    if not minimum and not maximum:
-        criteria = ""
-    elif minimum and not maximum:
-        criteria = "(at least {minimum} characters)".format(**locals())
-    elif not minimum and maximum:
-        citeria = "(no longer than {maximum} characters)".format(**locals())
-    elif minimum and maximum:
-        criteria = "(between {minimum} and {maximum} characters)".format(**locals())
-    response = input('{show_default}{criteria}> '.format(**locals()))
+        if description or show_help:
+            print(label)
+            print('\t'+'\t'.join(description.split('\n')))
+            if show_help:
+                if not help:
+                    print("HELP: unavailable...")
+                else:
+                    print("HELP: {help}".format(**locals()))
 
-    if not response and default:
-        response = default
-    help_requested = [help_found for help_found in HELP_INDICATORS if help_found==response]
+        show_default = default and "(default: {default})".format(**locals()) or ""
+        if not minimum and not maximum:
+            criteria = ""
+        elif minimum and not maximum:
+            criteria = "(at least {minimum} characters)".format(**locals())
+        elif not minimum and maximum:
+            citeria = "(no longer than {maximum} characters)".format(**locals())
+        elif minimum and maximum:
+            criteria = "(between {minimum} and {maximum} characters)".format(**locals())
+        response = input('{show_default}{criteria}> '.format(**locals()))
 
-    if help_requested:
-        show_help=True
-        return TLI_text(**locals())
+        if not response and default:
+            response = default
+        help_requested = [help_found for help_found in TLI.HELP_INDICATORS if help_found==response]
 
-    # validation
-    minimum_reached = not type(minimum)==int and True  or len(response) > minimum
-    maximum_avoided = not type(maximum)==int and True or len(response) < maximum
+        if help_requested:
+            show_help=True
+            return TLI.TLI_text(**locals())
 
-    if not minimum_reached or not maximum_avoided:
-        print("Please make sure you stick to provided minimum and maximum lengths")
-        show_help = True
-        return TLI_text(**locals())
+        # validation
+        minimum_reached = not type(minimum)==int and True  or len(response) > minimum
+        maximum_avoided = not type(maximum)==int and True or len(response) < maximum
 
-    return response
+        if not minimum_reached or not maximum_avoided:
+            print("Please make sure you stick to provided minimum and maximum lengths")
+            show_help = True
+            return TLI.TLI_text(**locals())
 
-def TLI_bool(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, *args, **kwargs):
+        return response
 
-    if description or show_help:
-        print(label)
-        print('\t'+'\t'.join(description.split('\n')))
-        if show_help:
-            if not help:
-                print("HELP: unavailable...")
-            else:
-                print("HELP: {help}".format(**locals()))
+    def TLI_bool(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, *args, **kwargs):
 
-    show_default = default and "(default: {default})".format(**locals()) or ""
+        if description or show_help:
+            print(label)
+            print('\t'+'\t'.join(description.split('\n')))
+            if show_help:
+                if not help:
+                    print("HELP: unavailable...")
+                else:
+                    print("HELP: {help}".format(**locals()))
 
-    response = input('{show_default}> '.format(**locals()))
+        show_default = default and "(default: {default})".format(**locals()) or ""
 
-    if not response and default:
-        response = default
-    help_requested = [help_found for help_found in HELP_INDICATORS if help_found==response]
+        response = input('{show_default}> '.format(**locals()))
 
-    if help_requested:
-        show_help=True
-        return TLI_text(**locals())
+        if not response and default:
+            response = default
+        help_requested = [help_found for help_found in TLI.HELP_INDICATORS if help_found==response]
 
-    # validation
-    is_bool = response.lower() in ['true','false','t','f']
+        if help_requested:
+            show_help=True
+            return TLI.TLI_text(**locals())
 
-    if not is_bool:
-        print("Please make sure you provide a boolean")
-        show_help = True
-        return TLI_bool(**locals())
+        # validation
+        is_bool = response.lower() in ['true','false','t','f']
 
-    return response
+        if not is_bool:
+            print("Please make sure you provide a boolean")
+            show_help = True
+            return TLI.TLI_bool(**locals())
 
-def TLI_radio(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, choices=[],*args, **kwargs):
+        return response
 
-    if description or show_help:
-        print(label)
-        print('\t'+'\t'.join(description.split('\n')))
-        if show_help:
-            if not help:
-                print("HELP: unavailable...")
-            else:
-                print("HELP: {help}".format(**locals()))
+    def TLI_radio(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, options=[],*args, **kwargs):
 
-    print("Choices:\n\n"+"\n".join(choices)+"\n")
+        if description or show_help:
+            print(label)
+            print('\t'+'\t'.join(description.split('\n')))
+            if show_help:
+                if not help:
+                    print("HELP: unavailable...")
+                else:
+                    print("HELP: {help}".format(**locals()))
 
-    show_default = default and "(default: {default})".format(**locals()) or ""
+        print("Choices:\n\n"+"\n".join(options)+"\n")
 
-    response = input('{show_default}> '.format(**locals()))
+        show_default = default and "(default: {default})".format(**locals()) or ""
 
-    if not response and default:
-        response = default
+        response = input('{show_default}> '.format(**locals()))
 
-    help_requested = [help_found for help_found in HELP_INDICATORS if help_found==response]
+        if not response and default:
+            response = default
 
-    if help_requested:
-        show_help=True
-        return TLI_text(**locals())
+        help_requested = [help_found for help_found in TLI.HELP_INDICATORS if help_found==response]
 
-    cleanresponse = response.lower().strip()
+        if help_requested:
+            show_help=True
+            return TLI.TLI_text(**locals())
 
-    # validation
-    valid_choice = response in choices
+        cleanresponse = response.lower().strip()
 
-    if valid_choice:
-        print("Please make sure you stick to provided choices")
-        show_help = True
-        return TLI_radio(**locals())
+        # validation
+        valid_choice = response in options
 
-    choice = [c for c in choices if c.lower() == cleanresponse][0]
+        if not valid_choice:
+            print("Please make sure you stick to provided options")
+            print("You specified {response}".format(**locals()))
+            show_help = True
+            return TLI.TLI_radio(**locals())
 
-    return choice
+        choice = [c for c in options if c.lower().strip() == cleanresponse][0]
 
-def TLI_checkbox(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, choices=[], *args, **kwargs):
+        return choice
 
-    if description or show_help:
-        print(label)
-        print('\t'+'\t'.join(description.split('\n')))
-        if show_help:
-            if not help:
-                print("HELP: unavailable...")
-            else:
-                print("HELP: {help}".format(**locals()))
+    def TLI_checkbox(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, options=[], *args, **kwargs):
 
-    print("Choices:\n\n"+"\n".join(choices)+"\n")
+        if description or show_help:
+            print(label)
+            print('\t'+'\t'.join(description.split('\n')))
+            if show_help:
+                if not help:
+                    print("HELP: unavailable...")
+                else:
+                    print("HELP: {help}".format(**locals()))
+                    print("Choices:\n\n"+"\n".join(options)+"\n")
 
-    show_default = default and "(default: {default})".format(**locals()) or ""
-    if not minimum and not maximum:
-        criteria = ""
-    elif minimum and not maximum:
-        criteria = "(at least {minimum} choice)".format(**locals())
-    elif not minimum and maximum:
-        citeria = "(no longer than {maximum} choices)".format(**locals())
-    elif minimum and maximum:
-        criteria = "(between {minimum} and {maximum} choices)".format(**locals())
-    response = input('{show_default}{criteria} separated by ','> '.format(**locals()))
+        show_default = default and "(default: {default})".format(**locals()) or ""
+        if not minimum and not maximum:
+            criteria = ""
+        elif minimum and not maximum:
+            criteria = "(at least {minimum} choice)".format(**locals())
+        elif not minimum and maximum:
+            citeria = "(no longer than {maximum} options)".format(**locals())
+        elif minimum and maximum:
+            criteria = "(between {minimum} and {maximum} options)".format(**locals())
+        response = input('{show_default}{criteria} separated by ','> '.format(**locals()))
 
-    if not response and default:
-        response = default
-    help_requested = [help_found for help_found in HELP_INDICATORS if help_found==response]
+        if not response and default:
+            response = default
+        help_requested = [help_found for help_found in TLI.HELP_INDICATORS if help_found==response]
 
-    if help_requested:
-        show_help=True
-        return TLI_text(**locals())
+        if help_requested:
+            show_help=True
+            return TLI.TLI_text(**locals())
 
-    # interpretation
-    cleanchoices = [choice.lower().strip() for choice in response.split(',')]
-    validchoices = [choice for choice in choices if choice.lower() in cleanchoices ]
+        # interpretation
+        cleanoptions = [choice.lower().strip() for choice in response.split(',')]
+        validoptions = [choice for choice in options if choice.lower() in cleanoptions ]
 
-    # validation
-    minimum_reached = len(validchoices) > minimum
-    maximum_avoided = len(validchoices) < maximum
+        # validation
+        minimum_reached = len(validoptions) > minimum
+        maximum_avoided = len(validoptions) < maximum
 
-    if not minimum_reached or not maximum_avoided:
-        print("Please make sure you stick to provided minimum and maximum choices")
-        print("You provided:")
-        for n,c in enumerate(validchoices):
-            print(n+1,". ",c)
-        show_help = True
-        return TLI_text(**locals())
+        if not minimum_reached or not maximum_avoided:
+            print("Please make sure you stick to provided minimum and maximum options")
+            print("You provided:")
+            for n,c in enumerate(validoptions):
+                print(n+1,". ",c)
+            show_help = True
+            return TLI.TLI_text(**locals())
 
-    return response
+        return response
 
+    def TLI_integer(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, *args, **kwargs):
 
-def TLI_prompt(prompt_specification, verify=False):
-    """Starts a text-based user interaction.
+        if description or show_help:
+            print(label)
+            print('\t'+'\t'.join(description.split('\n')))
+            if show_help:
+                if not help:
+                    print("HELP: unavailable...")
+                else:
+                    print("HELP: {help}".format(**locals()))
 
-    Usefull to prompt users to enter specific information based on
-    external resources, such as asking users to enter authentication codes.
+        show_default = default and "(default: {default})".format(**locals()) or ""
+        if not minimum and not maximum:
+            criteria = ""
+        elif minimum and not maximum:
+            criteria = "(at least {minimum})".format(**locals())
+        elif not minimum and maximum:
+            citeria = "(no longer than {maximum})".format(**locals())
+        elif minimum and maximum:
+            criteria = "(between {minimum} and {maximum})".format(**locals())
+        response = input('{show_default}{criteria}> '.format(**locals()))
 
-    Parameters
-    ----------
-    prompt_specification : dict
-        Dict specifying that to show.
-        See prompt_specification for more information.
-    verify : Bool [default=False]
-        whether users should verify their answers (Y/N) before submission
+        if not response and default:
+            response = default
 
-    """
+        help_requested = [help_found for help_found in TLI.HELP_INDICATORS if help_found==response]
+
+        if help_requested:
+            show_help=True
+            return TLI.TLI_text(**locals())
+
+        # validation
+        try:
+            response = int(response.strip())
+            correct_type    = True
+        except ValueError:
+            correct_type    = False
+
+        minimum_reached = correct_type and response >= minimum
+        maximum_avoided = correct_type and response <= maximum
+
+        if not correct_type or not minimum_reached or not maximum_avoided:
+            print("Please provide an integer (1,2,3,4..) between the minimum and maximum")
+            show_help = True
+            return TLI.TLI_text(**locals())
+
+        return response
+
+    def TLI_float(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, *args, **kwargs):
+
+        if description or show_help:
+            print(label)
+            print('\t'+'\t'.join(description.split('\n')))
+            if show_help:
+                if not help:
+                    print("HELP: unavailable...")
+                else:
+                    print("HELP: {help}".format(**locals()))
+
+        show_default = default and "(default: {default})".format(**locals()) or ""
+        if not minimum and not maximum:
+            criteria = ""
+        elif minimum and not maximum:
+            criteria = "(at least {minimum})".format(**locals())
+        elif not minimum and maximum:
+            citeria = "(no longer than {maximum})".format(**locals())
+        elif minimum and maximum:
+            criteria = "(between {minimum} and {maximum})".format(**locals())
+        response = input('{show_default}{criteria}> '.format(**locals()))
+
+        if not response and default:
+            response = default
+
+        help_requested = [help_found for help_found in TLI.HELP_INDICATORS if help_found==response]
+
+        if help_requested:
+            show_help=True
+            return TLI.TLI_text(**locals())
+
+        # validation
+        try:
+            response = float(response.strip())
+            correct_type    = True
+        except ValueError:
+            correct_type    = False
+
+        minimum_reached = correct_type and response >= minimum
+        maximum_avoided = correct_type and response <= maximum
+
+        if not correct_type or not minimum_reached or not maximum_avoided:
+            print("Please provide an decimal (1.1, 3.4, ...) between the minimum and maximum")
+            show_help = True
+            return TLI.TLI_text(**locals())
+
+        return response
+
+    def TLI_date(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, *args, **kwargs):
+
+        def extract_date(string_input):
+            try:
+                return time.strptime(string_input, "%d-%m-%Y")
+            except ValueError:
+                return False
+
+        if description or show_help:
+            print(label)
+            print('\t'+'\t'.join(description.split('\n')))
+            if show_help:
+                if not help:
+                    print("HELP: unavailable...")
+                else:
+                    print("HELP: {help}".format(**locals()))
+
+        show_default = default and "(default: {default})".format(**locals()) or ""
+        if not minimum and not maximum:
+            criteria = ""
+        elif minimum and not maximum:
+            minimum = extract_date(minimum)
+            maximum = extract_date("31-12-6000")
+            criteria = "(at least {minimum})".format(**locals())
+        elif not minimum and maximum:
+            minimum = extract_date("01-01-0001")
+            maximum = extract_date(maximum)
+            citeria = "(no longer than {maximum})".format(**locals())
+        elif minimum and maximum:
+            minimum = extract_date(minimum)
+            maximum = extract_date(maximum)
+            criteria = "(between {minimum} and {maximum})".format(**locals())
+        response = input('{show_default}{criteria}> '.format(**locals()))
+
+        if not minimum and maximum:
+            raise Exception("minimum and/or maximum are misspecified! Use a day-month-year format (e.g. 24-05-1999)")
+
+        if not response and default:
+            response = default
+
+        help_requested = [help_found for help_found in TLI.HELP_INDICATORS if help_found==response]
+
+        if help_requested:
+            show_help=True
+            return TLI.TLI_text(**locals())
+
+        # validation
+        try:
+            response = extract_date(response.strip())
+            correct_type    = response
+        except ValueError:
+            correct_type    = False
+
+        minimum_reached = correct_type and response >= minimum
+        maximum_avoided = correct_type and response <= maximum
+
+        if not correct_type or not minimum_reached or not maximum_avoided:
+            print("Please provide an date between the minimum and maximum")
+            show_help = True
+            return TLI.TLI_text(**locals())
+
+        return response
+
+    def TLI_time(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, *args, **kwargs):
+
+        def extract_time(string_input):
+            try:
+                return time.strptime(string_input, "%H:%M:%S")
+            except ValueError:
+                return False
+
+        if description or show_help:
+            print(label)
+            print('\t'+'\t'.join(description.split('\n')))
+            if show_help:
+                if not help:
+                    print("HELP: unavailable...")
+                else:
+                    print("HELP: {help}".format(**locals()))
+
+        show_default = default and "(default: {default})".format(**locals()) or ""
+        if not minimum and not maximum:
+            criteria = ""
+        elif minimum and not maximum:
+            minimum = extract_time(minimum)
+            maximum = extract_time("23:59:60") # should always be true
+            criteria = "(at least {minimum})".format(**locals())
+        elif not minimum and maximum:
+            minimum = extract_time("00:00:00") # should always be true
+            maximum = extract_time(maximum)
+            citeria = "(no longer than {maximum})".format(**locals())
+        elif minimum and maximum:
+            minimum = extract_time(minimum)
+            maximum = extract_time(maximum)
+            criteria = "(between {minimum} and {maximum})".format(**locals())
+        response = input('{show_default}{criteria}> '.format(**locals()))
+
+        if not minimum and maximum:
+            raise Exception("minimum and/or maximum are misspecified! Use a day-month-year format (e.g. 24-05-1999)")
+
+        if not response and default:
+            response = default
+
+        help_requested = [help_found for help_found in TLI.HELP_INDICATORS if help_found==response]
+
+        if help_requested:
+            show_help=True
+            return TLI.TLI_text(**locals())
+
+        # validation
+        try:
+            response = extract_time(response.strip())
+            correct_type    = response
+        except ValueError:
+            correct_type    = False
+
+        minimum_reached = correct_type and response >= minimum
+        maximum_avoided = correct_type and response <= maximum
+
+        if not correct_type or not minimum_reached or not maximum_avoided:
+            print("Please provide a time in the format hour:minute:seconds (e.g. '22:45:55') between the minimum and maximum")
+            show_help = True
+            return TLI.TLI_text(**locals())
+
+        return response
+
+    def TLI_prompt(prompt_specification, verify=False):
+        """Starts a text-based user interaction.
+
+        Usefull to prompt users to enter specific information based on
+        external resources, such as asking users to enter authentication codes.
+
+        Parameters
+        ----------
+        prompt_specification : dict
+            Dict specifying that to show.
+            See prompt_specification for more information.
+        verify : Bool [default=False]
+            whether users should verify their answers (Y/N) before submission
+
+        """
+
+        print("""
+=============== {prompt_specification[header]:^20.20} ===============
+
+{prompt_specification[description]}
+
+--------------------------------------------------------------
+""".format(**locals()))
+
+        responses = OrderedDict()
+        for prompt in prompt_specification['inputs']:
+            responses.update({prompt['label'] : getattr(TLI, "TLI_{prompt[input_type]}".format(prompt=prompt))(**prompt)})
+            print()
+
+        if verify==True:
+            outputs = '\n'.join(["{k:30.30} : {v}".format(k=k,v=v) for k,v in responses.items()])
+            summary = """
+================ you provided ===================
+
+{outputs}
+
+Is this correct? (Y/n)
+=================================================
+
+> """.format(outputs=outputs)
+            correct = input(summary)
+            if not correct.lower().strip() in ['y','yes','yeah','']:
+                return TLI.TLI_prompt(prompt_specification, verify)
+        return responses
