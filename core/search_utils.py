@@ -46,7 +46,7 @@ def doctype_first(doctype, num=1, by_field="META.ADDED"):
     docs = client.search(index=elastic_index,
                   body={
                       "sort": [
-                          {by_field : {"order":"desc"}}
+                          {by_field : {"order":"asc"}}
                           ],
                       "size":num,
                       "query":
@@ -76,7 +76,7 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
     docs = client.search(index=elastic_index,
                   body={
                       "sort": [
-                          { by_field : {"order":"asc"}}
+                          { by_field : {"order":"desc"}}
                           ],
                       "size":num,
                       "query":
