@@ -45,6 +45,7 @@ time (minimum, maximum, default):
 Example
 -------
 
+```python
 prompt_specification = dict(
     description = "this is an example of input.\njust see for yourself.",
     header = "Test input",
@@ -54,6 +55,8 @@ prompt_specification = dict(
     ]
 
 )
+TLI.prompt(prompt_specification)
+```
 
 Should generate something like:
 
@@ -466,7 +469,7 @@ class TLI():
 
         return response
 
-    def TLI_prompt(prompt_specification, verify=False):
+    def prompt(prompt_specification, verify=False):
         """Starts a text-based user interaction.
 
         Usefull to prompt users to enter specific information based on
@@ -508,5 +511,5 @@ Is this correct? (Y/n)
 > """.format(outputs=outputs)
             correct = input(summary)
             if not correct.lower().strip() in ['y','yes','yeah','']:
-                return TLI.TLI_prompt(prompt_specification, verify)
+                return TLI.prompt(prompt_specification, verify)
         return responses
