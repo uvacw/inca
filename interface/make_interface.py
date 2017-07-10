@@ -187,9 +187,59 @@ def TLI_radio(label,minimum=None, maximum=None, default=None, description="", he
         show_help = True
         return TLI_radio(**locals())
 
-    choice = [c for c in choices if c == cleanresponse][0]
+    choice = [c for c in choices if c.lower() == cleanresponse][0]
 
     return choice
+
+def TLI_checkbox(label,minimum=None, maximum=None, default=None, description="", help=None , show_help=False, choices=[], *args, **kwargs):
+
+    if description or show_help:
+        print(label)
+        print('\t'+'\t'.join(description.split('\n')))
+        if show_help:
+            if not help:
+                print("HELP: unavailable...")
+            else:
+                print("HELP: {help}".format(**locals()))
+
+    print("Choices:\n\n"+"\n".join(choices)+"\n")
+
+    show_default = default and "(default: {default})".format(**locals()) or ""
+    if not minimum and not maximum:
+        criteria = ""
+    elif minimum and not maximum:
+        criteria = "(at least {minimum} choice)".format(**locals())
+    elif not minimum and maximum:
+        citeria = "(no longer than {maximum} choices)".format(**locals())
+    elif minimum and maximum:
+        criteria = "(between {minimum} and {maximum} choices)".format(**locals())
+    response = input('{show_default}{criteria} separated by ','> '.format(**locals()))
+
+    if not response and default:
+        response = default
+    help_requested = [help_found for help_found in HELP_INDICATORS if help_found==response]
+
+    if help_requested:
+        show_help=True
+        return TLI_text(**locals())
+
+    # interpretation
+    cleanchoices = [choice.lower().strip() for choice in response.split(',')]
+    validchoices = [choice for choice in choices if choice.lower() in cleanchoices ]
+
+    # validation
+    minimum_reached = len(validchoices) > minimum
+    maximum_avoided = len(validchoices) < maximum
+
+    if not minimum_reached or not maximum_avoided:
+        print("Please make sure you stick to provided minimum and maximum choices")
+        print("You provided:")
+        for n,c in enumerate(validchoices):
+            print(n+1,". ",c)
+        show_help = True
+        return TLI_text(**locals())
+
+    return response
 
 
 def TLI_prompt(prompt_specification, verify=False):
