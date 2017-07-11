@@ -1,29 +1,33 @@
 '''
 This file provides basic search functionality for the INCA database.
 '''
-from core.database import client, scroll_query, elastic_index, DATABASE_AVAILABLE
-import logging
-from core.basic_utils import dotkeys
+from core.database import client as _client
+from core.database import scroll_query as _scroll_query
+from core.database import elastic_index as _elastic_index
+from core.database import DATABASE_AVAILABLE as _DATABASE_AVAILABLE
+import logging as _logging
+from core.basic_utils import dotkeys as _dotkeys
+import _datetime as _datetime
 
-logger = logging.getLogger(__name__)
+_logger = _logging.getLogger(__name__)
 
 def list_doctypes():
-    if not DATABASE_AVAILABLE:
-        logger.warning("Could not list documents: No database instance available")
+    if not _DATABASE_AVAILABLE:
+        _logger.warning("Could not list documents: No database instance available")
         return []
-    existing_doctypes = [key for key in client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).keys() if
+    existing_doctypes = [key for key in _client.indices.get_mapping(_elastic_index).get(_elastic_index,{}).get('mappings',{}).keys() if
                          key != '_default_' and key != 'core.document']
-    overview = {doctype:client.search(index=elastic_index,doc_type=doctype).get('hits',{}).get('total',"NA") for
+    overview = {doctype:_client.search(index=_elastic_index,doc_type=doctype).get('hits',{}).get('total',"NA") for
                                                                                         doctype in existing_doctypes}
     return overview
 
 def doctype_generator(doctype):
     query = {'filter':{'match':{'doctype':doctype}}}
-    for num, doc in enumerate(scroll_query(query)):
-        if not DATABASE_AVAILABLE:
-            logger.warning("Could not get documents: No database instance available")
+    for num, doc in enumerate(_scroll_query(query)):
+        if not _DATABASE_AVAILABLE:
+            _logger.warning("Could not get documents: No database instance available")
             break
-        logger.info("returning {num}".format(**locals()))
+        _logger.info("returning {num}".format(**locals()))
         yield doc
 
 def doctype_first(doctype, num=1, by_field="META.ADDED"):
@@ -36,16 +40,16 @@ def doctype_first(doctype, num=1, by_field="META.ADDED"):
     num: int
         The number of documents to retrieve
     by_field: string
-        The datetime field by which to determine the
+        The _datetime field by which to determine the
         first document
     '''
-    if not DATABASE_AVAILABLE:
-        logger.warning("Could not get first document: No database instance available")
+    if not _DATABASE_AVAILABLE:
+        _logger.warning("Could not get first document: No database instance available")
         return []
-    docs = client.search(index=elastic_index,
+    docs = _client.search(index=_elastic_index,
                   body={
                       "sort": [
-                          {by_field : {"order":"desc"}}
+                          {by_field : {"order":"asc"}}
                           ],
                       "size":num,
                       "query":
@@ -66,16 +70,16 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
     num: int
         The number of documents to retrieve
     by_field: string
-        The datetime field by which to determine the
+        The _datetime field by which to determine the
         last document
     '''
-    if not DATABASE_AVAILABLE:
-        logger.warning("Could not get last documents: No database instance available")
+    if not _DATABASE_AVAILABLE:
+        _logger.warning("Could not get last documents: No database instance available")
         return []
-    docs = client.search(index=elastic_index,
+    docs = _client.search(index=_elastic_index,
                   body={
                       "sort": [
-                          { by_field : {"order":"asc"}}
+                          { by_field : {"order":"desc"}}
                           ],
                       "size":num,
                       "query":
@@ -87,10 +91,10 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
     return docs
 
 def doctype_examples(doctype, field=None, seed=42, num=10):
-    if not DATABASE_AVAILABLE:
-        logger.warning("Could not get example documents: No database instance available")
+    if not _DATABASE_AVAILABLE:
+        _logger.warning("Could not get example documents: No database instance available")
         return []
-    docs = client.search(index=elastic_index, body={
+    docs = _client.search(index=_elastic_index, body={
         'size':num,
         "query": {
             "function_score": {
@@ -113,9 +117,9 @@ def doctype_examples(doctype, field=None, seed=42, num=10):
     if not field:
         return docs['hits']['hits']
     elif type(field)==str:
-        return [dotkeys(doc,field) for doc in docs['hits']['hits']]
+        return [_dotkeys(doc,field) for doc in docs['hits']['hits']]
     else:
-        return [{fi:dotkeys(doc,fi) for fi in field} for doc in docs['hits']['hits']]
+        return [{fi:_dotkeys(doc,fi) for fi in field} for doc in docs['hits']['hits']]
 
 def doctype_fields(doctype):
     '''
@@ -127,31 +131,31 @@ def doctype_fields(doctype):
         this function runs a 1000 document sample and takes the union of
         found keys as a proxy of fields shared by all documents.
     '''
-    if not DATABASE_AVAILABLE:
-        logger.warning("Could not get document information: No database instance available")
+    if not _DATABASE_AVAILABLE:
+        _logger.warning("Could not get document information: No database instance available")
         return []
     from collections import Counter
     key_count = Counter()
-    doc_num   = client.search(index=elastic_index, body={'query':{'match':{'doctype':doctype}}})['hits']['total']
-    mappings = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype,{}).get('properties',{})
-    coverage = {key:client.search(elastic_index,body={'query': {'bool':{'filter':[{'exists':{'field':key}},{'term':{'doctype':doctype}}]}}}).get('hits',{}).get('total',0) for key in mappings.keys() if key!="META"}
+    doc_num   = _client.search(index=_elastic_index, body={'query':{'match':{'doctype':doctype}}})['hits']['total']
+    mappings = _client.indices.get_mapping(_elastic_index).get(_elastic_index,{}).get('mappings',{}).get(doctype,{}).get('properties',{})
+    coverage = {key:_client.search(_elastic_index,body={'query': {'bool':{'filter':[{'exists':{'field':key}},{'term':{'doctype':doctype}}]}}}).get('hits',{}).get('total',0) for key in mappings.keys() if key!="META"}
     summary = {k:{'coverage':coverage.get(k,'unknown')/float(doc_num),'type':mappings[k].get('type','unknown')} for
                k in mappings.keys() if k!="META"}
     return summary
 
 def missing_field(doctype=None, field='_source', stats_only=True):
-    if not DATABASE_AVAILABLE:
-        logger.warning("Could not get documents missing a field: No database instance available")
+    if not _DATABASE_AVAILABLE:
+        _logger.warning("Could not get documents missing a field: No database instance available")
         return []
     query = {'filter':{'missing':{'field':field}}}
     if not doctype:
-        result = client.search(elastic_index, body=query)
+        result = _client.search(_elastic_index, body=query)
     else:
-        result = client.search(elastic_index, doctype, body=query)
+        result = _client.search(_elastic_index, doctype, body=query)
     if not stats_only:
         return result['hits']['hits']
     else:
-        total = doctype and client.search(elastic_index, doctype)['hits']['total'] or client.search(elastic_index)['hits']['total']
+        total = doctype and _client.search(_elastic_index, doctype)['hits']['total'] or _client.search(_elastic_index)['hits']['total']
         stats = {
             'doctype' : doctype and doctype or '*',
             'field' : field,
@@ -162,11 +166,43 @@ def missing_field(doctype=None, field='_source', stats_only=True):
 
         return stats
 def doctype_inspect(doctype):
-    '''TODO: provide an overview of doctype collection '''
+    '''Show some information about documents of a specified type
+
+    Parameters
+    ----------
+    doctype : string
+        string specifying the doctype to examine (see list_doctypes for available documents)
+
+    Returns
+    -------
+    dictionary
+        summary of documents of the specified type:
+            total collected : integer
+                the amount of documents of this type (approximation)
+            first_collected : _datetime
+                the minimal 'META.ADDED' field of these documents, which
+                specifies the oldest documents
+            last_collected : _datetime
+                the maximum 'META.ADDED' field of these documents which
+                specifies when the last document of this type was collected
+            keys : dictionary
+                <keyname> : dictionary
+                    coverage : float
+                        the proportion of documents that have this key
+                    type     : string
+                        the elasticsearch index type of this field
+
+    '''
+
+    firstdocs = doctype_first(doctype, by_field="META.ADDED")
+    lastdocs  = doctype_last(doctype, by_field="META.ADDED")
+
     summary = dict(
-        total_collected=0,
-        first_collected=datetime(),
-        last_collected=datetime(),
+        total_collected = _client.search(index=_elastic_index, doc_type=doctype)['hits']['total'],
+        first_collected = firstdocs and firstdocs[0].get('_source',{}).get('META',{}).get("ADDED",None) or None,
+        last_collected = lastdocs and lastdocs[0].get('_source',{}).get('META',{}).get("ADDED",None),
         keys=doctype_fields(doctype)
     )
+
+
     return summary
