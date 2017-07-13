@@ -35,6 +35,10 @@ class Client(Scraper):
 
             def add_credentials():
                 ...
+                if load_credentials(id=username):
+                    add_credentials()
+                else:
+                    # 1. prompt user
                 return True
 
 
@@ -65,18 +69,25 @@ class Client(Scraper):
     preference = ""
 
     def run(self,pool='default', *args, **kwargs):
-        '''Get stuff from the client through Scraper.run() method, by adding credential keyword'''
-        credentials = get_credentials(self.service_name,
-                                      pool_name=pool,
-                                      filter=self.credential_usage_condition())
+        """Run the .get() method of a class
+
+        This is the wrapper that calls the `self.get()` method implemented
+        in child classes. It provides these classes with a credentials={...}
+        argument based on the credentials returned by `self.load_credentials`.
+        See the docstring of that function for explanations about indicating
+        selection criteria for classes. 
+
+        """
+        credentials = load_credentials(pool=pool)
         if credentials:
-            usable_credentials = (credentials['_id'],credentials['_source'].get('credentials',{}))
+            usable_credentials = credentials['_source'].get('credentials',{})
         else:
-            usable_credentials = ()
+            usable_credentials = {}
         return super(Client, self).run(credentials=usable_credentials, *args, **kwargs)
 
 
-    def store_credentials(self, id, pool='default', credentials):
+
+    def store_credentials(self, id, pool='default', credentials={}, content={}):
         """adds a new credential to a pool in the database
 
         Credentials are the authentication keys for API clients. They are divided
@@ -107,16 +118,21 @@ class Client(Scraper):
             A dictionary that should be provided for client.get methods as the
             `credentials` parameter. Generally contains the application token and
             secret, as well as the consumer token and secret
+        content : dictionary (default={})
+            Additional information that may be provided for other purposes.
+            Empty by default.
 
         Returns
         -------
         boolean
             A True or False value indicating succesful saving.
+
+
         """
 
         return False
 
-    def load_credentials(self, pool, id=None):
+    def load_credentials(self, pool='default', id=None):
         """Load a credential from the specified pool
 
         Retrieves credentials from a specified pool. Choices are based
@@ -128,7 +144,7 @@ class Client(Scraper):
 
         Parameters
         ----------
-        pool : string
+        pool : string (default='default')
             the poolname from which the credentials should be drawn. Will be
             prepended with service name, i.e. "{service_name}_{poolname}"
 
@@ -136,13 +152,12 @@ class Client(Scraper):
             a specific credential ID to retrieve, for instance related to
             user-specific content (e.g. direct messages). Otherwise the
             `self.sort_field` and `self.preference` are used to select
-            credentials to apss to the .get method.
+            credentials to apss to the .get method. NOTE: overrides pool
 
         Returns
         -------
         dictionary
-            a dictionary of credentials, as provided to the store_credentials
-            function
+            the credentials record (empty if not found)
 
         Notes
         -----
@@ -151,11 +166,52 @@ class Client(Scraper):
 
         """
 
-    def update_credentials(self, pool, id, content):
+    def update_credentials(self, id, content, pool='default'):
         """Update credentials information
 
         This method should be called to add additional information to
-        credentials, such as a rate-limit-remaining status that can be
-        retrieved using
+        credentials, such as a rate-limit-remaining status that can be used to
+        designate which credentials are prefered. The results are added to the
+        storage field of the credentials.
+
+        Parameters
+        ----------
+        id : string
+            ES ID of the credentials to update. Probably specified in the call
+            to `store_credentials`
+        content : dictionary
+            The content to add, or update, for this record
+        pool : string (default='default')
+            The poolname in which the credential is stored.
+
+        Example
+        -------
+        client.store_credentials(id='test1',credentials={
+            "apptoken":"nope",
+            "appsecret":"nope",
+            "consumerkey":"nope",
+            "consumersecret":"nope"
+            })
+        client.update_credentials(id='test1',pool='default',content={'comment':
+            "no coment"})
+        client.load_credentials(id='test1',pool='default')
+        >>> {
+            "_id" : "test1",
+            "_index" : "_credentials".
+            "_doctype": "service_class",
+            "source": {
+                "credentials": {
+                    "apptoken":"nope",
+                    "appsecret":"nope",
+                    "consumerkey":"nope",
+                    "consumersecret":"nope"
+                    },
+                "content" : {
+                    "comment" : "no comment"
+                    }
+
+            }
+
+        }
 
         """
