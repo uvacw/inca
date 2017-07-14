@@ -68,17 +68,17 @@ class Client(Scraper):
 
     preference = ""
 
-    def run(self,pool='default', *args, **kwargs):
+    def run(self,app='default', *args, **kwargs):
         """Run the .get() method of a class
 
         This is the wrapper that calls the `self.get()` method implemented
         in child classes. It provides these classes with a credentials={...}
         argument based on the credentials returned by `self.load_credentials`.
         See the docstring of that function for explanations about indicating
-        selection criteria for classes. 
+        selection criteria for classes.
 
         """
-        credentials = load_credentials(pool=pool)
+        credentials = load_credentials(app=app)
         if credentials:
             usable_credentials = credentials['_source'].get('credentials',{})
         else:
@@ -86,18 +86,97 @@ class Client(Scraper):
         return super(Client, self).run(credentials=usable_credentials, *args, **kwargs)
 
 
+    def store_application(self, app_credentials, appname="default"):
+        """Create a new app to which credentials can be tied
 
-    def store_credentials(self, id, pool='default', credentials={}, content={}):
-        """adds a new credential to a pool in the database
+        Oauth services require an app as a basis for credentials. In INCA
+        apps function both to provided the authentication tokens to create
+        new credentials, but also as a way to 'bundle' these credentials. If
+        no appname is specified, they are tied to the 'default' app (internal
+        name). This is generally fine when data-collection does not care
+        about which of the credentials for this service is used. In other words:
+        when all data collection uses the set of credentials, the appname can
+        be left as 'default' in all calls.
+
+        Parameters
+        ----------
+        app_credentials : dictionary
+            The appliction-level credentials required to create user credentials
+            stored under 'source.credentials' in the ES document
+        appname : string (default='default')
+            The internal designation for the app, used to seperate credentials
+            provided for different purposes/projects
+
+        Returns
+        -------
+        dictionary
+            the ES document created or an empty dictionary on failure
+
+        Notes
+        -----
+        `appname` is an internal indicator only. The name given to the app in
+        the service (e.g. Twitter, Youtube, etcetera) is immaterial to this name.
+
+
+        """
+        return {}
+
+    def load_application(self, app="default"):
+        """Loads a specified application
+
+        This function returns the named application, based in part on
+        `self.service_name`. This function is oriented mainly to support the
+        credentials generation process (where the app credentials are required
+        to create consumer-credentials). You probably want to store all required
+        keys in the credentials and not call this function for anything but
+        registering new user credentials.
+
+        Parameters
+        ----------
+        app : string (default='default')
+            The internal application name specified in the store_application
+            call to identify the appropriate credentials.
+
+        Returns
+        -------
+        dictionary
+            The application credentials or empty if no application is found
+
+        """
+        return {}
+
+    def remove_application(self, app):
+        """Removes an application
+
+        Removes an application, thus preventing new credentials from being
+        generated. All credentials with this app name are also removed for
+        this service (e.g. {service}_{pool})
+
+        Parameters
+        ----------
+        app : string
+            The application to remove
+
+        Returns
+        -------
+        boolean
+            Indicator of success
+
+        """
+        pass
+
+
+    def store_credentials(self, id, app='default', credentials={}, content={}):
+        """adds a new credential to a app in the database
 
         Credentials are the authentication keys for API clients. They are divided
-        in "pools", so that one instance of INCA can seperate credentials supplied
+        in "apps", so that one instance of INCA can seperate credentials supplied
         for different ends. Credentials are automatically provided to client.get()
         methods when client.run() is called.
 
         Generating credentials usually entails some (end-)user action, such as
         clicking on a link, going to a website and writing down some code. Such
-        fuctionality is client-specific, and should be in the ServiceName(Client)
+        functionality is client-specific, and should be in the ServiceName(Client)
         Class. This function assumes you have retrieved (and verified) the response
         and now poses a dictionary that contains all the information you need to
         autheticate to the API, i.e. the application token & secret and the
@@ -110,10 +189,10 @@ class Client(Scraper):
         id   : string
             The identifier of this credentials set, generally the user_id for
             the service. Used to list the available credentials
-        pool : string (default=default)
-            A string that identiefies the pool of credentials to which this
+        app : string (default=default)
+            A string that identiefies the app of credentials to which this
             credential should be added. this will be stored in the _credentials
-            index with the doctype <service_name>_<pool>
+            index with the doctype <service_name>_<app>
         credentials : dictionary
             A dictionary that should be provided for client.get methods as the
             `credentials` parameter. Generally contains the application token and
@@ -132,10 +211,10 @@ class Client(Scraper):
 
         return False
 
-    def load_credentials(self, pool='default', id=None):
-        """Load a credential from the specified pool
+    def load_credentials(self, app='default', id=None):
+        """Load a credential from the specified app
 
-        Retrieves credentials from a specified pool. Choices are based
+        Retrieves credentials from a specified app. Choices are based
         on the `sort_field` and `preference` class properties that should
         indicate which field indicates how suited a credential is. If the
         class properties `sort_field` and `preference` are not set, it defaults
@@ -144,15 +223,15 @@ class Client(Scraper):
 
         Parameters
         ----------
-        pool : string (default='default')
-            the poolname from which the credentials should be drawn. Will be
-            prepended with service name, i.e. "{service_name}_{poolname}"
+        app : string (default='default')
+            the appname from which the credentials should be drawn. Will be
+            prepended with service name, i.e. "{service_name}_{appname}"
 
         id   : string (default=None)
             a specific credential ID to retrieve, for instance related to
             user-specific content (e.g. direct messages). Otherwise the
             `self.sort_field` and `self.preference` are used to select
-            credentials to apss to the .get method. NOTE: overrides pool
+            credentials to apss to the .get method. NOTE: overrides app
 
         Returns
         -------
@@ -165,8 +244,9 @@ class Client(Scraper):
         time.
 
         """
+        pass
 
-    def update_credentials(self, id, content, pool='default'):
+    def update_credentials(self, id, content, app='default'):
         """Update credentials information
 
         This method should be called to add additional information to
@@ -181,8 +261,8 @@ class Client(Scraper):
             to `store_credentials`
         content : dictionary
             The content to add, or update, for this record
-        pool : string (default='default')
-            The poolname in which the credential is stored.
+        app : string (default='default')
+            The appname in which the credential is stored.
 
         Example
         -------
@@ -192,9 +272,9 @@ class Client(Scraper):
             "consumerkey":"nope",
             "consumersecret":"nope"
             })
-        client.update_credentials(id='test1',pool='default',content={'comment':
+        client.update_credentials(id='test1',app='default',content={'comment':
             "no coment"})
-        client.load_credentials(id='test1',pool='default')
+        client.load_credentials(id='test1',app='default')
         >>> {
             "_id" : "test1",
             "_index" : "_credentials".
@@ -215,3 +295,4 @@ class Client(Scraper):
         }
 
         """
+        pass
