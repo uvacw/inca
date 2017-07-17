@@ -1,9 +1,16 @@
 '''
 This file provides the base-class for API clients
+
+Because clients require stored credentials, the client
+requires a functioning elasticsearch instance.
+
+
 '''
 from core.scraper_class import Scraper
 from clients._general_utils import *
-from core.database import config
+from core.database import DATABASE_AVAILABLE
+if DATABASE_AVAILABLE:
+    from core.database import client
 import time
 import datetime
 import logging
@@ -13,6 +20,16 @@ logger = logging.getLogger("INCA"+__name__)
 APPLICATIONS_INDEX = "_apps"
 CREDENTIALS_INDEX  = "_credentials"
 
+def elasticsearch_required():
+    """Throw warning and refrain from running function when no Elasticsearch
+    database is available.
+    """
+    def wrapper(*args, **kwargs):
+        if not DATABASE_AVAILABLE:
+            logger.warning("No database available")
+        else:
+            return function(*args, **kwargs)
+    return wrapper
 
 
 class Client(Scraper):
@@ -73,9 +90,13 @@ class Client(Scraper):
 
     service_name = "UNKNOWN"
 
-    sort_field = ""
+    sort_field = "last_loaded"
 
-    preference = ""
+    preference = "lowest"
+
+    def prompt(self):
+        """SHOULD BE SET BY INCA CLASS """
+        pass
 
     def get(self, credentials, *args, **kwargs):
         """OVERRIDE THIS METHOD
@@ -92,6 +113,7 @@ class Client(Scraper):
         logger.warning("THIS METHOD IS NOT IMPLEMENTED")
         yield
 
+    @elasticsearch_required
     def add_app(self,appname="default", token=None, secret=None):
         """OVERRIDE THIS METHOD
 
@@ -107,6 +129,7 @@ class Client(Scraper):
         logger.warning("THIS METHOD IS NOT IMPLEMENTED")
         return False
 
+    @elasticsearch_required
     def add_credentials(self, appname="default"):
         """OVERRIDE THIS METHOD
 
@@ -143,7 +166,7 @@ class Client(Scraper):
             usable_credentials = {}
         return super(Client, self).run(credentials=usable_credentials, *args, **kwargs)
 
-
+    @elasticsearch_required
     def store_application(self, app_credentials, appname="default"):
         """Create a new app to which credentials can be tied
 
@@ -180,6 +203,7 @@ class Client(Scraper):
 
         return {}
 
+    @elasticsearch_required
     def load_application(self, app="default"):
         """Loads a specified application
 
@@ -204,6 +228,7 @@ class Client(Scraper):
         """
         return {}
 
+    @elasticsearch_required
     def remove_application(self, app):
         """Removes an application
 
@@ -224,7 +249,7 @@ class Client(Scraper):
         """
         pass
 
-
+    @elasticsearch_required
     def store_credentials(self, id, app='default', credentials={}, content={}):
         """adds a new credential to a app in the database
 
@@ -270,6 +295,7 @@ class Client(Scraper):
 
         return False
 
+    @elasticsearch_required
     def load_credentials(self, app='default', id=None):
         """Load a credential from the specified app
 
@@ -305,6 +331,7 @@ class Client(Scraper):
         """
         pass
 
+    @elasticsearch_required
     def update_credentials(self, id, content, app='default'):
         """Update credentials information
 
@@ -356,6 +383,7 @@ class Client(Scraper):
         """
         pass
 
+        #TODO: IMPLEMENT DECENTRALIZED POSTPONE
         def postpone(
             seconds=0,
             minutes=0,
@@ -394,4 +422,17 @@ class Client(Scraper):
             The 'until' time overrides all other non-args/kwargs arguments
 
             """
-            if until
+            now = datetime.datetime.now()
+            if until:
+                waittime = until - now
+            else:
+                waittime = datetime.timedelta(
+                            seconds=seconds,
+                            minutes=minutes,
+                            hours = hours,
+                            days = days
+                            )
+            logger.info("Delaying for {waittime}".format(**locals()))
+            time.sleep(waittime)
+            for d in self.run(*args, **kwargs):
+                yield d
