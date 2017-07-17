@@ -11,6 +11,7 @@ from clients._general_utils import *
 from core.database import DATABASE_AVAILABLE
 if DATABASE_AVAILABLE:
     from core.database import client
+    from elasticsearch.exceptions import ConnectionError, ConnectionTimeout, NotFoundError
 import time
 import datetime
 import logging
@@ -20,7 +21,8 @@ logger = logging.getLogger("INCA"+__name__)
 APPLICATIONS_INDEX = "_apps"
 CREDENTIALS_INDEX  = "_credentials"
 
-def elasticsearch_required():
+# Most functionality here will not work without ES
+def elasticsearch_required(function):
     """Throw warning and refrain from running function when no Elasticsearch
     database is available.
     """
@@ -93,6 +95,25 @@ class Client(Scraper):
     sort_field = "last_loaded"
 
     preference = "lowest"
+
+    def __init__(self):
+        if DATABASE_AVAILABLE:
+            known indices = client.indices.get_mapping().keys()
+            if not APPLICATIONS_INDEX in known_indices:
+                logger.info("No applications index found, creating now")
+                client.indices.create(
+                    index=APPLICATIONS_INDEX
+                    )
+            if not CREDENTIALS_INDEX in known_indices:
+                logger.info("No Credentials index found, creating now")
+                client.indices.create(
+                    index = CREDENTIALS_INDEX
+                )
+        else:
+            logger.info("No Database available, so API client functionality"
+            "will be severely limited"
+            )
+
 
     def prompt(self):
         """SHOULD BE SET BY INCA CLASS """
@@ -167,7 +188,7 @@ class Client(Scraper):
         return super(Client, self).run(credentials=usable_credentials, *args, **kwargs)
 
     @elasticsearch_required
-    def store_application(self, app_credentials, appname="default"):
+    def store_application(self, app_credentials, appname="default", retries=3,**kwargs):
         """Create a new app to which credentials can be tied
 
         Oauth services require an app as a basis for credentials. In INCA
@@ -187,6 +208,8 @@ class Client(Scraper):
         appname : string (default='default')
             The internal designation for the app, used to seperate credentials
             provided for different purposes/projects
+        **kwargs
+            additional fields
 
         Returns
         -------
@@ -200,11 +223,31 @@ class Client(Scraper):
 
 
         """
+        logger.info("Adding new application: {appname}".format(**locals()))
+        body  = {"credentials" : app_credentials, "other" : kwargs}
+        try:
+            attempt  = client.index(
+                index = APPLICATIONS_INDEX,
+                doc_type = self.service_name,
+                id = appname,
+                body = app_credentials
+            )
+        except ConnectionTimeout:
+            retries -= 1
+            logger.debug("Failed to index, retrying {retries} more times")
+            if retries:
+                time.sleep(1)
+                return self.store_application(app_credentials,appname, retries, **kwargs)
+            else:
+                return {}
+        except ConnectionError:
+            logger.debug("Failed to connect, is Elasticsearch up?")
+            return {}
 
-        return {}
+        return load_application(appname)
 
     @elasticsearch_required
-    def load_application(self, app="default"):
+    def load_application(self, app="default",retries=3):
         """Loads a specified application
 
         This function returns the named application, based in part on
@@ -226,10 +269,30 @@ class Client(Scraper):
             The application credentials or empty if no application is found
 
         """
-        return {}
+        try:
+            app_credentials = client.get(
+                index = APPLICATIONS_INDEX,
+                doc_type = self.service_name,
+                id = app
+            )
+        except ConnectionError:
+            logger.warning("Could not connect to Elasticsearch, is it up?")
+            return {}
+        except ConnectionTimeout:
+            retries -= 1
+            logger.info("Connection timeout, retrieing {retries} more times").format(**locals())
+            if retries:
+                time.sleep(1)
+                return self.load_application(app=app)
+            else:
+                return {}
+        except NotFoundError:
+            logger.warning("{app} was not found!".format(**locals()))
+            return {}
+        return app_credentials
 
     @elasticsearch_required
-    def remove_application(self, app):
+    def remove_application(self, app, retries=3):
         """Removes an application
 
         Removes an application, thus preventing new credentials from being
@@ -247,10 +310,30 @@ class Client(Scraper):
             Indicator of success
 
         """
-        pass
+        try:
+            app_credentials = client.delete(
+                index = APPLICATIONS_INDEX,
+                doc_type = self.service_name,
+                id = app
+            )
+        except ConnectionError:
+            logger.warning("Could not connect to Elasticsearch, is it up?")
+            return False
+        except ConnectionTimeout:
+            retries -= 1
+            logger.info("Connection timeout, retrieing {retries} more times").format(**locals())
+            if retries:
+                time.sleep(1)
+                return self.remove_application(app=app)
+            else:
+                return False
+        except NotFoundError:
+            logger.warning("{app} was not found!".format(**locals()))
+            return False
+        return True
 
     @elasticsearch_required
-    def store_credentials(self, id, app='default', credentials={}, content={}):
+    def store_credentials(self, id, app='default', credentials={}, retries=3, **kwargs):
         """adds a new credential to a app in the database
 
         Credentials are the authentication keys for API clients. They are divided
@@ -264,7 +347,7 @@ class Client(Scraper):
         Class. This function assumes you have retrieved (and verified) the response
         and now poses a dictionary that contains all the information you need to
         autheticate to the API, i.e. the application token & secret and the
-        consumer token and secret. By passing this dictionary tot this function,
+        consumer token and secret. By passing that dictionary tot this function,
         they are stored in ES and will be provided as the credentials argument
         to the get method of your function.
 
@@ -281,22 +364,52 @@ class Client(Scraper):
             A dictionary that should be provided for client.get methods as the
             `credentials` parameter. Generally contains the application token and
             secret, as well as the consumer token and secret
-        content : dictionary (default={})
+        kwargs
             Additional information that may be provided for other purposes.
-            Empty by default.
+            Empty by default, saved as '_source.content':{kwargs}
 
         Returns
         -------
         boolean
             A True or False value indicating succesful saving.
 
-
         """
+        doc = {'credentials': credentials, 'id':id, 'app':app,
+                'content':kwargs,
+                'last_loaded': datetime.datetime(year=1990,month=1,day=1).isoformat()}
+        doctype = "{self.service_name}_{app}".format(**locals())
 
-        return False
+        app_available = self.load_application(app=app)
+        if not app_available:
+            logger.warning("App not available, check application name and retry")
+            return {}
+
+        try:
+            credentials_stored = client.get(
+                index = CREDENTIALS_INDEX,
+                doc_type = doctype,
+                id = id
+            )
+            if credentials_stored['created']:
+                logger.info("CREATED credentials [{id}] for {app}".format(**locals()))
+            else:
+                logger.info("UPDATED credentials {id} for {app}".format(**locals()))
+        except ConnectionError:
+            logger.warning("Could not connect to Elasticsearch, is it up?")
+            return {}
+        except ConnectionTimeout:
+            retries -= 1
+            logger.info("Connection timeout, retrieing {retries} more times").format(**locals())
+            if retries:
+                time.sleep(1)
+                return self.store_credentials(id=id, app=app, credentials=credentials, retriets=retries, **kwargs)
+            else:
+                return {}
+
+        return load_credentials(app=app, id=id)
 
     @elasticsearch_required
-    def load_credentials(self, app='default', id=None):
+    def load_credentials(self, app='default', id=None, retries=3):
         """Load a credential from the specified app
 
         Retrieves credentials from a specified app. Choices are based
@@ -310,7 +423,8 @@ class Client(Scraper):
         ----------
         app : string (default='default')
             the appname from which the credentials should be drawn. Will be
-            prepended with service name, i.e. "{service_name}_{appname}"
+            prepended with service name, i.e. "{service_name}_{app}" and
+            retrieved from the database
 
         id   : string (default=None)
             a specific credential ID to retrieve, for instance related to
@@ -329,7 +443,57 @@ class Client(Scraper):
         time.
 
         """
-        pass
+        ordering = {'lowest':'asc','highest':'desc'}
+        doctype  = "{self.service_name}_{app}".format(**locals())
+        try:
+            if id:
+            credentials = client.get(
+                index=CREDENTIALS_INDEX,
+                doc_type=doctype,
+                id=id
+                )
+
+            else:
+                docs = client.search(index=CREDENTIALS_INDEX,
+                              body={
+                                  "sort": [
+                                      {self.sort_field : {"order":ordering[self.preference]}}
+                                      ],
+                                  "size":1,
+                                  "query":
+                                  {"match":
+                                   {"doctype":
+                                    doctype
+                                   }
+                                  }}).get('hits',{}).get('hits',[])
+                if not docs:
+                    logger.warning("No credentials found for {app}")
+                    return {}
+                credentials = docs[0]
+            logger.debug("Updating last-loaded field")
+            self.store_credentials(id=id,
+                    doc_type = doctype,
+                    app=app, credentials,
+                    last_loaded=datetime.datetime.now().isoformat(),
+                    content = credentials['_source']['content']
+                    )
+
+        except ConnectionTimeout:
+            retries -= 1
+            logger.info("Connection timeout when trying to retrieve, retrying {retries} more times")
+            if retries:
+                return self.load_credentials(app=app, id=id, retries=retries)
+            else:
+                return {}
+        except ConnectionError:
+            logger.warning("Unable to contact Elasticsearch, is it up?")
+            return {}
+        except NotFoundError:
+            logger.warning("No credentials found")
+            return {}
+
+        return credentials
+
 
     @elasticsearch_required
     def update_credentials(self, id, content, app='default'):
@@ -349,6 +513,11 @@ class Client(Scraper):
             The content to add, or update, for this record
         app : string (default='default')
             The appname in which the credential is stored.
+
+        Returns
+        -------
+        boolean
+            Indicates the success/failure of the update
 
         Example
         -------
@@ -381,7 +550,13 @@ class Client(Scraper):
         }
 
         """
-        pass
+        old_credentials = self.load_credentials(app=app, id=id)
+        if not old_credentials:
+            logger.warning("Failed to update credentials {id} for app {app}".format(**locals()))
+            return False
+        updated = self.update_credentials(app=app, id=id, credentials=old_credentials['_source']['credentials'],**content)
+        return updated
+
 
         #TODO: IMPLEMENT DECENTRALIZED POSTPONE
         def postpone(
