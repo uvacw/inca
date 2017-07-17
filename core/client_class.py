@@ -5,13 +5,22 @@ from core.scraper_class import Scraper
 from clients._general_utils import *
 from core.database import config
 import time
+import datetime
+import logging
+
+logger = logging.getLogger("INCA"+__name__)
+
+APPLICATIONS_INDEX = "_apps"
+CREDENTIALS_INDEX  = "_credentials"
+
+
 
 class Client(Scraper):
-    '''Clients provide access to APIs. Clients sublcasses should provide the following functionality
-
-    service_name should be a string that declares the service for which credentials are used
+    '''Clients provide access to APIs.
 
     Subclasses of `Client` should implement the following:
+
+    `service_name` should be a string that declares the service for which credentials are used
 
     add_credential: method
         Take the required steps to get new credential, returns (id, credentials) tuple consumable by the 'get' method
@@ -27,7 +36,7 @@ class Client(Scraper):
 
             service = "twitter"
 
-            def add_twitter_app(appname='defaut'):
+            def add_app(appname='defaut'):
                 app_credentials = self.prompt({...})
                 self.create_app(name=appname, app_credentials)
 
@@ -67,6 +76,55 @@ class Client(Scraper):
     sort_field = ""
 
     preference = ""
+
+    def get(self, credentials, *args, **kwargs):
+        """OVERRIDE THIS METHOD
+
+        This method should implement the retrieval functionality for
+        a given API service. It should expect a dictionary of
+        credentials.
+
+        yields
+        ------
+        none
+            none, but should yield documents when implemented
+        """
+        logger.warning("THIS METHOD IS NOT IMPLEMENTED")
+        yield
+
+    def add_app(self,appname="default", token=None, secret=None):
+        """OVERRIDE THIS METHOD
+
+        This method should implement the app certification process,
+        taking some user inputs and passing the resulting app
+        token ad secret to the `self.store_application` method.
+
+        token and secret arguments should be respected for scenarios
+        in which no user-interaction is enabled.
+
+
+        """
+        logger.warning("THIS METHOD IS NOT IMPLEMENTED")
+        return False
+
+    def add_credentials(self, appname="default"):
+        """OVERRIDE THIS METHOD
+
+        This method should implement the user interaction loop
+        required to get consumer keys and consumer tokens for
+        a given app, i.e. the user credentials.
+
+        Retrieve the appropriate app credentials with
+        `self.load_application`, create a credentials dictionary
+        and store them by calling the `self.store_credentials` method.
+
+        Returns
+        -------
+        boolean
+            indication of app generation success
+        """
+        logger.warning("THIS METHOD IS NOT IMPLEMENTED")
+        return False
 
     def run(self,app='default', *args, **kwargs):
         """Run the .get() method of a class
@@ -119,6 +177,7 @@ class Client(Scraper):
 
 
         """
+
         return {}
 
     def load_application(self, app="default"):
@@ -296,3 +355,43 @@ class Client(Scraper):
 
         """
         pass
+
+        def postpone(
+            seconds=0,
+            minutes=0,
+            hours=0,
+            days=0,
+            until=None,
+            *args,
+            **kwargs
+             ):
+            """postpones call to self.run()
+
+            Given a delay time or start time, postpones call to the run method.
+            This is usefull when credentials have all been expended.
+
+            Parameters
+            ----------
+            seconds : int (default=0)
+                The number of seconds to delay
+            minutes : int (default=0)
+                The number of minutes to delay
+            hours : int (default=0)
+                The number of hours to delay
+            days : int (default=0)
+                The number of days to delay
+            until : datetime object
+                Time at which the task should be resumed
+            *args, **kwargs
+                Arguments passed to the `.run()` method
+
+            Returns
+            -------
+            None
+
+            Notes
+            -----
+            The 'until' time overrides all other non-args/kwargs arguments
+
+            """
+            if until
