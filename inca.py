@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 '''
-ooooo ooooo      ooo   .oooooo.         .o.       
-`888' `888b.     `8'  d8P'  `Y8b       .888.      
- 888   8 `88b.    8  888              .8"888.     
- 888   8   `88b.  8  888             .8' `888.    
- 888   8     `88b.8  888            .88ooo8888.   
- 888   8       `888  `88b    ooo   .8'     `888.  
-o888o o8o        `8   `Y8bood8P'  o88o     o8888o 
-                                                  
+ooooo ooooo      ooo   .oooooo.         .o.
+`888' `888b.     `8'  d8P'  `Y8b       .888.
+ 888   8 `88b.    8  888              .8"888.
+ 888   8   `88b.  8  888             .8' `888.
+ 888   8     `88b.8  888            .88ooo8888.
+ 888   8       `888  `88b    ooo   .8'     `888.
+o888o o8o        `8   `Y8bood8P'  o88o     o8888o
+
 Welcome to INCA
 
-This module provides some data-scraping, searching and analysis functionality. 
+This module provides some data-scraping, searching and analysis functionality.
 You can run this locally, at a server, or perhaps on a cluster (hopefully) without too much
 hassle.
 
 Please consult the `README.md` file for more information about setting up and
-running INCA. 
+running INCA.
 '''
 
 import os
@@ -54,10 +54,11 @@ class Inca():
 
     database = core.search_utils
 
-    def __init__(self, distributed=False):
+    def __init__(self, prompt="TLI", distributed=False):
         self._LOCAL_ONLY = distributed
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
+        
 
     class scrapers():
         '''Scrapers for various (news) outlets '''
@@ -66,7 +67,7 @@ class Inca():
     class processing():
         '''Processing options to operate on documents'''
         pass
-        
+
     def _construct_tasks(self, function):
         for k,v in self._taskmaster.tasks.items():
             functiontype = k.split('.',1)[0]
@@ -84,7 +85,7 @@ class Inca():
             summary += "...\n"
         return summary
 
-### COMMANDLINE SPECIFICATION ### 
+### COMMANDLINE SPECIFICATION ###
 
 def commandline():
 
@@ -100,6 +101,8 @@ def commandline():
                     help='Refrain from returning documents to stdout (for unix piping) ')
     parser.add_option('-c','--celery', dest='celery', default=False, action='store_true',
                     help='Put tasks in the celery cluster instead of running them locally')
+    parser.add_option('-np', '--no-prompt', dest='noprompt',default=False, action='store_true',
+                    help='Never prompt users (usually leads to failure), usefull for headles environments and cronjobs')
 
     options, args = parser.parse_args()
 
@@ -112,7 +115,7 @@ def commandline():
     if not len(args)>=2:
         print(inca._summary())
         return
-                        
+
     tasktype = args[0]
     task     = args[1]
 
@@ -135,11 +138,10 @@ def commandline():
         action = 'celery_batch'
     else:
         action = 'run'
-    
+
     logger.info("running {tasktype} : {task}".format(**locals()))
     task_func(action=action, *args[2:])
     logger.info("finished {tasktype} : {task}".format(**locals()))
 
 if __name__ == '__main__':
     commandline()
-    
