@@ -59,7 +59,7 @@ class Inca():
 
     _prompt = "Placeholder"
 
-    def __init__(self, prompt="TLI", distributed=False, verbose=True):
+    def __init__(self, prompt="TLI", distributed=False, verbose=True, debug=False):
         self._LOCAL_ONLY = distributed
         self._prompt = getattr(make_interface,prompt).prompt
         self._construct_tasks('scrapers')
@@ -67,6 +67,10 @@ class Inca():
         self._construct_tasks('clients')
         if verbose:
             logger.setLevel('INFO')
+            logger.info("Providing verbose output")
+        if debug:
+            logger.setLevel('DEBUG')
+            logger.debug("Activating debugmode")
 
     class scrapers():
         '''Scrapers for various (news) outlets '''

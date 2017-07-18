@@ -16,7 +16,7 @@ import time
 import datetime
 import logging
 
-logger = logging.getLogger("INCA"+__name__)
+logger = logging.getLogger("INCA.%s" %__name__)
 
 APPLICATIONS_INDEX = ".apps"
 CREDENTIALS_INDEX  = ".credentials"

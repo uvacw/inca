@@ -10,7 +10,7 @@ import logging
 import sys
 import time
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA.%s" %__name__)
 
 class twitter(Client):
     '''Class defined mainly to add credentials'''

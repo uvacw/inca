@@ -78,6 +78,9 @@ Should generate something like:
 """
 import time
 from collections import OrderedDict
+import logging
+
+logger = logging.getLogger('INCA.%s' %__name__)
 
 class noprompt():
 

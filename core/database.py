@@ -23,7 +23,7 @@ import os
 config = configparser.ConfigParser()
 config.read('settings.cfg')
 
-logger = logging.getLogger("INCA"+__name__)
+logger = logging.getLogger("INCA.%s" %__name__)
 logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
 try:
