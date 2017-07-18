@@ -31,7 +31,7 @@ def doctype_generator(doctype):
         _logger.info("returning {num}".format(**locals()))
         yield doc
 
-def doctype_first(doctype, num=1, by_field="META.ADDED"):
+def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
     '''Returns the first document of a given doctype
 
     Input
@@ -43,6 +43,9 @@ def doctype_first(doctype, num=1, by_field="META.ADDED"):
     by_field: string
         The _datetime field by which to determine the
         first document
+    query : string (default None)
+        An Elasticsearch string query to filter results.
+        Example: query="user.screen_name:google
     '''
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get first document: No database instance available")
@@ -60,21 +63,27 @@ def doctype_first(doctype, num=1, by_field="META.ADDED"):
         _logger.debug("Mapping not seen yet")
         return []
 
+    body = {
+        "sort": [
+            {by_field : {"order":"asc"}}
+            ],
+        "size":num,
+        "query":
+        {"match":
+         {"doctype":
+          doctype
+         }
+        }}
+
+    if query:
+        _logger.debug("adding string query: {query}".format(**locals()))
+        body['query'] = {'query_string':{'query': query}}
+
     docs = _client.search(index=_elastic_index,
-                  body={
-                      "sort": [
-                          {by_field : {"order":"asc"}}
-                          ],
-                      "size":num,
-                      "query":
-                      {"match":
-                       {"doctype":
-                        doctype
-                       }
-                      }}).get('hits',{}).get('hits',[""])
+                  body=body).get('hits',{}).get('hits',[""])
     return docs
 
-def doctype_last(doctype,num=1, by_field="META.ADDED"):
+def doctype_last(doctype,num=1, by_field="META.ADDED", query=None):
     '''Returns the last document of a given doctype
 
     Input
@@ -86,6 +95,9 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
     by_field: string
         The _datetime field by which to determine the
         last document
+    query : string (default None)
+        An Elasticsearch string query to filter results.
+        Example: query="user.screen_name:google"
     '''
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get last documents: No database instance available")
@@ -103,18 +115,24 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
         _logger.debug("Mapping not seen yet")
         return []
 
+    body = {
+        "sort": [
+            {by_field : {"order":"desc"}}
+            ],
+        "size":num,
+        "query":
+        {"match":
+         {"doctype":
+          doctype
+         }
+        }}
+
+    if query:
+        _logger.debug("adding string query: {query}".format(**locals()))
+        body['query'] = {'query_string':{'query': query}}
+
     docs = _client.search(index=_elastic_index,
-                  body={
-                      "sort": [
-                          { by_field : {"order":"desc"}}
-                          ],
-                      "size":num,
-                      "query":
-                      {"match":
-                       {"doctype":
-                        doctype
-                       }
-                      }}).get('hits',{}).get('hits',[""])
+                  body=body).get('hits',{}).get('hits',[""])
     return docs
 
 def doctype_examples(doctype, field=None, seed=42, num=10):
