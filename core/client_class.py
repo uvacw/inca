@@ -21,7 +21,12 @@ logger = logging.getLogger("INCA"+__name__)
 APPLICATIONS_INDEX = ".apps"
 CREDENTIALS_INDEX  = ".credentials"
 
+# It's dangerous to go alone, take this.
+#
 # Most functionality here will not work without ES
+# use this wrapper to catch attempts to create credentials
+# without an ES storage available
+#
 def elasticsearch_required(function):
     """Throw warning and refrain from running function when no Elasticsearch
     database is available.
