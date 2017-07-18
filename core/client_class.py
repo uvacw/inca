@@ -29,6 +29,8 @@ def elasticsearch_required(function):
     def wrapper(*args, **kwargs):
         if not DATABASE_AVAILABLE:
             logger.warning("No database available")
+            func = lambda *args, **kwargs: {}
+            return func(*args, **kwargs)
         else:
             return function(*args, **kwargs)
     return wrapper
