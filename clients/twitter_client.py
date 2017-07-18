@@ -18,50 +18,115 @@ class twitter(Client):
 
     service_name = "twitter"
 
-    def add_credentials(self, CLI=True):
-        '''Starts OAuth dance access tokens
-        CLI: bool
-            Whether to use commandline interface to authenticate (rather than WUI)
-        '''
-        consumer_key    = config.get('twitter','Consumer_key')
-        consumer_secret = config.get('twitter','Consumer_secret')
+    def add_application(self, appname="default"):
+        """Add a Twitter app to generate credentials """
 
-        if consumer_key == "get_at_twitter" or consumer_secret =="get_at_twitter":
-            logger.info('No consumer key or secret available, please download these and add them to settigns.cfg')
-            return False
+        app_prompt = {
+            'header' : "Add Twitter application",
+            'description':
+                "Please go to https://apps.twitter.com and click on 'Create New App' \n"
+                "Enter any name you'd like for this app, but realize that every \n"
+                "user who is asked to contribute credentials will see this name. \n"
+                "\n"
+                "Add a website, this can be a placeholder if your are not worried \n"
+                "about users trying to read up on your project, such as 'http://placeholder.com'\n"
+                "\n"
+                "Agree to the developpers agreement\n"
+                "Press 'Create your Twitter application'\n"
+                "\n"
+                "Under Application Settings, click on 'manage keys and access tokens'\n",
 
-        if CLI:
-            twitter = Twython(consumer_key, consumer_secret)
-            auth    = twitter.get_authentication_tokens()
-            code    = _interact("Please enter the code found through: {auth[auth_url]} :".format(**locals())).strip()
-            twitter = Twython(consumer_key, consumer_secret, auth['oauth_token'],auth['oauth_token_secret'])
-            credentials = twitter.get_authorized_tokens(code)
-            return (credentials['user_id'], credentials)
+            'inputs' : [
+                {
+                    'label': 'Application name',
+                    'description': "Name for internal use",
+                    'help' : "Just a string to denote the application within INCA",
+                    'input_type':'text',
+                    'mimimum' : 4,
+                    'maximum' : 15,
+                    'default' : appname,
+                },
+                {
+                    'label': 'Application Consumer Key',
+                    'description': "Copy-paste the code shown in the 'Consumer Key (API Key)' field",
+                    'help' : "Make sure you are at the 'Key access and tokens' tab of your application settings",
+                    'input_type':'text',
+                    'mimimum' : 8,
+                },
+                {
+                    'label': 'Application Consumer Secret',
+                    'description': "Copy-paste the code shown in the 'Consumer Secret (API Secret)' field",
+                    'help' : "Make sure you are at the 'Key access and tokens' tab of your application settings",
+                    'input_type':'text',
+                    'mimimum' : 8,
+                }
 
-        else: # TODO: add non-CLI interface!!
-            logger.warning("No non-CLI interface available")
+                ]
+
+        }
+        response = self.prompt(app_prompt, verify=True)
+        return self.store_application(
+            app_credentials={
+                'consumer_key'    : response['Application Consumer Key'],
+                'consumer_secret' : response['Application Consumer Secret']
+        }, appname=response['Application name'])
+
+
+    def add_credentials(self, appname='default'):
+        '''Add credentials to a specified app '''
+
+        logger.info("Adding credentials to {appname}".format(**locals()))
+
+        application = self.load_application(app=appname)
+        consumer_key    = dotkeys(application, '_source.credentials.consumer_key')
+        consumer_secret = dotkeys(application, '_source.credentials.consumer_secret')
+
+        twitter = Twython(consumer_key, consumer_secret)
+        auth    = twitter.get_authentication_tokens()
+
+        user_prompt = {
+            'header' : "authenticate for {appname}".format(appname=appname),
+            'description' : "Please visit {auth[auth_url]} in your browser and \n"
+            "accept the invitation to this application. \n"
+            "Copy the code shown on this page and enter it below.".format(**locals()),
+            "inputs" : [
+                {
+                'label' : "authentication code",
+                'description': "code provided on link",
+                'help'  : "make sure you accept access and copy the 4 digits",
+                'input_type' : "text",
+                "minimum" : 4,
+                "maximum" : 12
+                }
+
+            ]
+        }
+        response = self.prompt(user_prompt, verify=True)
+        code    = response['authentication code']
+        twitter = Twython(consumer_key, consumer_secret, auth['oauth_token'],auth['oauth_token_secret'])
+        credentials = twitter.get_authorized_tokens(code)
+        credentials.update({'consumer_key':consumer_key, 'consumer_secret':consumer_secret})
+
+        logger.info("Checking rate limit status")
+        api = self._get_client(credentials)
+        status = api.get_application_rate_limit_status()
+
+        return self.store_credentials(appame=appname, credentials=credentials, id=credentials['user_id'], **status)
+
 
     def _get_client(self, credentials):
         return Twython(
-            config.get('twitter', 'Consumer_key'),
-            config.get('twitter', 'Consumer_secret'),
-            credentials[1]['oauth_token'],
-            credentials[1]['oauth_token_secret']
+            credentials['consumer_key'],
+            credentials['consumer_secret'],
+            credentials['oauth_token'],
+            credentials['oauth_token_secret']
         )
 
-    def _set_delay(self, timeout_key, *args, **kwargs):
+    def _set_delay(self, *args, **kwargs):
         now = time.time()
-        earlies = database_client.search(
-            index='credentials',
-            doc_type="twitter",
-            body= {
-                "sort": {
-                    timeout_key:{"order":"asc"}
-                        }
-                    }
-        )['hits']['hits']
-        if earlies:
-            resettime = dotkeys(earlies[0]['_source'],timeout_key)
+        earliest = self.load_credentials(app=app,update_last_loaded=False)
+        if earliest:
+            resettime = dotkeys(earliest,self.sort_field)
             delay_required = resettime - now
             if delay_required < 0 :
                 self.run(*args, **kwargs)
@@ -69,49 +134,21 @@ class twitter(Client):
         else:
             info.warn("No credentials available...")
 
-def _interact(message):
-    if sys.version_info.major == 2:
-        user_input = raw_input # ensure python2 compatibility
-    elif sys.version_info.major == 3:
-        user_input = input
-    try:
-        output = user_input(message)
-        if not output:
-            return _interact(message)
-        return output
-    except KeyboardInterrupt:
-        print("Stopping attempt")
-        return "failed"
-
 class twitter_timeline(twitter):
     '''Class to retrieve twitter timelines for a given account'''
 
-    def credential_usage_condition(self):
-
-        return  {"or": [
-        {"range": {"last.resources.statuses./statuses/user_timeline.remaining": {"gte": 0}}},
-        {"range": {"last.resources.statuses./statuses/user_timeline.reset": {"lte": time.time()}}},
-        {"missing": {"field": "last"}}
-        ]}
+    sort_field = "content.resources.statuses./statuses/user_timeline.reset"
+    preference = 'lowest'
 
     def get(self, credentials, screen_name, force=False, max_id=None, since_id=None):
         '''retrieved from the twitter user_timeline API'''
 
         self.doctype =  "tweets"
-        self.version = "0.1"
+        self.version = "0.2"
         self.functiontype = "twitter_client"
 
-        if not credentials:
-            self._set_delay(
-                            timeout_key="last.resources.statuses./statuses/user_timeline.reset",
-                            screen_name=screen_name,
-                            force=force,
-                            max_id=max_id,
-                            since_id = since_id
-            )
-
-        api = self._get_client(credentials=credentials)
-        try: self.update_last(credentials[0], api.get_application_rate_limit_status())
+        api = self._get_client(credentials=dotkeys(credentials, '_source.credentials'))
+        try: self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
         except TwythonRateLimitError: pass # sometimes you just can't get a rate-limit estimate
 
         if not force:
@@ -141,10 +178,10 @@ class twitter_timeline(twitter):
 
                     yield tweet
 
-            self.update_last(credentials[0], api.get_application_rate_limit_status())
+            self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
         except TwythonRateLimitError:
             logger.info('expended credentials')
-            try: self.update_last(credentials[0], api.get_application_rate_limit_status())
+            try: self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
             except TwythonRateLimitError: # when a ratelimit estimate is unavailable
                 self.postpone(self, delaytime=60*5, screen_name=screen_name,
                               force=force, max_id=max_id, since_id=since_id)

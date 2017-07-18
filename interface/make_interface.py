@@ -79,6 +79,11 @@ Should generate something like:
 import time
 from collections import OrderedDict
 
+class noprompt():
+
+    def prompt(*args,**kwargs):
+        logger.warning("Prompt required, but disabled")
+
 class TLI():
 
     HELP_INDICATORS = ['h','help','?']
@@ -94,16 +99,16 @@ class TLI():
                 else:
                     print("HELP: {help}".format(**locals()))
 
-        show_default = default and "(default: {default})".format(**locals()) or ""
+        show_default = default and "(default: '{default}')\n".format(**locals()) or ""
         if not minimum and not maximum:
             criteria = ""
         elif minimum and not maximum:
             criteria = "(at least {minimum} characters)".format(**locals())
         elif not minimum and maximum:
-            citeria = "(no longer than {maximum} characters)".format(**locals())
+            criteria = "(no longer than {maximum} characters)".format(**locals())
         elif minimum and maximum:
             criteria = "(between {minimum} and {maximum} characters)".format(**locals())
-        response = input('{show_default}{criteria}> '.format(**locals()))
+        response = input('{show_default}{criteria}\n> '.format(**locals()))
 
         if not response and default:
             response = default
@@ -486,11 +491,11 @@ class TLI():
         """
 
         print("""
-=============== {prompt_specification[header]:^20.20} ===============
+=============== {prompt_specification[header]:^20.50} ===============
 
 {prompt_specification[description]}
 
---------------------------------------------------------------
+-----------------------------------------------------------------------------------
 """.format(**locals()))
 
         responses = OrderedDict()
