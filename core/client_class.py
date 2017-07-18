@@ -37,6 +37,7 @@ def elasticsearch_required(function):
             func = lambda *args, **kwargs: {}
             return func(*args, **kwargs)
         else:
+            logger.debug("Calling function")
             return function(*args, **kwargs)
     return wrapper
 
@@ -109,12 +110,14 @@ class Client(Scraper):
             if not APPLICATIONS_INDEX in known_indices:
                 logger.info("No applications index found, creating now")
                 client.indices.create(
-                    index=APPLICATIONS_INDEX
+                    index=APPLICATIONS_INDEX,
+                    body={"mapping.total_fields.limit": 20000}
                     )
             if not CREDENTIALS_INDEX in known_indices:
                 logger.info("No Credentials index found, creating now")
                 client.indices.create(
-                    index = CREDENTIALS_INDEX
+                    index = CREDENTIALS_INDEX,
+                    body={"mapping.total_fields.limit": 20000}
                 )
         else:
             logger.info("No Database available, so API client functionality"
@@ -191,7 +194,8 @@ class Client(Scraper):
         if credentials:
             usable_credentials = credentials
         else:
-            usable_credentials = {}
+            logger.warning("No usable credentials")
+            return []
 
         logger.info("Starting client")
         if DATABASE_AVAILABLE == True and kwargs.get('database',True):
@@ -199,6 +203,7 @@ class Client(Scraper):
                 doc = self._add_metadata(doc)
                 self._verify(doc)
                 self._save_document(doc)
+
         else:
             return [self._add_metadata(doc) for doc in self.get(*args, **kwargs)]
 
@@ -490,10 +495,10 @@ class Client(Scraper):
                 credentials = docs[0]
             if update_last_loaded:
                 logger.debug("Updating last-loaded field")
-                self.store_credentials(id=id,
+                self.store_credentials(id=credentials['_id'],
                         doc_type = doctype,
                         app=app,
-                        credentials = credentials,
+                        credentials = credentials['_source']['credentials'],
                         last_loaded=datetime.datetime.now().isoformat(),
                         content = credentials['_source']['content']
                         )

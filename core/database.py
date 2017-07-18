@@ -42,7 +42,7 @@ try:
             # TODO re-activate using the schema, now disabled in order to make existing code
             # work with ES 5 (at least on my system)
             # client.indices.create(elastic_index, json.load(open('schema.json')))
-            client.indices.create(elastic_index)
+            client.indices.create(elastic_index, body={"mapping.total_fields.limit": 20000})
     except Exception as e:
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
 except:
