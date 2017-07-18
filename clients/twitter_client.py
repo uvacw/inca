@@ -9,6 +9,7 @@ from core.database import client as database_client
 import logging
 import sys
 import time
+from core.search_utils import doctype_first
 
 logger = logging.getLogger("INCA.%s" %__name__)
 
@@ -155,7 +156,7 @@ class twitter_timeline(twitter):
         except TwythonRateLimitError: pass # sometimes you just can't get a rate-limit estimate
 
         if not force:
-            since_id = self._first_added().get('_source',{}).get("id",None)
+            since_id = doctype_first(doctype="tweets",query="user.screen_name:"+screen_name)[0].get('_source',{}).get("id",None)
             logger.info("settings since_id to {since_id}".format(**locals()))
         try:
             batchsize = 1
