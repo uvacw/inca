@@ -2,7 +2,7 @@
 This file contains the twitter API retrieval classes
 '''
 
-from core.client_class import Client
+from core.client_class import Client, elasticsearch_required
 from core.basic_utils import dotkeys
 from twython import Twython, TwythonRateLimitError
 from core.database import config
@@ -18,6 +18,7 @@ class twitter(Client):
 
     service_name = "twitter"
 
+    @elasticsearch_required
     def add_application(self, appname="default"):
         """Add a Twitter app to generate credentials """
 
@@ -71,7 +72,7 @@ class twitter(Client):
                 'consumer_secret' : response['Application Consumer Secret']
         }, appname=response['Application name'])
 
-
+    @elasticsearch_required
     def add_credentials(self, appname='default'):
         '''Add credentials to a specified app '''
 
