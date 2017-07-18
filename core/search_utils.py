@@ -9,7 +9,7 @@ import logging as _logging
 from core.basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
 
-_logger = _logging.getLogger("INCA")
+_logger = _logging.getLogger("INCA.%s" %__name__)
 
 def list_doctypes():
     if not _DATABASE_AVAILABLE:
@@ -47,7 +47,7 @@ def doctype_first(doctype, num=1, by_field="META.ADDED"):
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get first document: No database instance available")
         return []
-        
+
     exotic_by_field = by_field.replace('.','.properties.')
     _logger.debug("looking for {exotic_by_field}".format(exotic_by_field=exotic_by_field))
     mapping = _client.indices.get_mapping()
