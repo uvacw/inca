@@ -5,7 +5,6 @@ This file contains the twitter API retrieval classes
 from core.client_class import Client, elasticsearch_required
 from core.basic_utils import dotkeys
 from twython import Twython, TwythonRateLimitError
-from core.database import config
 from core.database import client as database_client
 import logging
 import sys
@@ -79,6 +78,9 @@ class twitter(Client):
         logger.info("Adding credentials to {appname}".format(**locals()))
 
         application = self.load_application(app=appname)
+        if not application:
+            logger.warning("Sorry, no application found")
+            return False
         consumer_key    = dotkeys(application, '_source.credentials.consumer_key')
         consumer_secret = dotkeys(application, '_source.credentials.consumer_secret')
 
@@ -112,7 +114,7 @@ class twitter(Client):
         api = self._get_client(credentials)
         status = api.get_application_rate_limit_status()
 
-        return self.store_credentials(appame=appname, credentials=credentials, id=credentials['user_id'], **status)
+        return self.store_credentials(app=appname, credentials=credentials, id=credentials['user_id'], **status)
 
 
     def _get_client(self, credentials):

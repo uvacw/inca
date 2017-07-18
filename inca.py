@@ -161,7 +161,10 @@ def commandline():
         return
 
     if options.verbose:
-        logger.setLevel(level='INFO')
+        logging.basicConfig(level='INFO')
+
+    if options.debug:
+        logging.basicConfig(level='DEBUG')
 
     if options.celery:
         action = 'celery_batch'

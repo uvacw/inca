@@ -9,7 +9,7 @@ import logging as _logging
 from core.basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
 
-_logger = _logging.getLogger(__name__)
+_logger = _logging.getLogger("INCA")
 
 def list_doctypes():
     if not _DATABASE_AVAILABLE:
@@ -47,6 +47,19 @@ def doctype_first(doctype, num=1, by_field="META.ADDED"):
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get first document: No database instance available")
         return []
+        
+    exotic_by_field = by_field.replace('.','.properties.')
+    _logger.debug("looking for {exotic_by_field}".format(exotic_by_field=exotic_by_field))
+    mapping = _client.indices.get_mapping()
+    _logger.debug("Got mapping {mapping}".format(**locals()))
+    target_key = "{_elastic_index}.mappings.{doctype}.properties.{exotic_by_field}".format(_elastic_index=_elastic_index,**locals())
+    _logger.debug("Target key: {target_key}".format(**locals()))
+    found_mapping = _dotkeys(mapping,target_key )
+    _logger.debug("found mapping: {found_mapping}".format(**locals()))
+    if not found_mapping:
+        _logger.debug("Mapping not seen yet")
+        return []
+
     docs = _client.search(index=_elastic_index,
                   body={
                       "sort": [
@@ -77,6 +90,19 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get last documents: No database instance available")
         return []
+
+    exotic_by_field = by_field.replace('.','.properties.')
+    _logger.debug("looking for {exotic_by_field}".format(exotic_by_field=exotic_by_field))
+    mapping = _client.indices.get_mapping()
+    _logger.debug("Got mapping {mapping}".format(**locals()))
+    target_key = "{_elastic_index}.mappings.{doctype}.properties.{exotic_by_field}".format(_elastic_index=_elastic_index,**locals())
+    _logger.debug("Target key: {target_key}".format(**locals()))
+    found_mapping = _dotkeys(mapping,target_key )
+    _logger.debug("found mapping: {found_mapping}".format(**locals()))
+    if not found_mapping:
+        _logger.debug("Mapping not seen yet")
+        return []
+
     docs = _client.search(index=_elastic_index,
                   body={
                       "sort": [
