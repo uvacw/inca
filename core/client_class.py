@@ -203,7 +203,6 @@ class Client(Scraper):
                 doc = self._add_metadata(doc)
                 self._verify(doc)
                 self._save_document(doc)
-                yield doc
 
         else:
             return [self._add_metadata(doc) for doc in self.get(*args, **kwargs)]
