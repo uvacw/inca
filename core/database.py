@@ -1,18 +1,20 @@
 '''
-Here you find CRUD functionality. 
+Here you find CRUD functionality.
 
 This module provides database access objects. The idea is
 that all database specific functionality is in this document alone. Other
-classes and functions should interact with the database only through 
-functionality provided here. 
+classes and functions should interact with the database only through
+functionality provided here.
 '''
 
 
 import logging
 import json
+import csv
 from elasticsearch import Elasticsearch, NotFoundError, helpers
 from elasticsearch.exceptions import ConnectionTimeout
 import time
+from datetime import datetime
 import configparser
 import requests
 from celery import Task
@@ -31,6 +33,7 @@ try:
         timeout=60
     )   # should be updated to reflect config
     elastic_index  = config.get("elasticsearch","document_index")
+    DATABASE_AVAILABLE = True
 
     # initialize mappings if index does not yet exist
     try:
@@ -44,6 +47,7 @@ try:
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
 except:
     logger.warning("No database functionality available")
+    DATABASE_AVAILABLE = False
 
 
 
@@ -56,6 +60,7 @@ def get_document(doc_id):
     return document
 
 def check_exists(document_id):
+    if not DATABASE_AVAILABLE: return False, {}
     index = elastic_index
     try:
         retrieved = client.get(elastic_index,document_id)
@@ -69,7 +74,7 @@ def check_exists(document_id):
         logger.warning('unable to check for documents in elasticsearch elastic_index [{elastic_index}]'.format(**{'elastic_index':elastic_index}))
         time.sleep(1)
         return check_exists(document_id)
-        
+
 def update_document(document, force=False, retry=0, max_retries=10):
     '''
     Documents should usually only be appended, not updated. as such.
@@ -146,12 +151,6 @@ def insert_document(document, custom_identifier=''):
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
-        # 
-        #print(elastic_index)
-        #print(document['doctype'])
-        #print(document)
-        #print(custom_identifier)
-        #
         try:
             doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
         except ConnectionTimeout:
@@ -183,18 +182,18 @@ def remove_field(query, field):
             bulk_upsert().run(batch)
             batch = []
     if batch: # in case of leftovers
-        bulk_upsert().run(batch) 
+        bulk_upsert().run(batch)
 
 class bulk_upsert(Task):
     '''Processers can generate far more updates than elasticsearch wants to handle.
        Bulk_upsert reduces the load on elasticsearch by enabeling multiple documents
-       to be updated together, reducing the amount of queries. 
+       to be updated together, reducing the amount of queries.
     '''
     def run(self, documents):
         logger.debug(documents)
         return helpers.bulk(client, documents)
 
-    
+
 def _remove_dots(document):
     ''' elasticsearch is allergic to dots like '.' in keys.
     if you're not carefull, it may choke!
@@ -247,9 +246,39 @@ def scroll_query(query,scroll_time='10m', log_interval=None):
 def create_repository(location):
     '''Creates a repository called 'inca_backup', which is required
     to save snapshots. The location must be added to the `path.repo` field
-    of elasticsearch.yaml (generally located at the elasticsearch folder)
-    ''' 
-    
+    of elasticsearch.yml (generally located at the elasticsearch folder)
+
+    Parameters
+    ----------
+    location : string
+        The location of the specified backup path, should match
+        the "path.repo" argument in the "elasticsearch.yml" file
+
+    Returns
+    -------
+    Dictionary
+        Dictionary with ES response to request
+
+    Example
+    -------
+    ```bash
+    echo "path.repo: /path/to/inca/backup" >> /path/to/elasticsearch/config/elasticsearch.yml
+    ```
+    ```python
+    import inca
+    inca.core.database.create_repository("/path/to/inca/backup")
+    >>> {'acknowledged': True}
+    inca.core.database.create_backup("arbitrary_name")
+    >>> {'accepted': True}
+    ```
+
+    Notes
+    -----
+    The repository location must match the `path.repo` argument in the
+    `elasticsearch.yml` file, generally located in the .../elasticsearch/config
+    path. Elasticsearch must be restarted after the `path.repo` is set or changed.
+    '''
+
     body = {
                   "type": "fs",
                   "settings": {
@@ -268,12 +297,40 @@ def list_backups():
     return response.json()
 
 def create_backup(name):
+    """create a backup of the Elasticsearch indices
+
+    Saves a named backup to the specified backup directory. This requires
+    an inca repository to be initialized using the `create_repository` function.
+    That function is required to run only once after setting a (new) path.repo
+    value.
+
+    Parameters
+    ----------
+    name : str
+        A string specifying a designation for the snapshot. Usefull
+        for selectively loading a backup.
+
+    Returns
+    -------
+    dict
+        A dictionary with the elasticsearch response
+
+    Notes
+    -----
+    For this function to run, a 'inca_backup' repository must be instantiated.
+    Please see the `create_repository` function.
+
+    Also note that the function returns before the backup process is completed.
+    Avoid shutting down elasticsearch before the backup has been fully written
+    to disk.
+
+    """
     body = {
           "indices": "*",
           "ignore_unavailable": "false",
           "include_global_state": True
         }
-    
+
     return client.snapshot.create(repository='inca_backup', snapshot=name,body=body)
 
 def restore_backup(name):
@@ -288,8 +345,31 @@ def export_doctype(doctype):
         outpath = os.path.join('exports',doctype)
         if doctype not in os.listdir('exports'):
             os.mkdir(outpath)
-        with open(os.path.join('exports', doctype, '%s.JSON' %doc['_id']),'w') as f:
+        with open(os.path.join('exports', doctype, '%s.json' %doc['_id']),'w') as f:
             f.write(json.dumps(doc))
+
+def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
+    '''
+    Takes a dict with an elastic search query as input and exports the given keys to a csv file
+
+    input:
+    ---
+
+    query: dict
+        An ElasticSearch query, e.g. query = {'query':{'match':{'doctype':'nu'}}}
+    keys: list
+        A list of keys to be mapped to columns in the csv file. Often used keys include ['doctype', 'publication_date', 'text', 'feedurl', 'teaser', 'title', 'htmlsource', 'byline', 'url']
+    '''
+
+    if not 'exports' in os.listdir('.'):
+        os.mkdir('exports')
+    with open(os.path.join('exports',"{}.csv".format(datetime.now().strftime("%Y%m%d_%H%M%S"))),'w') as f:
+        writer=csv.writer(f)
+        headerrow = keys
+        writer.writerow(headerrow)
+        for doc in scroll_query(query):
+            row = [doc['_source'][k] for k in keys]
+            writer.writerow(row)
 
 def import_documents(source_folder, force=False):
     for input_file in os.listdir(source_folder):

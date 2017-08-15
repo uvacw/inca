@@ -1,9 +1,9 @@
 '''
 This document class is the template for classes that add or update
 documents in the database. The scraper and update classes inherit
-from this class. 
+from this class.
 
-The basic functionality is adding meta-data 
+The basic functionality is adding meta-data
 
 '''
 
@@ -17,14 +17,14 @@ from core.database import insert_document, update_document, check_exists
 
 class Document(Task):
     '''
-    Documents reflect the basic format of documents in the datastore. 
-    On save attempts, this class tries to infer whether required fields 
-    are present. 
+    Documents reflect the basic format of documents in the datastore.
+    On save attempts, this class tries to infer whether required fields
+    are present.
 
-    The 'META' key contains a key:description of all other keys in the document. 
+    The 'META' key contains a key:description of all other keys in the document.
     '''
 
-    
+
 
     functiontype = '' # RSSscraper, text_processor, cluster_analysis, testing or other description of function
     version      = '' # string indicating version of function to track changes (e.g. "0.1")
@@ -36,10 +36,10 @@ class Document(Task):
         Call the task as either a local or distributed process
         '''
         if action == 'run':
-            self.run(*args, **kwargs)
+            return self.run(*args, **kwargs)
 
         if action == 'delay':
-            self.delay(*args, **kwargs)
+            return self.delay(*args, **kwargs)
 
 
     def __init__(self, database=True):
@@ -53,17 +53,17 @@ class Document(Task):
         Documents are saved to the general document collection
         defined in the core.database file.
 
-        Update existing documents by passing an elasticsearch results 
-        through the _update_document method. 
+        Update existing documents by passing an elasticsearch results
+        through the _update_document method.
 
         Note that by default, documents can only extend, not replace
-        old documents. 
+        old documents.
 
         '''
         assert self.doctype, "You need to declare a `self.doctype` in your subclass!"
         assert self.version, "You need to declare a `self.version` in your subclass!"
         assert self.functiontype, "You need to declare a `self.functiontype` in your subclass!"
-        
+
         document['doctype'] = self.doctype
         if '_id' in document.keys():
             custom_identifier = document.pop('_id')
@@ -83,11 +83,11 @@ class Document(Task):
         '''
         DO NOT OVERWRITE THIS METHOD
 
-        This method generates the metadata for returned documents based on 
+        This method generates the metadata for returned documents based on
         the 'get' function docstring and arguments.
 
-        All new keys are reflected in the 'META' key with the information 
-        about the script in question. 
+        All new keys are reflected in the 'META' key with the information
+        about the script in question.
 
         '''
         try:    docstring = self.get.__doc__
@@ -114,15 +114,15 @@ class Document(Task):
                 document['META'][key] = meta
 
         return document
-    
+
     def _verify(self, document):
         '''
         DO NOT OVERWRITE THIS METHOD
 
-        This method verifies whether yielded documents conform to the specification 
+        This method verifies whether yielded documents conform to the specification
         of the datastore
         '''
-        
+
         assert type(document)==dict
         assert document.get('META',False), "document lacks a `meta` key"
         for key in document.keys():
@@ -135,12 +135,12 @@ class Document(Task):
         '''
         DO NOT OVERWRITE THIS METHOD
 
-        This method checks whether the appropriate information is present in the subclass. 
+        This method checks whether the appropriate information is present in the subclass.
         '''
 
         for attribute in ['functiontype','version','date','doctype']:
             if not getattr(self,attribute):
-                logger.warning("""%s misses the appropriate `%s` property! 
+                logger.warning("""%s misses the appropriate `%s` property!
                 Please set these in the class __init__ method as self.%s""" %(
                     self.__class__, attribute,attribute))
 
@@ -150,7 +150,7 @@ class Document(Task):
         for method in ['process','get']:
             try:
                 if getattr(self,method).__doc__ in teststrings:
-                    logger.warning("""%s's %s docstring does not reflect functionality! 
+                    logger.warning("""%s's %s docstring does not reflect functionality!
                     Please update the docstring in your class definition.""" %(self.__class__, method))
             except:
                 pass

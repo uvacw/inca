@@ -61,26 +61,44 @@ class parliamentquestions_NL(Scraper):
 
                                 metadata = dict(
                                     zip(
-                                        metadata_dom.xpath('//tr/td[1]//text()'),
-                                        metadata_dom.xpath('//tr/td[2]//text()')
+                                        [ str(e) for e in metadata_dom.xpath('//tr/td[1]//text()')],
+                                        [ str(e) for e in metadata_dom.xpath('//tr/td[2]//text()')]
                                     ))
                         else:
                             metadata = {}
-                            
+
                         doc = dict(
                             _id         = _id,
-                            source      = item_link,
+                            source      = str(item_link),
                             xml_content = xml_content,
                             xml_metadata= metadata_xml
                         )
-                        if not xml_content:
-                            raise "nope"
                         doc.update(metadata)
-                        yield doc
+                        yield cleandoc(doc)
 
                     next_url = DOM_home.xpath('//a[.="Volgende"]/@href')
                     if next_url:
                         next_url = next_url[0]
+
+def cleandoc(document):
+    for k,v in document.items():
+        if type(v)==dict:
+            document[k] = cleandoc(v)
+        elif type(v)==str:
+            if not v.replace('\n','').replace(' ',''):
+                document[k] = ""
+            else:
+                document[k] = v
+        elif type(v) == str:
+            pass
+
+    empty_keys = []
+    for k in document.keys():
+        if not k.replace('\n','').replace(' ','') and not document[k]:
+            empty_keys.append(k)
+    for k in empty_keys:
+        document.pop(k)
+    return document
 
 
 
