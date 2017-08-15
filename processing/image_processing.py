@@ -17,18 +17,39 @@ logger = logging.getLogger(__name__)
 IMAGEPATH = config.get('imagestore','imagepath')
 
 
+def hash2filepath(myhash):
+    '''
+    Returns a tuple consisting of the directory in which the image is to be stored
+    and the filename itself. The filename is identical to the hash.
+    '''
+    hashstr = str(myhash)
+    path = os.path.join(IMAGEPATH,hashstr[:4],hashstr[4:8],hashstr[8:12],hashstr[12:])
+    return path,hashstr
+
+
+
+
 class download_images(Processer):
     
     '''Downloads and stores images'''
-    def process(self, document_field="images"):
-        for image in images:
-            self.download(image["url"])
+    def process(self, document_field):
+        '''
+        document_field is expected to be a list of dicts, with each dict having at least
+        the key 'url'
+        '''
+        document_field_new = []
+        for image in document_field:
+            filename = self.download(image["url"])
+            image_new = image
+            image_new['filename'] = filename
+            document_field_new.append(image_new)
+        return document_field_new
 
     def download(self,url):
         response = requests.get(url, stream=True)
         imagecontent = Image.open(response.raw)
         myhash = imagehash.average_hash(imagecontent)
-        directory, filename =  self.hash2filepath(myhash)
+        directory, filename =  hash2filepath(myhash)
         if IS_PYTHON3:
             os.makedirs(directory, exist_ok=True)
         else:
@@ -42,14 +63,6 @@ class download_images(Processer):
         with open(os.path.join(directory,filename),mode='wb') as fo:
             fo.write(imagecontent)
 
+        return filename
 
-    def hash2filepath(self,myhash):
-
-        '''
-        Returns a tuple consisting of the directory in which the image is to be stored
-        and the filename itself. The filename is identical to the hash.
-        '''
-        hashstr = str(myhash)
-        path = os.path.join(IMAGEPATH,hashstr[:4],hashstr[4:8],hashstr[8:12],hashstr[12:])
-        return path,hashstr
 
