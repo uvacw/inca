@@ -69,7 +69,7 @@ class walmart(rss):
 
 
 class exxonmobil(rss):
-    """Scrapes Walmart """
+    """Scrapes ExxonMobil"""
 
     def __init__(self,database=True):
         self.database = database
@@ -109,8 +109,8 @@ class exxonmobil(rss):
             #text_clean = " ".join(text.split())
             # bla = " ".join(text.split())
         except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
+            # print("geen text")
+            logger.info("oops - geen text?")
             text_dirty = ""
         text = polish(text_dirty)
         extractedinfo={"title":title.strip(),
@@ -125,6 +125,8 @@ class exxonmobil(rss):
 
 class hsbc(rss):
     """Scrapes hsbc"""
+
+    # TODO: THIS SCRAPER NIETS TO BE FINISHED
 
     def __init__(self,database=True):
         self.database = database

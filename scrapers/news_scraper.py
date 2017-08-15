@@ -892,55 +892,6 @@ class fok(rss):
                        }
 
         return extractedinfo
-#Anne
-
-class walmart(rss):
-    """Scrapes Walmart """
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "walmart (corp)"
-        self.rss_url ='http://corporate.walmart.com/rss?feedName=allnews'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=1, day=1)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            category="".join(tree.xpath('//*[@class="wmt-header-topics-item"]//a/text()')).strip()
-        except:
-            category = ""
-        if len(category.split(" ")) >1:
-            category=""
-        try:
-            textrest=tree.xpath('//*[@class="article-content"]//p/text()')
-        except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
-            textrest = ""
-        text = "\n".join(textrest)
-        textnew=re.sub("Lees ook:"," ",text)
-        try:
-             author_door = tree.xpath('//*[@class="article-byline-text"]/p/a/text()')[0].strip()
-        except:
-            author_door = ""
-        textnew=polish(textnew)
-
-        extractedinfo={"category":category.strip(),
-                       "text":textnew.strip(),
-                       "byline_source":author_door.replace("\n"," ").strip()
-                       }
-
-        return extractedinfo
 
 if __name__=="__main__":
     print('Please use these scripts from within inca. EXAMPLE: BLA BLA BLA')
