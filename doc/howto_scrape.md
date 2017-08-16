@@ -271,4 +271,14 @@ A good way of using logging when writing scrapers can be:
 
 ### 2. Scrapers for webpages without RSS feed
 
-[TO BE ADDED]
+The big advantage of an RSS scraper is that the RSS feed already provides you with a list of URLs. Therefore, the only thing to do is to write a function that parses the content behind these links.
+
+In contrast, for a generic scraper, you need to do all this yourself. As this is highly site-dependend, we'll only outline the general approach here. Please look at some existing scrapers for examples.
+
+1. Choose a starting page (e.g., the homepage) and parse all links to relevant items.
+
+2. If necessary, repeat (1) for more pages (e.g., 'next items', `?page=2', ...)
+
+3. Loop over the list of URLs, download them, parse them.
+
+Make sure that you have some limits installed to avoid that the scraper continues infinitely.
