@@ -212,14 +212,9 @@ Please note that you have tab completion (this will show you all the methods ins
 
 ```python
 len(r)  # check how many articles you scraped.
-<<<<<<< HEAD
 r[0].keys() #this will give you all the info you need about the existing keys 
 r[0]['text'] # or use different key of course, such as:
 r[0]['title']
-=======
-r[0].keys() # this will give you all the info you need about the existing keys 
-r[0]['text'] # or use different key of course.
->>>>>>> db8087b192661a9162fca500c097ee9f92e40ff4
 ```
 
 ### Testing xpaths in ipython
@@ -242,6 +237,36 @@ tree.xpath('<putyourxpathhere') # for example: tree.xpath('//*[@class="article-h
 
 Now, you will see whether you xpath actually produced the desired content or not. If needed, you can adjust the xpath, play around with cleaning the output, etc 
 
+### Use logging for debugging
+
+While writing a scraper, you maybe use a lot of `print()` functions to watch what is going on while testing them. However, before finalizing your scrapers and issuing a Pull Request, please remove all printing so that scraping can run silently in the background.
+
+A good alternative is making use of the logger instead of printing. You can choose between (in decreasing order of importance of the message):
+
+```python
+logger.critical("Here is some message")
+logger.error("Here is some message")
+logger.warning("Here is some message")
+logger.info("Here is some message")
+logger.debug("Here is some message")
+```
+
+By default, only messages that are 'warning' or more important are shown. But you can change this. For instance, if you want to see all messages that are of level debug or higher, just do:
+
+```python
+import inca
+import logging
+inca.scrapers.news_scraper.logger.setLevel(logging.DEBUG)
+myscraper = inca.scrapers.news_scraper.nu(database=False)
+data = myscraper.run()
+```
+
+A good way of using logging when writing scrapers can be:
+
+- emit an error when scraping fails
+- emit a warning when something unexpected  happens
+- emit an info when, e.g., an element does not contain an expected field (if not important enough for a warning)
+- emit a debug for very detailed steps (e.g., the URL being fetched)
 
 
 ### 2. Scrapers for webpages without RSS feed
