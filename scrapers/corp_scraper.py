@@ -10,6 +10,25 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from scrapers.corp_abnamro import *
+from scrapers.corp_aegon import *
+from scrapers.corp_akzonobel import *
+from scrapers.corp_asml import *
+from scrapers.corp_barclays import *
+from scrapers.corp_boskalis import *
+from scrapers.corp_bsch import *
+from scrapers.corp_dsm import *
+from scrapers.corp_gemalto import *
+from scrapers.corp_ing import *
+from scrapers.corp_kpn import *
+from scrapers.corp_lbg import *
+from scrapers.corp_philips import *
+from scrapers.corp_sbm import *
+from scrapers.corp_shell import *
+from scrapers.corp_unilever import *
+from scrapers.corp_vopak import *
+from scrapers.corp_wolters import *
+
 def polish(textstring):
     #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
     lines = textstring.strip().split('\n')
@@ -19,588 +38,401 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-
 # Dutch companies
 
-class philips(rss):
-    """Scrapes Philips """
+class randstad(Scraper):
+    """Scrapes Randstad Holdings"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "philips (corp)"
-        self.rss_url ='http://www.lighting.philips.com/main/company/newsroom/n13-newscenter-archive-browser.feeds.xml'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=14)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*/span[@class="p-heading-02 p-heading-medium"]/text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            teaser="".join(tree.xpath('//*/span[@class="p-body-copy-02"]/text()')).strip()
- #           print("this prints teaser dirty", teaser)
-        except:
-            print("no teaser")
-            teaser= ""
-        teaser_clean = " ".join(teaser.split())
-        try:
-            text="".join(tree.xpath('//*/span[@class="p-body-copy-02"]//text()')).strip()
-        except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "teaser":teaser_clean.strip(),
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-class boskalispress (rss):
-    """Scrapes Boskalis Westminster Press Releases"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "boskalis press (corp)"
-        self.rss_url ='https://boskalis.com/syndication/press-releases/feed.rss'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=14)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*/h1[@class="heading--section"]/text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            category="".join(tree.xpath('//*/a[@class="btn btn--link"]//text()')).strip()
-#            print("this prints category", category)
-        except:
-            category = ""
-        if len(category.split(" ")) >1:
-            category=""
-        try:
-            text="".join(tree.xpath('//*[@class="page-content content--main"]//text()')).strip()
-        except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "category":category.strip(),
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-class boskalisnews (rss):
-    """Scrapes Boskalis Westminster News Releases"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "boskalis news (corp)"
-        self.rss_url ='https://boskalis.com/syndication/news-releases/feed.rss'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=14)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*/h1[@class="heading--section"]/text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            category="".join(tree.xpath('//*/span[@class="tag"]//text()')).strip()
-#            print("this prints category", category)
-        except:
-            category = ""
-        if len(category.split(" ")) >1:
-            category=""
-        try:
-            text="".join(tree.xpath('//*[@class="page-content content--main"]//text()')).strip()
-        except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "category":category.strip(),
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-class unilever (rss):
-    """Scrapes Unilever"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "unilever (corp)"
-        self.rss_url ='https://www.unilever.com/feeds/news.rss'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=14)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*/article[@class="content-article"]/h1/text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            category="".join(tree.xpath('//*[@class="small-12 end"]/ul/li/a/text()')).strip()
-#            print("this prints category", category)
-        except:
-            category = ""
-        if len(category.split(" ")) >1:
-            category=""
-        try:
-            teaser="".join(tree.xpath('//*[@class="intro"]/p/text()')).strip()
- #           print("this prints teaser dirty", teaser)
-        except:
-            print("no teaser")
-            teaser= ""
-        teaser_clean = " ".join(teaser.split())
-        try:
-            text="".join(tree.xpath('//*/article[@class="content-article"]/section//text()')).strip()
-        except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "category":category.strip(),
-                       "teaser":teaser.strip(),
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-class aegon (rss):
-    """Scrapes Aegon"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "aegon (corp)"
-        self.rss_url ='https://nieuws.aegon.nl/feed/nl.xml'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=14)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*[@class="title_companyprofile"]/h1//text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            teaser="".join(tree.xpath('//*[@class="text_summary"]/p//text()')).strip()
- #           print("this prints teaser dirty", teaser)
-        except:
-            print("no teaser")
-            teaser= ""
-        teaser_clean = " ".join(teaser.split())
-        try:
-            text="".join(tree.xpath('//*[@class="text_companyprofile"]/div/p//text()')).strip()
-        except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "teaser":teaser.strip(),
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-class ing (rss):
-    """Scrapes ING"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "ing (corp)"
-        self.rss_url ='https://www.ing.com/news.rss'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=7, day=5)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*/section[@class="article-main"]/h1/text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            teaser="".join(tree.xpath('//*[@class="article-intro"]/p//text()')).strip()
- #           print("this prints teaser dirty", teaser)
-        except:
- #          print("no teaser")
-            teaser= ""
-        teaser_clean = " ".join(teaser.split())
-        try:
-            text=" ".join(tree.xpath('//*/section[@class="article-main"]/div/p//text()')).strip()
-        except:
-#          print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "teaser":teaser.strip(),
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-class asml (rss):
-    """Scrapes ASML"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "asml (corp)"
-        self.rss_url ='https://www.asml.com/asml/rss/pressreleases'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=14)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*[@class="section"]/h2/text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            text="".join(tree.xpath('//*[@class="body"]/p//text()')).strip()
-        except:
-#          print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-class relx (rss):
-    """Scrapes Relx"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "relx (corp)"
-        self.rss_url ='http://www.relx.com/_layouts/feed.aspx?xsl=1&web=%2Fmediacentre&page=79e16d86-97d3-4f5c-bc80-73e834388924&wp=43d94ca0-83d8-4583-8b96-5b9b9152fc08&pageurl=%2Fmediacentre%2FPages%2FRSSFeed%2Easpx'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=14)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*/h1[@class="row"]/text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            text="".join(tree.xpath('//*[@class="zone-full-width content-page-body-intro"]//text()')).strip()
-        except:
-#          print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-class abnamro (rss):
-    """Scrapes ABN Amro"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "abnamro (corp)"
-        self.rss_url ='https://www.abnamro.com/en/newsroom/rss.html'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=14)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*/article[@class="news-detail"]/h1/text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            category="".join(tree.xpath('//*/ul[@class="keywords"]/li/a/text()')).strip()
-#            print("this prints category", category)
-        except:
-            category = ""
-        if len(category.split(" ")) >1:
-            category=""
-        try:
-            text="".join(tree.xpath('//*[@class="articleBody"]/ul//text() | //*[@class="articleBody"]/p//text()')).strip()
-        except:
-#          print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "category":category.strip(), 
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-class gemalto (rss):
-    """Scrapes Gemalto"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "gemalto (corp)"
-        self.rss_url ='http://www.gemalto.com/_layouts/15/feed.aspx?xsl=1&web=/press/rss&page=ccdbcfc3-cf39-419e-ad30-ff414b97b068&wp=9cc71aca-9378-474a-98a2-99673b290d2b'
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=21)
-
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
-        tree = fromstring(htmlsource)
-        try:
-            title="".join(tree.xpath('//*[@class="sub-content"]/h1/text()')).strip()
-#            print("this prints title", title)
-        except:
-            print("no title")
-            title = ""
-        try:
-            text="".join(tree.xpath('//*[@class="ms-rtestate-field"]//text() | //*[@class="articleBody"]/p//text()')).strip()
-        except:
-#          print("geen text")
-            logger.info("oops - geen textrest?")
-            text = ""
-        text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "text":polish(text).strip()
-                       }
-
-        return extractedinfo
-
-
-class shell(Scraper):
-    """Scrapes Shell"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.START_URL = "http://www.shell.com/media/news-and-media-releases.html"
-        self.BASE_URL = "http://www.shell.com/"
+        self.START_URL = "https://www.ir.randstad.com/news-and-events/press-releases.aspx"
+        self.BASE_URL = "https://www.ir.randstad.com/"
 
     def get(self):
         '''                                                                             
-        Fetches articles from Shell
+        Fetches articles from Randstad Holdings
         '''
-        self.doctype = "shell (corp)"
+        self.doctype = "Randstad (corp)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=21)
-
-        releases = [] #
-        overview_page = requests.get(self.START_URL)
-        tree = fromstring(overview_page.text)
-
-        linkobjects = tree.xpath('//h3//a')
-
-        links = [self.BASE_URL+l.attrib['href'] for l in linkobjects]
-
-        for link in links: 
-            logger.debug('ik ga nu {} ophalen'.format(link))
-            current_page = requests.get(link)
-            tree = fromstring(current_page.text)
-            #tree.xpath('//*[@class="promo-list__list"]/article/div/div/h3/a//text()').strip() # parse interesting stuff from specific sites
-            try:
-                title=" ".join(tree.xpath('//*[@class="page-header__header"]/h1/text()'))
-#                print("this prints title", title)
-            except:
-                print("no title")
-                title = ""
-            try:
-                teaser=" ".join(tree.xpath('//*[@class="page-header__text"]/p//text()'))
- #               print("this prints teaser dirty", teaser)
-            except:
- #              print("no teaser")
-                teaser= ""
-            teaser_clean = " ".join(teaser.split())
-            try:
-                text=" ".join(tree.xpath('//*[@class="text-image__text"]//text()'))
-            except:
-#           print("geen text")
-                logger.info("oops - geen textrest?")
-                text = ""
-            text = "".join(text)
-            releases.append({'text':text.strip(),
-                             'teaser': teaser.strip(),
-                             'title':title.strip(),
-                             'url':link.strip()})
-
-        return releases
-
-class akzonobel(Scraper):
-    """Scrapes Akzo Nobel"""
-
-    def __init__(self,database=True):
-        self.database = database
-        self.START_URL = "https://www.akzonobel.com/media-releases-and-features"
-        self.BASE_URL = "http://www.akzonobel.com/"
-
-    def get(self):
-        '''                                                                             
-        Fetches articles from Akzo Nobel
-        '''
-        self.doctype = "shell (corp)"
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=21)
+        self.date = datetime.datetime(year=2017, month=7, day=24)
 
         releases = []
-        overview_page = requests.get(self.START_URL)
+
+        page = 1
+        overview_page = requests.get(self.START_URL+'?page='+str(page))
         tree = fromstring(overview_page.text)
+        overview_page_text = tree.xpath('//*[@class="textContainer"]')
 
-        linkobjects = tree.xpath('//h3//a')
+        first_page_text = ''
+        while overview_page_text != first_page_text:
 
-        links = [self.BASE_URL+l.attrib['href'] for l in linkobjects]
+            if page == 1:
+                first_page_text = tree.xpath('//*[@class="textContainer"]')
+    
+            linkobjects = tree.xpath('//*[@class="press-title"]//a')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                try:
+                    title=" ".join(tree.xpath('//*[@class="pr-Title"]/h2/text()'))
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    text=" ".join(tree.xpath('//*[@class="pr-Content"]/p//text()'))
+                except:
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'title':title.strip(),
+                                 'url':link.strip()})
 
-        for link in links:
-            logger.debug('ik ga nu {} ophalen'.format(link))
-            current_page = requests.get(link)
-            tree = fromstring(current_page.text)
-            #tree.xpath('//*[@class="promo-list__list"]/article/div/div/h3/a//text()').strip() # parse interesting stuff from specific sites
-            try:
-                title=" ".join(tree.xpath('//*[@class="page-header__header"]/h1/text()'))
-#                print("this prints title", title)
-            except:
-                print("no title")
-                title = ""
-            try:
-                teaser=" ".join(tree.xpath('//*[@class="page-header__text"]/p//text()'))
- #               print("this prints teaser dirty", teaser)
-            except:
- #              print("no teaser")
-                teaser= ""
-            teaser_clean = " ".join(teaser.split())
-            try:
-                text=" ".join(tree.xpath('//*[@class="text-image__text"]//text()'))
-            except:
-#           print("geen text")
-                logger.info("oops - geen textrest?")
-                text = ""
-            text = "".join(text)
-            releases.append({'text':text.strip(),
-                             'teaser': teaser.strip(),
-                             'title':title.strip(),
-                             'url':link.strip()})
+            page+=1
+            current_url = self.START_URL+'?page='+str(page)
+            overview_page = requests.get(current_url)
+            tree = fromstring(overview_page.text)
+            overview_page_text = tree.xpath('//*[@class="textContainer"]')
 
         return releases
 
-
 # UK Companies
+
+class abf(Scraper):
+    """Scrapes Associated British Foods"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.START_URL = "https://www.abf.co.uk/media/news"
+        self.BASE_URL = "https://www.abf.co.uk"
+
+    def get(self):
+        '''                                                                             
+        Fetches articles from Associated British Foods
+        '''
+        self.doctype = "ABF (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=28)
+
+        releases = []
+
+        current_url = self.START_URL
+        start_page = requests.get(current_url)
+        tree = fromstring(start_page.text)
+        yearobjects = tree.xpath('//*/ul[@class="tab-header"]//a')
+        years = [self.BASE_URL+l.attrib['href'] for l in yearobjects if 'href' in l.attrib]
+        
+        for year in years:
+
+            current_url = year
+            year_page = requests.get(current_url)
+            tree = fromstring(year_page.text)
+    
+            linkobjects = tree.xpath('//*[@class="annual-details"]//a')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            print(links)
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                try:
+                    title=" ".join(tree.xpath('//*[@class="content-main"]/h1/text()'))
+        #            print("this prints title", title)
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    teaser=" ".join(tree.xpath('//*[@class="content-main"]/h4//text()'))
+         #           print("this prints teaser dirty", teaser)
+                except:
+         #          print("no teaser")
+                    teaser= ""
+                    teaser_clean = " ".join(teaser.split())
+                try:
+                    text=" ".join(tree.xpath('//*[@class="content-main"]/p//text() | //*[@class="content-main"]/h3//text() | //*[@class="content-main"]/ul//text()'))
+                except:
+        #       print("geen text")
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'title':title.strip(),
+                                 'teaser':teaser.strip(),
+                                 'url':link.strip()})
+        return releases
+
+
+
+class bat(Scraper):
+    """Scrapes British American Tobacco"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.START_URL = "http://www.bat.com/group/sites/UK__9D9KCY.nsf/vwPagesWebLive/DO6YLKYF"
+        self.BASE_URL = "http://www.bat.com"
+
+    def get(self):
+        '''                                                                             
+        Fetches articles from British American Tobacco
+        '''
+        self.doctype = "BAT (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=6, day=26)
+
+        releases = []
+
+        current_url = self.START_URL
+        start_page = requests.get(current_url)
+        tree = fromstring(start_page.text)
+        yearobjects = tree.xpath('//*/ul[@class="ow_tabnav_ul"]//a')
+        years = [self.BASE_URL+l.attrib['href'] for l in yearobjects if 'href' in l.attrib]
+        
+        for year in years:
+
+            current_url = year
+            year_page = requests.get(current_url)
+            tree = fromstring(year_page.text)
+    
+            linkobjects = tree.xpath('//*[@class="stackRow"]//a[@class="link"]')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                try:
+                    title=" ".join(tree.xpath('//*[@class="title"]/p/text()'))
+    #                print("this prints title", title)
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    text=" ".join(tree.xpath('//*[@class="primaryContent gutterTop"]//text()'))
+                except:
+    #           print("geen text")
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'title':title.strip(),
+                                 'url':link.strip()})#
+
+        return releases
+
+class bhp(Scraper):
+    """Scrapes BHP Billiton"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.START_URL = "http://www.bhp.com/media-and-insights/news-releases"
+        self.BASE_URL = "http://www.bhp.com/"
+
+    def get(self):
+        '''                                                                             
+        Fetches articles from BHP Billiton
+        '''
+        self.doctype = "BHP (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=26)
+
+        releases = []
+
+        page = 0
+        current_url = self.START_URL+'?q0='+str(page)
+        overview_page = requests.get(current_url)
+        while overview_page.text.find('listing__item-wrap') != -1:
+            
+            tree = fromstring(overview_page.text)
+
+            linkobjects = tree.xpath('//*[@class="col-9"]/h2//a')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                try:
+                    title=" ".join(tree.xpath('//*[@class="col-9 col-r"]/h2/text()'))
+        #            print("this prints title", title)
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    text=" ".join(tree.xpath('//*[@class="rte col-12"]//text()'))
+                except:
+        #       print("geen text")
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'title':title.strip(),
+                                 'url':link.strip()})
+
+            page+=1
+            current_url = self.START_URL+'?q0='+str(page)
+            overview_page = requests.get(current_url)
+
+        return releases
+
+class bp(Scraper):
+    """Scrapes BP"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.START_URL = "http://www.bp.com/en/global/corporate/media/press-releases.html"
+        self.BASE_URL = "http://www.bp.com/"
+
+    def get(self):
+        '''                                                                             
+        Fetches articles from BP
+        '''
+        self.doctype = "BP (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=24)
+
+        releases = []
+
+        page = 1
+        current_url = self.START_URL+'?page='+str(page)
+        overview_page = requests.get(current_url)
+        while overview_page.content.find(b'Sorry, nothing found') == -1:
+            
+            tree = fromstring(overview_page.text)
+    
+            linkobjects = tree.xpath('//*/ul[@class="list"]/li//a')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                try:
+                    title=" ".join(tree.xpath('//*/h1[@class="nv-page-title"]/text()'))
+    #                print("this prints title", title)
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    teaser=" ".join(tree.xpath('//*[@class="nv-richtext"]/h2//text()'))
+     #               print("this prints teaser dirty", teaser)
+                except:
+     #              print("no teaser")
+                    teaser= ""
+                teaser_clean = " ".join(teaser.split())
+                try:
+                    text=" ".join(tree.xpath('//*[@class="nv-richtext"]/p//text() | //*[@class="nv-parsys-component nv-container"]//text()'))
+                except:
+    #           print("geen text")
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'teaser': teaser.strip(),
+                                 'title':title.strip(),
+                                 'url':link.strip()})
+
+            page+=1
+            current_url = self.START_URL+'?page='+str(page)
+            overview_page = requests.get(current_url)
+
+        return releases
+
+class btgroup (rss):
+    """Scrapes BTGroup"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.doctype = "btgroup (corp)"
+        self.rss_url ='http://bt.mynewsdesk.com/rss/source/56578/pressrelease'
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=28)
+
+
+    def parsehtml(self,htmlsource):
+        '''                                                                             
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        tree = fromstring(htmlsource)
+        try:
+            title="".join(tree.xpath('//*/h1[@class="newsroom-headline fn"]/text()')).strip()
+#            print("this prints title", title)
+        except:
+            print("no title")
+            title = ""
+        try:
+            text="".join(tree.xpath('//*[@class="clearfix"]//text()')).strip()
+        except:
+#          print("geen text")
+            logger.info("oops - geen textrest?")
+            text = ""
+        text = "".join(text)
+        extractedinfo={"title":title.strip(),
+                       "text":polish(text).strip()
+                       }
+
+        return extractedinfo
+
+class compass(Scraper):
+    """Scrapes Compass Group"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.START_URL = "https://www.compass-group.com/en/media/news.html"
+        self.BASE_URL = "https://www.compass-group.com/"
+
+    def get(self):
+        '''                                                                             
+        Fetches articles from Compass Group
+        '''
+        self.doctype = "Compass (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=26)
+
+        releases = []
+
+        year = 2012
+        current_url = self.START_URL+'?tab1='+str(year)
+        overview_page = requests.get(current_url)
+        while overview_page.text.find('list-item list-item-even') != -1:
+            
+            tree = fromstring(overview_page.text)
+
+            linkobjects = tree.xpath('//*/p[@class="article-list-item-date"]//a')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                try:
+                    title=" ".join(tree.xpath('//*[@class="default"]/h2/text()'))
+        #            print("this prints title", title)
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    text=" ".join(tree.xpath('//*[@class="default"]/p//text()'))
+                except:
+        #       print("geen text")
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'title':title.strip(),
+                                 'url':link.strip()})
+
+            year+=1
+            current_url = self.START_URL+'?tab1='+str(year)
+            overview_page = requests.get(current_url)
+
+        return releases
 
 class diageopress(rss):
     """Scrapes Diageo Press Releases"""
@@ -650,7 +482,7 @@ class diageopress(rss):
         return extractedinfo
 
 class diageonews(rss):
-    """Scrapes Diageo Press Releases"""
+    """Scrapes Diageo News"""
 
     def __init__(self,database=True):
         self.database = database
@@ -690,7 +522,7 @@ class diageonews(rss):
             teaser= ""
             teaser_clean = " ".join(teaser.split())
         try:
-            text="".join(tree.xpath('//*[@class="text-container"]/p//text()')).strip()
+            text="".join(tree.xpath('//*[@class="text-container"]//text() | //*/p[@class="u-top-padding-half"]//text()')).strip()
         except:
 #          print("geen text")
             logger.info("oops - geen textrest?")
@@ -703,6 +535,71 @@ class diageonews(rss):
                        }
 
         return extractedinfo
+
+class gsk(Scraper):
+    """Scrapes GlaxoSmithKline"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.START_URL = "http://www.gsk.com/en-gb/media/press-releases/"
+        self.BASE_URL = "http://www.gsk.com/"
+
+    def get(self):
+        '''                                                                             
+        Fetches articles from GSK
+        '''
+        self.doctype = "GSK (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=24)
+
+        releases = []
+
+        page = 1
+        current_url = self.START_URL+'/?p='+str(page)
+        overview_page = requests.get(current_url)
+        while overview_page.content.find(b'Sorry, there are no search results.') == -1:
+            
+            tree = fromstring(overview_page.text)
+    
+            linkobjects = tree.xpath('//*[@class="simple-listing__link"]')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                try:
+                    title=" ".join(tree.xpath('//*[@class="content-wrapper"]/h1/text()'))
+    #                print("this prints title", title)
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    teaser=" ".join(tree.xpath('//*[@class="intro"]/p//text()'))
+     #               print("this prints teaser dirty", teaser)
+                except:
+     #              print("no teaser")
+                    teaser= ""
+                teaser_clean = " ".join(teaser.split())
+                try:
+                    text=" ".join(tree.xpath('//*[@class="content-wrapper"]/p//text()'))
+                except:
+    #           print("geen text")
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'teaser': teaser.strip(),
+                                 'title':title.strip(),
+                                 'url':link.strip()})
+
+            page+=1
+            current_url = self.START_URL+'/?p='+str(page)
+            overview_page = requests.get(current_url)
+
+        return releases
+
+
 
 class prudential(rss):
     """Scrapes Prudential"""
@@ -876,6 +773,62 @@ class nationalgrid(rss):
 
         return extractedinfo
 
+class rbs(rss):
+    """Scrapes Royal Bank of Scotland"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.doctype = "rbs (corp)"
+        self.rss_url ='http://www.rbs.com/rss/news.rss'
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=28)
+
+
+    def parsehtml(self,htmlsource):
+        '''                                                                             
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        tree = fromstring(htmlsource)
+        try:
+            title="".join(tree.xpath('//*/h1[@class="title-heading"]/text()')).strip()
+#            print("this prints title", title)
+        except:
+            print("no title")
+            title = ""
+        try:
+            category="".join(tree.xpath('//*[@class="component-content metadata-description"]/p//text()')).strip()
+#            print("this prints category", category)
+        except:
+            category = ""
+        if len(category.split(" ")) >1:
+            category=""
+        try:
+            teaser="".join(tree.xpath('//*[@class="intro"]/p/text()')).strip()
+ #           print("this prints teaser dirty", teaser)
+        except:
+            print("no teaser")
+            teaser= ""
+        teaser_clean = " ".join(teaser.split())
+        try:
+            text="".join(tree.xpath('//*[@class="component-content"]//text()')).strip()
+        except:
+            print("geen text")
+            logger.info("oops - geen textrest?")
+            text = ""
+        text = "".join(text)
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
+                       "teaser":teaser.strip(),
+                       "text":polish(text).strip()
+                       }
+
+        return extractedinfo
+
 class shire(rss):
     """Scrapes Shire"""
 
@@ -955,6 +908,69 @@ class standardchartered(rss):
 
         return extractedinfo
 
+class vodafone(Scraper):
+    """Scrapes Vodafone"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.START_URL = "http://www.vodafone.com/content/index/media/vodafone-group-releases.html"
+        self.BASE_URL = "http://www.vodafone.com/"
+
+    def get(self):
+        '''                                                                             
+        Fetches articles from Vodafone
+        '''
+        self.doctype = "Vodafone (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=24)
+
+        releases = []
+
+        page = 0
+        current_url = self.START_URL+'?category=all&offset='+str(page)+'0'
+        overview_page = requests.get(current_url)
+        while overview_page.text.find('search-results-list') != -1:
+            
+            tree = fromstring(overview_page.text)
+
+            linkobjects = tree.xpath('//*[@class="col lrg-50"]/h3//a')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                try:
+                    title=" ".join(tree.xpath('//*[@class="belt  "]/h1/text() | //*[@class="belt no-img "]/h1/text()'))
+        #            print("this prints title", title)
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    teaser=" ".join(tree.xpath('//*[@class="article-blockquote"]/blockquote/p//text()'))
+         #           print("this prints teaser dirty", teaser)
+                except:
+         #          print("no teaser")
+                    teaser= ""
+                    teaser_clean = " ".join(teaser.split())
+                try:
+                    text=" ".join(tree.xpath('//*[@class="richtexteditor section"]/p//text()'))
+                except:
+        #       print("geen text")
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'title':title.strip(),
+                                 'teaser':teaser.strip(),
+                                 'url':link.strip()})
+
+            page+=1
+            current_url = self.START_URL+'?category=all&offset='+str(page)+'0'
+            overview_page = requests.get(current_url)
+
+        return releases
+
 # Spanish Companies
 
 class iag(rss):
@@ -984,7 +1000,7 @@ class iag(rss):
         except:
             print("no title")
         try:
-            text="".join(tree.xpath('//*[@class="cb"]//text() | //*[@class="ca"]//text() | //*[@class="cg"]//text()')).strip()
+            text="".join(tree.xpath('//*[@class="cb"]//text() | //*[@class="ca"]//text() | //*[@class="cg"]//text() | //*[@class="cc"]//text()')).strip()
         except:
 #          print("geen text")
             logger.info("oops - geen textrest?")
@@ -1090,6 +1106,53 @@ class bbva(rss):
 
         return extractedinfo 
 
+class bpe(rss):
+    """Banco Popular Espanol"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.doctype = "BPE (corp)"
+        self.rss_url ='https://www.comunicacionbancopopular.es/feed/?post_type=nota'
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=8, day=1)
+
+
+    def parsehtml(self,htmlsource):
+        '''                                                                             
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        tree = fromstring(htmlsource)
+        try:
+            title="".join(tree.xpath('//*/h3[@class="entry-title single-title"]/h3//text()')).strip()
+#            print("this prints title", title)
+        except:
+            print("no title")
+        try:
+            teaser="".join(tree.xpath('//*[@class="entry-content clearfix"]/strong//text()')).strip()
+ #          print("this prints teaser dirty", teaser)
+        except:
+ #          print("no teaser")
+            teaser= ""
+            teaser_clean = " ".join(teaser.split())
+        try:
+            text="".join(tree.xpath('//*[@class="entry-content clearfix"]/p//text()')).strip()
+        except:
+#          print("geen text")
+            logger.info("oops - geen textrest?")
+            text = ""
+        text = "".join(text)
+        extractedinfo={"title":title.strip(),
+                       "teaser":teaser.strip(),
+                       "text":polish(text).strip()
+                       }
+
+        return extractedinfo 
+
 class abertis(rss):
     """abertis"""
 
@@ -1128,6 +1191,73 @@ class abertis(rss):
                        }
 
         return extractedinfo  
+
+class endesa(Scraper):
+    """Scrapes Endesa"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.START_URL = "https://www.endesa.com/en/press/the-news.html"
+        self.BASE_URL = "https://www.endesa.com/"
+
+    def get(self):
+        '''                                                                             
+        Fetches articles from Endesa
+        '''
+        self.doctype = "Endesa (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=8, day=1)
+
+        releases = []
+
+        page = 0
+        current_url = self.START_URL+'#/page_'+str(page)
+        overview_page = requests.get(current_url)
+        first_page_text = ''
+        while overview_page.text != first_page_text:
+
+            if page == 0:
+                first_page_text = overview_page.text
+            
+            tree = fromstring(overview_page.text)
+    
+            linkobjects = tree.xpath('//*/h3[@class="list-item_title text--list-title-large"]')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                try:
+                    title=" ".join(tree.xpath('//*/h1[@class="hero_title text--page-heading"]/text()'))
+    #                print("this prints title", title)
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    teaser="".join(tree.xpath('//*[@class="rich-text_inner"]/ul/li//text()')).strip()
+    #           print("this prints teaser dirty", teaser)
+                except:
+    #           print("no teaser")
+                    teaser= ""
+                    teaser_clean = " ".join(teaser.split())              
+                try:
+                    text=" ".join(tree.xpath('//*[@class="rich-text_inner"]/p//text()'))
+                except:
+    #           print("geen text")
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'title':title.strip(),
+                                 'teaser':teaser.strip(),
+                                 'url':link.strip()})
+
+            page+=1
+            current_url = self.START_URL+'#/page_'+str(page)
+            overview_page = requests.get(current_url)
+
+        return releases
 
 class gnf(rss):
     """Gas Natural Fenosa"""
@@ -1175,6 +1305,70 @@ class gnf(rss):
                        }
 
         return extractedinfo   
+
+class mapfre(Scraper):
+    """Scrapes Mapfre"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.START_URL = "https://noticias.mapfre.com/en/category/news-corporate/page/"
+        self.BASE_URL = "https://noticias.mapfre.com/"
+
+    def get(self):
+        '''                                                                             
+        Fetches articles from Mapfre
+        '''
+        self.doctype = "Mapfre (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=8, day=1)
+
+        releases = []
+
+        page = 1
+        current_url = self.START_URL+str(page)+'/'
+        overview_page = requests.get(current_url)
+        while overview_page.content.find(b'Oops, This Page Could Not Be Found!') == -1:
+            
+            tree = fromstring(overview_page.text)
+    
+            linkobjects = tree.xpath('//*/h2[@class="entry-title fusion-post-title"]//a')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+            
+            for link in links:
+                logger.debug('ik ga nu {} ophalen'.format(link))
+                current_page = requests.get(link)
+                tree = fromstring(current_page.text)
+                #tree.xpath('//*[@class="promo-list__list"]/article/div/div/h3/a//text()').strip() # parse interesting stuff from specific sites
+                try:
+                    title=" ".join(tree.xpath('//*/h2[@class="entry-title fusion-post-title"]/text()'))
+    #                print("this prints title", title)
+                except:
+                    print("no title")
+                    title = ""
+                try:
+                    teaser="".join(tree.xpath('//*[@class="post-content"]/p/strong//text()')).strip()
+ #                  print("this prints teaser dirty", teaser)
+                except:
+ #              print("no teaser")
+                    teaser= ""
+                    teaser_clean = " ".join(teaser.split())
+                try:
+                    text=" ".join(tree.xpath('//*[@class="post-content"]/p//text()'))
+                except:
+    #           print("geen text")
+                    logger.info("oops - geen textrest?")
+                    text = ""
+                text = "".join(text)
+                releases.append({'text':text.strip(),
+                                 'title':title.strip(),
+                                 'teaser':teaser.strip(),
+                                 'url':link.strip()})
+
+            page+=1
+            current_url = self.START_URL+str(page)+'/'
+            overview_page = requests.get(current_url)
+
+        return releases
 
 class ree(rss):
     """Gas Natural Fenosa"""
