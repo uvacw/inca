@@ -11,6 +11,10 @@ class hostelworld(Scraper):
     """Scrapes Hostelworld reviews"""
     
     def __init__(self,database=True,maxpages = 2, maxreviewpages = 5):
+        '''
+        maxpage: number of pages with hostels to scrape
+        maxreviewpages: number of pages with reviews *per hostel* to scrape
+        '''
         self.database=database
         self.START_URL = "http://www.hostelworld.com/hostels/Amsterdam"
         self.BASE_URL = "http://www.hostelworld.com/"
@@ -31,7 +35,7 @@ class hostelworld(Scraper):
         overview_page = requests.get(current_url)
         first_page_text=""
         while overview_page.text!=first_page_text:
-            print("How fetching overview page {}".format(page))
+            logger.debug("How fetching overview page {}".format(page))
             if page > self.MAXPAGES:
                 break
             elif page ==1:
@@ -61,15 +65,12 @@ class hostelworld(Scraper):
             current_url = self.START_URL+'?page='+str(page)
             overview_page = requests.get(current_url)
 
-        print('We hebben net alle overzichtspagina\'s opgehaald. Er zijn {} hostels'.format(len(hostels)))
-        print('Hostel nummer 0 is dit:')
-        print(hostels[0])
+        logger.debug('We hebben net alle overzichtspagina\'s opgehaald. Er zijn {} hostels'.format(len(hostels)))
         # Fetch hostel-specific webpages and enrich the hostel dicts
         hostels_enriched = []
         for hostel in hostels:
             link = hostel['link']
             logger.debug('ik ga nu {} ophalen'.format(link))
-            print(link)
             current_page = requests.get(link)
             tree = fromstring(current_page.text)
             try:
@@ -78,10 +79,13 @@ class hostelworld(Scraper):
                 ratingdetail = ""
             try:
                 linkreviews = tree.xpath('//*[@class="review_link"]')
+                linkreviewsstrip = [l.attrib['href'] for l in linkreviews if 'href' in l.attrib][0] # assuming that there is only one link
             except:
                 linkreviews = ""
-                print("no link to reviews")
-            linkreviewsstrip = [l.attrib['href'] for l in linkreviews if 'href' in l.attrib][0] # assuming that there is only one link
+                logger.info("Hostel with link {} did not have any reviews.".format(link))
+                thishostel['rating_detail'] = ratingdetail.strip()
+                hostels_enriched.append(thishostel)
+                continue
             # description, photo's etc.
             thishostel = hostel
             thishostel['rating_detail'] = ratingdetail.strip()
@@ -101,7 +105,7 @@ class hostelworld(Scraper):
         reviews = []
         while page < self.MAXREVIEWPAGES:   
             url = base_url+str(page)+'#reviewFilters'
-            print('Processing {}'.format(url))
+            logger.debug('Processing {}'.format(url))
             tree = fromstring(requests.get(url).text) 
             reviewtext = tree.xpath('//div[@class="reviewtext translate"]')
             reviewratings = tree.xpath('//div[re:match(@class,"textrating.*")]',namespaces = {'re':'http://exslt.org/regular-expressions'})
