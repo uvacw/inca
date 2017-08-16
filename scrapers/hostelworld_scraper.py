@@ -10,10 +10,12 @@ logger = logging.getLogger(__name__)
 class hostelworld(Scraper):
     """Scrapes Hostelworld reviews"""
     
-    def __init__(self,database=True):
+    def __init__(self,database=True,maxpages = 2, maxreviewpages = 5):
         self.database=database
         self.START_URL = "http://www.hostelworld.com/hostels/Amsterdam"
         self.BASE_URL = "http://www.hostelworld.com/"
+        self.MAXPAGES = maxpages
+        self.MAXREVIEWPAGES = maxreviewpages
 
     
     def get(self):
@@ -21,9 +23,6 @@ class hostelworld(Scraper):
         self.doctype = "Hostelworld reviews"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=6, day=10)
-
-        MAXPAGES = 2  # there will never be more than this amount of pages (max bound to avoid unneccessary traffic)
-        # TODO waarom haalt ie teveel pagina's op?
         
         hostels = []
 
@@ -33,7 +32,7 @@ class hostelworld(Scraper):
         first_page_text=""
         while overview_page.text!=first_page_text:
             print("How fetching overview page {}".format(page))
-            if page == MAXPAGES:
+            if page > self.MAXPAGES:
                 break
             elif page ==1:
                 first_page_text=overview_page.text
@@ -67,7 +66,7 @@ class hostelworld(Scraper):
         print(hostels[0])
         # Fetch hostel-specific webpages and enrich the hostel dicts
         hostels_enriched = []
-        for hostel in hostels[:10]:   # TODO: [:10] WEGHALEN (!!!)
+        for hostel in hostels:
             link = hostel['link']
             logger.debug('ik ga nu {} ophalen'.format(link))
             print(link)
@@ -87,44 +86,44 @@ class hostelworld(Scraper):
             thishostel = hostel
             thishostel['rating_detail'] = ratingdetail.strip()
             thishostel['link_reviews'] = linkreviewsstrip
-            thishostel['reviews'] = getreviews(linkreviewsstrip)
+            thishostel['reviews'] = self.getreviews(linkreviewsstrip)
             hostels_enriched.append(thishostel)
 
         return hostels_enriched
 
-def getreviews(link):
-    '''
-    This function takes a link to a (starting) review page of hostelworld as an input
-    and returns all reviews
-    '''
-    base_url = link.rstrip('#propname') + '?showOlderReviews=1&page='
-    NUMBEROFPAGES = 5  # THIS IS A MAXIMUM NUMBER OF PAGES TO BE SCRAPED, INCREASE AFTER TESTING 
-    page = 1
-    reviews = []
-    while page < NUMBEROFPAGES:   
-        url = base_url+str(page)+'#reviewFilters'
-        print('Processing {}'.format(url))
-        tree = fromstring(requests.get(url).text) 
-        reviewtext = tree.xpath('//div[@class="reviewtext translate"]')
-        reviewratings = tree.xpath('//div[re:match(@class,"textrating.*")]',namespaces = {'re':'http://exslt.org/regular-expressions'})
-        reviewerdetails = tree.xpath('//li[@class="reviewerdetails"]')
-        reviewdate = tree.xpath('//span[@class="reviewdate"]')
-
-        assert len(reviewtext) == len(reviewratings) == len(reviewerdetails) == len(reviewdate)
-
-        if len(reviewtext) == 0:  # we reached the final page, there are no more reviews
-            break
-
-        for i in range(len(reviewtext)):
-            thisreview = {}
-            thisreview['rating'] = reviewratings[i].text_content().strip()
-            thisreview['reviewer'] = reviewerdetails[i].text_content().strip()
-            thisreview['text'] = reviewtext[i].text_content().strip()
-            thisreview['date'] = reviewdate[i].text_content().strip()
-            reviews.append(thisreview)
+    def getreviews(self,link):
+        '''
+        This function takes a link to a (starting) review page of hostelworld as an input
+        and returns all reviews
+        '''
+        base_url = link.rstrip('#propname') + '?showOlderReviews=1&page='
+        page = 1
+        reviews = []
+        while page < self.MAXREVIEWPAGES:   
+            url = base_url+str(page)+'#reviewFilters'
+            print('Processing {}'.format(url))
+            tree = fromstring(requests.get(url).text) 
+            reviewtext = tree.xpath('//div[@class="reviewtext translate"]')
+            reviewratings = tree.xpath('//div[re:match(@class,"textrating.*")]',namespaces = {'re':'http://exslt.org/regular-expressions'})
+            reviewerdetails = tree.xpath('//li[@class="reviewerdetails"]')
+            reviewdate = tree.xpath('//span[@class="reviewdate"]')
             
-        page +=1
-    return reviews
+            assert len(reviewtext) == len(reviewratings) == len(reviewerdetails) == len(reviewdate)
+            
+            if len(reviewtext) == 0:  # we reached the final page, there are no more reviews
+                break
+            
+            for i in range(len(reviewtext)):
+                thisreview = {}
+                thisreview['rating'] = reviewratings[i].text_content().strip()
+                thisreview['reviewer'] = reviewerdetails[i].text_content().strip()
+                thisreview['text'] = reviewtext[i].text_content().strip()
+                thisreview['date'] = reviewdate[i].text_content().strip()
+                reviews.append(thisreview)
+        
+            page +=1
+
+        return reviews
 
 
     
