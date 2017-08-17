@@ -18,10 +18,10 @@ class sentiment_vader_en(Processer):
         '''Document was split into paragraphs'''
         try:
             senti=vader.SentimentIntensityAnalyzer()
+            sentimentscores = senti.polarity_scores(document_field)
+            return sentimentscores
         except LookupError:
             from nltk import download
             download('vader_lexicon')
-            logger.warning("Couldn't find Vader Lexicon, downloaded it")
-            senti=vader.SentimentIntensityAnalyser()
-        sentimentscores = senti.polarity_scores(document_field)
-        return sentimentscores
+            logger.error("Couldn't find Vader Lexicon, downloaded it\nYou will have to re-run the processor")           
+
