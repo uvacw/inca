@@ -59,7 +59,7 @@ class kpn(Scraper):
         driver = webdriver.PhantomJS()
         driver.get(self.START_URL)
         time.sleep(2)
-        # don't ask me why but driver.page_source must explicitly referenced
+        # don't ask me why but driver.page_source must explicitly be referenced
         # before continuing
         dummy_page_source = driver.page_source
         tree = fromstring(driver.page_source)

@@ -42,13 +42,11 @@ class philips(rss):
         tree = fromstring(htmlsource)
         try:
             title="".join(tree.xpath('//*/span[@class="p-heading-02 p-heading-medium"]//text()')).strip()
-#            print("this prints title", title)
         except:
             print("no title")
             title = ""
         try:
             teaser="".join(tree.xpath('//*/span[@class="p-body-copy-02"]/text()')).strip()
- #           print("this prints teaser dirty", teaser)
         except:
             print("no teaser")
             teaser= ""
