@@ -41,7 +41,7 @@ class download_images(Processer):
         document_field_new = []
         for image in document_field:
             filename = self.download(image["url"])
-            image_new = image
+            image_new = image.copy()
             image_new['filename'] = filename
             document_field_new.append(image_new)
         return document_field_new
