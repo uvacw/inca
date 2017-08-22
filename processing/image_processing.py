@@ -22,9 +22,10 @@ def hash2filepath(myhash):
     Returns a tuple consisting of the directory in which the image is to be stored
     and the filename itself. The filename is identical to the hash.
     '''
-    hashstr = str(myhash)
+    hashstr = str(myhash) 
     path = os.path.join(IMAGEPATH,hashstr[:4],hashstr[4:8],hashstr[8:12],hashstr[12:])
-    return path,hashstr
+    filename = hashstr + '.jpg'
+    return path,filename
 
 
 
@@ -60,8 +61,9 @@ class download_images(Processer):
             except OSError:
                 if not os.path.isdir(path):
                     raise
-        with open(os.path.join(directory,filename),mode='wb') as fo:
-            fo.write(imagecontent)
+        #with open(os.path.join(directory,filename),mode='wb') as fo:
+            #fo.write(imagecontent)
+        imagecontent.save(os.path.join(directory,filename))
 
         return filename
 
