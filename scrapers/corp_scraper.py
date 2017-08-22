@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import requests
+=======
+>>>>>>> development
 import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
@@ -10,6 +13,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD
 from scrapers.corp_abnamro import *
 from scrapers.corp_acs import *
 from scrapers.corp_aegon import *
@@ -55,6 +59,8 @@ from scrapers.corp_vopak import *
 from scrapers.corp_walmart import *
 from scrapers.corp_wolters import *
 
+=======
+>>>>>>> development
 def polish(textstring):
     #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
     lines = textstring.strip().split('\n')
@@ -64,6 +70,7 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
+<<<<<<< HEAD
 # UK Companies
 
 class abf(Scraper):
@@ -139,6 +146,18 @@ class rbs(rss):
         self.rss_url ='http://www.rbs.com/rss/news.rss'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=28)
+=======
+
+class walmart(rss):
+    """Scrapes Walmart """
+
+    def __init__(self,database=True):
+        self.database = database
+        self.doctype = "walmart (corp)"
+        self.rss_url ='http://corporate.walmart.com/rss?feedName=allnews'
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=1, day=1)
+>>>>>>> development
 
 
     def parsehtml(self,htmlsource):
@@ -152,19 +171,29 @@ class rbs(rss):
         '''
         tree = fromstring(htmlsource)
         try:
+<<<<<<< HEAD
             title="".join(tree.xpath('//*/h1[@class="title-heading"]/text()')).strip()
+=======
+            title="".join(tree.xpath('//*[@class="article-header-title"]/text()')).strip()
+>>>>>>> development
 #            print("this prints title", title)
         except:
             print("no title")
             title = ""
         try:
+<<<<<<< HEAD
             category="".join(tree.xpath('//*[@class="component-content metadata-description"]/p//text()')).strip()
 #            print("this prints category", category)
+=======
+            category="".join(tree.xpath('//*[@class="article-header-tags"]//a/text()')).strip()
+            print("this prints category", category)
+>>>>>>> development
         except:
             category = ""
         if len(category.split(" ")) >1:
             category=""
         try:
+<<<<<<< HEAD
             teaser="".join(tree.xpath('//*[@class="intro"]/p/text()')).strip()
  #           print("this prints teaser dirty", teaser)
         except:
@@ -173,10 +202,14 @@ class rbs(rss):
         teaser_clean = " ".join(teaser.split())
         try:
             text="".join(tree.xpath('//*[@class="component-content"]//text()')).strip()
+=======
+            text="".join(tree.xpath('//*[@class="article-content"]/p/text()')).strip()
+>>>>>>> development
         except:
             print("geen text")
             logger.info("oops - geen textrest?")
             text = ""
+<<<<<<< HEAD
         text = "".join(text)
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
@@ -221,12 +254,18 @@ class standardchartered(rss):
             text = ""
         text = "".join(text)
         extractedinfo={"title":title.strip(),
+=======
+        text = "\n".join(text)
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
+>>>>>>> development
                        "text":polish(text).strip()
                        }
 
         return extractedinfo
 
 
+<<<<<<< HEAD
 # Spanish Companies
 
 
@@ -286,6 +325,17 @@ class bpe(rss):
         self.rss_url ='https://www.comunicacionbancopopular.es/feed/?post_type=nota'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=8, day=1)
+=======
+class exxonmobil(rss):
+    """Scrapes ExxonMobil"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.doctype = "exxonmobil (corp)"
+        self.rss_url ='http://exxonmobil.newshq.businesswire.com/feeds/press_release/all/rss.xml'
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=5, day=3)
+>>>>>>> development
 
 
     def parsehtml(self,htmlsource):
@@ -299,6 +349,7 @@ class bpe(rss):
         '''
         tree = fromstring(htmlsource)
         try:
+<<<<<<< HEAD
             title="".join(tree.xpath('//*/h3[@class="entry-title single-title"]/h3//text()')).strip()
 #            print("this prints title", title)
         except:
@@ -403,6 +454,52 @@ class gnf(rss):
         self.rss_url ='http://prensagnf.azurewebsites.net/feed/'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=5)
+=======
+            title="".join(tree.xpath('//*[@class="title"]/text()')).strip()
+            print("this prints title", title)
+        except:
+            print("no title")
+            title = ""
+        try:
+            teaser="".join(tree.xpath('//*[@class="bwlistitemmargb"]/text()')).strip()
+            print("this prints teaser dirty", teaser)
+        except:
+            print("no teaser")
+            teaser= ""
+        teaser_clean = " ".join(teaser.split())
+        try:
+            text_dirty = "".join(tree.xpath('//*[@class="bw-main-content"]//p/text()')).strip()
+            print(type(text_dirty))
+            print(text_dirty)
+            #text_clean = " ".join(text.split())
+            # bla = " ".join(text.split())
+        except:
+            # print("geen text")
+            logger.info("oops - geen text?")
+            text_dirty = ""
+        text = polish(text_dirty)
+        extractedinfo={"title":title.strip(),
+                       "teaser":teaser_clean.strip(),
+                       "text":text.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
+
+##
+
+class hsbc(rss):
+    """Scrapes hsbc"""
+
+    # TODO: THIS SCRAPER NIETS TO BE FINISHED
+
+    def __init__(self,database=True):
+        self.database = database
+        self.doctype = "hsbc (corp)"
+        self.rss_url ='http://www.hsbc.com/rss-feed'
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=5, day=3)
+>>>>>>> development
 
 
     def parsehtml(self,htmlsource):
@@ -416,6 +513,7 @@ class gnf(rss):
         '''
         tree = fromstring(htmlsource)
         try:
+<<<<<<< HEAD
             title="".join(tree.xpath('//*/h2[@class="entry-title"]/a//text()')).strip()
 #            print("this prints title", title)
         except:
@@ -552,3 +650,27 @@ class ree(rss):
 
         return extractedinfo            
 >>>>>>> 1c6327bc3f94b39689d06c80cc762933888b6a12
+=======
+            title="".join(tree.xpath('//*[@class="title"]/text()')).strip()
+            print("this prints title", title)
+        except:
+            print("no title")
+            title = ""
+        try:
+            text_dirty = "".join(tree.xpath('//*[@class="content"]//text()')).strip()
+            print(text_dirty)
+        except:
+            print("geen text")
+            logger.info("oops - geen textrest?")
+            text_dirty = ""
+        extractedinfo={"title":title.strip(),
+                       "text":text_dirty.replace("\n"," ").strip()
+                       }
+
+        return extractedinfo
+
+
+
+if __name__=="__main__":
+    print('Please use these scripts from within inca. EXAMPLE: BLA BLA BLA')
+>>>>>>> development

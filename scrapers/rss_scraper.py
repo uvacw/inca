@@ -2,6 +2,7 @@
 import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
+from core.scraper_class import UnparsableException
 from core.database import check_exists
 import logging
 import feedparser
@@ -104,7 +105,15 @@ class rss(Scraper):
                            "feedurl":thisurl,
                            "url":re.sub("/$","",post.link)}
                     if htmlsource is not None:
-                        doc.update(self.parsehtml(doc['htmlsource']))
+                        # TODO: CHECK IF PARSEHTML returns None, if so, raise custom exception
+                        parsed = self.parsehtml(doc['htmlsource'])
+                        if parsed is None or parsed =={}:
+                            try:
+                                raise UnparsableException
+                            except UnparsableException:
+                                pass
+                        else:
+                            doc.update(parsed)
                     docnoemptykeys={k: v for k, v in doc.items() if v}
                     yield docnoemptykeys
 

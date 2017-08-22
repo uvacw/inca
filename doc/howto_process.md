@@ -11,7 +11,15 @@ Let's first start with a simple working example.
 ```python
 p = inca.processing.basic_text_processing.lowercase()
 p.run('4329041','text')
+p.run('http://www.nu.nl/-/4801569/','title')
 ```
+Note that the id of a document can take very different forms, depending on the configuration of the scraper. It doesn't necessarily have any inherent meaning.
+
+Tip: If you just want to get some ID of some document for testing, use this function call: 
+```python
+inca.core.search_utils.doctype_last('nu')[0]['_id']
+```
+It gives you the id of the last article of type 'nu' that's in the database.
 
 This example instantiates a (extremely simple) processor that does not do anything else than calling `.lower()` on a string. (You see, it's a toy example).
 You can then run this processor on some document from the database (in this example, the document with the id '4329041'. It will return a document with a new key called 'text_lowercase' that contains the lowercased version of the string.
