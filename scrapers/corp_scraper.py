@@ -19,7 +19,7 @@ from scrapers.corp_bat import *
 from scrapers.corp_bhp import *
 from scrapers.corp_boskalis import *
 from scrapers.corp_bp import *
-from scrapers.corp_bsch import *
+# from scrapers.corp_bsch import *
 from scrapers.corp_btgroup import *
 from scrapers.corp_compass import *
 from scrapers.corp_diageo import *
