@@ -77,14 +77,31 @@ class ad(rss):
             author_bron=""
         text=polish(text)
 
-        extractedinfo={"category":category.strip(),
-                       "text":text.strip(),
+        images = ad._extract_images(self,tree)
+
+        extractedinfo={"text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
-  
+
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__figure"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     # 'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
@@ -92,7 +109,7 @@ class ad(rss):
         link="http://www.ad.nl//cookiewall/accept?url="+link
         return link
 
-
+    
 class nu(rss):
     """Scrapes nu.nl """
 
@@ -161,15 +178,32 @@ class nu(rss):
             title = None
             logger.warning("No title encountered")
 
+        images = nu._extract_images(self,tree)
 
         extractedinfo={"category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "title":title}
-
+                       "title":title,
+                       "images":images}
         return extractedinfo
 
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//div[@class="item-image"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src'],
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
 class nos(rss):
     """Scrapes nos.nl """
@@ -227,6 +261,8 @@ class nos(rss):
         author_bron=""
         text=polish(text)
 
+        images = nos._extract_images(self,tree)
+
         extractedinfo={"category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
@@ -234,6 +270,19 @@ class nos(rss):
                        }
 
         return extractedinfo
+
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img = element.xpath('//figure[@class="article_head_image block_largecenter"]//img') [0]
+            image = {'url' : img.attrib['src'],
+                 #'height' : img.attrib['height'],
+                 #'width' : img.attrib['width'],
+                 #'caption' : element.xpath(element.xpath('.//div[@Class="caption_content"]/text()')),
+                 'alt' : img.attrib['alt']}
+            if image['url'] not in [i['url'] for i in images]:
+                images.append(image)
+        return images
 
 
 class volkskrant(rss):
@@ -344,13 +393,32 @@ class volkskrant(rss):
             author_door = "OPINION PIECE OTHER AUTHOR"
         text=polish(text)
 
+        images = volkskrant._extract_images(self,tree)
+
         extractedinfo={"category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images": images}
 
         return extractedinfo
+
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article-photo fjs-gallery-item"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src'],
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))}
+                     'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
@@ -469,15 +537,33 @@ class nrc(rss):
             except:
                     text=""
         text=polish(text)
+        
+        images = nrc._extract_images(self,tree)
 
         extractedinfo={"category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images": images}
 
         return extractedinfo
 
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//*[@class="responsive-img-div img-b1bc3f75894aebe980b93536058622c9  loaded"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src'],
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))}
+                     'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
 class parool(rss):
     """Scrapes parool.nl """
@@ -553,13 +639,30 @@ class parool(rss):
                 logger.info("No 'press-agency source ('bron')' field encountered - don't worry, maybe it just doesn't exist.")
         text=polish(text)
 
+        images = parool._extract_images(self,tree)
+
         extractedinfo={"category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images": images}
 
-        return extractedinfo
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article-photo fjs-gallery-item"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src'],
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))}
+                     'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
@@ -638,13 +741,32 @@ class trouw(rss):
 
         text=polish(text)
 
+        images = trouw._extract_images(self,tree)
+
         extractedinfo={"category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
+
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__cover layout__stage--center"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))}
+                     # 'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
@@ -710,14 +832,32 @@ class telegraaf(rss):
         author_bron=""
         text=polish(text)
 
+        images = telegraaf._extract_images(self,tree)
+
         extractedinfo={"category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
 
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//*[@class="image ui-bottom-margin-3 ui-top-margin-2 img-left"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src'],
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
 class metronieuws(rss):
     """Scrapes metrnieuwso.nl """
@@ -781,14 +921,32 @@ class metronieuws(rss):
         author_bron=""
         text=polish(text)
 
+        images = metronieuws._extract_images(self,tree)
+
         extractedinfo={"category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
 
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//*[@class="image row"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src'],
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
 class geenstijl(rss):
     """Scrapes geenstijl.nl """
@@ -822,11 +980,30 @@ class geenstijl(rss):
 
         text=polish(text)
 
+        images = geenstijl._extract_images(self,tree)
+
         extractedinfo={"text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       }
+                       "images":images}
 
         return extractedinfo
+
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//*[@id="content"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src'],
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
 class fok(rss):
     """Scrapes volkskrant.nl """
@@ -884,13 +1061,32 @@ class fok(rss):
                 logger.info("No 'press-agency source ('bron')' field encountered - don't worry, maybe it just doesn't exist.")
         textnew=polish(textnew)
 
+        images = fok._extract_images(self,tree)
+
         extractedinfo={"category":category.strip(),
                        "text":textnew.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
+
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//*[@class="col-4 first"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src'],
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
 if __name__=="__main__":
     print('Please use these scripts from within inca. EXAMPLE: BLA BLA BLA')
@@ -972,18 +1168,34 @@ class destentor(rss):
         except:
             author_bron=""
 
-        # text=polish(text)
+        images = destentor._extract_images(self,tree)
 
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
   
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__figure"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     # 'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
@@ -1069,16 +1281,35 @@ class bd(rss):
 
         # text=polish(text)
 
+        images = bd._extract_images(self,tree)
+
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images": images
                        }
 
         return extractedinfo
   
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__figure"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     #'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
@@ -1160,16 +1391,34 @@ class gelderlander(rss):
 
         # text=polish(text)
 
+        images = gelderlander._extract_images(self,tree)
+
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
   
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__figure"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     #'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
@@ -1258,15 +1507,34 @@ class ed(rss):
 
         # text=polish(text)
 
+        images = ed._extract_images(self,tree)
+
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
+  
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__figure"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     #'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
   
 
     def getlink(self,link):
@@ -1365,17 +1633,35 @@ class bndestem(rss):
 
         # text=polish(text)
 
+        images = bndestem._extract_images(self,tree)
+
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
   
-
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__figure"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     #'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
+  
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
         link=re.sub("/$","",link)
@@ -1471,15 +1757,34 @@ class pzc(rss):
 
         # text=polish(text)
 
+        images = pzc._extract_images(self,tree)
+
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
+  
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__figure"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     #'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
   
 
     def getlink(self,link):
@@ -1577,15 +1882,34 @@ class tubantia(rss):
 
         # text=polish(text)
 
+        images = tubantia._extract_images(self,tree)
+
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
 
         return extractedinfo
+  
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__figure"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     #'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
   
 
     def getlink(self,link):
@@ -1683,13 +2007,34 @@ class limburger(rss):
 
         # text=polish(text)
 
+        images = limburger._extract_images(self,tree)
+
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
+
+        return extractedinfo
+  
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//figure[@class="article__image"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src'],
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
 
         return extractedinfo
 
@@ -1841,13 +2186,32 @@ class zwartewaterkrant(rss):
             author_bron=""
 
         # text=polish(text)
+        
+        images = zwartewaterkrant._extract_images(self,tree)
 
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text,
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
-                       }
-
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images}
+  
+    def _extract_images(self, dom_nodes):
+        images = []
+        for element in dom_nodes:
+            img_list = element.xpath('//*[@class="containerContent"]//img')
+            if len(img_list)>0:
+                img = img_list[0]
+                image = {'url' : img.attrib['src']}
+                     #'height' : img.attrib['height'],
+                     #'width' : img.attrib['width'],
+                     #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
+                     #'alt' : img.attrib['alt']}
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            else:
+                images=[]
+        return images
+        
         return extractedinfo
