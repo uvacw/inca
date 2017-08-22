@@ -71,7 +71,7 @@ class Scraper(Document):
         resulting documents.
         '''
         logger.info("Started scraping")
-        if DATABASE_AVAILABLE == True and kwargs.get('database',True):
+        if DATABASE_AVAILABLE == True and self.database==True:
             for doc in self.get(*args, **kwargs):
                 doc = self._add_metadata(doc)
                 self._verify(doc)
