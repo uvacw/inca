@@ -186,7 +186,7 @@ git config --global user.name <username>
 ```
 ## STEP 5: Download INCA
 
-### Copy INCA to your local PC using GIT:
+### Copy INCA to your local computer using GIT:
 -	Make a new folder on your computer where you want to work on INCA. Go there using your terminal: ```cd /pathtoyourfolder```
 -	Clone inca to your local folder, using ```git clone https://github.com/uvacw/inca.git```
 - Finally, we have to install the Python packages INCA depends on, such as packages for machine learning, reading RSS feeds, connecting to Elastic Search and so on. You could do so by hand (installing every package as soon as you get an 'import error', but we also made a file to install all of them at once:
@@ -195,7 +195,21 @@ cd inca    # assuming you still are in inca's parent directory
 sudo pip3 install -r Requirements
 ```
 
-## STEP 6: Check whether everything works
+## STEP 6: Adapt the settings
+
+INCA needs to be configured - in particular, you need to tell INCA things like how to access ElasticSearch or where to store images. 
+We made a default configuration that you can just copy:
+```
+cd <pathtoyourincafolder> 
+cp default_settings.cfg settings.cfg
+```
+But please have a look at settings.cfg and change things that need to be changed! You can use any text editor you like, for instance:
+```
+emacs settings.cfg
+```
+
+
+## STEP 7: Check whether everything works
 
 go to your inca folder 	
 ```
