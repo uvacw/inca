@@ -209,7 +209,8 @@ def scroll_query(query,scroll_time='10m', log_interval=None):
     scroller = client.search(elastic_index,
                              body=query,
                              scroll=scroll_time,
-                             search_type='scan')
+                             # search_type='scan' # DOES NOT SEEM TO BE SUPPORTED BY CURRENT ES-VERSION
+    )
     sid  = scroller['_scroll_id']
     size = scroller['hits']['total']
     tot_size = size # keep total size for logging
