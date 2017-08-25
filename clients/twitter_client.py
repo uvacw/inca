@@ -197,3 +197,34 @@ class twitter_timeline(twitter):
                             max_id=max_id,
                             since_id=since_id
                             )
+
+class twitter_followers(twitter):
+    '''Class to retrieve twitter followers for a given account'''
+    pass
+
+class twitter_friends(twitter):
+    '''Class to retrieve twitter friends for a given account
+    https://dev.twitter.com/rest/reference/get/friends/ids
+    '''
+    pass
+
+
+class twitter_statuses_lookup(twitter):
+    '''Class to retrieve twitter detailed information of a set of tweets
+    https://dev.twitter.com/rest/reference/get/statuses/lookup
+    '''
+    pass
+
+class twitter_trends(twitter):
+    '''Class to retrieve trends - need to specify logic to either receive specific locale,
+    or to query for all locales available
+    see: https://dev.twitter.com/rest/reference/get/trends/place
+    https://dev.twitter.com/rest/reference/get/trends/available
+    '''
+    pass
+
+class twitter_users_lookup(twitter):
+    '''Class to retrieve twitter detailed information of a set of users
+    https://dev.twitter.com/rest/reference/get/users/lookup
+    '''
+    pass
