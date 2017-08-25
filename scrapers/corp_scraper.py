@@ -9,7 +9,7 @@ import re
 import logging
 
 logger = logging.getLogger(__name__)
-
+'''
 from scrapers.corp_abnamro import *
 from scrapers.corp_acs import *
 from scrapers.corp_aegon import *
@@ -54,7 +54,7 @@ from scrapers.corp_vodafone import *
 from scrapers.corp_vopak import *
 from scrapers.corp_walmart import *
 from scrapers.corp_wolters import *
-
+'''
 
 def polish(textstring):
     #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.

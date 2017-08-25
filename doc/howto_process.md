@@ -67,16 +67,11 @@ Before we start, make sure you have imagehash installed (`pip3 install imagehash
 
 
 First, we have to change the path to where inca will store the images locally. 
-Go in your terminal to your inca folder, can type the following:
-
-```
-inca admin$ cat default_settings.cfg 
-```
+Please follow the instructions of step 6 [Getting Started](gettingstarted.md)
 
 Change imagepath to a convient local location. 
 
 Additionally, make sure elasticsearch is on. 
-
 
 ## STEP 2: Scraping some news articles from which we want the images. 
 
