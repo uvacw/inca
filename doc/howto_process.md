@@ -53,3 +53,67 @@ class lowercase(Processer):
 ```
 
 Thus, to write your own, you only have to modify the `process` function so that it does more than just calling `.lower()` and return.
+
+
+# Processing images
+
+Next, we discuss how you can process images with the image-processor. 
+Images are not scraped simultaneously with text. We can retrieve them locally with the image processor. 
+
+Before we start, make sure you have imagehash installed (`pip3 install imagehash`).
+
+
+## STEP 1: Getting started
+
+
+First, we have to change the path to where inca will store the images locally. 
+Please follow the instructions of step 6 [Getting Started](gettingstarted.md)
+
+Change imagepath to a convient local location. 
+
+Additionally, make sure elasticsearch is on. 
+
+## STEP 2: Scraping some news articles from which we want the images. 
+
+Next, you have scrape some content. 
+In this example, we will scrape nu.nl. 
+Make sure the database is on (`True`).
+
+```python
+myscraper = inca.scrapers.news_scraper.nu(database=True)
+r = myscraper.run()
+```
+
+Now that we have some articles from NU.nl in our database, we can start retrieving images. 
+Let's say, we want the image from the first article we retrieved. Run the following command:
+
+```python
+inca.core.search_utils.doctype_last('nu')[0]['_source']['images']
+```
+
+This will give you the both the header (`'ALT'`), as the URL (`'URL'`) of the image.
+
+The following command will give you all available keys, as well as the content of the article: 
+
+```python
+inca.core.search_utils.doctype_last('nu')[0]
+```
+For now, we are mainly interested in the article's id, as we need it later.
+
+```python
+inca.core.search_utils.doctype_last('nu')[0]['_id']
+```
+The output is - in this case - : 'http://www.nu.nl/-/4891448/'
+
+## STEP 3: Retrieving and storing images
+ 
+Now, we want to retrieve the images and save them locally. Hence, we will make an instance of the 
+`inca.processing.download_images()` class. Then, we will run the instance on the NU-article that we just scraped. 
+
+
+```python
+p = inca.processing.image_processing.download_images()
+p.run('http://www.nu.nl/-/4891448/','images')
+```
+Now, go to your local folder that you specified in step 1 to find your image(s). 
+
