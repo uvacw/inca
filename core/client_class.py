@@ -396,6 +396,8 @@ class Client(Scraper):
             A True or False value indicating succesful saving.
 
         """
+        if 'content' in kwargs:
+            kwargs = kwargs.pop('content')
         doc = {'credentials': credentials, 'id':id, 'app':app,
                 'content':kwargs,
                 'last_loaded': datetime.datetime(year=1990,month=1,day=1).isoformat()}
