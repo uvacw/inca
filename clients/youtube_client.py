@@ -219,7 +219,7 @@ class youtube(Client):
                 logger.warning('retries for {url} exceeded (params={params}, data={data})'.format(**locals()))
                 return {}
 
-class youtube_videos(youtube):
+class youtube_videos_search(youtube):
     """class to retrieve YouTube videos based on search queries"""
 
     doctype = "youtube_video"
@@ -231,9 +231,9 @@ class youtube_videos(youtube):
         Parameters
         ---
         q        : string
-        terms to search
+            terms to search
         maxpages : int(default=-1)
-        maximum pages to retrieve, -1 for infinite
+            maximum pages to retrieve, -1 for infinite
         expand   : bool(default=True)
             whether to expand hits to include comment/like statistics and description
             **currently only works for videos!**
@@ -411,3 +411,125 @@ class youtube_videos(youtube):
 
         else:
             return {'none':""}
+
+class youtube_comments(youtube):
+
+    doctype = "youtube_comments"
+    version = 0.1
+
+
+    def get(self, credentials, parent_id, for_type='video', maxpages=-1, include_replies = True):
+        """Retrieve youtube_comments for specified ids
+
+        Parameters
+        ----------
+        parent_id : string or dict
+            A YouTube id for which to retrieve comments, or a video.
+        for_type : string(default=video)
+            The type of resource for which to retrieve comments, can be either
+            "video" for videos (default), "channel" for YouTube channels or
+            "channel+videos" which includes all comment threads related to a
+            channel
+        maxpages : int(default=-1)
+            An integer to specify the number of 100-result pages to retrieve.
+            -1 marks all available comments (default).
+        include_replies : bool(default=True)
+            Whether to include replies in addition to top level comments
+
+        Yields
+        ------
+        dict for each toplevelcomment or reply
+        """
+
+        self._credentials = credentials
+        self.API_KEY = json.loads(self._credentials['_source']['credentials'])['access_token']
+
+        parts = 'snippet'
+
+        url = 'https://www.googleapis.com/youtube/v3/commentThreads' # appropriate comments endpoint
+
+        # Allow for 'video' object to be either dicts or strings
+        if type(parent_id)==dict:
+            rid = parent_id.get('_source',{}).get('id')
+        elif type(parent_id)==str:
+            rid = parent_id
+        else:
+            raise Exception("unknown video argument type, should be a dict with an id key, or a sring!")
+
+        # the data will be used as the parameters of the request
+        data = {
+        'key'       : self.API_KEY, # For authentication purposes
+        'part'      : parts,
+        'maxResults': 100 # Assume we want the maximum results possible
+        }
+
+        # pass the right parameter for videos, channels or channels+videos (allThreadsRelatedToChannel)
+        if for_type=='video':
+            data.update({'videoId':rid})
+        elif for_type=='channel':
+            data.update({'channelId':rid})
+        elif for_type=='channel+videos':
+            data.update({'allThreadsRelatedToChannelId':rid})
+        else:
+            raise Exception("for_type should be 'video', 'channel' or 'channel+video'!")
+
+
+        res  = self._get(url, params=data)
+        for item in res.get('items',[]):
+            repliespresent = item['snippet']['totalReplyCount']
+            parent_id = item['id']
+            item['commenttype'] = "toplevelcomment"
+            yield item
+            if repliespresent == 0:
+                pass
+            elif repliespresent > 0 and include_replies:
+                for reply in self._get_replies(parent_id):
+                    reply['commenttype'] = 'reply'
+                    yield reply
+
+
+        while  maxpages!=0 and res.get('nextPageToken',False):
+            maxpages -= 1
+            data.update({'pageToken':res.get('nextPageToken',False) or None})
+            res = self._get(url, params=data)
+            for item in res.get('items',[]):
+                repliespresent = item['snippet']['totalReplyCount']
+                parent_id = item['id']
+                item['commenttype'] = "toplevelcomment"
+                yield item
+
+                if repliespresent == 0:
+                    continue
+                elif repliespresent > 0 and include_replies:
+                    for reply in self._get_replies(parent_id):
+                        reply['commenttype'] = 'reply'
+                        yield reply
+
+    def _get_replies(self, parent_id, maxpages=-1):
+        """Internal method to retrieve replies to topLevelComments
+        Please call by supplying the include_replies=True parameter to the
+        youtube_comments function.
+
+        """
+        parts = 'snippet'
+
+        url = 'https://www.googleapis.com/youtube/v3/comments' # appropriate comments endpoint
+
+        # the data will be used as the parameters of the request
+        data = {
+        'key'       : self.API_KEY, # For authentication purposes
+        'part'      : parts,
+        'maxResults': 100, # Assume we want the maximum results possible
+        'parentId'  : parent_id
+        }
+
+        logger.debug("Retrieving YouTube reply for {parent_id}".format(**locals()))
+        res  = self._get(url, params=data)
+        for item in res.get('items',[]):
+            yield item
+        while  maxpages!=0 and res.get('nextPageToken',False):
+            maxpages -= 1
+            data.update({'pageToken':res.get('nextPageToken',False) or None})
+            res = self._get(url, params=data)
+            for item in res.get('items',[]):
+                yield item
