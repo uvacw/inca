@@ -144,7 +144,7 @@ class twitter_timeline(twitter):
     sort_field = "content.resources.statuses./statuses/user_timeline.reset"
     preference = 'lowest'
 
-    def get(self, credentials, screen_name, force=False, max_id=None, since_id=None):
+    def get(self, credentials, screen_name, force=False, max_id=None, since_id=None, exclude_replies=False, include_rts=True):
         '''retrieved from the twitter user_timeline API'''
 
         self.doctype =  "tweets"
@@ -156,8 +156,13 @@ class twitter_timeline(twitter):
         except TwythonRateLimitError: pass # sometimes you just can't get a rate-limit estimate
 
         if not force:
-            since_id = doctype_first(doctype="tweets",query="user.screen_name:"+screen_name)[0].get('_source',{}).get("id",None)
-            logger.info("settings since_id to {since_id}".format(**locals()))
+            since_id = doctype_first(doctype="tweets",query="user.screen_name:"+screen_name)
+            if len(since_id) == 0:
+                logger.info("settings since_id to None as there are no tweets for this user")
+                since_id = None
+            else:
+                since_id = since_id[0].get('_source',{}).get("id",None)
+                logger.info("settings since_id to {since_id}".format(**locals()))
         try:
             batchsize = 1
             while batchsize:
@@ -165,7 +170,9 @@ class twitter_timeline(twitter):
                 tweets = api.get_user_timeline(screen_name=screen_name,
                                                max_id=max_id,
                                                since_id=since_id,
-                                               count=200)
+                                               count=200,
+                                               exclude_replies=exclude_replies,
+                                               include_rts=include_rts)
                 batchsize = len(tweets)
 
                 if not batchsize: continue
@@ -227,4 +234,67 @@ class twitter_users_lookup(twitter):
     '''Class to retrieve twitter detailed information of a set of users
     https://dev.twitter.com/rest/reference/get/users/lookup
     '''
+
+
+    #sort_field = "content.resources.statuses./statuses/user_timeline.reset"  # ??
+    #preference = 'lowest'
+
+    def get(self, credentials, screen_names, force=False):
+        '''retrieved from the twitter user_timeline API'''
+
+        self.doctype =  "twitter_user"
+        self.version = "0.1"
+        self.functiontype = "twitter_client"
+
+        api = self._get_client(credentials=dotkeys(credentials, '_source.credentials'))
+        try: self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
+        except TwythonRateLimitError: pass # sometimes you just can't get a rate-limit estimate
+
+
+        try:
+            
+            batches = [screen_names[x:x+100] for x in range(0, len(screen_names), 100)]
+            logger.info("batches: {batches}".format(**locals()))
+            
+            for batch in batches:
+
+
+                users = api.lookup_user(screen_name=batch)
+
+                for num, user in enumerate(users):
+                    if self._check_exists(user['id_str'])[0] and not force:
+                        logger.info(
+                             "skipping existing {user[screen_name]} - {user[id]}".format(**locals())
+                            )
+                        continue
+                    user['_id'] = user['id_str']
+                    
+                    
+                    logger.info("retrieved profile for {user[screen_name]} with id {user[_id]}".format(**locals()))
+                    
+                    yield user
+
+                    
+                    
+
+
+
+
+            self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
+        except TwythonRateLimitError:
+            logger.info('expended credentials')
+            try: self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
+            except TwythonRateLimitError: # when a ratelimit estimate is unavailable
+                self.postpone(self, delaytime=60*5, screen_name=screen_name,
+                              force=force, max_id=max_id, since_id=since_id)
+            max_id = self._last_added().get("_source",{}).get("id",None)
+            self._set_delay(
+                            timeout_key="last.resources.statuses./statuses/user_timeline.reset",
+                            screen_name=screen_name,
+                            force=force,
+                            max_id=max_id,
+                            since_id=since_id
+                            )
+
+
     pass
