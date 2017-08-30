@@ -68,7 +68,7 @@ class irishexaminer(rss):
         extractedinfo={"title":title,
                        "text":text.strip().replace("\n",""),
                        "teaser":teaser.replace("\xa0",""),
-                       "byline":byline
+                       "byline":byline.strip()
                        }
 
         return extractedinfo    
