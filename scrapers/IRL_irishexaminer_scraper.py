@@ -60,7 +60,7 @@ class irishexaminer(rss):
             teaser = ""
             logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist")
         try:
-            byline = tree.xpath("//*[@class='byline']//text()")
+            byline = tree.xpath("//*[@class='byline']//text()")[-1]
         except:
             byline = ""
             logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
