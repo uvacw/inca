@@ -15,7 +15,7 @@ from scrapers.corp_abf import *
 # from scrapers.corp_acs import *
 from scrapers.corp_aegon import *
 from scrapers.corp_akzonobel import *
-from scrapers.corp_amadeus import *
+# from scrapers.corp_amadeus import *
 from scrapers.corp_asml import *
 from scrapers.corp_barclays import *
 from scrapers.corp_bat import *
@@ -28,12 +28,14 @@ from scrapers.corp_btgroup import *
 from scrapers.corp_compass import *
 from scrapers.corp_diageo import *
 from scrapers.corp_dsm import *
+# from scrapers.corp_endesa import *
 from scrapers.corp_exxon import *
-# from scrapers.corp_ferrovial import *
+from scrapers.corp_ferrovial import *
 # from scrapers.corp_gamesa import *
 from scrapers.corp_gemalto import *
 from scrapers.corp_glencore import *
 from scrapers.corp_gnf import *
+from scrapers.corp_grifols import *
 from scrapers.corp_gsk import *
 from scrapers.corp_iag import *
 # from scrapers.corp_iberdrola import *
@@ -41,15 +43,19 @@ from scrapers.corp_ing import *
 from scrapers.corp_kpn import *
 from scrapers.corp_lbg import *
 # from scrapers.corp_mapfre import *
+from scrapers.corp_merlin import *
 from scrapers.corp_nationalgrid import *
 from scrapers.corp_philips import *
+from scrapers.corp_popular import *
 from scrapers.corp_prudential import *
 from scrapers.corp_randstad import *
+# from scrapers.corp_rbs import *
 from scrapers.corp_ree import *
 from scrapers.corp_riotinto import *
 from scrapers.corp_sbm import *
 from scrapers.corp_shell import *
 from scrapers.corp_shire import *
+# from scrapers.corp_standardchartered import *
 from scrapers.corp_telefonica import *
 from scrapers.corp_unilever import *
 from scrapers.corp_vodafone import *
