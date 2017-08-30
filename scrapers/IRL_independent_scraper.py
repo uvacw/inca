@@ -26,7 +26,7 @@ class independent(rss):
         self.doctype = "independent (www)"
         self.rss_url= "http://www.independent.ie/breaking-news/rss/"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=8, day=30)
 
     def parsehtml(self,htmlsource):
         '''
@@ -41,23 +41,38 @@ class independent(rss):
         try:
             tree = fromstring(htmlsource)
         except:
-            print("cannot parse?",type(doc),len(doc))
-            print(doc)
+            logger.warning("cannot parse?",type(doc),len(doc))
+            logger.warning(doc)
             return("","","", "")
         try:
             title = tree.xpath("//*[@id='content']/div[*]/div[1]/article/h1/text()")
         except:
             title = ""
             logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            byline = tree.xpath("//*[@id='content']/div[*]/div[1]/article/section[*]/div[*]/div[*]/div/div[*]/p[*]/a[*]/strong/text()")
+        except:
+            byline = ""
+            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")   
         try:        
             text = " ".join(tree.xpath("//*[@id='content']/div[*]/div[1]/article//p/text()"))
         except:
             text = ""
             logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
+        try:        
+            bylinesource = " ".join(tree.xpath("//*[@id='content']/div[*]/div[1]/article//p/text()"))
+        except:
+            text = ""
+            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
+            sourcecandidates = "AP|Herald|Press Association"
+            lastlines = " ".join(text.split('\n')[-5:]) 
+            bylinesource = " ".join(re.findall(sourcecandidates,lastline))     
          
         extractedinfo={"title":title,
-                       "text":text.replace("\\","").replace("\n","").strip()  
-                       }
+                       "byline":byline,
+                       "bylinesource":bylinesource,
+                       "text":text.replace("\\","").replace("\n","").strip()
+                      }
 
         return extractedinfo    
         
