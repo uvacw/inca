@@ -46,7 +46,7 @@ class spiegel(rss):
             print(doc)
             return("","","", "")
         
-# category (werkt nog niet, geen category op de pagina)
+# category
         try:
             category = r[0]['url'].split('/')[3]
         except:
@@ -75,9 +75,9 @@ class spiegel(rss):
         except:
             text =""
             
-# author (werkt nog niet !!!! )
+# author
         try:
-            author = tree.xpath('//*[@class="teaser-small__metadata"]//a/text()')
+            author = tree.xpath('//*[@class="author"]//text()')[1]
         except:
             author =""
 

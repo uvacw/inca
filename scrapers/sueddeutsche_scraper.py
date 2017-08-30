@@ -18,13 +18,13 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class jungewelt(rss):
-    """Scrapes jungewelt.de"""
+class sueddeutsche(rss):
+    """Scrapes sueddeutsche.de"""
 
     def __init__(self,database=True):
         self.database=database
         self.doctype = "ad (www)"
-        self.rss_url='https://www.jungewelt.de/feeds/newsticker.rss'
+        self.rss_url='http://rss.sueddeutsche.de/app/service/rss/alles/index.rss?output=rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
@@ -43,46 +43,14 @@ class jungewelt(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-        
-#title
-        try:
-            title = tree.xpath('//*[@class="Article"]//h1/text()')
-        except:
-            title =""
 
-#category:
-        try:
-            category = tree.xpath('//*[@class="Date"]//text()')[3].split('/',1)[1]
-        except:
-            category =""
-#author
-        try:
-            author = tree.xpath('//*[@class="Article"]//address/text()')[0].replace("Von","").strip()
-
-        except:
-            author =""
-#source
-        try:
-            source = tree.xpath('//*[@class="Content"]//text()')[-1].split(" ",100)[-1].replace("("," ").replace(")"," ").replace("/"," ")
-        except:
-            source =""
+#category
 #teaser
-        try:
-            teaser = tree.xpath('//*[@class="Article"]//h2/text()')[0].replace("Von","").strip()
-        except:
-            teaser =""
+#title
 #text
-        try:
-            text = "".join(tree.xpath('//*[@class="Content"]//text()')).strip().replace("\n","")
-        except:
-            text =""
-
-        extractedinfo={"title":title,
-                       "byline":author,
-                       "text":text,
-                       "teaser":teaser,
-                       "category":category,
-                       "byline_source":source
+#author
+#source
+        extractedinfo={
                        }
-
+        
         return extractedinfo

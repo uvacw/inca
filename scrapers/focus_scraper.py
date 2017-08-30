@@ -18,13 +18,13 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class jungewelt(rss):
-    """Scrapes jungewelt.de"""
+class focus(rss):
+    """Scrapes focus.de"""
 
     def __init__(self,database=True):
         self.database=database
         self.doctype = "ad (www)"
-        self.rss_url='https://www.jungewelt.de/feeds/newsticker.rss'
+        self.rss_url='http://rss.focus.de/fol/XML/rss_folnews.xml'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
@@ -43,45 +43,42 @@ class jungewelt(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-        
+#category
+        try:
+            category = r[0]['url'].split('/')[3]
+        except:
+            category=""
+            
 #title
         try:
-            title = tree.xpath('//*[@class="Article"]//h1/text()')
-        except:
-            title =""
-
-#category:
-        try:
-            category = tree.xpath('//*[@class="Date"]//text()')[3].split('/',1)[1]
-        except:
-            category =""
-#author
-        try:
-            author = tree.xpath('//*[@class="Article"]//address/text()')[0].replace("Von","").strip()
+            title = tree.xpath('//h1//text()')
 
         except:
-            author =""
-#source
-        try:
-            source = tree.xpath('//*[@class="Content"]//text()')[-1].split(" ",100)[-1].replace("("," ").replace(")"," ").replace("/"," ")
-        except:
-            source =""
+            title = ""
+
+#author: only such a little amount of articles have an author it gets irrelavant for this webside
+        author = ""
+
 #teaser
         try:
-            teaser = tree.xpath('//*[@class="Article"]//h2/text()')[0].replace("Von","").strip()
+            teaser ="".join(tree.xpath('//*[@class="leadIn"]//text()'))
         except:
             teaser =""
+
 #text
         try:
-            text = "".join(tree.xpath('//*[@class="Content"]//text()')).strip().replace("\n","")
+            text ="".join(tree.xpath('//*[@class="textBlock"]//text()'))
         except:
-            text =""
+            text = ""
+#source
+        try:
+            source = tree.xpath('//*[@class="created"]//text()')
+        except:
+            source = ""
 
-        extractedinfo={"title":title,
-                       "byline":author,
-                       "text":text,
-                       "teaser":teaser,
-                       "category":category,
+        extractedinfo={"category":category.strip(),
+                       "teaser":teaser.strip(),
+                       "text":text.strip(),
                        "byline_source":source
                        }
 

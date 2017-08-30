@@ -18,13 +18,13 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class handelsblatt(rss):
-    """Scrapes handelsblatt.de"""
+class neuesdeutschland(rss):
+    """Scrapes neues-deutschland.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "handelsblatt (www)"
-        self.rss_url=['http://www.handelsblatt.com/contentexport/feed/schlagzeilen','http://www.handelsblatt.com/contentexport/feed/wirtschaft','http://www.handelsblatt.com/contentexport/feed/top-themen','http://www.handelsblatt.com/contentexport/feed/finanzen','http://www.handelsblatt.com/contentexport/feed/marktberichte','http://www.handelsblatt.com/contentexport/feed/unternehmen','http://www.handelsblatt.com/contentexport/feed/politik','http://www.handelsblatt.com/contentexport/feed/technologie','http://www.handelsblatt.com/contentexport/feed/panorama','http://www.handelsblatt.com/contentexport/feed/sport','http://www.handelsblatt.com/contentexport/feed/hbfussball','http://www.handelsblatt.com/contentexport/feed/bildergalerien','http://www.handelsblatt.com/contentexport/feed/video']
+        self.doctype = "ad (www)"
+        self.rss_url='https://www.neues-deutschland.de/rss/neues-deutschland.xml'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
@@ -43,44 +43,51 @@ class handelsblatt(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-
 #category
         try:
-            category = r[0]['url'].split("/")[3]
+            category = tree.xpath('//*[@class="Active"]//text()')[0]
         except:
             category =""
-#teaser
+#title
+#title pt1:
         try:
-            teaser = tree.xpath('//*[@itemprop="description"]//text()')
+            pt1 = tree.xpath('//*[@class="Article"]//text()')[10]
+        except:
+            pt1 =""
+#title pt2:
+        try:
+            pt2 = tree.xpath('//*[@class="Article"]//text()')[12]
+        except:
+            pt2 =""
+        title = pt1 + ":" + pt2
+        
+#teaser: cannot scrape the whole teaser, since only the first part is also on the article page
+        try:
+            teaser = tree.xpath('//article//h2/text()')
         except:
             teaser =""
-#title
-        try:
-            title = tree.xpath('//*[@itemprop="headline"]//text()')[0].replace("\xa0"," ")
-        except:
-            title =""
-#text
-        try:
-            text = "".join(tree.xpath('//*[@class="vhb-article-content"]//p//text()')[2::]).replace("\xa0"," ")
-        except:
-            text =""
 #author
         try:
-            author = tree.xpath('//*[@itemprop="name"]//text()')[4]
+            author = tree.xpath('//*[@class="Author"]/text()')[0].replace("Von","")
         except:
             author =""
-#source
+#source:
         try:
-            source = tree.xpath('//*[@class="vhb-nav-link"]//text()')[0]
+            source = tree.xpath('//*[@class="Main"]//i/text()')
         except:
             source =""
-            
-        extractedinfo={"category":category,
-                       "title":title,
+#text
+        try:
+            text = tree.xpath('//*[@class="Content"]//p/text()')
+        except:
+            text =""
+
+
+        extractedinfo={"title":title,
                        "byline":author,
                        "byline_source":source,
-                       "teaser":teasaer,
-                       "text":text
-                       }
-        
+                       "text":text,
+                       "category":category
+                      }
+
         return extractedinfo

@@ -18,13 +18,13 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class handelsblatt(rss):
-    """Scrapes handelsblatt.de"""
+class sueddeutsche(rss):
+    """Scrapes sueddeutsche.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "handelsblatt (www)"
-        self.rss_url=['http://www.handelsblatt.com/contentexport/feed/schlagzeilen','http://www.handelsblatt.com/contentexport/feed/wirtschaft','http://www.handelsblatt.com/contentexport/feed/top-themen','http://www.handelsblatt.com/contentexport/feed/finanzen','http://www.handelsblatt.com/contentexport/feed/marktberichte','http://www.handelsblatt.com/contentexport/feed/unternehmen','http://www.handelsblatt.com/contentexport/feed/politik','http://www.handelsblatt.com/contentexport/feed/technologie','http://www.handelsblatt.com/contentexport/feed/panorama','http://www.handelsblatt.com/contentexport/feed/sport','http://www.handelsblatt.com/contentexport/feed/hbfussball','http://www.handelsblatt.com/contentexport/feed/bildergalerien','http://www.handelsblatt.com/contentexport/feed/video']
+        self.doctype = "ad (www)"
+        self.rss_url='http://rss.sueddeutsche.de/app/service/rss/alles/index.rss?output=rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
@@ -46,41 +46,41 @@ class handelsblatt(rss):
 
 #category
         try:
-            category = r[0]['url'].split("/")[3]
+            category = r[0]['url'].split('/')[3]
         except:
             category =""
 #teaser
         try:
-            teaser = tree.xpath('//*[@itemprop="description"]//text()')
+            teaser = "".join(tree.xpath('//*[@class="header"]//h2//text()')).replace("\n",'').strip()
         except:
             teaser =""
 #title
         try:
-            title = tree.xpath('//*[@itemprop="headline"]//text()')[0].replace("\xa0"," ")
+            title = "".join(tree.xpath('//*[@class="header"]//h2//text()')).replace("\n",'').strip()
         except:
             title =""
 #text
         try:
-            text = "".join(tree.xpath('//*[@class="vhb-article-content"]//p//text()')[2::]).replace("\xa0"," ")
+            text = "".join(tree.xpath('//*[@id="article-body"]//p/text()')).replace('Artikel',"").replace('\xa0',' ')
         except:
             text =""
 #author
         try:
-            author = tree.xpath('//*[@itemprop="name"]//text()')[4]
+            author = tree.xpath('//*[@class="authorContainer"]//text()')[8]
         except:
             author =""
 #source
         try:
-            source = tree.xpath('//*[@class="vhb-nav-link"]//text()')[0]
+            source = tree.xpath('//*[@class="endofarticle__copyright"]//text()')[0].split('/')[-1]
         except:
             source =""
             
-        extractedinfo={"category":category,
-                       "title":title,
+        extractedinfo={"title":title,
                        "byline":author,
                        "byline_source":source,
-                       "teaser":teasaer,
-                       "text":text
+                       "teaser":teaser,
+                       "text":text,
+                       "category":category
                        }
         
         return extractedinfo
