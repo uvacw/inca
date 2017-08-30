@@ -26,7 +26,7 @@ class irishexaminer(rss):
         self.doctype = "irishexaminer (www)"
         self.rss_url= "http://feeds.examiner.ie/ietopstories"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=8, day=30)
 
     def parsehtml(self,htmlsource):
         '''
@@ -41,8 +41,8 @@ class irishexaminer(rss):
         try:
             tree = fromstring(htmlsource)
         except:
-            print("cannot parse?",type(doc),len(doc))
-            print(doc)
+            logger.warning("cannot parse?",type(doc),len(doc))
+            logger.warning(doc)
             return("","","", "")
         try:
             title = tree.xpath("//*[@class='col-left-story']//h1/text()")
