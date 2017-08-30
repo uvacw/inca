@@ -23,10 +23,10 @@ class neuesdeutschland(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "ad (www)"
+        self.doctype = "neuesdeutschland (www)"
         self.rss_url='https://www.neues-deutschland.de/rss/neues-deutschland.xml'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=8, day=2)
 
     def parsehtml(self,htmlsource):
         '''

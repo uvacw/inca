@@ -23,10 +23,10 @@ class diewelt(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "ad (www)"
+        self.doctype = "diewelt (www)"
         self.rss_url=['https://www.welt.de/feeds/latest.rss','https://www.welt.de/feeds/topnews.rss','https://www.welt.de/feeds/section/mediathek.rss','https://www.welt.de/feeds/section/video.rss','https://www.welt.de/feeds/section/politik.rss','https://www.welt.de/feeds/section/wirtschaft.rss','https://www.welt.de/feeds/section/wirtschaft/bilanz.rss','https://www.welt.de/feeds/section/finanzen.rss','https://www.welt.de/feeds/section/wirtschaft/webwelt.rss','https://www.welt.de/feeds/section/wissen.rss','https://www.welt.de/feeds/section/kultur.rss','https://www.welt.de/feeds/section/sport.rss','https://www.welt.de/feeds/section/icon.rss','https://www.welt.de/feeds/section/gesundheit.rss','https://www.welt.de/feeds/section/vermischtes.rss','https://www.welt.de/feeds/section/motor.rss','https://www.welt.de/feeds/section/reise.rss','https://www.welt.de/feeds/section/regional.rss','https://www.welt.de/feeds/section/debatte.rss']
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=7, day=2)
 
     def parsehtml(self,htmlsource):
         '''

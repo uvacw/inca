@@ -23,10 +23,10 @@ class focus(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "ad (www)"
+        self.doctype = "focus (www)"
         self.rss_url='http://rss.focus.de/fol/XML/rss_folnews.xml'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=7, day=2)
 
     def parsehtml(self,htmlsource):
         '''

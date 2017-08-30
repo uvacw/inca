@@ -23,10 +23,10 @@ class wirtschaftswoche(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "ad (www)"
+        self.doctype = "wiwo (www)"
         self.rss_url='http://www.wiwo.de/contentexport/feed/rss/schlagzeilen'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=8, day=2)
 
     def parsehtml(self,htmlsource):
         '''

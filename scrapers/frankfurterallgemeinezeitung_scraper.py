@@ -23,10 +23,10 @@ class faz(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "ad (www)"
+        self.doctype = "faz (www)"
         self.rss_url='http://www.faz.net/rss/aktuell/'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=8, day=3)
 
     def parsehtml(self,htmlsource):
         '''

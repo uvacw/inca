@@ -24,11 +24,11 @@ class spiegel(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "standaard (www)"
+        self.doctype = "spiegel (www)"
         self.rss_url=['http://www.spiegel.de/schlagzeilen/index.rss']
         
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=5, day=3)
+        self.date    = datetime.datetime(year=2017, month=7, day=3)
 
     def parsehtml(self,htmlsource):
         '''

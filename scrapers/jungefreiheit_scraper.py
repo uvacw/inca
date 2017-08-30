@@ -23,10 +23,10 @@ class jungefreiheit(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "ad (www)"
+        self.doctype = "jungefreiheit (www)"
         self.rss_url='https://jungefreiheit.de/feed/'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=7, day=1)
 
     def parsehtml(self,htmlsource):
         '''
@@ -64,7 +64,7 @@ class jungefreiheit(rss):
             author = tree.xpath(' \\*[@class="entry-header"]//text()')[6]
         except:
             author =""
-#teaser: teaser is not on the same webpage as the article. it can only be seen before selecting the article ...
+#teaser: teaser is not on the same webpage as the article. it can only be seen before selecting the article: Therefore no teaser being scraped.
 
  #text
         try:

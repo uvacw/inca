@@ -1,14 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
 import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
@@ -34,11 +23,11 @@ class cicero(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "standaard (www)"
+        self.doctype = "cicero (www)"
         self.rss_url=['http://cicero.de/rss.xml']
         
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=5, day=3)
+        self.date    = datetime.datetime(year=2017, month=5, day=3)
 
     def parsehtml(self,htmlsource):
         '''

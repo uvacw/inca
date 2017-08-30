@@ -26,7 +26,7 @@ class tagesspiegel(rss):
         self.doctype = "ad (www)"
         self.rss_url=['http://www.tagesspiegel.de/contentexport/feed/home','http://www.tagesspiegel.de/contentexport/feed/politik','http://www.tagesspiegel.de/contentexport/feed/politik','http://www.tagesspiegel.de/contentexport/feed/queerspiegel','http://www.tagesspiegel.de/contentexport/feed/wirtschaft','http://www.tagesspiegel.de/contentexport/feed/sport','http://www.tagesspiegel.de/contentexport/feed/kultur','http://www.tagesspiegel.de/contentexport/feed/weltspiegel','http://www.tagesspiegel.de/contentexport/feed/meinung','http://www.tagesspiegel.de/contentexport/feed/medien','http://www.tagesspiegel.de/contentexport/feed/wissen']
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=8, day=2)
 
     def parsehtml(self,htmlsource):
         '''

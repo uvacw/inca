@@ -19,10 +19,10 @@ class freitag(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "Der Freitag"
+        self.doctype = "freitag (www)"
         self.rss_url='https://www.freitag.de/@@RSS'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=11, day=21)
+        self.date    = datetime.datetime(year=2017, month=8, day=21)
     
 
     def get(self,**kwargs):
