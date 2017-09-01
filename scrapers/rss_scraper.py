@@ -83,7 +83,17 @@ class rss(Scraper):
                         htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                     except:
                         htmlsource=None
-                        logger.info('Could not open link - will not retrieve full article')
+                        logger.info('Could not open link - will not retrieve full article, but will give it another try with different User Agent')
+                    # Some (few) scrapers seem to block certain user agents. Therefore, if code above did
+                    # not succed, try fetching the article pretending to user Firefox on Windows
+                    if not htmlsource or htmlsource=="":
+                        try:
+                            req=urllib2.Request(link, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
+                            htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+                        except:
+                            htmlsource=None
+                            logger.info('Could not open link - will not retrieve full article')
+   
                     try:
                         teaser=re.sub(r"\n|\r\|\t"," ",post.description)
                     except:

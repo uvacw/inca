@@ -12,10 +12,8 @@ logger = logging.getLogger(__name__)
 
 from scrapers.corp_abf import *
 from scrapers.corp_abnamro import *
-from scrapers.corp_acs import *
 from scrapers.corp_aegon import *
 from scrapers.corp_akzonobel import *
-from scrapers.corp_amadeus import *
 from scrapers.corp_asml import *
 from scrapers.corp_barclays import *
 from scrapers.corp_bat import *
@@ -28,7 +26,6 @@ from scrapers.corp_btgroup import *
 from scrapers.corp_compass import *
 from scrapers.corp_diageo import *
 from scrapers.corp_dsm import *
-from scrapers.corp_endesa import *
 from scrapers.corp_exxon import *
 from scrapers.corp_ferrovial import *
 from scrapers.corp_gamesa import *
@@ -38,8 +35,6 @@ from scrapers.corp_gnf import *
 from scrapers.corp_grifols import *
 from scrapers.corp_gsk import *
 from scrapers.corp_iag import *
-from scrapers.corp_iberdrola import *
-from scrapers.corp_ing import *
 from scrapers.corp_kpn import *
 from scrapers.corp_lbg import *
 from scrapers.corp_mapfre import *
@@ -54,7 +49,6 @@ from scrapers.corp_riotinto import *
 from scrapers.corp_sbm import *
 from scrapers.corp_shell import *
 from scrapers.corp_shire import *
-from scrapers.corp_standardchartered import *
 from scrapers.corp_telefonica import *
 from scrapers.corp_unilever import *
 from scrapers.corp_vodafone import *
