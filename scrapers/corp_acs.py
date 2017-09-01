@@ -1,3 +1,5 @@
+# DOESN'T WORK PROPERLY
+
 # http://phantomjs.org/download.html
 # https://chromedriver.storage.googleapis.com/index.html?path=2.31/
 # pip install selenium
@@ -18,16 +20,16 @@ import time
 
 logger = logging.getLogger(__name__)
 
-class kpn(Scraper):
-    """Scrapes KPN"""
+class acs(Scraper):
+    """Scrapes Actividades de Construccion y Servicios"""
 
     def __init__(self,database=True):
         self.database = database
-        self.START_URL = "http://corporate.kpn.com/press/press-releases.htm"
-        self.BASE_URL = "http://corporate.kpn.com/"
-        self.doctype = "KPN"
+        self.START_URL = "http://www.grupoacs.com/site/index?url=press-room%2Fnews%2Fpress-releases%2F&page=1"
+        self.BASE_URL = "http://www.grupoacs.com/"
+        self.doctype = "ACS"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=8, day=1)
+        self.date = datetime.datetime(year=2017, month=8, day=21)
         self.releases = []
 
     def process_links(self, links):
@@ -36,25 +38,31 @@ class kpn(Scraper):
             try:
                 tree = fromstring(requests.get(self.BASE_URL + link).text)
                 try:
-                    title=" ".join(tree.xpath('//*/h2[@class="article"]/text()'))
+                    title=" ".join(tree.xpath('//*[@class="col-md-8 prensa-titulo"]/h3/text()'))
                 except:
                     print("no title")
                     title = ""
                 try:
-                    text=" ".join(tree.xpath('//*/article[@class="kpn-article kpn-collapsible-open gridpart "]/p//text()'))
+                    teaser="".join(tree.xpath('//*[@class="col-md-8 prensa-subtitulo"]/p//text()')).strip()
+                except:
+                    teaser= ""
+                    teaser_clean = " ".join(teaser.split())
+                try:
+                    text=" ".join(tree.xpath('//*[@class="col-md-12"]//text()'))
                 except:
                     logger.info("oops - geen textrest?")
                     text = ""
                 text = "".join(text)
                 self.releases.append({'text':text.strip(),
                                       'title':title.strip(),
+                                      'teaser':teaser.strip(),
                                       'url':link.strip()})
             except:
                 print("no connection:\n" + link)
 
     def get(self):
         '''                                                                             
-        Fetches articles from KPN
+        Fetches articles from ACS
         '''
         driver = webdriver.PhantomJS()
         driver.get(self.START_URL)
@@ -64,25 +72,30 @@ class kpn(Scraper):
         dummy_page_source = driver.page_source
         tree = fromstring(driver.page_source)
 
-        linkobjects = tree.xpath('//*/article[@class="kpn-clear-fix"]/h3//a')
+        linkobjects = tree.xpath('//*[@class="col-md-10"]//a')
         links = [l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
-        # print('\n'.join(links))
+        print('\n'.join(links))
         self.process_links(links)
     
         try:
-        	button_right = driver.find_element_by_class_name("kpn-icomoon-arrow-right-bold")
-        	while button_right.get_attribute("class").find("kpn-disabled") == -1:
-        		button_right.click()
-        		# processing here
-        		time.sleep(2)
-        		linkobjects = tree.xpath('//*/article[@class="kpn-clear-fix"]/h3//a')
-        		links = [l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
-        		# print('\n'.join(links))
-        		self.process_links(links)
+            button_right = driver.find_element_by_class_name("next")
+            while button_right.get_attribute("class").find("next disabled") == -1:
+                
+                # this doesn't work, because apparently clicking does not lead to the next page
+                # even though the element is correctly identified
+                button_right.click()
+                time.sleep(5)
+                # processing here
+                tree = fromstring(driver.getPageSource())
 
-        		button_right = driver.find_element_by_class_name("kpn-icomoon-arrow-right-bold")
+                linkobjects = tree.xpath('//*[@class="col-md-10"]//a')
+                links = [l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+                print('\n'.join(links))
+                self.process_links(links)
+
+                button_right = driver.find_element_by_class_name("next")
         except:
-        	print('Error occurred.')
+            print('Error occurred.')
 
         driver.quit()
         return self.releases

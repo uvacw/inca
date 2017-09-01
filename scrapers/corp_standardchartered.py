@@ -21,15 +21,15 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class ing(rss):
-    """Scrapes ING"""
+class standardchartered(rss):
+    """Standard Chartered"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "ing (corp)"
-        self.rss_url ='https://www.ing.com/news.rss'
+        self.doctype = "SC (corp)"
+        self.rss_url ='https://apps.standardchartered.com/RSSGenerator/RSS'
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=7, day=5)
+        self.date = datetime.datetime(year=2017, month=8, day=30)
 
     def parsehtml(self,htmlsource):
         '''                                                                             
@@ -42,23 +42,17 @@ class ing(rss):
         '''
         tree = fromstring(htmlsource)
         try:
-            title="".join(tree.xpath('//*/section[@class="article-main"]/h1/text()')).strip()
+            title="".join(tree.xpath('//*/h1[@class="news_title"]//text()')).strip()
         except:
             print("no title")
-            title = ""
         try:
-            teaser="".join(tree.xpath('//*[@class="article-intro"]/p//text()')).strip()
-        except:
-            teaser= ""
-        teaser = " ".join(teaser.split())
-        try:
-            text=" ".join(tree.xpath('//*/section[@class="article-main"]/div/p//text()')).strip()
+            text="".join(tree.xpath('//*[@class="content cols2-1"]/p//text()')).strip()
         except:
             logger.info("oops - geen textrest?")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),
-                  "teaser":teaser.strip(),
-                  "text":polish(text).strip()}
+                  "text":polish(text).strip()
+                  }
 
         return releases

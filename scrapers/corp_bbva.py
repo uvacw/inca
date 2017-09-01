@@ -1,5 +1,3 @@
-# DOESN'T WORK PROPERLY
-
 import requests
 import datetime
 from lxml.html import fromstring
@@ -21,15 +19,16 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class ing(rss):
-    """Scrapes ING"""
+class bbva(rss):
+    """BBVA"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "ing (corp)"
-        self.rss_url ='https://www.ing.com/news.rss'
+        self.doctype = "BBVA (corp)"
+        self.rss_url ='https://www.bbva.com/en/rss/press-releases'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=5)
+
 
     def parsehtml(self,htmlsource):
         '''                                                                             
@@ -42,23 +41,23 @@ class ing(rss):
         '''
         tree = fromstring(htmlsource)
         try:
-            title="".join(tree.xpath('//*/section[@class="article-main"]/h1/text()')).strip()
+            title="".join(tree.xpath('//*/h1[@class="titular"]//text()')).strip()
         except:
             print("no title")
-            title = ""
         try:
-            teaser="".join(tree.xpath('//*[@class="article-intro"]/p//text()')).strip()
+            teaser="".join(tree.xpath('//*[@class="entradilla "]//text()')).strip()
         except:
             teaser= ""
-        teaser = " ".join(teaser.split())
+            teaser_clean = " ".join(teaser.split())
         try:
-            text=" ".join(tree.xpath('//*/section[@class="article-main"]/div/p//text()')).strip()
+            text="".join(tree.xpath('//*[@class="container"]/p//text()')).strip()
         except:
             logger.info("oops - geen textrest?")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),
                   "teaser":teaser.strip(),
-                  "text":polish(text).strip()}
+                  "text":polish(text).strip()
+                  }
 
         return releases

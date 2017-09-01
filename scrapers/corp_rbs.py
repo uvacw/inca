@@ -21,15 +21,15 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class ing(rss):
-    """Scrapes ING"""
+class rbs(rss):
+    """Royal Bank of Scotland"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "ing (corp)"
-        self.rss_url ='https://www.ing.com/news.rss'
+        self.doctype = "RBS (corp)"
+        self.rss_url ='https://www.rbs.com/rbs/rss/news.rss'
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=7, day=5)
+        self.date = datetime.datetime(year=2017, month=7, day=30)
 
     def parsehtml(self,htmlsource):
         '''                                                                             
@@ -42,23 +42,23 @@ class ing(rss):
         '''
         tree = fromstring(htmlsource)
         try:
-            title="".join(tree.xpath('//*/section[@class="article-main"]/h1/text()')).strip()
+            title="".join(tree.xpath('//*/h2[@class="header-group__sign-post tile--signpost-text"]//text()')).strip()
         except:
             print("no title")
-            title = ""
         try:
-            teaser="".join(tree.xpath('//*[@class="article-intro"]/p//text()')).strip()
+            teaser="".join(tree.xpath('//*/p[@class="stand-first-text"]//text()')).strip()
         except:
             teaser= ""
-        teaser = " ".join(teaser.split())
+            teaser_clean = " ".join(teaser.split())
         try:
-            text=" ".join(tree.xpath('//*/section[@class="article-main"]/div/p//text()')).strip()
+            text="".join(tree.xpath('//*[@class="comp-rich-text "]/p//text()')).strip()
         except:
             logger.info("oops - geen textrest?")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),
                   "teaser":teaser.strip(),
-                  "text":polish(text).strip()}
+                  "text":polish(text).strip()
+                  }
 
         return releases
