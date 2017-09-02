@@ -128,9 +128,11 @@ class twitter(Client):
 
     def _set_delay(self, *args, **kwargs):
         now = time.time()
-        earliest = self.load_credentials(app=app,update_last_loaded=False)
+        earliest = self.load_credentials(app='default',update_last_loaded=False) ## MANUAL WORKAROUND - NEEDS INSPECTION
         if earliest:
             resettime = dotkeys(earliest,self.sort_field)
+            print(resettime)
+            print(now)
             delay_required = resettime - now
             if delay_required < 0 :
                 self.run(*args, **kwargs)
@@ -206,8 +208,98 @@ class twitter_timeline(twitter):
                             )
 
 class twitter_followers(twitter):
-    '''Class to retrieve twitter followers for a given account'''
-    pass
+    '''Class to retrieve twitter followers for a given account
+    https://dev.twitter.com/rest/reference/get/followers/ids
+
+    Version 0.1 includes only full retrieval for a given point in time, without logic yet to
+    identify new and/or deleted followers.
+
+    '''
+
+    sort_field = "content.resources.followers./followers/ids.reset" 
+    preference = 'lowest'
+
+    def get(self, credentials, screen_name, force=False):
+        '''retrieved from the twitter followers/ids API'''
+
+        self.doctype =  "twitter_followers"
+        self.version = "0.1"
+        self.functiontype = "twitter_client"
+
+        api = self._get_client(credentials=dotkeys(credentials, '_source.credentials'))
+        try: self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
+        except TwythonRateLimitError: pass # sometimes you just can't get a rate-limit estimate
+
+        if not force:
+            # since_id = doctype_first(doctype="tweets",query="user.screen_name:"+screen_name)
+            # if len(since_id) == 0:
+            #     logger.info("settings since_id to None as there are no tweets for this user")
+            #     since_id = None
+            # else:
+            #     since_id = since_id[0].get('_source',{}).get("id",None)
+            #     logger.info("settings since_id to {since_id}".format(**locals()))
+            pass
+
+        try:
+            user = api.lookup_user(screen_name=screen_name)
+            user_id = user[0]['id']
+            user_follower_count = user[0]['followers_count']
+            batchsize = 1
+            counter = 0
+            cursor = None
+            expected_rounds = user_follower_count / 5000
+
+
+            while batchsize > 0:
+
+
+
+
+                followers = api.get_followers_ids(screen_name=screen_name,
+                                               cursor=cursor)
+
+                follower_ids = followers['ids']
+                cursor = followers['next_cursor']
+
+
+
+                batchsize = len(follower_ids)
+                logger.info("retrieved {batchsize} followers for {screen_name} in round {counter} out of {expected_rounds} expected rounds".format(**locals()))
+                counter += 1
+                for num, folid in enumerate(follower_ids):
+                    # SKIPPING CHECK_EXISTS LOGIC IN VERSION 0.1
+                    # if self._check_exists(tweet['id_str'])[0] and not force:
+                    #     logger.info(
+                    #          "skipping existing {screen_name}-{tweet[id]}".format(**locals())
+                    #         )
+                    #     continue
+                    follower_info = {}
+                    follower_info['_id'] = str(user_id) + '_' + str(folid)
+                    follower_info['user_id'] = user_id
+                    follower_info['follower'] = folid
+                    follower_info['user_screen_name'] = screen_name
+                    follower_info['cursor'] = cursor
+
+
+
+                    yield follower_info
+                
+
+            self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
+        except TwythonRateLimitError:
+            logger.info('expended credentials')
+            try: self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
+            except TwythonRateLimitError: # when a ratelimit estimate is unavailable
+                self.postpone(self, delaytime=60*5, screen_name=screen_name,
+                              force=force, max_id=max_id, since_id=since_id)
+            cursor = self._last_added().get("_source",{}).get("cursor",None)
+            self._set_delay(
+                            timeout_key="last.resources.followers./followers/ids.reset",
+                            screen_name=screen_name,
+                            force=force,
+                            cursor=cursor,
+                            app='default', # MANUAL WORKAROUND - NEEDS TO BE CHECKED
+                            )
 
 class twitter_friends(twitter):
     '''Class to retrieve twitter friends for a given account
