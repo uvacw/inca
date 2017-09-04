@@ -26,7 +26,7 @@ class thejournal(rss):
         self.doctype = "thejournal (www)"
         self.rss_url= "http://www.thejournal.ie/feed/"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=9, day=4)
 
     def parsehtml(self,htmlsource):
         '''
@@ -41,8 +41,8 @@ class thejournal(rss):
         try:
             tree = fromstring(htmlsource)
         except:
-            print("cannot parse?",type(htmlsource),len(htmlsource))
-            print(htmlsource[:100])
+            logger.warning("cannot parse?",type(htmlsource),len(htmlsource))
+            logger.warning(htmlsource[:100])
             return  dict()
         try:        
             title = tree.xpath("//*[@itemprop='headline']//text()")
