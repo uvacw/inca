@@ -44,8 +44,8 @@ class bbcni(rss):
             logger.warning("cannot parse?",type(doc),len(doc))
             logger.warning(doc)
             return("","","", "")
-        try:        
-            title = tree.xpath("//*[@class='story-body__h1']//text()")
+        try:
+            title = " ".join(tree.xpath("//*[@class='story-body__h1']//text()"))
         except:
             title = ""
             logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
