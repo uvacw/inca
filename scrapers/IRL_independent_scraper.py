@@ -58,15 +58,11 @@ class independent(rss):
             text = " ".join(tree.xpath("//*[@id='content']/div[*]/div[1]/article//p/text()"))
         except:
             text = ""
-            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
-        try:        
-            bylinesource = " ".join(tree.xpath("//*[@id='content']/div[*]/div[1]/article//p/text()"))
-        except:
-            text = ""
-            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
-            sourcecandidates = "AP|Herald|Press Association"
-            lastlines = " ".join(text.split('\n')[-5:]) 
-            bylinesource = " ".join(re.findall(sourcecandidates,lastline))     
+            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")   
+    
+        sourcecandidates = "AP|Herald|Press Association"
+        lastlines = " ".join(text.split('\n')[-5:])
+        bylinesource = " ".join(re.findall(sourcecandidates,lastlines))     
          
         extractedinfo={"title":title,
                        "byline":byline,
