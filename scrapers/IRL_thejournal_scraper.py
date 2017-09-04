@@ -45,7 +45,7 @@ class thejournal(rss):
             logger.warning(htmlsource[:100])
             return  dict()
         try:        
-            title = tree.xpath("//*[@itemprop='headline']//text()")
+            title = " ".join(tree.xpath("//*[@itemprop='headline']//text()"))
         except:
             title = ""
             logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
