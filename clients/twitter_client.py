@@ -130,13 +130,14 @@ class twitter(Client):
         now = time.time()
         earliest = self.load_credentials(app='default',update_last_loaded=False) ## MANUAL WORKAROUND - NEEDS INSPECTION
         if earliest:
-            resettime = dotkeys(earliest,self.sort_field)
+            sort_field = '_source.' + self.sort_field
+            resettime = dotkeys(earliest,sort_field)
             print(resettime)
             print(now)
             delay_required = resettime - now
             if delay_required < 0 :
                 self.run(*args, **kwargs)
-            self.postpone(delaytime = delay_required, *args, **kwargs )
+            self.postpone(seconds = delay_required, *args, **kwargs )
         else:
             info.warn("No credentials available...")
 
@@ -187,7 +188,7 @@ class twitter_timeline(twitter):
                         continue
                     tweet['_id'] = tweet['id_str']
                     if not (num+1) % 100:
-                        logger.info("retrieved {num} tweets for {screen_name}, at {tweet[_id]}".format(**locals()))
+                        logger.info("retrieved {num} tweets for {screen_name} with tweet_id = {tweet[_id]}".format(**locals()))
 
                     yield tweet
 
