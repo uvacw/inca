@@ -596,55 +596,55 @@ class Client(Scraper):
         #TODO IMPLEMENT remove credentials
 
         #TODO: IMPLEMENT DECENTRALIZED POSTPONE
-        def postpone(
-            seconds=0,
-            minutes=0,
-            hours=0,
-            days=0,
-            until=None,
-            *args,
-            **kwargs
-             ):
-            """postpones call to self.run()
+    def postpone(self,
+        seconds=0,
+        minutes=0,
+        hours=0,
+        days=0,
+        until=None,
+        *args,
+        **kwargs
+         ):
+        """postpones call to self.run()
 
-            Given a delay time or start time, postpones call to the run method.
-            This is usefull when credentials have all been expended.
+        Given a delay time or start time, postpones call to the run method.
+        This is usefull when credentials have all been expended.
 
-            Parameters
-            ----------
-            seconds : int (default=0)
-                The number of seconds to delay
-            minutes : int (default=0)
-                The number of minutes to delay
-            hours : int (default=0)
-                The number of hours to delay
-            days : int (default=0)
-                The number of days to delay
-            until : datetime object
-                Time at which the task should be resumed
-            *args, **kwargs
-                Arguments passed to the `.run()` method
+        Parameters
+        ----------
+        seconds : int (default=0)
+            The number of seconds to delay
+        minutes : int (default=0)
+            The number of minutes to delay
+        hours : int (default=0)
+            The number of hours to delay
+        days : int (default=0)
+            The number of days to delay
+        until : datetime object
+            Time at which the task should be resumed
+        *args, **kwargs
+            Arguments passed to the `.run()` method
 
-            Returns
-            -------
-            None
+        Returns
+        -------
+        None
 
-            Notes
-            -----
-            The 'until' time overrides all other non-args/kwargs arguments
+        Notes
+        -----
+        The 'until' time overrides all other non-args/kwargs arguments
 
-            """
-            now = datetime.datetime.now()
-            if until:
-                waittime = until - now
-            else:
-                waittime = datetime.timedelta(
-                            seconds=seconds,
-                            minutes=minutes,
-                            hours = hours,
-                            days = days
-                            )
-            logger.info("Delaying for {waittime}".format(**locals()))
-            time.sleep(waittime)
-            for d in self.run(*args, **kwargs):
-                yield d
+        """
+        now = datetime.datetime.now()
+        if until:
+            waittime = until - now
+        else:
+            waittime = datetime.timedelta(
+                        seconds=seconds,
+                        minutes=minutes,
+                        hours = hours,
+                        days = days
+                        )
+        logger.info("Delaying for {waittime}".format(**locals()))
+        time.sleep(waittime)
+        for d in self.run(*args, **kwargs):
+            yield d
