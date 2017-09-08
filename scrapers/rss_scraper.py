@@ -68,7 +68,8 @@ class rss(Scraper):
             RSS_URL=[RSS_URL]
 
         for thisurl in RSS_URL:
-            d = feedparser.parse(thisurl)
+            rss_body = self.get_page_body(thisurl)
+            d = feedparser.parse(rss_body)
             for post in d.entries:
                 try:
                     _id=post.id
@@ -116,6 +117,12 @@ class rss(Scraper):
                             doc.update(parsed)
                     docnoemptykeys={k: v for k, v in doc.items() if v}
                     yield docnoemptykeys
+
+    def get_page_body(self,url,**kwargs):
+        '''Makes an HTTP request to the given URL and returns a string containing the response body'''
+        request = urllib2.Request(url, headers={'User-Agent' : "Wget/1.9"})
+        response_body = urllib2.urlopen(request).read().decode(encoding="utf-8",errors="ignore")
+        return response_body
 
     def parsehtml(self,htmlsource):
         '''
