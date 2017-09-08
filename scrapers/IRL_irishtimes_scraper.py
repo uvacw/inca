@@ -6,6 +6,7 @@ from core.database import check_exists
 import feedparser
 import re
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,11 @@ class irishtimes(rss):
         self.rss_url= "http://www.irishtimes.com/cmlink/news-1.1319192"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=9, day=4)
+        
+    def get_page_body(self,url):
+        '''Irish Times has a cookie wall which needs to be bypassed by setting a specific cookie in every request.'''
+        response = requests.get(url, headers={'Cookie': 'cookiewall=yes;'})
+        return response.text
 
     def parsehtml(self,htmlsource):
         '''
