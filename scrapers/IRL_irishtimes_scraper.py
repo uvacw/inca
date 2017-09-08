@@ -51,12 +51,12 @@ class irishtimes(rss):
             logger.warning(doc)
             return("","","", "")
         try:        
-            title = tree.xpath("//*[@property='headline']//text()")
+            title = " ".join(tree.xpath("//*[@property='headline']//text()"))
         except:
             title = ""
             logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
         try:        
-            teaser = tree.xpath("//*[@property='description']//text()")
+            teaser = " ".join(tree.xpath("//*[@property='description']//text()"))
         except:
             teaser = ""
             logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist.")
@@ -71,10 +71,17 @@ class irishtimes(rss):
             byline = ""
             logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
             
+        paywall = tree.xpath("//*[@class='stub-article-msg']")
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
+            
         extractedinfo={"title":title,
                        "teaser":teaser,
                        "text":text.strip().replace("\\","").replace("\n","").replace("\t","").replace("\r","").replace("\xa0",""),
-                      "byline":byline.replace("\n","")
+                      "byline":byline.replace("\n",""),
+                       "paywall_na":paywall_na
                       }
 
         return extractedinfo    
