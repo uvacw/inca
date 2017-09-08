@@ -70,7 +70,7 @@ class dailystar(rss):
         extractedinfo={"title":title.strip(),
                        "teaser":teaser.strip(),
                        "byline":byline.strip(),
-                       "text":text.replace("\r\n","").replace("\\","")
+                       "text":text.replace("\r\n","").replace("\\","").strip()
                       }
 
         return extractedinfo 
