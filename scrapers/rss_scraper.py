@@ -115,6 +115,8 @@ class rss(Scraper):
                                 pass
                         else:
                             doc.update(parsed)
+                    parsedurl = self.parseurl(link)
+                    doc.update(parsedurl)
                     docnoemptykeys={k: v for k, v in doc.items() if v}
                     yield docnoemptykeys
 
@@ -128,6 +130,16 @@ class rss(Scraper):
         '''
         Parses the html source and extracts more keys that can be added to the doc
         Empty in this generic fallback scraper, should be replaced by more specific scrapers
+        '''
+        return dict()
+
+    def parseurl(self,url):
+        '''
+        Parses the url source and extracts more keys that can be added to the doc
+        Empty in this generic fallback scraper, can be replaced by more specific scrapers
+        if the URL itself needs to be parsed. Typial use case: The url contains the 
+        category of the item, which can be parsed from it using regular expressions
+        or .split('/') or similar.
         '''
         return dict()
 
