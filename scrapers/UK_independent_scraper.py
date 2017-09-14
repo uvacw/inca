@@ -6,6 +6,7 @@ from core.database import check_exists
 import feedparser
 import re
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +20,14 @@ def polish(textstring):
     return result.strip()
 
 class independent(rss):
-    """Scrapes independent.ie"""
+    """Scrapes independent.co.uk"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "independent-irl (www)"
-        self.rss_url= "http://www.independent.ie/breaking-news/rss/"
+        self.doctype = "independent-uk (www)"
+        self.rss_url = "http://www.independent.co.uk/rss"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=8, day=30)
+        self.date    = datetime.datetime(year=2017, month=9, day=12)
 
     def parsehtml(self,htmlsource):
         '''
@@ -37,7 +38,7 @@ class independent(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
-    
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -45,30 +46,37 @@ class independent(rss):
             logger.warning(doc)
             return("","","", "")
         try:
-            title = tree.xpath("//*[@id='content']/div[*]/div[1]/article/h1/text()")
+            title = " ".join(tree.xpath("//*[@itemprop='headline']/text()"))
         except:
             title = ""
             logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            byline = tree.xpath("//*[@id='content']/div[*]/div[1]/article/section[*]/div[*]/div[*]/div/div[*]/p[*]/a[*]/strong/text()")
+            teaser = " ".join(tree.xpath("//*[@class='intro']/p/text()"))
+        except:
+            teaser = ""
+            logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            byline = " ".join(tree.xpath("//*[@itemprop='name']//text()"))
         except:
             byline = ""
-            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")   
-        try:        
-            text = " ".join(tree.xpath("//*[@id='content']/div[*]/div[1]/article//p/text()"))
+            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
+        try:
+            category = " ".join(tree.xpath("//*[@property='item']//text()"))
+        except:
+            category = ""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")    
+        try:
+            text = " ".join(tree.xpath("//*[@class='text-wrapper']/p/text()"))
         except:
             text = ""
-            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")   
+            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
+            
     
-        sourcecandidates = "AP|Herald|Press Association"
-        lastlines = " ".join(text.split('\n')[-5:])
-        bylinesource = " ".join(re.findall(sourcecandidates,lastlines))     
-         
-        extractedinfo={"title":title,
-                       "byline":byline,
-                       "bylinesource":bylinesource,
-                       "text":text.replace("\\","").replace("\n","").strip()
+        extractedinfo={"title":title.strip(),
+                       "teaser":teaser.strip().replace("\xa0",""),
+                       "byline":byline.strip(),
+                       "category":category.strip(),
+                       "text":text.strip()
                       }
 
-        return extractedinfo    
-        
+        return extractedinfo 
