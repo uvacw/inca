@@ -24,7 +24,7 @@ class independent(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "independent (www)"
+        self.doctype = "independent-uk (www)"
         self.rss_url = "http://www.independent.co.uk/rss"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=9, day=12)
