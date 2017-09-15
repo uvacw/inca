@@ -189,6 +189,7 @@ git config --global user.name <username>
 ### Copy INCA to your local computer using GIT:
 -	Make a new folder on your computer where you want to work on INCA. Go there using your terminal: ```cd /pathtoyourfolder```
 -	Clone inca to your local folder, using ```git clone https://github.com/uvacw/inca.git```
+-	You are now on the Master branch, which is the latest stable release of INCA. But you probably want to work on the development branch instead, which is the latest version of the code we are developing and improving. You can do so with ```git checkout development```. After that, do ```git pull``` to make sure you really downloaded the latest version.
 - Finally, we have to install the Python packages INCA depends on, such as packages for machine learning, reading RSS feeds, connecting to Elastic Search and so on. You could do so by hand (installing every package as soon as you get an 'import error', but we also made a file to install all of them at once:
 ```
 cd inca    # assuming you still are in inca's parent directory
