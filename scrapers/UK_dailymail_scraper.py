@@ -61,7 +61,7 @@ class dailymail(rss):
             byline = ""
             logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")    
         try:
-            text = "".join(tree.xpath("//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']/p/a/text()"))
+            text = " ".join(tree.xpath("//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']/p/a/text()"))
         except:
             text = ""
             logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
