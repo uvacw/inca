@@ -25,7 +25,7 @@ class theguardian(rss):
     def __init__(self,database=True):
         self.database=database
         self.doctype = "theguardian (www)"
-        self.rss_url = "https://www.theguardian.com/uk-news/rss"
+        self.rss_url = "https://www.theguardian.com/uk/rss"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=9, day=13)
 
