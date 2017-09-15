@@ -1,29 +1,34 @@
-from lxml import html
-from urllib import request
-from lxml.html import fromstring
-from scrapers.rss_scraper import rss
-from core.scraper_class import Scraper
-import re
-import feedparser
-import logging
 import datetime
-import requests
-from lxml import etree
+from lxml.html import fromstring
+from core.scraper_class import Scraper
+from scrapers.rss_scraper import rss
+from core.database import check_exists
+import feedparser
+import re
+import logging
 
 logger = logging.getLogger(__name__)
 
+def polish(textstring):
+    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split('\n')
+    lead = lines[0].strip()
+    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
+    if rest: result = lead + ' ||| ' + rest
+    else: result = lead
+    return result.strip()
 
 class dailymail(rss):
-    """Scrapes dailymail.co.uk """
+    """Scrapes dailymail.nl"""
 
     def __init__(self,database=True):
-        self.database = database
-        self.doctype = "dailymail"
+        self.database=database
+        self.doctype = "dailymail (www)"
         self.rss_url='http://www.dailymail.co.uk/articles.rss'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=11, day=21)
-    
-    def get(self,**kwargs):
+        self.date    = datetime.datetime(year=2017, month=8, day=30)
+
+    def parsehtml(self,htmlsource):
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
@@ -32,74 +37,43 @@ class dailymail(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
 
-        # creating iteration over the rss feed. 
-        req =request.Request("http://www.dailymail.co.uk/articles.rss")
-        read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
-        tree = etree.fromstring(read)
-        article_urls = tree.xpath("//channel//item//link/text()")
-        descriptions = tree.xpath("//channel//item//description/text()")
-        dates = tree.xpath("//channel//item//pubDate/text()")
-        titles = tree.xpath("//channel//item//title/text()")
+#category
+#category
+        try:
+            category = r[0]['url'].split('/')[3]
+        except:
+            category = ""       
 
-        for link,title,date in zip(article_urls,titles,dates): # you go to each article page       
-            link = link.strip()
-            try: 
-                req = request.Request(link)
-                read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
-                tree = fromstring(read)
-            except:
-                logger.error("HTML tree cannot be parsed")
-            
-            # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
-            parag = tree.xpath("//div[@itemprop='articleBody']/p//text() | //*[@class='mol-para-with-font']/font/text() | //*[@class='mol-para-with-font']/font/span/text()")
+#teaser: The articles on daily mail do not have teasers.
+
+#title
+        try:
+            title = tree.xpath('//*[@itemscope="itemscope"]//h1//text()')[0]
+        except:
+            title =""
+#text
+        try:
+            text = ''.join(tree.xpath('//*[@itemprop="articleBody"]/p//text()')).replace('\xa0','')
+        except:
             text = ''
-            for r in parag:
-                text += ' '+r.strip()
-                #adding a space at the end of the paragraph.
+#author
+        try:
+            author = ''.join(tree.xpath('//*[@class="author"]//text()')).split(' ',6)[:2]
+        except:
+            author = ''
             
-            # Retrieving bullet points on top of articles
-            bullet = tree.xpath("//*[@class='mol-bullets-with-font']/li/font/strong/text()")
-
-
-            # Retrieving the section/category from url
-            matchObj = re.match( r'http://www.dailymail.co.uk/(.*?)/(.*?)/', link, re.M|re.I)
-            category = matchObj.group(1)
-
-            # Retrieving the byline_source/source from url
-            if matchObj.group(1) == 'wires':
-                byline_source = matchObj.group(2)
-            else:
-                byline_source = ''
-                
-            # Retrieving the byline/author
-            byline_tree = tree.xpath("//*[@class='author']/text()")
-
-            # Eliminating anything coming after "for" as in many cases it says "For Mailonline", "For dailymail" etc.
-            myreg = re.match('(.*?)( [f|F]or )',', '.join(byline_tree),re.M|re.I)
-            if myreg is None:
-                author_list = byline_tree
-            else:
-                author_list = myreg.group(1).split(',')
-
-            # Create iso format date 
-            try:
-                pub_date = datetime.datetime.strptime(date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
-            except:
-                pub_date = ''
-
-            # somehow the rss title contains some \n 
-            title = title.strip()
-
-            doc = dict(
-                pub_date    = pub_date,
-                title       = title,
-                text        = text,
-                bullet      = bullet[0] if bullet else '',
-                author      = author_list,
-                source      = byline_source,
-                category    = category,
-                url         = link,
-            )
-            doc.update(kwargs)
-            yield doc
+#source
+        extractedinfo={'category':category,
+                       'title':title,
+                       'text':text,
+                       'byline':author
+                       }
+        
+        return extractedinfo
