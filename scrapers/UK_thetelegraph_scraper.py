@@ -46,7 +46,7 @@ class thetelegraph(rss):
             logger.warning(doc)
             return("","","", "")
         try:
-            title = " ".join(tree.xpath("//*[@class='headline__heading']/text()"))
+            title = "".join(tree.xpath("//*[@class='headline__heading']/text()"))
         except:
             title = ""
             logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
@@ -56,12 +56,12 @@ class thetelegraph(rss):
             category = ""
             logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            byline = " ".join(tree.xpath("//*[@class='byline__author-name']//text()"))
+            byline = "".join(tree.xpath("//*[@class='byline__author-name']//text()"))
         except:
             byline = ""
             logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            text = " ".join(tree.xpath("//*[@itemprop='articleBody']//p/text()|//*[@itemprop='articleBody']//a/text()|//*[@class='m_first-letter m_first-letter--flagged']//text()"))
+            text = "".join(tree.xpath("//*[@itemprop='articleBody']//p/text()|//*[@itemprop='articleBody']//a/text()|//*[@class='m_first-letter m_first-letter--flagged']//text()"))
         except:
             byline = ""
             logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
