@@ -8,7 +8,10 @@ import sys
 try:
     from pattern.nl import parse
 except:
-    '''sorry, python 2 only'''
+    logger.warn("No working version of the pattern library found. For Python 3, you cannot pip install it yet. Clone the development branch from https://github.com/clips/pattern and copy the pattern folder manually to your site-packages directory.")
+    def parse(*args, **kwargs):
+        raise "Unavailable because you don't have the pattern library installed"
+
     pass
 
 # TODO I now use pattern.nl as it was basically copy/paste from the earlier version
@@ -17,13 +20,6 @@ from sys import maxunicode
 import unicodedata
 
 logger = logging.getLogger(__name__)
-
-if sys.version_info.major == 2:
-    from pattern.nl import parse
-else:
-    logger.warn("Pattern is NOT python 3 compatible...skipping")
-    def parse(*args, **kwargs):
-        raise "Unavailable in python3!"
 
 class clean_whitespace(Processer):
     '''Changes multiple whitespace to single whitespace'''
