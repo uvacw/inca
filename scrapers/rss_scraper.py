@@ -2,6 +2,7 @@
 import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
+from core.scraper_class import UnparsableException
 from core.database import check_exists
 import logging
 import feedparser
@@ -67,7 +68,8 @@ class rss(Scraper):
             RSS_URL=[RSS_URL]
 
         for thisurl in RSS_URL:
-            d = feedparser.parse(thisurl)
+            rss_body = self.get_page_body(thisurl)
+            d = feedparser.parse(rss_body)
             for post in d.entries:
                 try:
                     _id=post.id
@@ -104,14 +106,40 @@ class rss(Scraper):
                            "feedurl":thisurl,
                            "url":re.sub("/$","",post.link)}
                     if htmlsource is not None:
-                        doc.update(self.parsehtml(doc['htmlsource']))
+                        # TODO: CHECK IF PARSEHTML returns None, if so, raise custom exception
+                        parsed = self.parsehtml(doc['htmlsource'])
+                        if parsed is None or parsed =={}:
+                            try:
+                                raise UnparsableException
+                            except UnparsableException:
+                                pass
+                        else:
+                            doc.update(parsed)
+                    parsedurl = self.parseurl(link)
+                    doc.update(parsedurl)
                     docnoemptykeys={k: v for k, v in doc.items() if v}
                     yield docnoemptykeys
+
+    def get_page_body(self,url,**kwargs):
+        '''Makes an HTTP request to the given URL and returns a string containing the response body'''
+        request = urllib2.Request(url, headers={'User-Agent' : "Wget/1.9"})
+        response_body = urllib2.urlopen(request).read().decode(encoding="utf-8",errors="ignore")
+        return response_body
 
     def parsehtml(self,htmlsource):
         '''
         Parses the html source and extracts more keys that can be added to the doc
         Empty in this generic fallback scraper, should be replaced by more specific scrapers
+        '''
+        return dict()
+
+    def parseurl(self,url):
+        '''
+        Parses the url source and extracts more keys that can be added to the doc
+        Empty in this generic fallback scraper, can be replaced by more specific scrapers
+        if the URL itself needs to be parsed. Typial use case: The url contains the 
+        category of the item, which can be parsed from it using regular expressions
+        or .split('/') or similar.
         '''
         return dict()
 

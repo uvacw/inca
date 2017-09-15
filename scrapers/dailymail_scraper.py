@@ -8,6 +8,7 @@ import re
 import logging
 
 logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
 
 def polish(textstring):
     #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
@@ -55,17 +56,10 @@ class dailymail(rss):
             teaser = ""
             logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            byline = tree.xpath("//*[@class='author-section byline-plain']//text()")[1]
-            byline = byline.split(",")[0]
+            byline = " ".join(tree.xpath("//*[@class='author-section byline-plain']/a/text()"))
         except:
             byline = ""
-            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
-        try:
-            bylinesource = tree.xpath("//*[@class='author-section byline-plain']//text()")[1]
-            bylinesource = bylinesource.split(",")[1]
-        except:
-            bylinesource = ""
-            logger.info("No 'bylinesource' field encountered - don't worry, maybe it just doesn't exist.")     
+            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")    
         try:
             text = "".join(tree.xpath("//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']/p/a/text()"))
         except:
@@ -76,7 +70,6 @@ class dailymail(rss):
         extractedinfo={"title":title.strip(),
                        "teaser":teaser.strip().replace("\xa0",""),
                        "byline":byline.strip().replace("\n",""),
-                       "bylinesource":bylinesource.strip(),
                        "text":text.strip().replace("\xa0","").replace("\n","")
                       }
 
@@ -87,6 +80,8 @@ class dailymail(rss):
         Parses the category based on the url
         '''
         category = url.split("/")[3]
+        logger.debug(url)
+        logger.debug(category)
         return {"category": category}
 
         
