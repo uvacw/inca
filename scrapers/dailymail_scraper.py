@@ -19,15 +19,15 @@ def polish(textstring):
     return result.strip()
 
 class dailymail(rss):
-    """Scrapes dailymail.nl"""
+    """Scrapes dailymail.co.uk"""
 
     def __init__(self,database=True):
         self.database=database
         self.doctype = "dailymail (www)"
         self.rss_url='http://www.dailymail.co.uk/articles.rss'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=8, day=30)
-
+        self.date    = datetime.datetime(year=2017, month=9, day=15)
+        
     def parsehtml(self,htmlsource):
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
@@ -37,43 +37,56 @@ class dailymail(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
+        
         try:
             tree = fromstring(htmlsource)
         except:
-            print("kon dit niet parsen",type(doc),len(doc))
-            print(doc)
+            logger.warning("cannot parse?",type(doc),len(doc))
+            logger.warning(doc)
             return("","","", "")
-
-#category
-#category
         try:
-            category = r[0]['url'].split('/')[3]
+            title = "".join(tree.xpath("//*[@id='js-article-text']/h1/text()"))
         except:
-            category = ""       
-
-#teaser: The articles on daily mail do not have teasers.
-
-#title
+            title = ""
+            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            title = tree.xpath('//*[@itemscope="itemscope"]//h1//text()')[0]
+            teaser = ". ".join(tree.xpath("//*[@class='mol-bullets-with-font']//text()"))
         except:
-            title =""
-#text
+            teaser = ""
+            logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            text = ''.join(tree.xpath('//*[@itemprop="articleBody"]/p//text()')).replace('\xa0','')
+            byline = tree.xpath("//*[@class='author-section byline-plain']//text()")[1]
+            byline = byline.split(",")[0]
         except:
-            text = ''
-#author
+            byline = ""
+            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            author = ''.join(tree.xpath('//*[@class="author"]//text()')).split(' ',6)[:2]
+            bylinesource = tree.xpath("//*[@class='author-section byline-plain']//text()")[1]
+            bylinesource = bylinesource.split(",")[1]
         except:
-            author = ''
+            bylinesource = ""
+            logger.info("No 'bylinesource' field encountered - don't worry, maybe it just doesn't exist.")     
+        try:
+            text = "".join(tree.xpath("//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']/p/a/text()"))
+        except:
+            text = ""
+            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
             
-#source
-        extractedinfo={'category':category,
-                       'title':title,
-                       'text':text,
-                       'byline':author
-                       }
+    
+        extractedinfo={"title":title.strip(),
+                       "teaser":teaser.strip().replace("\xa0",""),
+                       "byline":byline.strip().replace("\n",""),
+                       "bylinesource":bylinesource.strip(),
+                       "text":text.strip().replace("\xa0","").replace("\n","")
+                      }
+
+        return extractedinfo 
+    
+    def parseurl(self,url):
+        '''
+        Parses the category based on the url
+        '''
+        category = url.split("/")[3]
+        return {"category": category}
+
         
-        return extractedinfo
