@@ -196,6 +196,35 @@ cd inca    # assuming you still are in inca's parent directory
 sudo pip3 install -r Requirements
 ```
 
+There is *one* requirement that cannot be installed automatically yet: the pattern.nl package, which allows things like linguistic analyses and sentiment analysis. We need the latest development version, which is not available via pip3 yet.
+
+```
+cd ~/Desktop     (or any other folder which is not inside inca)
+git clone https://github.com/clips/pattern
+cd pattern
+git checkout development
+```
+Now, you need to now the folder where pattern has to be placed. Run the following command, it will show you one or more paths. Copy-paste one of them.
+```
+ipython3 -c 'import site;site.getsitepackages()'
+```
+Now, run
+```
+cp -r pattern THEPATHYOUCOPIED
+```
+For example:
+```
+cp -r pattern /Library/Frameworks/Python.framework/Versions/3.4/lib/python3.4/site-packages
+```
+You are done! Check whether it works: This should return (0.9, 1.0):
+```python
+ipython3 -c 'from pattern.nl import sentiment;sentiment("uitstekend, het werkt")'
+```
+
+Now, you can safely remove the pattern folder from your desktop.
+
+
+
 ## STEP 6: Adapt the settings
 
 INCA needs to be configured - in particular, you need to tell INCA things like how to access ElasticSearch or where to store images. 

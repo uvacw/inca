@@ -5,25 +5,23 @@ import logging
 import re
 import sys
 
-try:
-    from pattern.nl import parse
-except:
-    '''sorry, python 2 only'''
-    pass
-
-# TODO I now use pattern.nl as it was basically copy/paste from the earlier version
-# TODO we might want to port this to Alpino, if we use Alpino anyway
-from sys import maxunicode
-import unicodedata
 
 logger = logging.getLogger(__name__)
 
-if sys.version_info.major == 2:
+try:
     from pattern.nl import parse
-else:
-    logger.warn("Pattern is NOT python 3 compatible...skipping")
+except:
+    logger.warn("No working version of the pattern library found. For Python 3, you cannot pip install it yet. Clone the development branch from https://github.com/clips/pattern and copy the pattern folder manually to your site-packages directory.")
     def parse(*args, **kwargs):
-        raise "Unavailable in python3!"
+        raise "Unavailable because you don't have the pattern library installed"
+
+    pass
+
+
+from sys import maxunicode
+import unicodedata
+
+
 
 class clean_whitespace(Processer):
     '''Changes multiple whitespace to single whitespace'''
