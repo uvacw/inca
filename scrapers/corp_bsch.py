@@ -33,6 +33,20 @@ class bsch(Scraper):
                     print("no title")
                     title = ""
                 try:
+                    d = tree.xpath('//*[@class="bloque_Wfecha02"]//text()')[0].strip()
+                    print(d)
+                    jaar = int(d[-4:]) 
+                    maand = int[d[3:-5]]
+                    dag = int(d[:2])
+                    print(jaar)
+                    print(maand)
+                    print(dag)
+                    datum = datetime.datetime(jaar,maand,dag)
+                except Exception as e:
+                    print('could not parse date')
+                    print(e)
+                    datum = None              
+                try:
                     teaser=" ".join(tree.xpath('//*[@class="bloque_Wtexto webedit"]/ul//text()'))
                 except:
                     print("no teaser")
@@ -45,6 +59,7 @@ class bsch(Scraper):
                     text = ""
                 text = "".join(text)
                 self.releases.append({'text':text.strip(),
+                                      'date':datum,
                                       'title':title.strip(),
                                       'teaser':teaser.strip(),
                                       'url':link.strip()})

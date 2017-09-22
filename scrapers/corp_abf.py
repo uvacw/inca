@@ -10,6 +10,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 'July':7, 'August':8, 'September':9, 'October':10, 'November':11, 'December':12}
+
 class abf(Scraper):
     """Scrapes Associated British Foods"""
 
@@ -31,7 +33,22 @@ class abf(Scraper):
                     title=" ".join(tree.xpath('//*[@class="content-main"]/h1/text()'))
                 except:
                     print("no title")
-                    title = ""
+                    title = "" 
+                try:
+                # eerste H3 pakken
+                # dag = int(eerste twee letters)
+                # maand: opzoeken in dict
+                # jaar: int(laatste vier letters)
+                    d = tree.xpath('//*[@class="content-main"]/h3/text()')[0].strip()
+                    print(d)
+                    jaar = int(d[-4:]) 
+                    maand = MAAND2INT[d[2:-4].strip()]
+                    dag = int(d[:2])
+                    datum = datetime.datetime(jaar,maand,dag)
+                except Exception as e:
+                    print('could not parse date')
+                    print(e)
+                    datum = None
                 try:
                     teaser=" ".join(tree.xpath('//*/p[@class="intro"]//text()'))
                 except:
@@ -47,6 +64,7 @@ class abf(Scraper):
                 self.releases.append({'text':text.strip(),
                                       'title':title.strip(),
                                       'teaser':teaser.strip(),
+                                      'date':datum,
                                       'url':link.strip()})
             except:
                 print("no connection:\n" + link)
