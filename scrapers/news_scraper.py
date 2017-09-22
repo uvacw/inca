@@ -43,6 +43,11 @@ class ad(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
+        try:
+            title = tree.xpath('//*/h1[@class="article__title"]/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
         #1. path: regular intro                                                                                                    
         #2. path: intro when in <b>; found in a2014 04 130                                                                         
         textfirstpara=tree.xpath('//*[@id="detail_content"]/p/text() | //*[@class="intro"]/b/text() | //*[@class="intro"]/span/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text()')
@@ -80,6 +85,7 @@ class ad(rss):
         images = ad._extract_images(self,tree)
 
         extractedinfo={"text":text.strip(),
+                       "title":title.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
                        "images":images}
@@ -132,7 +138,7 @@ class nu(rss):
 
         tree = fromstring(htmlsource)
         try:
-            category = tree.xpath('//*[@class="block breadcrumb "]/div/div/ul/li[2]/a/text()')[0]
+            category = tree.xpath('//*/li[@class=" active"]/a[@class="trackevent"]//text()')
             if category == "":
                 logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
         except:
@@ -274,7 +280,7 @@ class nos(rss):
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img = element.xpath('//figure[@class="article_head_image block_largecenter"]//img') [0]
+            img = element.xpath('//figure[@class="article_head_image block_largecenter"]//img')[0]
             image = {'url' : img.attrib['src'],
                  #'height' : img.attrib['height'],
                  #'width' : img.attrib['width'],
@@ -308,6 +314,11 @@ class volkskrant(rss):
 
         tree = fromstring(htmlsource)
 
+        try:
+            title = tree.xpath('//*/h1[@class="article__title"]/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
         try:
             category=tree.xpath('//*[@class="action-bar__primary"]/div/a/text()')[0]
         except:
@@ -395,7 +406,8 @@ class volkskrant(rss):
 
         images = volkskrant._extract_images(self,tree)
 
-        extractedinfo={"category":category.strip(),
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -406,7 +418,7 @@ class volkskrant(rss):
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img_list = element.xpath('//figure[@class="article-photo fjs-gallery-item"]//img')
+            img_list = element.xpath('//figure[@class="article-photo fjs-gallery-item"]//img | //figure[@class="top-media--back fjs-gallery-item"]//img')
             if len(img_list)>0:
                 img = img_list[0]
                 image = {'url' : img.attrib['src'],
@@ -449,6 +461,11 @@ class nrc(rss):
 
         tree=fromstring(htmlsource)
 
+        try:
+            title = tree.xpath('//*[@class="center-block intro-col article__header"]/h1/text() | //*[@class="liveblog__header__inner"]/h1/text()')
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
         try:
             category = tree.xpath('//*[@id="broodtekst"]/a[1]/text()')[0]
         except:
@@ -506,7 +523,9 @@ class nrc(rss):
         except:
             logger.info("oops - geen text?")
             textrest = ""
-        text = textfirstpara + "\n"+ "\n".join(textrest)
+        text=" ".join(tree.xpath('//*[@class="content article__content"]/p//text()')).strip()
+        if text=="":
+            logger.info("OOps - empty text")
         textnew=re.sub("Follow @nrc_opinie","",text)
         try:
             author_door = tree.xpath('//*[@class="author"]/span/a/text()')[0]
@@ -527,6 +546,11 @@ class nrc(rss):
                 author_door=tree.xpath('//*[@class="article__byline__author-and-date"]/a/text()')[0]
             except:
                 author_door = ""
+        if author_door=="":
+            try:
+                author_door=tree.xpath('//*[@class="content article__content"]/span[@class="byline"]//text()')[0]
+            except:
+                author_door = ""
         author_bron=""
         if textnew=="" and category=="" and author_door=="":
             logger.info("No article-page?")
@@ -541,6 +565,7 @@ class nrc(rss):
         images = nrc._extract_images(self,tree)
 
         extractedinfo={"category":category.strip(),
+                       "title":title,
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -551,7 +576,7 @@ class nrc(rss):
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img_list = element.xpath('//*[@class="responsive-img-div img-b1bc3f75894aebe980b93536058622c9  loaded"]//img')
+            img_list = element.xpath('//*[@class="responsive-img-div img-b1bc3f75894aebe980b93536058622c9  loaded"]//img | //*[@class="responsive-img-div__click-catcher"]//img')
             if len(img_list)>0:
                 img = img_list[0]
                 image = {'url' : img.attrib['src'],
@@ -646,6 +671,8 @@ class parool(rss):
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
                        "images": images}
+                       
+        return extractedinfo
 
     def _extract_images(self, dom_nodes):
         images = []
@@ -693,7 +720,12 @@ class trouw(rss):
 
         tree = fromstring(htmlsource)
         try:
-            category=tree.xpath('//*[@id="subnav_nieuws"]/li/a/span/text()')[0]
+            title = tree.xpath('//*/h1[@class="article__header__title"]/text()')
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+            category=tree.xpath('//*[@id="subnav_nieuws"]/li/a/span/text() | //*/a[@class="article__header__meta__section-link"]//text()')[0]
         except:
             category=""
         if category=="":
@@ -722,7 +754,7 @@ class trouw(rss):
             logger.info("oops - geen textrest")
         text = "\n".join(textrest)
         try:
-             author_door=tree.xpath('//*[@class="author"]/text()')[0]               
+             author_door=tree.xpath('//*[@class="author"]/text() | //*/strong[@class="article__header__meta__author"]/text()')[0]               
         except:
              author_door=" "
              logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
@@ -743,7 +775,8 @@ class trouw(rss):
 
         images = trouw._extract_images(self,tree)
 
-        extractedinfo={"category":category.strip(),
+        extractedinfo={"title":title,
+                       "category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -795,6 +828,11 @@ class telegraaf(rss):
 
         tree = fromstring(htmlsource)
         try:
+            title = tree.xpath('//*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 "]/text() | //*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()')
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
             category = tree.xpath('//*[@class="selekt"]/text() | //*[@class="topbar"]/div/a[2]/text()' )[0]
         except:
             category = ""
@@ -834,7 +872,8 @@ class telegraaf(rss):
 
         images = telegraaf._extract_images(self,tree)
 
-        extractedinfo={"category":category.strip(),
+        extractedinfo={"title":title,
+                       "category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -881,7 +920,12 @@ class metronieuws(rss):
 
         tree = fromstring(htmlsource)
         try:
-            category = tree.xpath('//*[@class="active"]/text()')[0]
+            title = tree.xpath('//*[@class="row"]/h1/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+            category = tree.xpath('//*[@class="active"]/text() | //*/a[@title class="active"]/text()')[0]
         except:
             category = ""
     #fix: xpath for category in new layout leads to a sentence in old layout:          
@@ -924,6 +968,7 @@ class metronieuws(rss):
         images = metronieuws._extract_images(self,tree)
 
         extractedinfo={"category":category.strip(),
+                       "title":title.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -954,7 +999,7 @@ class geenstijl(rss):
     def __init__(self,database=True):
         self.database = database
         self.doctype = "geenstijl"
-        self.rss_url='http://www.geenstijl.nl/index.xml'
+        self.rss_url='https://www.geenstijl.nl/feeds/recent.atom'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=9, day=15)
 
@@ -969,12 +1014,22 @@ class geenstijl(rss):
 	'''
 
         tree = fromstring(htmlsource)
-        textrest=tree.xpath('//*[@id="content"]/article/text() | //*[@id="content"]/article/a/text() | //*[@id="content"]/article/em/text() | //*[@id="content"]/article/strong/text() | //*[@id="content"]/article/s/text() |  //*[@id="content"]/article/p/text() | //*[@id="content"]/article/p/a/text() | //*[@id="content"]/article/p/s/text() | //*[@id="content"]/article/p/em/text() | //*[@id="content"]/article/p/strong/text() | //*[@id="content"]/article/p/strong/a/text() | //*[@id="content"]/article/p/em/a/text() | //*[@id="content"]/article/blockquote/p/text() | //*[@id="content"]/article/blockquote/text() | //*[@id="content"]/article/blockquote/a/text()')
+        textrest=tree.xpath('//*[@class="article_content"]/p//text()')
         if textrest=="":
             logger.info("OOps - empty textrest for?")
         text="\n".join(textrest)
         try:
-            author_door=tree.xpath('//*[@id="content"]/article/footer/text()')[0].replace("|","")
+            title = tree.xpath('//*[@class="col-xs-12"]/h1/text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+            teaser=tree.xpath('//*[@class="article-intro"]/p/text()')[0]
+        except:
+            teaser=""
+            logger.info("OOps - geen eerste alinea?")
+        try:
+            author_door=tree.xpath('//*[@class="col-xs-12 col-sm-7"]/a[@rel="author"]//text()')[0].replace("|","")
         except:
             author_door=""
 
@@ -982,7 +1037,9 @@ class geenstijl(rss):
 
         images = geenstijl._extract_images(self,tree)
 
-        extractedinfo={"text":text.strip(),
+        extractedinfo={"title":title.strip(),
+                       "text":text.strip(),
+                       "teaser":teaser.strip(),
                        "byline":author_door.replace("\n", " "),
                        "images":images}
 
@@ -991,7 +1048,7 @@ class geenstijl(rss):
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img_list = element.xpath('//*[@id="content"]//img')
+            img_list = element.xpath('//*[@class="article_img_container"]//img')
             if len(img_list)>0:
                 img = img_list[0]
                 image = {'url' : img.attrib['src'],
@@ -1005,8 +1062,14 @@ class geenstijl(rss):
                 images=[]
         return images
 
+    def getlink(self,link):
+        '''modifies the link to the article to bypass the cookie wall'''
+        link=re.sub("/$","",link)
+        link="https%3A%2F%2Fwww.geenstijl.nl%2Fsetcookie.php?t="+link
+        return link
+
 class fok(rss):
-    """Scrapes volkskrant.nl """
+    """Scrapes fok.nl """
 
     def __init__(self,database=True):
         self.database = database
@@ -1027,13 +1090,23 @@ class fok(rss):
         '''
         tree = fromstring(htmlsource)
         try:
+            title = tree.xpath('//*/header[@class="hasHidden"]/h1/text()')
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
+            teaser=tree.xpath('//*/article[@class="single"]/p[0]//text()')
+        except:
+            teaser=""
+            logger.info("OOps - geen eerste alinea?")
+        try:
             category="".join(tree.xpath('//*[@id="crumbs"]/ul/li/a/text()'))
         except:
             category = ""
         if len(category.split(" ")) >1:
             category=""
         try:
-            textrest=tree.xpath('//*[@role="main"]/article/p/text() | //*[@role="main"]/article/p/strong/text() | //*[@role="main"]/article/p/strong/a/text() | //*[@role="main"]/article/p/a/text() | //*[@role="main"]/article/p/em/text() | //*[@id="mainContent"]//*[@role="main"]/article/p/text() | //*[@id="mainContent"]/div[5]/main/article/p/text()')
+            textrest=tree.xpath('//*/article[@class="single"]/p//text() | //*[@role="main"]/article/p/text() | //*[@role="main"]/article/p/strong/text() | //*[@role="main"]/article/p/strong/a/text() | //*[@role="main"]/article/p/a/text() | //*[@role="main"]/article/p/em/text() | //*[@id="mainContent"]//*[@role="main"]/article/p/text() | //*[@id="mainContent"]/div[5]/main/article/p/text()')
         except:
             print("geen text")
             logger.info("oops - geen textrest?")
@@ -1063,7 +1136,9 @@ class fok(rss):
 
         images = fok._extract_images(self,tree)
 
-        extractedinfo={"category":category.strip(),
+        extractedinfo={"title":title,
+                       "teaser":teaser,
+                       "category":category.strip(),
                        "text":textnew.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -1087,6 +1162,7 @@ class fok(rss):
             else:
                 images=[]
         return images
+
 
 if __name__=="__main__":
     print('Please use these scripts from within inca. EXAMPLE: BLA BLA BLA')
