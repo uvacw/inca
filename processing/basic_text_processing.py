@@ -5,6 +5,9 @@ import logging
 import re
 import sys
 
+
+logger = logging.getLogger(__name__)
+
 try:
     from pattern.nl import parse
 except:
@@ -14,12 +17,11 @@ except:
 
     pass
 
-# TODO I now use pattern.nl as it was basically copy/paste from the earlier version
-# TODO we might want to port this to Alpino, if we use Alpino anyway
+
 from sys import maxunicode
 import unicodedata
 
-logger = logging.getLogger(__name__)
+
 
 class clean_whitespace(Processer):
     '''Changes multiple whitespace to single whitespace'''
