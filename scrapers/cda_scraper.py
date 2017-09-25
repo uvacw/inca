@@ -32,9 +32,7 @@ class cda(Scraper):
         page = 0
         current_url = self.START_URL
         overview_page = requests.get(current_url)
-        while True:
-            if page == 10:
-                break 
+        while overview_page.content.find(b'No results found within the selected categories and filters') == -1:
             tree = fromstring(overview_page.text)
             linkobjects = tree.xpath('//*[@class="panel panel--isLink"]')
             links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
