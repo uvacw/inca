@@ -52,7 +52,7 @@ class groenlinks(Scraper):
                 try:
                     title= " ".join(tree.xpath('//*[@id = "page-title"]/text()'))
                 except:
-                    print("no title")
+                    logger.debug("no title")
                     title = ""
                 try:
                     pub_date = "".join(tree.xpath('//*[@class = "submitted-date"]/text()'))
@@ -61,7 +61,7 @@ class groenlinks(Scraper):
                 try:
                     teaser=" ".join(tree.xpath('//*[@class = "intro"]/p/text()')).strip()
                 except:
-                    print("no teaser")
+                    logger.debug("no teaser")
                     teaser = ""
                 try:
                     text = " ".join(tree.xpath('//*[@class = "content-wrapper"]/p/text()')).strip()
