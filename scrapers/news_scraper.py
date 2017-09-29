@@ -48,18 +48,20 @@ class ad(rss):
         except:
             title=""
             logger.info("OOps - geen titel?")
+        try:
+            category = tree.xpath('//*/a[@class="sub-nav__link"]//text()')[0]
+        except:
+            category=""
+            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
         #1. path: regular intro                                                                                                    
         #2. path: intro when in <b>; found in a2014 04 130                                                                         
-        textfirstpara=tree.xpath('//*[@id="detail_content"]/p/text() | //*[@class="intro"]/b/text() | //*[@class="intro"]/span/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text()')
-        if textfirstpara=="":
+        teaser=tree.xpath('//*/p[@class="article__intro"]//text() | //*/p[@class="article__intro"]//span//text() | //*/p[@class="article__intro"]/span[@class="tag"]//text()') [0]
+        if teaser=="":
             logger.info("OOps - geen eerste alinea?")
         #1. path: regular text                                                                                                     
         #2. path: text with link behind (shown in blue underlined); found in 2014 12 1057                                          
         #3. path: second hadings found in 2014 11 1425   
-        textrest = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*[@class="article__paragraph"]/span/text() | //*[@id="detail_content"]/section/p/a/text() | //*[@id="detail_content"]/section/p/strong/text() | //*/p[@class="article__paragraph"]/strong/text()')
-        if textrest=="":
-            logger.info("OOps - empty textrest")
-        text = "\n".join(textfirstpara) + "\n" + "\n".join(textrest)
+        text=" ".join(tree.xpath('//*/p[@class="article__paragraph"]//text() | //*/h2[@class="article__subheader"]//text() | //*/p[@class="liveblog_time-text"]//text() | //*/time[@class="liveblog__time-text"]//text() | //*/p[@class="liveblog__intro"]//text() | //*/p[@class="liveblog__paragraph"]//text()')).strip()
         try:
             author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
         except:
@@ -85,7 +87,9 @@ class ad(rss):
         images = ad._extract_images(self,tree)
 
         extractedinfo={"text":text.strip(),
+                       "category":category.strip(),
                        "title":title.strip(),
+                       "teaser":teaser.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
                        "images":images}
@@ -145,18 +149,11 @@ class nu(rss):
             category=""
             logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            textfirstpara=tree.xpath('//*[@data-type="article.header"]/div/div[1]/div[2]/text()')[0]
+            teaser=tree.xpath('//*[@class="item-excerpt"]//text()')[0]
         except:
             logger.info("OOps - geen eerste alinea?")
-            textfirstpara=""
-        try:
-            textrest=tree.xpath('//*[@data-type="article.body"]/div/div/p/text() | //*[@data-type="article.body"]/div/div/p/span/text()| //*[@data-type="article.body"]/div/div/p/em/text() | //*[@data-type="article.body"]/div/div/h2/text() | //*[@data-type="article.body"]/div/div/h3/text() | //*[@data-type="article.body"]/div/div/p/a/em/text() | //*[@data-type="article.body"]/div/div/p/em/a/text() | //*[@data-type="article.body"]/div/div/p/a/text() | //*[@data-type="article.body"]/div/div/p/strong/text()')
-            if textrest == "":
-                logger.info("OOps - empty textrest for?")
-        except:
-            logger.info("OOps - geen text?")
-            textrest=""
-        text = textfirstpara + "\n"+ "\n".join(textrest)
+            teaser=""
+        text=" ".join(tree.xpath('//*[@class="block-wrapper"]/div[@class="block-content"]/p//text()')).strip()
         try:
             #regular author-xpath:
             author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Door:").strip()
@@ -173,11 +170,10 @@ class nu(rss):
         author_bron = ""
         text=polish(text)
         try:
-            category = tree.xpath('//*[@class="container"]/h1/text()')[0]
+            category = tree.xpath('//*/li[@class=" active"]/a[@class="trackevent"]//text()')[0]
         except:
             category=""
             logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
-
         try:
             title = tree.xpath('//h1/text()')[0].strip()
         except:
@@ -187,6 +183,7 @@ class nu(rss):
         images = nu._extract_images(self,tree)
 
         extractedinfo={"category":category.strip(),
+                       "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -234,7 +231,12 @@ class nos(rss):
         except:
             logger.error("HTML tree cannot be parsed")
         try:
-            category="".join(tree.xpath('//*[@id="content"]/article/header/div/div/div/div/span/a/text()'))
+            title = tree.xpath('//*/h1[@class="article__title"')[0].strip()
+        except:
+            title = None
+            logger.warning("No title encountered")
+        try:
+            category="".join(tree.xpath('//*/a[@id="link-grey"]//text()'))
         except:
             category=""
         if category=="":
@@ -244,21 +246,11 @@ class nos(rss):
                 category=""
                 logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            textfirstpara=tree.xpath('//*/header/p/text()')[0].replace("\n", "").strip()
+            teaser=tree.xpath('//*[@class="article_textwrap"]/p/em//text()')[0]
         except:
-            textfirstpara=""
-        if textfirstpara=="":
-            try:
-                textfirstpara=tree.xpath('//*[@id="content"]/article/section/div/div/p/text()')[0]
-            except:
-                textfirstpara=" "
-                logger.info("oops - geen first para")
-        try:
-            textrest=tree.xpath('//*[@id="content"]/article/section/div/div/p/text() | //*[@id="content"]/article/section/div/div/p/i/text() | //*[@id="content"]/article/section/div/div/p/a/text() | //*[@id="content"]/article/section/div/div/h2/text() | //*[@id="content"]/article/section/div/h2/text() | //*[@id="content"]/article/section/div/div/table/tbody/tr/td/text()')
-        except:
-            logger.info("oops - geen text?")
-            textrest=""
-        text ="\n".join(textrest)
+            logger.info("OOps - geen eerste alinea?")
+            teaser=""
+        text=" ".join(tree.xpath('//*[@class="article_textwrap"]/p//text()')).strip()
         try:
             author_door=tree.xpath('//*[@id="content"]/article/section/div/div/div/span/text()')[0]
         except:
@@ -269,10 +261,13 @@ class nos(rss):
 
         images = nos._extract_images(self,tree)
 
-        extractedinfo={"category":category.strip(),
+        extractedinfo={"title":title.strip(),
+                       "teaser":teaser.strip(),
+                       "category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
-                       "byline_source":author_bron.replace("\n"," ").strip()
+                       "byline_source":author_bron.replace("\n"," ").strip(),
+                       "images":images.strip()
                        }
 
         return extractedinfo
@@ -280,7 +275,7 @@ class nos(rss):
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img = element.xpath('//figure[@class="article_head_image block_largecenter"]//img')[0]
+            img = element.xpath('//figure[@class="article_head_image block_largecenter"]//img')
             image = {'url' : img.attrib['src'],
                  #'height' : img.attrib['height'],
                  #'width' : img.attrib['width'],
@@ -290,6 +285,11 @@ class nos(rss):
                 images.append(image)
         return images
 
+    def getlink(self,link):
+        '''modifies the link to the article to bypass the cookie wall'''
+        link=re.sub("/$","",link)
+        link="http://www.nos.nl//cookiesv2.publiekeomroep.nl/consent/all"+link
+        return link 
 
 class volkskrant(rss):
     """Scrapes volkskrant.nl """
@@ -315,7 +315,7 @@ class volkskrant(rss):
         tree = fromstring(htmlsource)
 
         try:
-            title = tree.xpath('//*/h1[@class="article__title"]/text()')[0]
+            title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
         except:
             title=""
             logger.info("OOps - geen titel?")
@@ -330,15 +330,10 @@ class volkskrant(rss):
                 category=""
                 logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-            textfirstpara=tree.xpath('//*/header/p/text()')[0].replace("\n", "").strip()
+            teaser=tree.xpath('//*[@class="article__intro--v2"]/p//text() | //*[@class="article__intro--v2"]/p/a//text()')[0]
         except:
-            textfirstpara=""
-        if textfirstpara=="":
-            try:
-                textfirstpara=tree.xpath('//*/header/p/text()')[1].replace("\n", "").strip()
-            except:
-                textfirstpara=" "
-                logger.info("oops - geen first para")
+            logger.info("OOps - geen eerste alinea?")
+            teaser=""
         try:
             #1. path: regular textrest
             #2. path: textrest version found in 2014 11 16
@@ -351,9 +346,9 @@ class volkskrant(rss):
         except:
             logger.info("oops - geen text?")
             textrest=""
-        text = textfirstpara + "\n"+ "\n".join(textrest)
+        text = "\n".join(textrest)
         try:
-            author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text() |//*/span[@class="article__author"]/span/text()' )).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
+            author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text() |//*/span[@class="article__author"]/span/text() | //*[@class=" article__author"]//text' )).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
             # geeft het eerste veld: "Bewerkt \ door: Redactie"
             if author_door=="edactie":
                 author_door = "redactie"
@@ -407,6 +402,7 @@ class volkskrant(rss):
         images = volkskrant._extract_images(self,tree)
 
         extractedinfo={"title":title.strip(),
+                       "teaser":teaser.strip(),
                        "category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
@@ -439,7 +435,6 @@ class volkskrant(rss):
         return link 
  
 
-
 class nrc(rss):
     """Scrapes nrc.nl """
     def __init__(self,database=True):
@@ -462,12 +457,12 @@ class nrc(rss):
         tree=fromstring(htmlsource)
 
         try:
-            title = tree.xpath('//*[@class="center-block intro-col article__header"]/h1/text() | //*[@class="liveblog__header__inner"]/h1/text()')
+            title = tree.xpath('//*[@class="center-block intro-col article__header"]/h1/text() | //*[@class="liveblog__header__inner"]/h1/text()')[0]
         except:
             title=""
             logger.info("OOps - geen titel?")
         try:
-            category = tree.xpath('//*[@id="broodtekst"]/a[1]/text()')[0]
+            category = tree.xpath('//*[@id="broodtekst"]/a[1]/text() | //*[@class="article__flag"]//text() | //*[@class="keyword"]//text()')[0]
         except:
             category = ""
         if category=="":
@@ -476,54 +471,11 @@ class nrc(rss):
             except:
                 category=""
         try:
-        #1. path: type 1 layout: regular text                                          
-        #2. path: type 1 layout: text with link behind                                 
-        #3. path: type 1 layout: text bold                                             
-        #4. path: type 1 layout: text bold and italic                                  
-        #5. path: type 2 layout: normal text first paragraph                            
-        #6. path: type 2 layout: text with link behind                                  
-        #7. path: type 1 layout: italic text, found in 2014 11 988                  
-        #8. path for in beeld found 2015 11 13          
-            textfirstpara=tree.xpath('//*[@class="eerste"]/text() | //*[@class="eerste"]/a/text() | //*[@class="eerste"]/strong/text() | //*[@class="eerste"]/strong/em/text() | //*[@id="article-content"]/p[1]/text() | //*[@id="article-content"]/p[1]/a/text() | //*[@class="eerste"]/em/text() | //*[@class="intro"]/text() | //*[@class="intro"]/p/text() | /*[@class="intro"]/p/span/text()')
-            textfirstpara = " ".join(textfirstpara)
+            teaser=tree.xpath('//*[@class="intro article__intro"]/p//text()')[0]
         except:
-            textfirstpara=""
-            logger.info("Ooops geen first para")
-        try:
-        #1. path: type 1 layout: regular text                                         
-        #2. path: type 1 layout: second heading in regular text                         
-        #3. path: type 2 layout: text in different layout, found in 2014 12 11         
-        #4. path: type 2 layout: bold text, found in 2014 12 11                        
-        #5. path: type 2 layout: text with underlying link, found in 2014 12 11        
-        #6. path: type 2 layout: italic text, found in 2014 12 11                      
-        #7. path: type 2 layout: second heading found in 2014 12 11                    
-        #8. path: type 2 layout: text in grey box/ speech bubble                       
-        #9. path: type 1 layout: text with link behind                                 
-        #10.path: type 1 layout: text in grey box/ speech bubble                      
-        #11. path: type 1 layout: bold text found in 2014 12 198                      
-        #12. path: type 1 layout: italix text with link behind, found in 2014 12 198 !!!!!not working :(                                                                       
-        #13. path: type 3 layout: regular text found in 2014 11 62                     
-        #14. path: type 3 layout: text with link behind found in 2014 11 63            
-        #15. path: type 3 layout: italic text with link behind, found in 2014 11 63    
-        #16. path: type 1 layout: italix text, found in 2014 04 500                   
-        #17. path: type 1 layout: found 2015 11 13                                    
-        #17. path: type 1 layout: heading in regular text found 2015 11 13            
-        #18. live feed subheading "old news"                                          
-        #19. live feed text "old news"                                                 
-        #20. live feed textlink "oldnews"                                              
-        #21. live feed list "old news"                                                
-        #21. live feed subheading "new news"                                          
-        #22. live feed text "new news"                                                
-        #23. live feed textlink "new news"                                             
-        #24. live feed names "new news"                                            
-        #24. path type 1 layout: subheading in regular text found 2015 11 16       
-        #25. path type 1 layout: text in link found on 2015 11 16 
-        #26. path regular layout: bold subtitle found 2015 11 16
-            textrest=tree.xpath('//*[@id="broodtekst"]/p[position()>1]/text() | //*[@id="broodtekst"]/h2/text() | //*[@id="article-content"]/p[position()>1]/text() | //*[@id="article-content"]/p[position()>1]/strong/text() | //*[@id="article-content"]/p[position()>1]/a/text() | //*[@id="article-content"]/p[position()>1]/em/text() | //*[@id="article-content"]/h2/text() | //*[@id="article-content"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/a/text() | //*[@id="broodtekst"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/strong/text() | //*[@id="broodtekst"]/p[position()>1]/a/em/text() | //*[@class="beschrijving"]/text() | //*[@class="beschrijving"]/a/text() | //*[@class="beschrijving"]/a/em/text() | //*[@id="broodtekst"]/p[position()>1]/em/text() | //*[@class="content article__content"]/p[position()>0]/text() | //*[@class="content article__content"]/p/strong/text() | //*[@class="content article__content"]/p/a/text() | //*[@class="content article__content"]/blockquote/p/text() | //*[@class="bericht"]/h2/text() | //*[@class="bericht"]/p/text() | //*[@class="bericht"]/p/a/text() |//*[@class="bericht"]/ul/li/text() | //*[@class="bericht bericht--new"]/h2/text() | //*[@class="bericht bericht--new"]/p/text() | //*[@class="bericht bericht--new"]/p/a/text() | //*[@class="bericht bericht--new"]/p/em/text() | //*[@class="content article__content"]/h2/text() | //*[@class="content article__content"]/h3/text() | //*[@class="content article__content"]/p/a/em/text() | //*[@class="content article__content"]/blockquote/p/strong/text() | //*[@class="content article__content"]/p/br/a/strong/text() | //*[@class="content article__content"]/p/em/text()')
-        except:
-            logger.info("oops - geen text?")
-            textrest = ""
-        text=" ".join(tree.xpath('//*[@class="content article__content"]/p//text()')).strip()
+            logger.info("OOps - geen eerste alinea?")
+            teaser=""
+        text=" ".join(tree.xpath('//*[@class="content article__content"]/p//text() | //*[@class="content article__content"]/h2//text()')).strip()
         if text=="":
             logger.info("OOps - empty text")
         textnew=re.sub("Follow @nrc_opinie","",text)
@@ -565,7 +517,8 @@ class nrc(rss):
         images = nrc._extract_images(self,tree)
 
         extractedinfo={"category":category.strip(),
-                       "title":title,
+                       "teaser":teaser.strip(),
+                       "title":title.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -611,6 +564,11 @@ class parool(rss):
 
         tree = fromstring(htmlsource)
         try:
+            title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
+        except:
+            title=""
+            logger.info("OOps - geen titel?")
+        try:
             category=re.findall("/+[a-z]+/", link)[0]
             category=category.replace("/","")
         except:
@@ -623,23 +581,12 @@ class parool(rss):
                 category=""
                 logger.info("geen category")
         try:
-            textfirstpara=tree.xpath('//*[@id="page-main-content"]//*[@class="article__intro"]/text() | //*[@id="art_box2"]//*[@class="intro2"]/a/text()')
-            textfirstparanew=" ".join(textfirstpara)
+            teaser=tree.xpath('//*/p[@class="article__intro"]')[0]
         except:
-            textfirstpara=" "
-            logger.info("oops - geen textfirstpara")
-        try:
-        #1. Regular text (version 07/03/16)                                            
-        #2. Bold text - subtitles                                                      
-        #3. Link text                                                                  
-        #4. Embedded text subtitle one                                                 
-        #5. Embedded text subitles rest                                                
-            textrest=tree.xpath('//*[@id="page-main-content"]//*[@class="article__body__container"]/p/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/a/text() | //*[@id="page-main-content"]//*[@class="article__body__container"]/p/strong/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/h3/text() | //*[@id="page-main-content"]//*[@class="media-container"]/div/div/p/text() | //*[@class="article__body__paragraph first"]/text() | //*[@class="article__body__paragraph first"]/strong/text() | //*[@class="article__body__paragraph first"]/a/text() | //*[@class="article__body__paragraph"]/text() | //*[@class="article__body__paragraph"]/strong/text()')
-        except:
-            textrest=" "
-            logger.info("oops - geen textrest")
-        text=textfirstparanew + "\n" + "\n".join(textrest)
-        author_text=tree.xpath('//*[@id="page-main-content"]//*[@class="article__footer"]/span/span/span/text()')
+            teaser=" "
+            logger.info("oops - geen teaser")
+        text=" ".join(tree.xpath('//*/p[@class="article__body__paragraph first"]//text() | //*/p[@class="article__body__paragraph"]//text()')).strip()
+        author_text=tree.xpath('//*[@class=" article__author"]//text()')
         try:
             author_door=[e for e in author_text if e.find("Door")>=0][0].strip().replace("(","").replace(")","").replace("Door:","")
         except:
@@ -667,6 +614,8 @@ class parool(rss):
         images = parool._extract_images(self,tree)
 
         extractedinfo={"category":category.strip(),
+                       "title":title.strip(),
+                       "teaser":teaser,
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -720,10 +669,15 @@ class trouw(rss):
 
         tree = fromstring(htmlsource)
         try:
-            title = tree.xpath('//*/h1[@class="article__header__title"]/text()')
+            title = tree.xpath('//*/h1[@class="article__header__title"]/text()')[0]
         except:
             title=""
             logger.info("OOps - geen titel?")
+        try:
+            teaser=tree.xpath('//*/p[@class="article__introduction__text"]')[0]
+        except:
+            teaser=" "
+            logger.info("oops - geen teaser")
         try:
             category=tree.xpath('//*[@id="subnav_nieuws"]/li/a/span/text() | //*/a[@class="article__header__meta__section-link"]//text()')[0]
         except:
@@ -775,7 +729,8 @@ class trouw(rss):
 
         images = trouw._extract_images(self,tree)
 
-        extractedinfo={"title":title,
+        extractedinfo={"title":title.strip(),
+                       "teaser":teaser.strip(),
                        "category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
@@ -828,41 +783,21 @@ class telegraaf(rss):
 
         tree = fromstring(htmlsource)
         try:
-            title = tree.xpath('//*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 "]/text() | //*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()')
+            title = tree.xpath('//*/h1[@class="article-title playfair-bold-l no-top-margin no-bottom-margin gray1"]/text() | //*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()') [0]
         except:
             title=""
             logger.info("OOps - geen titel?")
         try:
-            category = tree.xpath('//*[@class="selekt"]/text() | //*[@class="topbar"]/div/a[2]/text()' )[0]
+            category = tree.xpath('//*/a[@class="inline-block gray1 roboto-black-s uppercase-text no-underline bottom-padding-1 bottom-border-thin"]/text()' )[0]
         except:
             category = ""
             logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
         try:
-        #1.path: layout 1: regular first para                                          
-        #2.path: layout 2 (video): regular first (and mostly only) para               
-        #3.path: layout 1: second version of first para, fi 2014 11 6                  
-        #4.path layout 1: place found on 2015 11 16                                    
-        #5.path: regular first para found 2016 04 07                                   
-            textfirstpara=tree.xpath('//*[@class="zak_normal"]/p/text() | //*[@class="bodyText streamone"]/div/p/text() | //*[@class="zak_normal"]/text() | //*[@class="zak_normal"]/span/text() | //*[@id="main"]/div/div/p/text()')
-            textfirstpara = " ".join(textfirstpara)
+            teaser=tree.xpath('//*/p[@class="abril-bold no-top-margin"]//text()')[0]
         except:
-            textfirstpara=""
-            logger.info("OOps - geen textfirstpara?")
-        try:
-        #1. path: layout 1: regular text, fi 2014 12 006                               
-        #2. path: layout 1: text with link, fi 2014 12 006                             
-        #3. path: layout 1: second heading, fi 2014 12 015                             
-        #4. path: layout 1: bold text, fi 2014 12 25                                   
-        #5. path: layout 1: italic text, fi 2014 09 5200                               
-        #6. path: layout 1: second headings, fi 2014 07 84                             
-        #7. path: layout 2: reagular text, found 2016 04 07                             
-        #8. path: layout 2: italic text, found 2016 04 07                               
-        #9. path: layout 2: bold text, found 2016 04 07                                
-            textrest=tree.xpath('//*[@id="artikelKolom"]/p[not (@class="tiptelegraaflabel")]/text() | //*[@id="artikelKolom"]/p/a/text() | //*[@id="artikelKolom"]/h2/strong/text() | //*[@id="artikelKolom"]/p/strong/text() | //*[@id="artikelKolom"]/p/em/text() | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text() | //*[@class="broodtekst"]/p/text() | //*[@class="broodtext"]/h2/strong/text() | //*[@id="artikelKolom"]/div/p/text() | //*[@id="artikelKolom"]/div/p/em/text() | //*[@id="artikelKolom"]/div/p/strong/text() | //*[@id="artikelKolom"]/div/h2/text() | //*[@id="artikelKolom"]/div/p/a/text() | //*[@class="ui-abril ui-text-small"]/p/text()')
-        except:
-            logger.info("oops - geen texttest?")
-            textrest = ""
-        text = textfirstpara + "\n"+ "\n".join(textrest)
+            logger.info("OOps - geen eerste alinea?")
+            teaser=""
+        text=" ".join(tree.xpath('//*/p[@class="false bottom-margin-6"]//text()')).strip()
         try:
             author_door = tree.xpath('//*[@class="auteur"]/text() | //*[@class="ui-table ui-gray3"]/span[2]/text()')[0].strip().lstrip("Van ").lstrip("onze").lstrip("door").strip()
         except:
@@ -872,8 +807,9 @@ class telegraaf(rss):
 
         images = telegraaf._extract_images(self,tree)
 
-        extractedinfo={"title":title,
+        extractedinfo={"title":title.strip(),
                        "category":category.strip(),
+                       "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -1065,7 +1001,7 @@ class geenstijl(rss):
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
         link=re.sub("/$","",link)
-        link="https%3A%2F%2Fwww.geenstijl.nl%2Fsetcookie.php?t="+link
+        link="https://www.geenstijl.nl%2Fsetcookie.php?t="+link
         return link
 
 class fok(rss):
