@@ -13,10 +13,15 @@ logger = logging.getLogger(__name__)
 class groenlinks(Scraper):
     """Scrapes Groenlinks"""
 
-    def __init__(self,database=True):
+    def __init__(self,database=True, maxpages = 2):
+        '''
+        maxpage: number of pages to scrape
+        '''
+        
         self.database = database
         self.START_URL = "https://www.groenlinks.nl/nieuws"
         self.BASE_URL = "https://www.groenlinks.nl"
+        self.MAXPAGES = maxpages
 
     def get(self):
         '''                                                                     
@@ -24,7 +29,7 @@ class groenlinks(Scraper):
         '''
         self.doctype = "Groenlinks (pol)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=9, day=20)
+        self.date = datetime.datetime(year=2017, month=9, day=29)
 
 
         releases = []
@@ -32,8 +37,13 @@ class groenlinks(Scraper):
         page = 0
         current_url = self.START_URL+str(page)
         overview_page = requests.get(current_url, timeout = 10)
-        while overview_page.content.find(b'No results found within the selected categories and filters') == -1:
-            
+        first_page_text=""
+        while overview_page.text!=first_page_text:
+            logger.debug("How fetching overview page {}".format(page))
+            if page > self.MAXPAGES:
+                break
+            elif page ==1:
+                first_page_text=overview_page.text             
             tree = fromstring(overview_page.text)
             linkobjects = tree.xpath('//*[@class="read-more"]')
             links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
@@ -55,9 +65,9 @@ class groenlinks(Scraper):
                     logger.debug("no title")
                     title = ""
                 try:
-                    pub_date = "".join(tree.xpath('//*[@class = "submitted-date"]/text()'))
+                    publication_date = "".join(tree.xpath('//*[@class = "submitted-date"]/text()'))
                 except:
-                    pub_date = ""
+                    publication_date = ""
                 try:
                     teaser=" ".join(tree.xpath('//*[@class = "intro"]/p/text()')).strip()
                 except:
@@ -79,7 +89,7 @@ class groenlinks(Scraper):
                                  'title':title,
                                  'quote':quote,
                                  'url':link,
-                                 'pub_date':pub_date})
+                                 'publication_date':publication_date})
         
             page+=1
             current_url = self.START_URL+'?page'+str(page)

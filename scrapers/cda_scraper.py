@@ -13,10 +13,14 @@ logger = logging.getLogger(__name__)
 class cda(Scraper):
     """Scrapes CDA"""
 
-    def __init__(self,database=True):
+    def __init__(self,database=True, maxpages = 2):
+        '''
+        maxpages = number of pages to scrape
+        '''
         self.database = database
         self.START_URL = "https://www.cda.nl/actueel/nieuws"
         self.BASE_URL = "https://www.cda.nl"
+        self.MAXPAGES = maxpages
 
     def get(self):
         '''                                                                     
@@ -32,7 +36,13 @@ class cda(Scraper):
         page = 0
         current_url = self.START_URL
         overview_page = requests.get(current_url)
-        while overview_page.content.find(b'No results found within the selected categories and filters') == -1:
+        first_page_text = ""
+        while overview_page.text!=first_page_text:
+            logger.debug("How fetching overview page {}".format(page))
+            if page > self.MAXPAGES:
+                break
+            elif page ==1:
+                first_page_text=overview_page.text
             tree = fromstring(overview_page.text)
             linkobjects = tree.xpath('//*[@class="panel panel--isLink"]')
             links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
@@ -54,13 +64,13 @@ class cda(Scraper):
                     logger.info("no text?")
                     text =""
                 try:
-                    pub_date  = "".join(tree.xpath('//*[@class = "h5 paddedText-text u-background--blue u-color--white"]/text()')).strip()
+                    publication_date  = "".join(tree.xpath('//*[@class = "h5 paddedText-text u-background--blue u-color--white"]/text()')).strip()
                 except:
-                    pub_date = ""
+                    publication_date = ""
 
                 releases.append({'text':text,
                                  'title':title,
-                                 'pub_date':pub_date,
+                                 'publication_date':publication_date,
                                  'url':link})
             page+=1
             current_url = self.START_URL+'?lookup[page-7430]='+str(page)

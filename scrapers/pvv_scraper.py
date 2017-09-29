@@ -14,10 +14,15 @@ logger = logging.getLogger(__name__)
 class pvv(Scraper):
     """Scrapes PVV"""
     
-    def __init__(self,database=True):
+    def __init__(self,database=True, maxpages = 2):
+        '''
+        maxpage = number of pages to scrape
+        '''
+        
         self.database = database
         self.START_URL = "https://www.pvv.nl/in-de-media/persberichten.html"
         self.BASE_URL = "https://www.pvv.nl"
+        self.MAXPAGES = maxpages
 
     def get(self):
         '''                                                                     
@@ -25,14 +30,20 @@ class pvv(Scraper):
         '''
         self.doctype = "PVV (pol)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=9, day=26)
+        self.date = datetime.datetime(year=2017, month=9, day=29)
 
         releases = []
 
         page = 0
         current_url = self.START_URL
         overview_page = requests.get(current_url, timeout = 10)
-        while overview_page.content.find(b'No results found within the selected categories and filters') == -1:
+        first_page_text=""
+        while overview_page.text!=first_page_text:
+            logger.debug("How fetching overview page {}".format(page))
+            if page > self.MAXPAGES:
+                break
+            elif page ==1:
+                first_page_text=overview_page.text
             tree = fromstring(overview_page.text)
             linkobjects = tree.xpath('//*[@itemprop="name"]/a')
             links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
@@ -47,9 +58,9 @@ class pvv(Scraper):
                     text=""
                     text="".join(text)
                 try:
-                    pub_date ="".join( tree.xpath('//*[@class = "create"]/time/@datetime'))
+                    publication_date ="".join( tree.xpath('//*[@class = "create"]/time/@datetime'))
                 except:
-                    pub_date=""
+                    publication_date=""
                 try:
                     ext_source = tree.xpath('//*[@itemprop="articleBody"]//@href')
                 except:
@@ -61,7 +72,7 @@ class pvv(Scraper):
                     title = ""
                 releases.append({'text':text,
                                  'title':title,
-                                 'pub_date':pub_date,
+                                 'publication_date':publication_date,
                                  'url':link,
                                  'ext_source':ext_source,
                                  'html':current_page.text})

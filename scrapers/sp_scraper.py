@@ -16,10 +16,15 @@ logger = logging.getLogger(__name__)
 class sp(Scraper):
     """Scrapes SP"""
 
-    def __init__(self,database=True):
+    def __init__(self,database=True, maxpages = 2):
+        '''
+        maxpages = number of pages to scrape
+        '''
+        
         self.database = database
         self.START_URL = "https://www.sp.nl/nu/"
         self.BASE_URL = "https://www.sp.nl"
+        self.MAXPAGES = maxpages
 
     def get(self):
         '''                                                                     
@@ -27,7 +32,7 @@ class sp(Scraper):
         '''
         self.doctype = "SP (pol)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=9, day=26)
+        self.date = datetime.datetime(year=2017, month=9, day=29)
 
 
         releases = []
@@ -38,6 +43,10 @@ class sp(Scraper):
             tree = json.loads(overview_page.text)
             if tree['has_pager'] is False:
                 break
+            if page > self.MAXPAGES:
+                break
+            elif page ==1:
+                first_page_text=overview_page.text
             tree2 = tree['rendered_items']
             links = re.findall('href=\"(.*?)">',tree2)
             for link in links:
@@ -48,7 +57,7 @@ class sp(Scraper):
                 except requests.TooManyRedirects as e:
                     logger.debug("URL not working")
                     title = ""
-                    pub_date = ""
+                    publication_date = ""
                     text = ""
                     teaser = ""
                     continue
@@ -60,9 +69,9 @@ class sp(Scraper):
                     logger.debug("no title")
                     title = ""
                 try:
-                    pub_date = "".join(tree.xpath('//*[@class ="date"]/text()'))
+                    publication_date = "".join(tree.xpath('//*[@class ="date"]/text()'))
                 except:
-                    pub_date = ""
+                    publication_date = ""
 
                 try:
                     text = " ".join(tree.xpath('//*[@id = "content"]//p/text()|//*[@id = "content"]//p/em/text()|//*[@id = "content"]//p/a/text()')[1:]).strip()
@@ -81,7 +90,7 @@ class sp(Scraper):
                     quote = ""
                 releases.append({'text':text,
                                  'title':title,
-                                 'pub_date': pub_date,
+                                 'publication_date': publication_date,
                                  'url':full_link,
                                  'teaser':teaser,
                                  'quote':quote})

@@ -14,7 +14,11 @@ logger = logging.getLogger(__name__)
 class pvda(Scraper):
     """Scrapes PvdA"""
     
-    def __init__(self,database=True):
+    def __init__(self,database=True, maxpages = 2):
+        '''
+        maxpages = number of pages to scrape
+        '''
+        
         self.database = database
         self.START_URL = "https://www.pvda.nl/nieuws/"
         self.BASE_URL = "https://www.pvda.nl"
@@ -25,14 +29,20 @@ class pvda(Scraper):
         '''
         self.doctype = "PvdA (pol)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=9, day=25)
+        self.date = datetime.datetime(year=2017, month=9, day=29)
 
         releases = []
 
         page = 1
         current_url = self.START_URL
         overview_page = requests.get(current_url)
-        while overview_page.content.find(b'No results found within the selected categories and filters') == -1:
+        first_page_text=""
+        while overview_page.text!=first_page_text:
+            logger.debug("How fetching overview page {}".format(page))
+            if page > self.MAXPAGES:
+                break
+            elif page ==1:
+                first_page_text=overview_page.text
             tree = fromstring(overview_page.text)
             links = tree.xpath('//*[@id="content"]//h2/a/@href')
             for link in links:
@@ -45,10 +55,10 @@ class pvda(Scraper):
                     logger.debug("no title")
                     title = ""
                 try:
-                    pub_date = "".join(tree.xpath('//*[@class ="meta"]/text()[2]'))
-                    pub_date = pub_date[3:]
+                    publication_date = "".join(tree.xpath('//*[@class ="meta"]/text()[2]'))
+                    publication_date = publication_date[3:]
                 except:
-                    pub_date = ""
+                    publication_date = ""
 
                 try:
                     text = " ".join(tree.xpath('//*[@class = "content"]//p[not(@class="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/text()|//*[@class = "content"]//p[not(@class ="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/em/text()|//*[@class = "content"]//p[not(@class = "meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/u/text()')).strip()
@@ -67,7 +77,7 @@ class pvda(Scraper):
                                      
                 releases.append({'text':text,
                                  'title':title,
-                                 'pub_date': pub_date,
+                                 'publication_date': publication_date,
                                  'url':link,
                                  'teaser':teaser,
                                  'quote':quote})
