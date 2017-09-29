@@ -66,6 +66,8 @@ class groenlinks(Scraper):
                     title = ""
                 try:
                     publication_date = "".join(tree.xpath('//*[@class = "submitted-date"]/text()'))
+                    publication_date = datetime.datetime.strptime(publication_date, '%d %B %Y')
+                    publication_date = publication_date.date()
                 except:
                     publication_date = ""
                 try:

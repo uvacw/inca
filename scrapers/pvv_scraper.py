@@ -59,6 +59,8 @@ class pvv(Scraper):
                     text="".join(text)
                 try:
                     publication_date ="".join( tree.xpath('//*[@class = "create"]/time/@datetime'))
+                    publication_date = datetime.datetime.strptime(publication_date, '%Y-%m-%dT%H:%M:%S+02:00')
+                    publication_date = publication_date.date()
                 except:
                     publication_date=""
                 try:

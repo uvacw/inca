@@ -22,6 +22,7 @@ class pvda(Scraper):
         self.database = database
         self.START_URL = "https://www.pvda.nl/nieuws/"
         self.BASE_URL = "https://www.pvda.nl"
+        self.MAXPAGES = maxpages
 
     def get(self):
         '''                                                                     
@@ -57,6 +58,8 @@ class pvda(Scraper):
                 try:
                     publication_date = "".join(tree.xpath('//*[@class ="meta"]/text()[2]'))
                     publication_date = publication_date[3:]
+                    publication_date = datetime.datetime.strptime(publication_date, ' %d %B %Y ')
+                    publication_date = publication_date.date()
                 except:
                     publication_date = ""
 

@@ -65,6 +65,8 @@ class cda(Scraper):
                     text =""
                 try:
                     publication_date  = "".join(tree.xpath('//*[@class = "h5 paddedText-text u-background--blue u-color--white"]/text()')).strip()
+                    publication_date = datetime.datetime.strptime(publication_date, '%d %B %Y')
+                    publication_date = publication_date.date()
                 except:
                     publication_date = ""
 
