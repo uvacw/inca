@@ -66,7 +66,11 @@ class groenlinks(Scraper):
                     title = ""
                 try:
                     publication_date = "".join(tree.xpath('//*[@class = "submitted-date"]/text()'))
-                    publication_date = datetime.datetime.strptime(publication_date, '%d %B %Y')
+                    MAAND2INT = {"januari":1, "februari":2, "maart":3, "april":4, "mei":5, "juni":6, "juli":7, "augustus":8, "september":9, "oktober":10, "november":11, "december":12}
+                    dag = publication_date[:2]
+                    jaar= publication_date[-4:]
+                    maand= publication_date[2:-4].strip().lower()
+                    publication_date = datetime.datetime(int(jaar), int(MAAND2INT[maand]),int(dag))
                     publication_date = publication_date.date()
                 except:
                     publication_date = ""

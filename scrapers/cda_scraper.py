@@ -8,6 +8,8 @@ import feedparser
 import re
 import logging
 
+
+
 logger = logging.getLogger(__name__)
 
 class cda(Scraper):
@@ -64,8 +66,19 @@ class cda(Scraper):
                     logger.info("no text?")
                     text =""
                 try:
-                    publication_date  = "".join(tree.xpath('//*[@class = "h5 paddedText-text u-background--blue u-color--white"]/text()')).strip()
-                    publication_date = datetime.datetime.strptime(publication_date, '%d %B %Y')
+                    publication_list  = tree.xpath('//*[@class = "h5 paddedText-text u-background--blue u-color--white"]/text()')
+                    newlist = []
+                    for item in publication_list:
+                        if item.strip() != 'Actueel':
+                            newlist.append(item)
+                        else:
+                            pass
+                    publication_date = "".join(newlist).strip()
+                    MAAND2INT = {"januari":1, "februari":2, "maart":3, "april":4, "mei":5, "juni":6, "juli":7, "augustus":8, "september":9, "oktober":10, "november":11, "december":12}
+                    dag = publication_date[:2]
+                    jaar= publication_date[-4:]
+                    maand= publication_date[2:-4].strip().lower()
+                    publication_date = datetime.datetime(int(jaar), int(MAAND2INT[maand]),int(dag))
                     publication_date = publication_date.date()
                 except:
                     publication_date = ""
