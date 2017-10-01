@@ -231,9 +231,9 @@ class nos(rss):
         except:
             logger.error("HTML tree cannot be parsed")
         try:
-            title = tree.xpath('//*/h1[@class="article__title"')[0].strip()
+            title = tree.xpath('//h1')[0].text
         except:
-            title = None
+            title = ""
             logger.warning("No title encountered")
         try:
             category="".join(tree.xpath('//*/a[@id="link-grey"]//text()'))
@@ -267,7 +267,7 @@ class nos(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images":images.strip()
+                       "images":images
                        }
 
         return extractedinfo
@@ -275,20 +275,24 @@ class nos(rss):
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img = element.xpath('//figure[@class="article_head_image block_largecenter"]//img')
-            image = {'url' : img.attrib['src'],
+            try:
+                img = element.xpath('//figure[@class="article_head_image block_largecenter"]//img')[0]
+                image = {'url' : img.attrib['src'],
                  #'height' : img.attrib['height'],
                  #'width' : img.attrib['width'],
                  #'caption' : element.xpath(element.xpath('.//div[@Class="caption_content"]/text()')),
                  'alt' : img.attrib['alt']}
-            if image['url'] not in [i['url'] for i in images]:
-                images.append(image)
+                if image['url'] not in [i['url'] for i in images]:
+                    images.append(image)
+            except IndexError:
+                pass
         return images
 
     def getlink(self,link):
         '''modifies the link to the article to bypass the cookie wall'''
-        link=re.sub("/$","",link)
-        link="http://www.nos.nl//cookiesv2.publiekeomroep.nl/consent/all"+link
+        # link=re.sub("/$","",link)
+        # link="http://www.nos.nl//cookiesv2.publiekeomroep.nl/consent/all"+link
+        # currently, there is no cookiewall in place, so we just return the link as it is
         return link 
 
 class volkskrant(rss):
