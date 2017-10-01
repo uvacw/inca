@@ -301,7 +301,7 @@ cd /home/damian/inca-prod/inca
 ./scrapejob.py
 ```
 
-4. Make the shell script executable as well, using `chmoid u+x scrape.sh`.
+4. Make the shell script executable as well, using `chmod u+x scrape.sh`.
 
 5. Add a cronjob to your crontab by executing `crontab -e`. The following line would run your scrapers at 15 minutes past every hour:
 `15 * * * * /home/damian/scrape.sh`
