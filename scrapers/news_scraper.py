@@ -556,6 +556,21 @@ class parool(rss):
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
+    def parseurl(self,url):
+        link = url.lstrip('http://www.parool.nl///cookiewall/accept?url=')
+        try:
+            category=re.findall("/+[a-z]+/", link)[0]
+        except:
+            category=""
+        if category=="":
+            try:
+                category=re.findall("/+[a-z]+-+[a-z]+-+[a-z]+/", link)[0]
+            except:
+                category=""
+                logger.info("geen category")
+        category = category.replace("/","")
+        return {'category':category}
+
     def parsehtml(self,htmlsource):
         '''                                                                            
         Parses the html source to retrieve info that is not in the RSS-keys          
@@ -572,22 +587,11 @@ class parool(rss):
         except:
             title=""
             logger.info("OOps - geen titel?")
-        try:
-            category=re.findall("/+[a-z]+/", link)[0]
-            category=category.replace("/","")
-        except:
             category=""
-        if category=="":
-            try:
-                category=re.findall("/+[a-z]+-+[a-z]+-+[a-z]+/", link)[0]
-                category = category.replace("/","")
-            except:
-                category=""
-                logger.info("geen category")
         try:
-            teaser=tree.xpath('//*/p[@class="article__intro"]')[0]
+            teaser = tree.xpath('//*/p[@class="article__intro"]')[0].text_content().strip()
         except:
-            teaser=" "
+            teaser=""
             logger.info("oops - geen teaser")
         text=" ".join(tree.xpath('//*/p[@class="article__body__paragraph first"]//text() | //*/p[@class="article__body__paragraph"]//text()')).strip()
         author_text=tree.xpath('//*[@class=" article__author"]//text()')
@@ -617,8 +621,7 @@ class parool(rss):
 
         images = parool._extract_images(self,tree)
 
-        extractedinfo={"category":category.strip(),
-                       "title":title.strip(),
+        extractedinfo={"title":title.strip(),
                        "teaser":teaser,
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
