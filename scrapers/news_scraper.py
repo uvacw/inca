@@ -681,7 +681,9 @@ class trouw(rss):
             title=""
             logger.info("OOps - geen titel?")
         try:
-            teaser=tree.xpath('//*/p[@class="article__introduction__text"]')[0]
+            # teaser=tree.xpath('//*/p[@class="article__introduction__text"]')[0]
+            teaser = tree.xpath('//*/p[@class="article__introduction__text"]')[0].text_content().strip()
+
         except:
             teaser=" "
             logger.info("oops - geen teaser")
