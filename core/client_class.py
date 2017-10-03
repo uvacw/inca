@@ -635,16 +635,21 @@ class Client(Scraper):
 
         """
         now = datetime.datetime.now()
-        if until:
-            waittime = until - now
-        else:
-            waittime = datetime.timedelta(
-                        seconds=seconds,
-                        minutes=minutes,
-                        hours = hours,
-                        days = days
-                        )
-        logger.info("Delaying for {waittime}".format(**locals()))
-        time.sleep(waittime)
-        for d in self.run(*args, **kwargs):
-            yield d
+
+        # if until:
+        #     waittime = until - now
+        # else:
+        #     waittime = datetime.timedelta(
+        #                 seconds=seconds,
+        #                 minutes=minutes,
+        #                 hours = hours,
+        #                 days = days
+        #                 )
+        # logger.info("Delaying for {waittime}".format(**locals()))
+        logger.info("Delaying for {seconds}".format(**locals()))
+        # if (type(waittime) != float) and (type(waittime) != int):
+        #     waitime = waitime.total_seconds() 
+        time.sleep(seconds)
+        # for d in self.run(*args, **kwargs):
+        #     yield d
+        self.run(*args, **kwargs)

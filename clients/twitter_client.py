@@ -141,6 +141,29 @@ class twitter(Client):
         else:
             info.warn("No credentials available...")
 
+    # def _set_delay2(self, *args, **kwargs):
+    #     now = time.time()
+    #     earliest = self.load_credentials(app='default',update_last_loaded=False) ## MANUAL WORKAROUND - NEEDS INSPECTION
+    #     if earliest:
+    #         allvars = locals()
+    #         print(allvars['kwargs']['method'])
+    #         sort_field = '_source.' + self.sort_field
+    #         resettime = dotkeys(earliest,sort_field)
+    #         print(resettime)
+    #         print(now)
+    #         delay_required = resettime - now
+    #         if delay_required < 0 :
+    #             self.run(*args, **kwargs)
+    #             print('delay not needed?')
+    #         print('delaying')
+    #         # self.postpone(seconds = delay_required, *args, **kwargs )
+    #         print('delaying for ', delay_required, 'seconds')
+    #         time.sleep(delay_required)
+    #         print('trying to rerun the function directly')
+    #         allvars['kwargs']['method'](screen_name = allvars['kwargs']['screen_name'], cursor = allvars['kwargs']['cursor'])
+    #     else:
+    #         info.warn("No credentials available...")
+
 class twitter_timeline(twitter):
     '''Class to retrieve twitter timelines for a given account'''
 
@@ -220,9 +243,24 @@ class twitter_followers(twitter):
     sort_field = "content.resources.followers./followers/ids.reset" 
     preference = 'lowest'
 
-    def get(self, credentials, screen_name, force=False):
+    # def get(self, credentials, screen_name, cursor = None, force=False):
+    def get(self, *args, **kwargs):
         '''retrieved from the twitter followers/ids API'''
 
+        arglocals = locals()['kwargs'] 
+        credentials = arglocals['credentials']
+        if 'cursor' in arglocals.keys():
+            cursor = arglocals['cursor']
+        else:
+            cursor = None
+        print('cursor', cursor)
+        screen_name = arglocals['screen_name']
+        if 'force' in arglocals.keys():
+            force = arglocals['force']
+        else:
+            force = None
+
+        print('credentials = ', credentials, 'cursor = ', cursor)
         self.doctype =  "twitter_followers"
         self.version = "0.1"
         self.functiontype = "twitter_client"
@@ -246,8 +284,7 @@ class twitter_followers(twitter):
             user_id = user[0]['id']
             user_follower_count = user[0]['followers_count']
             batchsize = 1
-            counter = 0
-            cursor = None
+            counter = 0            
             expected_rounds = user_follower_count / 5000
 
 
@@ -292,14 +329,15 @@ class twitter_followers(twitter):
             try: self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
             except TwythonRateLimitError: # when a ratelimit estimate is unavailable
                 self.postpone(self, delaytime=60*5, screen_name=screen_name,
-                              force=force, max_id=max_id, since_id=since_id)
+                              force=force, cursor=cursor)
             cursor = self._last_added().get("_source",{}).get("cursor",None)
             self._set_delay(
                             timeout_key="last.resources.followers./followers/ids.reset",
                             screen_name=screen_name,
                             force=force,
                             cursor=cursor,
-                            app='default', # MANUAL WORKAROUND - NEEDS TO BE CHECKED
+                            app='default', # MANUAL WORKAROUND - NEEDS TO BE CHECKED,
+                            # method = twitter_followers,
                             )
 
 class twitter_friends(twitter):
