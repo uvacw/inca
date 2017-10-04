@@ -9,7 +9,7 @@ from core.database import client as database_client
 import logging
 import sys
 import time
-from core.search_utils import doctype_first
+from core.search_utils import doctype_first, doctype_last
 
 logger = logging.getLogger("INCA.%s" %__name__)
 
@@ -132,37 +132,14 @@ class twitter(Client):
         if earliest:
             sort_field = '_source.' + self.sort_field
             resettime = dotkeys(earliest,sort_field)
-            print(resettime)
-            print(now)
+            # print(resettime)
+            # print(now)
             delay_required = resettime - now
             if delay_required < 0 :
                 self.run(*args, **kwargs)
             self.postpone(seconds = delay_required, *args, **kwargs )
         else:
             info.warn("No credentials available...")
-
-    # def _set_delay2(self, *args, **kwargs):
-    #     now = time.time()
-    #     earliest = self.load_credentials(app='default',update_last_loaded=False) ## MANUAL WORKAROUND - NEEDS INSPECTION
-    #     if earliest:
-    #         allvars = locals()
-    #         print(allvars['kwargs']['method'])
-    #         sort_field = '_source.' + self.sort_field
-    #         resettime = dotkeys(earliest,sort_field)
-    #         print(resettime)
-    #         print(now)
-    #         delay_required = resettime - now
-    #         if delay_required < 0 :
-    #             self.run(*args, **kwargs)
-    #             print('delay not needed?')
-    #         print('delaying')
-    #         # self.postpone(seconds = delay_required, *args, **kwargs )
-    #         print('delaying for ', delay_required, 'seconds')
-    #         time.sleep(delay_required)
-    #         print('trying to rerun the function directly')
-    #         allvars['kwargs']['method'](screen_name = allvars['kwargs']['screen_name'], cursor = allvars['kwargs']['cursor'])
-    #     else:
-    #         info.warn("No credentials available...")
 
 class twitter_timeline(twitter):
     '''Class to retrieve twitter timelines for a given account'''
@@ -253,14 +230,13 @@ class twitter_followers(twitter):
             cursor = arglocals['cursor']
         else:
             cursor = None
-        print('cursor', cursor)
+        logger.info("settings cursor to {cursor}".format(**locals()))
         screen_name = arglocals['screen_name']
         if 'force' in arglocals.keys():
             force = arglocals['force']
         else:
             force = None
 
-        print('credentials = ', credentials, 'cursor = ', cursor)
         self.doctype =  "twitter_followers"
         self.version = "0.1"
         self.functiontype = "twitter_client"
@@ -270,13 +246,13 @@ class twitter_followers(twitter):
         except TwythonRateLimitError: pass # sometimes you just can't get a rate-limit estimate
 
         if not force:
-            # since_id = doctype_first(doctype="tweets",query="user.screen_name:"+screen_name)
-            # if len(since_id) == 0:
-            #     logger.info("settings since_id to None as there are no tweets for this user")
-            #     since_id = None
-            # else:
-            #     since_id = since_id[0].get('_source',{}).get("id",None)
-            #     logger.info("settings since_id to {since_id}".format(**locals()))
+            cursor = doctype_last(doctype="twitter_followers",query="user_screen_name:"+screen_name)
+            if len(cursor) == 0:
+                logger.info("settings cursor to None as there are no followers for this user")
+                cursor = None
+            else:
+                cursor = cursor[0].get('_source',{}).get("cursor",None)
+                logger.info("force not requested, settings cursor to {cursor}".format(**locals()))
             pass
 
         try:
@@ -340,26 +316,26 @@ class twitter_followers(twitter):
                             # method = twitter_followers,
                             )
 
-class twitter_friends(twitter):
-    '''Class to retrieve twitter friends for a given account
-    https://dev.twitter.com/rest/reference/get/friends/ids
-    '''
-    pass
+# class twitter_friends(twitter):
+#     '''Class to retrieve twitter friends for a given account
+#     https://dev.twitter.com/rest/reference/get/friends/ids
+#     '''
+#     pass
 
 
-class twitter_statuses_lookup(twitter):
-    '''Class to retrieve twitter detailed information of a set of tweets
-    https://dev.twitter.com/rest/reference/get/statuses/lookup
-    '''
-    pass
+# class twitter_statuses_lookup(twitter):
+#     '''Class to retrieve twitter detailed information of a set of tweets
+#     https://dev.twitter.com/rest/reference/get/statuses/lookup
+#     '''
+#     pass
 
-class twitter_trends(twitter):
-    '''Class to retrieve trends - need to specify logic to either receive specific locale,
-    or to query for all locales available
-    see: https://dev.twitter.com/rest/reference/get/trends/place
-    https://dev.twitter.com/rest/reference/get/trends/available
-    '''
-    pass
+# class twitter_trends(twitter):
+#     '''Class to retrieve trends - need to specify logic to either receive specific locale,
+#     or to query for all locales available
+#     see: https://dev.twitter.com/rest/reference/get/trends/place
+#     https://dev.twitter.com/rest/reference/get/trends/available
+#     '''
+#     pass
 
 class twitter_users_lookup(twitter):
     '''Class to retrieve twitter detailed information of a set of users
