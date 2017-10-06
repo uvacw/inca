@@ -2,6 +2,7 @@
 import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
+from core.scraper_class import UnparsableException
 from core.database import check_exists
 import logging
 import feedparser
@@ -62,49 +63,83 @@ class rss(Scraper):
             except: RSS_URL='N/A'
 
         assert RSS_URL != 'N/A','You need to specify the feed URL. Example: rss_url="http://www.nu.nl/rss"'
+        
+        if type(RSS_URL) is str:
+            RSS_URL=[RSS_URL]
 
-        d = feedparser.parse(RSS_URL)
-
-        for post in d.entries:
-            try:
-                _id=post.id
-            except:
-                _id=post.link
-
-            link=re.sub("/$","",self.getlink(post.link))
-
-            if self.database==False or check_exists(_id)[0]==False:
-                req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
-                htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
-
+        for thisurl in RSS_URL:
+            rss_body = self.get_page_body(thisurl)
+            d = feedparser.parse(rss_body)
+            for post in d.entries:
                 try:
-                    teaser=re.sub(r"\n|\r\|\t"," ",post.description)
+                    _id=post.id
                 except:
-                    teaser=""
-                try:
-                    datum=datetime.datetime(*feedparser._parse_date(post.published)[:6])
-                except:
+                    _id=post.link
+
+                link=re.sub("/$","",self.getlink(post.link))
+
+                if self.database==False or check_exists(_id)[0]==False:
                     try:
-                        # alternative date format as used by nos.nl
-                        datum=datetime.datetime(*feedparser._parse_date(post.published[5:16])[:6])
+                        req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
+                        htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                     except:
-                        #print("Couldn't parse publishing date")
-                        datum=None
-                doc = {"_id":_id,
-                       "title":post.title,
-                       "teaser":teaser,
-                       "publication_date":datum,
-                       "htmlsource":htmlsource,
-                       "feedurl":RSS_URL,
-                       "url":re.sub("/$","",post.link)}
-                doc.update(self.parsehtml(doc['htmlsource']))
-                docnoemptykeys={k: v for k, v in doc.items() if v}
-                yield docnoemptykeys
+                        htmlsource=None
+                        logger.info('Could not open link - will not retrieve full article')
+                    try:
+                        teaser=re.sub(r"\n|\r\|\t"," ",post.description)
+                    except:
+                        teaser=""
+                    try:
+                        datum=datetime.datetime(*feedparser._parse_date(post.published)[:6])
+                    except:
+                        try:
+                            # alternative date format as used by nos.nl
+                            datum=datetime.datetime(*feedparser._parse_date(post.published[5:16])[:6])
+                        except:
+                            #print("Couldn't parse publishing date")
+                            datum=None
+                    doc = {"_id":_id,
+                           "title_rss":post.title,
+                           "teaser_rss":teaser,
+                           "publication_date":datum,
+                           "htmlsource":htmlsource,
+                           "feedurl":thisurl,
+                           "url":re.sub("/$","",post.link)}
+                    if htmlsource is not None:
+                        # TODO: CHECK IF PARSEHTML returns None, if so, raise custom exception
+                        parsed = self.parsehtml(doc['htmlsource'])
+                        if parsed is None or parsed =={}:
+                            try:
+                                raise UnparsableException
+                            except UnparsableException:
+                                pass
+                        else:
+                            doc.update(parsed)
+                    parsedurl = self.parseurl(link)
+                    doc.update(parsedurl)
+                    docnoemptykeys={k: v for k, v in doc.items() if v}
+                    yield docnoemptykeys
+
+    def get_page_body(self,url,**kwargs):
+        '''Makes an HTTP request to the given URL and returns a string containing the response body'''
+        request = urllib2.Request(url, headers={'User-Agent' : "Wget/1.9"})
+        response_body = urllib2.urlopen(request).read().decode(encoding="utf-8",errors="ignore")
+        return response_body
 
     def parsehtml(self,htmlsource):
         '''
         Parses the html source and extracts more keys that can be added to the doc
         Empty in this generic fallback scraper, should be replaced by more specific scrapers
+        '''
+        return dict()
+
+    def parseurl(self,url):
+        '''
+        Parses the url source and extracts more keys that can be added to the doc
+        Empty in this generic fallback scraper, can be replaced by more specific scrapers
+        if the URL itself needs to be parsed. Typial use case: The url contains the 
+        category of the item, which can be parsed from it using regular expressions
+        or .split('/') or similar.
         '''
         return dict()
 

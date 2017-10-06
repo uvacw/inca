@@ -1,8 +1,8 @@
 '''
 
-This file contains the class for scrapers. Each scraper should 
-inherit from this class and overwrite the 'get' function with 
-a generator. 
+This file contains the class for scrapers. Each scraper should
+inherit from this class and overwrite the 'get' function with
+a generator.
 
 Scrapers should yield dicts that contain the document (news article,
 tweet, blogpost, whatever)
@@ -22,24 +22,24 @@ language  : If you can safely assume the language of specified documents, please
 '''
 import logging
 from core.document_class import Document
-from core.database import check_exists
+from core.database import check_exists, DATABASE_AVAILABLE
 
 logger = logging.getLogger(__name__)
 
 class Scraper(Document):
     '''
-    Scrapers are the generic way of adding new documents to the datastore. 
-    
-    Make scrapers in the 'scrapers' folder by using <datasource>_scraper.py as 
-    the filename, containing a scraper which inherits from this class. 
-    
+    Scrapers are the generic way of adding new documents to the datastore.
+
+    Make scrapers in the 'scrapers' folder by using <datasource>_scraper.py as
+    the filename, containing a scraper which inherits from this class.
+
     the 'get' method should be a self-powered retrieval task, with optional
     arguments.
     '''
 
     functiontype = 'scraper'
     #language = ''
-        
+
     def __init__(self,database=True):
         Document.__init__(self,database)
 
@@ -54,7 +54,7 @@ class Scraper(Document):
     def sideload(self, doc, doctype, language):
         '''
         This function side-loads documents, basically setting scraper doctype, language
-        and metadata. 
+        and metadata.
 
         '''
         doc['doctype']  = self.doctype
@@ -62,16 +62,16 @@ class Scraper(Document):
         doc = self._add_metadata(doc)
         self._verify(doc)
         self._save_document(doc)
-        
+
     def run(self, *args, **kwargs):
         '''
         DO NOT OVERWRITE THIS METHOD
 
-        This is an internal function that calls the 'get' method and saves the 
-        resulting documents. 
+        This is an internal function that calls the 'get' method and saves the
+        resulting documents.
         '''
         logger.info("Started scraping")
-        if self.database == True:
+        if DATABASE_AVAILABLE == True and self.database==True:
             for doc in self.get(*args, **kwargs):
                 doc = self._add_metadata(doc)
                 self._verify(doc)
@@ -83,7 +83,7 @@ class Scraper(Document):
 
     def _test_function(self):
         '''tests whether a scraper works by seeing if it returns at least one document
-        
+
            GENERALLY DON'T OVERWRITE THIS METHOD!
         '''
         try:
@@ -93,6 +93,10 @@ class Scraper(Document):
                 return {"{self.__class__}".format(**locals()) :True}
         except:
             return {"{self.__class__}".format(**locals()) : False}
-        
+
     def _check_exists(self, *args, **kwargs):
         return check_exists(*args, **kwargs)
+
+class UnparsableException(Exception):
+    def __init__(self):
+        logger.warn('Could not parse the content; maybe the string does not contain valid HTML?')

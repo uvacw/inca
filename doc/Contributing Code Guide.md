@@ -1,13 +1,23 @@
 # Contributing Code Guide
 ### *a guide for contributing code*
 
+This document outlines the general workflow and the general rules.
+
+Please read also the following documents for some hands-on tips:
+- [Getting Started](gettingstarted.md)
+- [Tips and Tricks](tips_and_tricks.md)
+- The specific *howto* documents for writing scrapers, processors, and so on.
+
 ## Introduction
 
 So you are going to join the team? *Great!*  Let's get some formalities
 out of the way so you can get to work!
 
+This guide assumes you are familiar with markdown, git and commandline. In addition, you should have a copy of INCA installed. If you are unsure about this things, please consult the [getting started guide](/gettingstarted.md)
+
 First, Let's be clear about code styles. In the past, changes have been made on
 a pretty ad-hoc basis. No Longer!
+
 
 Follow these steps when adding code:
 1. Make changes in a seperate branch
@@ -92,6 +102,10 @@ clear code paramount. We aim to follow the [Google style guide](https://google.g
   - instance_var_name
   - function_parameter_name
   - local_var_name
+  
+  Suggestion: provide a short explanation of what these terms represent / when to use them? Or is this considered common knowledge? 
+  In addition to this, would it be helpful to include a short dictionary that explains the most important terms/concepts of the guide?
+  
 - Split up complicated conditions
 
   Don't:
@@ -143,10 +157,33 @@ Documentation is used to describe the purpose of a class, functionality of a fun
 
 With documentation you explain to a reader what your code is doing and where. We also use the docstrings for classes and methods to generate help.
 
-## 5. Testing Testing Testing
+## 5. Testing
 
-*TODO*
+We do not have automated tests yet. When you think your scraper is ready, test it extensively before making a pull request (next section).
+This checklist might help:
+- Does it return all keys that you expect it to return?
+- Take one specific article and compare the returned data with what you see in your browser if you access the URL manually.
+- Are all fields *complete*? For instance, look at the `text` field: Does it contain the whole text, or are some paragraphs missing?
+- Are edge cases (e.g., articles with live tweets/videos/...) adequately covered?
+- ...
 
-## 6. making a "Pull" request
+Of course, an analogous applies to any other code you contribute (like Processors).
 
-*TODO*
+
+## 6. Making a "Pull" request
+
+When you are done with testing and confident that your code can be used by others, then you have to issue a *Pull Request*. This essentially means that you request that someone from the core team merges your code with the `development` branch, on which all others are basing their work.
+
+1. First of all, make sure that you have commited and pushed all changes (see above). You can also use `git status` to check whether you forgot something.
+
+2. Then, go to [https://github.com/uvacw/inca/pulls](https://github.com/uvacw/inca/pulls) and click on *New Pull Request*.
+
+3. Select `development` as base branch and your branch as compare branch.
+
+4. Carefully check the diff (the overview of changes). Everything correct? Click on 'Create pull request'
+
+5. Add an explanation what this PR is about.
+
+6. On the right hand side, choose a reviewer (the person you want to check your code)
+
+7. Click on *Create pull request* and you're done!
