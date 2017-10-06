@@ -269,7 +269,7 @@ A good way of using logging when writing scrapers can be:
 - emit a debug for very detailed steps (e.g., the URL being fetched)
 
 
-### 2. Scrapers for webpages without RSS feed
+### Scrapers for webpages without RSS feed
 
 The big advantage of an RSS scraper is that the RSS feed already provides you with a list of URLs. Therefore, the only thing to do is to write a function that parses the content behind these links.
 
@@ -282,3 +282,35 @@ In contrast, for a generic scraper, you need to do all this yourself. As this is
 3. Loop over the list of URLs, download them, parse them.
 
 Make sure that you have some limits installed to avoid that the scraper continues infinitely.
+
+
+
+## How to put scrapers into production
+After having written and tested your scrapers, you probably want to put them into production - i.e., want to run them automatically on a regular basis. In this section, we describe how to do so on a typical Linux (Ubuntu) system. On MacOS, this should work roughly similarly.
+
+0. Make sure ElasticSearch is installed and running (see [Getting Started](gettingstarted.md))
+
+1. Write a python script that runs all desired scrapers in a row. INCA comes with an example script for this purpose: `scrapejob.py`. Edit it to fit your purposes.
+
+2. Make sure that the script is executable: `chmod u+x scrapejob.py`
+
+3. Create a shell script that runs this python script. For instance, you could create a file `/home/damian/scrape.sh` with the following content: 
+```
+#!/bin/bash
+cd /home/damian/inca-prod/inca
+./scrapejob.py
+```
+
+4. Make the shell script executable as well, using `chmod u+x scrape.sh`.
+
+5. Add a cronjob to your crontab by executing `crontab -e`. The following line would run your scrapers at 15 minutes past every hour:
+`15 * * * * /home/damian/scrape.sh`
+
+6. You are done! However, in order to be able to check whether everything works properly, it is advisable to install Kibana, a graphical dashboard that allows you exploring the data you are scraping. You can do so as follows:
+- Install Kibana with `sudo apt install kibana`
+- Run Kibana with `sudo service kibana start`
+- Open a web browser and access Kibana by browsing to `http://localhost:5601`
+- You are asked to configure an index pattern. Set the index pattern to a simple `*` and select that you do not want to use a Time filter.
+- Configure visualizations and dashboards.
+
+
