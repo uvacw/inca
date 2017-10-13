@@ -45,7 +45,7 @@ class focus(rss):
             return("","","", "")
 #category
         try:
-            category = r[0]['url'].split('/')[3]
+            category = tree.xpath('//*[@id="main"]//ol//a//text()')[1]
         except:
             category=""
             
@@ -76,10 +76,11 @@ class focus(rss):
         except:
             source = ""
 
-        extractedinfo={"category":category.strip(),
+        extractedinfo={"category":category,
                        "teaser":teaser.strip(),
                        "text":text.strip(),
-                       "byline_source":source
+                       "bylinesource":source,
+                       "title":title
                        }
 
         return extractedinfo

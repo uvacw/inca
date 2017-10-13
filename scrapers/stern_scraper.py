@@ -37,11 +37,8 @@ class stern(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
-        #category
-        try:
-            category = r[0]['url'].split('/')[3]
-        except:
-            category =""
+        #category: First all articles are in the category 'newsticker' and only later they re put into the proper categories. Therefore no category variable for this scraper.
+
         #somehow not clear with author and source and sometimes nothing
         #author
         #source
@@ -51,21 +48,22 @@ class stern(rss):
             source =""
         #title (some articles have one and some two titles. this scraper takes both)
         try:
-            title = tree.xpath('//*[@class="a-h1-title"]//text()')
+            title = "".join(tree.xpath('//*[@class="article"]//div//h2//text()')).replace('\n','').strip()
+
         except:
             title =""
         #teaser
         try:
-            teaser = tree.xpath('//*[@class="article-intro"]//text()')
+            teaser = "".join(tree.xpath('//*[@class="article-intro"]//text()'))
         except:
             teaser =""
         #text
         try:
-            text = tree.xpath('//*[@class="rtf-content-wrapper"]/p/text()')
+            text = ''.join(tree.xpath('//*[@class="article"]//*[@itemprop="articleBody"]/p//text()'))
+
         except:
             text =""
-        extractedinfo = {"category":category,
-                     "teaser":teaser,
+        extractedinfo = {"teaser":teaser,
                      "byline_source":source,
                      "title":title,
                      "text":text

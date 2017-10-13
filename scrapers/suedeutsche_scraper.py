@@ -43,15 +43,16 @@ class sueddeutsche(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-
+#two types of texts: some with a teaser and some with bullet points. if it has an acutal teaser it comes with the text and if it has bullet points it doesnt.
 #category
         try:
-            category = r[0]['url'].split('/')[3]
+            category = ''.join(tree.xpath('//*[@id="context-navigation"]//ul//li//a/text()')).replace('\n','').strip()
         except:
+
             category =""
-#teaser
+#teaser:
         try:
-            teaser = "".join(tree.xpath('//*[@class="header"]//h2//text()')).replace("\n",'').strip()
+            teaser =""
         except:
             teaser =""
 #title
@@ -71,7 +72,7 @@ class sueddeutsche(rss):
             author =""
 #source
         try:
-            source = tree.xpath('//*[@class="endofarticle__copyright"]//text()')[0].split('/')[-1]
+            source = tree.xpath('//*[@class="endofarticle__copyright"]//text()')[0].split('/')
         except:
             source =""
             

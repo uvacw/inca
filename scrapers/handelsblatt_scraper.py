@@ -46,7 +46,7 @@ class handelsblatt(rss):
 
 #category
         try:
-            category = r[0]['url'].split("/")[3]
+            category = tree.xpath('//*[@id="hcf-wrapper"]//span//text()')[1].replace('\xa0','')
         except:
             category =""
 #teaser
@@ -66,7 +66,7 @@ class handelsblatt(rss):
             text =""
 #author
         try:
-            author = tree.xpath('//*[@itemprop="name"]//text()')[4]
+            author = tree.xpath('//*[@id="hcf-wrapper"]//*[@class="vhb-article-author-row"]//span/text()')
         except:
             author =""
 #source
@@ -79,7 +79,7 @@ class handelsblatt(rss):
                        "title":title,
                        "byline":author,
                        "byline_source":source,
-                       "teaser":teasaer,
+                       "teaser":teaser,
                        "text":text
                        }
         

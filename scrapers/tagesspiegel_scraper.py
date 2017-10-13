@@ -46,7 +46,7 @@ class tagesspiegel(rss):
 
 #category
         try:
-            category = r[0]['url'].split("/")[3]
+            category = tree.xpath('//*[@class="ts-breadcrumb"]//*[@class="ts-inverse-link"]//text()')
         except:
             category =""
             
@@ -69,9 +69,14 @@ class tagesspiegel(rss):
             teaser =""
 #author
         try:
-            author = tree.xpath('//*[@class="ts-authors"]//text()')
+            author = tree.xpath('//*[@class="ts-authors"]/a/text()')
         except:
             author =""
+#text
+        try:
+            text = "".join(tree.xpath('//*[@class="ts-article-content"]//p/text()'))
+        except:
+            text = ""
 
 
         extractedinfo={"category":category,

@@ -46,33 +46,44 @@ class faz(rss):
 
 #category
         try:
-            category = tree.xpath('//*[@itemprop="name"]//text()')[1]
+            category = tree.xpath('//*[@class="gh-LogoStage_Top"]//span/text()')[0]
         except:
             category =""
 #teaser
         try:
-            teaser = tree.xpath('//*[@id="FAZSeite"]//p//text()')[1]
+            teaser = ''.join(tree.xpath('//*[@id="TOP"]//*[@class="atc-IntroText"]//text()')).replace('\n','').replace('\t','')
+
         except:
             teaser =""
 #title
         try:
-            title = "".join(tree.xpath('//*[@id="FAZSeite"]//h2//text()')[2:5]).replace("\n",":")
+            title = ''.join(tree.xpath('//*[@class="atc"]//*[@itemprop="headline"]//text()')).replace('\n','').replace('\t','')
         except:
             title =""
+            
 #text: still has mistakes in it. scrapes more than just the text. also includes adds between the text.
+
+#text1:
         try:
-            text = "".join(tree.xpath('//*[@class=""]//p/text()')).replace('\n',' ').strip()
+            text1 = tree.xpath('//*[@class="Artikel "]//*[@class="atc-TextFirstLetter"]//text()')
 
         except:
-            text =""
+            text1 =""
+#Text2:
+        try:
+            text2 = ''.join(tree.xpath('//*[@class="Artikel "]//*[@itemprop="articleBody"]/p/text()'))
+
+        except:
+            text2 =""
+        text = text1 + text2
 #author
         try:
-            author =tree.xpath('//*[@itemprop="name"]//text()')[4]
+            author = ''.join(tree.xpath('//*[@class="atc"]//header//a//text()')).replace('\t','').replace('\n','').strip()
         except:
             author =""
 #source
         try:
-            source = ''.join(tree.xpath('//*[@class="quelle"]//text()')).replace('Quelle:',"")
+            source = ''.join(tree.xpath('//*[@class="quelle"]//text()')).replace('Quelle:',"").replace('\r','').replace('\n','')
         except:
             source =""
             

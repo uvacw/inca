@@ -24,7 +24,7 @@ class diewelt(rss):
     def __init__(self,database=True):
         self.database=database
         self.doctype = "diewelt (www)"
-        self.rss_url=['https://www.welt.de/feeds/latest.rss','https://www.welt.de/feeds/topnews.rss','https://www.welt.de/feeds/section/mediathek.rss','https://www.welt.de/feeds/section/video.rss','https://www.welt.de/feeds/section/politik.rss','https://www.welt.de/feeds/section/wirtschaft.rss','https://www.welt.de/feeds/section/wirtschaft/bilanz.rss','https://www.welt.de/feeds/section/finanzen.rss','https://www.welt.de/feeds/section/wirtschaft/webwelt.rss','https://www.welt.de/feeds/section/wissen.rss','https://www.welt.de/feeds/section/kultur.rss','https://www.welt.de/feeds/section/sport.rss','https://www.welt.de/feeds/section/icon.rss','https://www.welt.de/feeds/section/gesundheit.rss','https://www.welt.de/feeds/section/vermischtes.rss','https://www.welt.de/feeds/section/motor.rss','https://www.welt.de/feeds/section/reise.rss','https://www.welt.de/feeds/section/regional.rss','https://www.welt.de/feeds/section/debatte.rss']
+        self.rss_url='https://www.welt.de/feeds/topnews.rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=7, day=2)
 
@@ -46,7 +46,7 @@ class diewelt(rss):
 
 #category
         try:
-            category = r[1]['url'].split('/')[3]
+            category = tree.xpath('//*[@class="c-breadcrumb"]//a/span/text()')[1]
         except:
             category =""
 
@@ -55,14 +55,21 @@ class diewelt(rss):
             teaser = tree.xpath('//*[@class="c-summary__intro"]//text()')
         except:
             teaser =""
-#title
+#title1
         try:
-            title = tree.xpath('//*[@class="c-dreifaltigkeit__headline-wrapper"]//text()')[1] + " : " + tree.xpath('//*[@class="c-dreifaltigkeit__headline-wrapper"]//text()')[3]
+            title1 = tree.xpath('//*[@class="c-dreifaltigkeit__headline-wrapper"]//text()')[1]
         except:
-            title =""
+            title1 =""
+#title2
+        try:
+            title2 = tree.xpath('//*[@class="c-dreifaltigkeit__headline-wrapper"]//text()')[3]
+        except:
+            title2 = ""
+            
+        titel = titel1 + titel2
 #text
         try:
-            text = "".join(tree.xpath('//*[@class="c-dreifaltigkeit__headline-wrapper"]//text()'))
+            text = tree.xpath('//*[@data-content="Sticky.ArticleBody"]/div/p/span/text()')+''.join(tree.xpath('//*[@itemprop="articleBody"]/p/text()'))
         except:
             text =""
        

@@ -45,37 +45,40 @@ class jungefreiheit(rss):
             return("","","", "")
  #category
         try:
-            category = r[0]['url'].split('/')[3]
+            category = tree.xpath('//*[@class="breadcrumb"]//span/text()')[0]
         except:
-            category =""
+            category = ""
  #title1
         try:
-            title1 = tree.xpath('\\*[@class="entry-header"]//text()')[0]
+            title1 = tree.xpath('//*[@class="entry-header"]/div/a/text()')
         except:
-            title1 =""
+            title1 = ""
 #title2
         try:
-            title2 = tree.xpath('\\*[@class="entry-header"]//text()')[4]
+            title2 = tree.xpath('//*[@class="entry-title"]//text()')
         except:
-            title2 =""
-        title = title1 +':'+ title2
- #author
+            title2 = ""
+            
+        title = title1 + title2
+        
+ #author:
         try:
-            author = tree.xpath(' \\*[@class="entry-header"]//text()')[6]
+            author = tree.xpath('//*[@class="entry-header"]/p//span/text()')
         except:
-            author =""
+            author = ""
+            
 #teaser: teaser is not on the same webpage as the article. it can only be seen before selecting the article: Therefore no teaser being scraped.
 
- #text
+ #text: doesnt work
         try:
-            teaser = tree.xpath('//*[@itemprop="text"]//p//text()')
+            text = "".join(tree.xpath('//*[@itemprop="text"]/p/text()'))
         except:
-            teaser =""
+            text =""
  
         extractedinfo={"category":category,
-                       "title":title,
                        "byline":author,
-                       "text":text
+                       "text":text,
+                       "title": title
                        }
 
         return extractedinfo

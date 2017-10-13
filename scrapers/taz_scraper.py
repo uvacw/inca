@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class taz(rss):
-    """Scrapes http://www.handelsblatt.com/ """
+    """Scrapes http://www.taz.de"""
 
     def __init__(self,database=True):
         self.database = database
@@ -98,7 +98,7 @@ class taz(rss):
                 pub_date    = date,
                 title       = title,
                 text        = text.strip(),
-                summary     = description,
+                teaser     = description,
                 author      = author,
                 source      = source,
                 category    = category,

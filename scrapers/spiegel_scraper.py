@@ -48,7 +48,7 @@ class spiegel(rss):
         
 # category
         try:
-            category = r[0]['url'].split('/')[3]
+            category = tree.xpath('//*[@id="wrapper"]//*[@class="current-channel-name"]//text()')
         except:
             category = ""
 # title
@@ -77,14 +77,20 @@ class spiegel(rss):
             
 # author
         try:
-            author = tree.xpath('//*[@class="author"]//text()')[1]
+            author = tree.xpath('//*[@class="author"]/a/text()')
         except:
             author =""
+# source
+        try:
+            source = ''.join(tree.xpath('//*[@id="content-main"]//i/text()')).replace('/',' ')
+        except:
+            source = ""
 
 
         extractedinfo = {"category":category,
                          "teaser":teaser.strip(),
                          "byline":author,
+                         "byline_source":source,
                          "title":title.strip(),
                          "text":text.strip()
                         }

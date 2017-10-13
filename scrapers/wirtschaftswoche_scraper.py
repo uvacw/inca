@@ -45,7 +45,7 @@ class wirtschaftswoche(rss):
             return("","","", "")
 #category
         try:
-            category = r[0]['url'].split('/')[3]
+            category ="" 
         except:
             category=""
 #teaser
@@ -55,27 +55,28 @@ class wirtschaftswoche(rss):
             teaser = ""
 
 
-#text: still getting the ads with the text
+#text: werkt nog niet
         try:
             text = tree.xpath('//*[@itemprop="aticleBody"]//text()')
         except:
             text = ""
 
-#author
+#author: werkt nog niet
         try:
             author = tree.xpath('//*[@class="hcf-author"]//text()')[1]
         except:
             author =""
-#source
+            
+#source:
         try:
-            source = tree.xpath('//*[@class="hcf-origin"]/a//span/text()')
+            source = tree.xpath('//*[@class="hcf-gallery-caption"]//a/text()')
         except:
             source = ""
 
 #title: title is written in two parts. this path gets both with a ':' in the middle.
 
         try:
-            title = tree.xpath('//*[@class="hcf-article-header"]//text()')[:3]
+            title = "".join(tree.xpath('//*[@class="hcf-colset1"]//h2//text()'))
         except:
             title = ""
 

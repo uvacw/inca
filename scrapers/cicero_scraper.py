@@ -70,7 +70,8 @@ class cicero(rss):
             
 # text
         try:
-            text = tree.xpath('//*[@class="field field-name-field-cc-body"]//text()')[0]
+            text = ''.join(tree.xpath('//*[@class="field field-name-field-cc-body"]/p//text()')).replace('\xa0','')
+            
         except:
             text =""
             

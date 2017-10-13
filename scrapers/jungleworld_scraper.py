@@ -87,20 +87,21 @@ class jungleworld(rss):
         except:
             category = ""
 # title
+
         try:
-            title = tree.xpath('//*[@class="page-title"]//text()')[0]
+            title1 = ''.join(tree.xpath('//*[@class="field field-name-field-dachzeile"]//text()')).replace('\n','').strip()
         except:
-            title =""
+            title1 = ""
+        try:
+            title2 = tree.xpath('//*[@class="page-title"]//text()')[0]
+        except:
+            title2 =""
+        title = title1 + title2
 # teaser
         try:
-            teaser1 = tree.xpath('//*[@class="field field-name-field-dachzeile"]//text()')[0]
+            teaser = "".join(tree.xpath('//*[@class="lead"]//text()')).replace('\n','').strip()
         except:
-            teaser1 =""
-        try:
-            teaser2 = tree.xpath('//*[@class="lead"]/p/text()')[0]
-        except:
-            teaser2 =""
-        teaser = teaser1 + teaser2
+            teaser =""
             
 # text
         try:
@@ -110,7 +111,7 @@ class jungleworld(rss):
             
 # author
         try:
-            author = tree.xpath('//*[@class="autor"]//text()')[1]
+            author = tree.xpath('//*[@class="autor"]/a/text()')[0]
         except:
             author =""
 
