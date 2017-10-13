@@ -52,7 +52,7 @@ class pvv(Scraper):
                 current_page = requests.get(link, timeout = 10)
                 tree = fromstring(current_page.text)
                 try:
-                    text =" ".join(tree.xpath('//*[@itemprop = "articleBody"]/p/text()')).strip()
+                    text =" ".join(tree.xpath('//*[@itemprop = "articleBody"]/p/text()|//*[@itemprop = "articleBody"]/p/em/text()')).strip()
                 except:
                     logger.debug("no text")
                     text=""
@@ -73,12 +73,18 @@ class pvv(Scraper):
                 except:
                     logger.debug("no title")
                     title = ""
+                try:
+                    whole_release = " ".join(tree.xpath('//*[@itemprop = "articleBody"]/p/text()|//*[@itemprop = "articleBody"]/p/em/text()|//*[@itemprop = "headline"]/text()')).strip()
+                    whole_release = " ".join(whole_release.split())
+                except:
+                    whole_release = ""
+                    
                 releases.append({'text':text,
                                  'title':title,
                                  'publication_date':publication_date,
                                  'url':link,
                                  'ext_source':ext_source,
-                                 'html':current_page.text})
+                                 'whole_release':whole_release})
             page+=5
             current_url = self.START_URL+'?start='+str(page)
             overview_page=requests.get(current_url, timeout = 10)

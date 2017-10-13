@@ -150,3 +150,48 @@ class multireplace(Processer):
                     doc=re.sub(str(rule['regexp_2nd']), rule['replace_with'], doc)
         return doc
 
+class remove_stopwords(Processer):
+    '''Similar to removing all punctuation, but expects either the keyword 'stopwords_list' with a list of words or the keyword 'language' as input (the latter case uses the nltk stopword list for this language). During the process, text also gets lowercased
+Example for stopwords_list Dutch language: 
+import requests
+stopwords = requests.get("https://raw.githubusercontent.com/stopwords-iso/stopwords-nl/master/stopwords-nl.txt").text.splitlines()'''
+
+    def process(self, document_field, **kwargs):
+        '''removes stopwords'''
+        doc = ""
+        if 'language' in kwargs  and not 'stopwords_list' in kwargs:
+            from nltk.corpus import stopwords
+            stopwords_list = set(stopwords.words(kwargs['language']))
+            for w in str(document_field).split():
+                if w.lower() not in stopwords_list:
+                    doc+=(" "+w.lower())
+                else:
+                    pass
+            return doc
+        elif 'stopwords_list' in kwargs  and not 'language' in kwargs:
+            for w in str(document_field).split(): 
+                if w.lower() not in kwargs['stopwords_list']:
+                    doc+=(" "+w.lower())
+                else:
+                    pass
+            return doc
+        elif 'language'in kwargs and 'stopwords_list' in kwargs:
+            logger.debug("Warning:You either have to specify a language or a stopword list as input")
+            pass
+        else:
+            logger.debug("Warning:You can either specify language or stopword list, not both")
+            pass
+    
+        
+
+class stemming(Processer):
+    '''Stems all the words in a document, based on nltk snowball stemming. Expects the keyword 'language' with the language  of the document as string as input, for example "dutch".'''
+
+    def process(self, document_field, language = ""):
+        from nltk.stem.snowball import SnowballStemmer
+        stemmer=SnowballStemmer(language)
+        doc = ""
+        for w in document_field.split():
+            doc+=(" "+stemmer.stem(w))
+
+        return doc

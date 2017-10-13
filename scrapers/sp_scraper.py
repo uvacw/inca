@@ -82,24 +82,36 @@ class sp(Scraper):
                 try:
                     text = " ".join(tree.xpath('//*[@id = "content"]//p/text()|//*[@id = "content"]//p/em/text()|//*[@id = "content"]//p/a/text()')[1:]).strip()
                     text = text.replace('\n', '')
+                    text = text.replace('\xa0', '')
                 except:
                     logger.debug("no text")
                     text = ""
                 try:
                     teaser = "".join(tree.xpath('//*[@id = "content"]//p/text()|//*[@id = "content"]//p/em/text()|//*[@id = "content"]//p/a/text()')[0]).strip()
                     teaser = teaser.replace('\n', '')
+                    teaser = teaser.replace('\xa0', '')
                 except:
                     teaser = ""
                 try:
                     quote =  " ".join(tree.xpath('//*[@id = "content"]//blockquote/p/text()')).strip()
                 except:
                     quote = ""
+                try:
+                    whole_release = " ".join(tree.xpath('//*[@class = "h2 icon-title"]/text()|//*[@id = "content"]//p/text()|//*[@id = "content"]//p/em/text()|//*[@id = "content"]//p/a/text()|//*[@id = "content"]//blockquote/p/text()')).strip()
+                    
+                    whole_release = whole_release.replace('\n', '')
+                    whole_release = whole_release.replace('\xa0', '')
+                    whole_release = whole_release.replace('\t', '')
+                except:
+                    whole_release = ""
+                    
                 releases.append({'text':text,
                                  'title':title,
                                  'publication_date': publication_date,
                                  'url':full_link,
                                  'teaser':teaser,
-                                 'quote':quote})
+                                 'quote':quote,
+                                 'whole_release':whole_release})
             page+=1
             current_url = self.START_URL+'js?page='+str(page)
             overview_page=requests.get(current_url)
