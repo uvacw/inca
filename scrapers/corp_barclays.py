@@ -10,6 +10,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+MAAND2INT = {'Jan':1,'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6, 'Jul':7, 'Aug':8, 'Sep':9, 'Oct':10, 'Nov':11, 'Dec':12}
+
 class barclays(Scraper):
     """Scrapes Barclays"""
 
@@ -18,14 +20,14 @@ class barclays(Scraper):
         self.START_URL = "http://www.newsroom.barclays.com/Releases/ReleasesPage.aspx"
         self.BASE_URL = "http://www.newsroom.barclays.com/"
         self.current_year = 2017
+        self.doctype = "Barclays (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=27)
 
     def get(self):
         '''                                                                             
         Fetches articles from Barclays
         '''
-        self.doctype = "Barclays (corp)"
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=7, day=27)
 
         releases = []
 
@@ -47,18 +49,27 @@ class barclays(Scraper):
                     tree = fromstring(current_page.text)
                     try:
                         title=" ".join(tree.xpath('//*/article[@class="release-detail"]/h1/text()'))
-        #                print("this prints title", title)
                     except:
                         print("no title")
                         title = ""
                     try:
+                        d = tree.xpath('//*/time[@id="MainContent_ReleaseText_dtreldate"]//text()')[0].strip()
+                        jaar = int(d[-10:-6]) 
+                        maand = MAAND2INT[d[2:-10].strip()]
+                        dag = int(d[:2])
+                        datum = datetime.datetime(jaar,maand,dag)
+                    except Exception as e:
+                        print('could not parse date')
+                        print(e)
+                        datum = None
+                    try:
                         text=" ".join(tree.xpath('//*[@class="body"]//text()'))
                     except:
-        #           print("geen text")
                         logger.info("oops - geen textrest?")
                         text = ""
                     text = "".join(text)
                     releases.append({'text':text.strip(),
+                                     'date':datum,
                                      'title':title.strip(),
                                      'url':link.strip()})
 
