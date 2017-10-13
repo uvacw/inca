@@ -35,7 +35,10 @@ from scrapers.corp_gnf import *
 from scrapers.corp_grifols import *
 from scrapers.corp_gsk import *
 from scrapers.corp_iag import *
+try:
 from scrapers.corp_kpn import *
+except:
+	logger.info('Could not import randstad scraper; maybe you do not have a working selenium/phantomJS installation')
 from scrapers.corp_lbg import *
 from scrapers.corp_mapfre import *
 from scrapers.corp_merlin import *
@@ -43,7 +46,10 @@ from scrapers.corp_nationalgrid import *
 from scrapers.corp_philips import *
 from scrapers.corp_popular import *
 from scrapers.corp_prudential import *
-from scrapers.corp_randstad import *
+try:
+	from scrapers.corp_randstad import *
+except:
+	logger.info('Could not import randstad scraper; maybe you do not have a working selenium/phantomJS installation')
 from scrapers.corp_ree import *
 from scrapers.corp_riotinto import *
 from scrapers.corp_sbm import *
