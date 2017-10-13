@@ -150,3 +150,31 @@ class multireplace(Processer):
                     doc=re.sub(str(rule['regexp_2nd']), rule['replace_with'], doc)
         return doc
 
+
+class remove_stopwords(Processer):
+    '''Similar to removing all punctuation, but expects the keyword 'stopwords' with a list of words as input. During the process, text also gets lowercased
+ Example for Dutch language: 
+import requests
+stopwords = requests.get("https://raw.githubusercontent.com/stopwords-iso/stopwords-nl/master/stopwords-nl.txt").text.splitlines()'''
+
+    def process(self, document_field, stopwords=[]):
+        '''removes stopwords'''
+        doc = ""
+        for w in str(document_field).split(): 
+            if w.lower() not in stopwords:
+                doc+=(" "+w.lower())
+            else:
+                pass
+        return doc
+
+class stemming(Processer):
+    '''Stems all the words in a document, based on nltk snowball stemming. Expects the keyword 'language' with the language  of the document as string as input, for example "dutch".'''
+
+    def process(self, document_field, language = ""):
+        from nltk.stem.snowball import SnowballStemmer
+        stemmer=SnowballStemmer(language)
+        doc = ""
+        for w in document_field.split():
+            doc+=(" "+stemmer.stem(w))
+
+        return doc
