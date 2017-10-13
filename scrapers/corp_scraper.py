@@ -36,9 +36,9 @@ from scrapers.corp_grifols import *
 from scrapers.corp_gsk import *
 from scrapers.corp_iag import *
 try:
-from scrapers.corp_kpn import *
+    from scrapers.corp_kpn import *
 except:
-	logger.info('Could not import randstad scraper; maybe you do not have a working selenium/phantomJS installation')
+    logger.info('Could not import randstad scraper; maybe you do not have a working selenium/phantomJS installation')
 from scrapers.corp_lbg import *
 from scrapers.corp_mapfre import *
 from scrapers.corp_merlin import *
