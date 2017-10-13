@@ -10,6 +10,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+MAAND2INT = {'Jan':1,'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6, 'Jul':7, 'Aug':8, 'Sep':9, 'Oct':10, 'Nov':11, 'Dec':12}
+
 class vodafone(Scraper):
     """Scrapes Vodafone"""
 
@@ -53,6 +55,16 @@ class vodafone(Scraper):
                     teaser= ""
                     teaser_clean = " ".join(teaser.split())
                 try:
+                    d = tree.xpath('//*[@class="subs-date"]//text()')[0].strip()
+                    jaar = int(d[-4:]) 
+                    maand = MAAND2INT[d[2:-4].strip()]
+                    dag = int(d[:2])
+                    datum = datetime.datetime(jaar,maand,dag)
+                except Exception as e:
+                    print('could not parse date')
+                    print(e)
+                    datum = None
+                try:
                     text=" ".join(tree.xpath('//*[@class="richtexteditor section"]/p//text()'))
                 except:
                     logger.info("oops - geen textrest?")
@@ -60,6 +72,7 @@ class vodafone(Scraper):
                 text = "".join(text)
                 releases.append({'text':text.strip(),
                                  'title':title.strip(),
+                                 'date':datum,
                                  'teaser':teaser.strip(),
                                  'url':link.strip()})
 
