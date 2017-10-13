@@ -75,8 +75,9 @@ class pvda(Scraper):
                     publication_date = ""
 
                 try:
-                    text = " ".join(tree.xpath('//*[@class = "content"]//p[not(@class="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/text()|//*[@class = "content"]//p[not(@class ="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/em/text()|//*[@class = "content"]//p[not(@class = "meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/u/text()')).strip()
+                    text = " ".join(tree.xpath('//*[@class = "content"]//p[not(@class="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/text()|//*[@class = "content"]//p[not(@class ="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/em/text()|//*[@class = "content"]//p[not(@class = "meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/u/text()|//*[@class = "bumpedFont15"]/text()')).strip()
                     text = text.replace('\xa0', '')
+                    text = " ".join(text.split())
                 except:
                     logger.debug("no text")
                     text = ""
@@ -88,13 +89,19 @@ class pvda(Scraper):
                     quote = "".join(tree.xpath('//*[@class = "content"]//blockquote/p/text()')).strip()
                 except:
                     quote = ""
-                                     
+                try:
+                    whole_release = " ".join(tree.xpath('//*[@class = "has-header"]//h1/text()|//*[@class = "content"]//p[not(@class="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/text()|//*[@class = "content"]//p[not(@class ="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/em/text()|//*[@class = "content"]//p[not(@class = "meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/u/text()|//*[@class = "bumpedFont15"]/text()|//*[@class = "content"]/div[not(@class ="related-excerpt")]/h2/text()|//*[@class = "content"]/div[not(@class ="related-excerpt")]/h3/text()|//*[@class = "content"]//blockquote/p/text()')).strip()
+                    whole_release = " ".join(whole_release.split())
+                except:
+                    whole_release = ""
+                    
                 releases.append({'text':text,
                                  'title':title,
                                  'publication_date': publication_date,
                                  'url':link,
                                  'teaser':teaser,
-                                 'quote':quote})
+                                 'quote':quote,
+                                 'whole_release':whole_release})
             page+=1
             current_url = self.START_URL+'page/'+str(page)
             overview_page=requests.get(current_url)
