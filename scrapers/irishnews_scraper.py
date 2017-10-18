@@ -9,14 +9,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-    lines = textstring.strip().split('\n')
-    lead = lines[0].strip()
-    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-    if rest: result = lead + ' ||| ' + rest
-    else: result = lead
-    return result.strip()
 
 class bbcni(rss):
     """Scrapes imt.ie"""
