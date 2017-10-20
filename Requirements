@@ -22,9 +22,9 @@ kombu==3.0.35
 loremipsum==1.0.5
 MarkupSafe==0.23
 nose==1.3.7
-numpy==1.11.1
+numpy>1.11.1
 oauthlib==1.1.2
-pandas==0.18.1
+pandas>0.18.1
 pexpect==4.0.1
 pickleshare==0.7.2
 ptyprocess==0.5.1
@@ -44,3 +44,6 @@ urllib3==1.15.1
 Werkzeug==0.11.10
 nltk==3.2.4
 ImageHash==3.4
+lxml
+# if the next one fails, run sudo apt-get install libmysqlclient-dev
+git+git://github.com/clips/pattern.git@development
