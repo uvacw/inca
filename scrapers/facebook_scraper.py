@@ -39,11 +39,12 @@ class facebook(Scraper):
         '''                                                                     
         Fetches posts from facebook page
         '''
-        self.doctype = "facebook(social media)"
+        self.doctype = "facebook"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=10, day=8)
+        self.date = datetime.datetime(year=2017, month=10, day=20)
               
 	#retrieve the ID of the facebook page (needed for scraping)
+        pagename = self.PAGENAME
         facebookpage = str(self.BASE_URL + self.PAGENAME)
         driver =  webdriver.Chrome()
         #note: using chrome instead of firefox because of bug in geckodriver that does not allow sending keys
@@ -100,7 +101,6 @@ class facebook(Scraper):
                     publication_date = item['created_time']
                     publication_date = datetime.datetime.strptime(item['created_time'], '%Y-%m-%dT%H:%M:%S+0000')
                     publication_date = publication_date + datetime.timedelta(hours=-5) # EST
-                    publication_date = publication_date.strftime('%Y-%m-%d %H:%M:%S')
                 except:
                     publication_date = ""
                 try:
@@ -117,7 +117,7 @@ class facebook(Scraper):
                     num_shares = 0
 
 	            # get the different reactions to a post (need a different url for this, works only since the time the different reactions exist)
-                if publication_date > '2016-02-24 00:00:00':
+                if publication_date.date() > datetime.date(2016, 2, 24):
                     reactions = "/?fields=" \
                                 "reactions.type(LIKE).limit(0).summary(total_count).as(like)" \
                                 ",reactions.type(LOVE).limit(0).summary(total_count).as(love)" \
@@ -155,13 +155,13 @@ class facebook(Scraper):
                         num_angrys = 0
                 else:
                     num_likes = num_reactions
-                    num_loves = "NA"
-                    num_wows = "NA"
-                    num_hahas = "NA"
-                    num_sads = "NA"
-                    num_angrys = "NA"
+                    num_loves = 0
+                    num_wows = 0
+                    num_hahas = 0
+                    num_sads = 0
+                    num_angrys = 0
 
-                posts.append({'text':text,'post_id':post_id,'publication_date':publication_date,'url':url,'category':post_type,'reactions_int':num_reactions,'comments_int': num_comments,'shares_int':num_shares,'likes_int':num_likes,'loves_int':num_loves,'hahas_int':num_hahas,'wows_int':num_wows,'sads_int':num_sads,'angrys_int':num_angrys})
+                posts.append({'text':text,'post_id':post_id,'publication_date':publication_date,'url':url,'category':post_type,'reactions_int':num_reactions,'comments_int': num_comments,'shares_int':num_shares,'likes_int':num_likes,'loves_int':num_loves,'hahas_int':num_hahas,'wows_int':num_wows,'sads_int':num_sads,'angrys_int':num_angrys, 'pagename':pagename})
             page += 1
             
             if 'paging' in fb_page.keys():
