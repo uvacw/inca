@@ -50,16 +50,16 @@ class jungefreiheit(rss):
             category = ""
  #title1
         try:
-            title1 = tree.xpath('//*[@class="entry-header"]/div/a/text()')
+            title1 = ' '.join(tree.xpath('//*[@class="entry-header"]/div/a/text()')).strip()
         except:
             title1 = ""
 #title2
         try:
-            title2 = tree.xpath('//*[@class="entry-title"]//text()')
+            title2 = ' '.join(tree.xpath('//*[@class="entry-title"]//text()')).strip()
         except:
             title2 = ""
             
-        title = title1 + title2
+        title = title1 + '\n ' + title2
         
  #author:
         try:

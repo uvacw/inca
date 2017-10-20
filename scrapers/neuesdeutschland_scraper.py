@@ -78,7 +78,7 @@ class neuesdeutschland(rss):
             source =""
 #text
         try:
-            text = tree.xpath('//*[@class="Content"]//p/text()')
+            text = ''.join(tree.xpath('//*[@class="Content"]//p/text()')).strip()
         except:
             text =""
 

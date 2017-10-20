@@ -56,7 +56,7 @@ class freitag(rss):
             teaser = ""
 #title
         try:
-            title = tree.xpath('//*[@class="row"]/h1/text()')[0].replace('\n','').strip()
+            title = ''.join(tree.xpath('//*[@class="row"]/h1/text()')[0].replace('\n','')).strip()
         except:
             title = ""
 #text

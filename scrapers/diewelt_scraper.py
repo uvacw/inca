@@ -66,7 +66,7 @@ class diewelt(rss):
         except:
             title2 = ""
             
-        titel = titel1 + titel2
+        title = title1 + title2
 #text
         try:
             text = tree.xpath('//*[@data-content="Sticky.ArticleBody"]/div/p/span/text()')+''.join(tree.xpath('//*[@itemprop="articleBody"]/p/text()'))

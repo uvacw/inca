@@ -65,13 +65,13 @@ class faz(rss):
 
 #text1:
         try:
-            text1 = tree.xpath('//*[@class="Artikel "]//*[@class="atc-TextFirstLetter"]//text()')
+            text1 = ' '.join(tree.xpath('//*[@class="Artikel "]//*[@class="atc-TextFirstLetter"]//text()'))
 
         except:
             text1 =""
 #Text2:
         try:
-            text2 = ''.join(tree.xpath('//*[@class="Artikel "]//*[@itemprop="articleBody"]/p/text()'))
+            text2 = ' '.join(tree.xpath('//*[@class="Artikel "]//*[@itemprop="articleBody"]/p/text()'))
 
         except:
             text2 =""
