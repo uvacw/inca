@@ -116,7 +116,7 @@ class facebook(Scraper):
                 except:
                     num_shares = 0
 
-	            # get the different reactions to a post (need a different url for this, works only since the time the different reactions exist)
+	            # get the different reactions to a post (only possible since facebook has different kinds of reactions apart from likes)
                 if publication_date.date() > datetime.date(2016, 2, 24):
                     reactions = "/?fields=" \
                                 "reactions.type(LIKE).limit(0).summary(total_count).as(like)" \
