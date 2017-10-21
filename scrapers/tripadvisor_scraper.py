@@ -20,19 +20,21 @@ MAXPAGES = 2
 class tripadvisor(Scraper):
     """Scrapes Tripadvisor reviews"""
     
-    def __init__(self,database=True,maxpages = 2, maxreviewpages = 5, starturl = "https://www.tripadvisor.com/Hotels-g188590-Amsterdam_North_Holland_Province-Hotels.html"):
+    def __init__(self, database=True, maxpages = 2, maxreviewpages = 5, maxurls = 90, starturl = "https://www.tripadvisor.com/Hotels-g188590-Amsterdam_North_Holland_Province-Hotels.html"):
         '''
         maxpages: number of pages with hostels to scrape
         maxreviewpages: number of pages with reviews *per hostel* to scrape
         starturl: URL to first page with hostel results
+        maxurl: number of urls that are made (note: use a multiple of 30, e.g. 3000 generates 100 links)
         '''
-        self.database=database
+        self.database = database
         self.START_URL = starturl
         self.BASE_URL = "http://www.tripadvisor.com"          
         self.MAXPAGES = maxpages
         self.MAXREVIEWPAGES = maxreviewpages
-        self.blacklist = ["http://www.tripadvisor.com/Hotel_Review-g188590-d189389-Reviews-Sofitel_Legend_The_Grand_Amsterdam-Amsterdam_North_Holland_Province.html"]   # review pages that never should be fetched (e.g., because they do not conform with the standard layout)
-
+        self.MAXURLS = maxurls
+        self.BLACKLIST = ["http://www.tripadvisor.com/Hotel_Review-g188590-d189389-Reviews-Sofitel_Legend_The_Grand_Amsterdam-Amsterdam_North_Holland_Province.html","http://www.tripadvisor.com/Hotel_Review-g188590-d3526884-Reviews-Andaz_Amsterdam_Prinsengracht-Amsterdam_North_Holland_Province.html"]   # review pages that never should be fetched (e.g., because they do not conform with the standard layout)
+ 
     def get(self):
         '''Fetches reviews from Tripadvisor.com'''
         self.doctype = "Tripadvisor reviews"
@@ -41,10 +43,17 @@ class tripadvisor(Scraper):
         
         hotels = []
         allurls = []
-        starturl = "https://www.tripadvisor.com/Hotels-g188590-0a{}-Amsterdam_North_Holland_Province-Hotels.html#BODYCON"
+
+        # Creating the starturl by altering the starturl
+        starturl_altering = self.START_URL + "#BODYCON"
+        occur = 2
+        indices = [x.start() for x in re.finditer("-",starturl_altering)]
+        part1 = starturl_altering[0:indices[occur-1]]
+        part2 = starturl_altering[indices[occur-1]+1:]
+        starturl = part1 + "-oa{}-" + part2
 
         # For testing purposes, change the range
-        for i in range (0, 30, 30):          
+        for i in range (0, self.MAXURLS, 30):          
             allurls.append(starturl.format(i))
         allurlsgen = (e for e in allurls)
         thisurl = next(allurlsgen)
@@ -85,8 +94,8 @@ class tripadvisor(Scraper):
             link = hotel['link']
             logger.debug('Fetched the hotel-specific webpage: {}'.format(link))
             sleep(randrange(5,10))
-            blacklist = ["http://www.tripadvisor.com/Hotel_Review-g188590-d189389-Reviews-Sofitel_Legend_The_Grand_Amsterdam-Amsterdam_North_Holland_Province.html"]
-            if link not in blacklist:
+
+            if link not in self.BLACKLIST:
                 req=urllib2.Request(link, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
                 htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(htmlsource)
@@ -251,6 +260,12 @@ class tripadvisor(Scraper):
                 reviews_cleaned = []
                 reviews_alltext_elements = tree.xpath('//*[@class="partial_entry"]')
                 reviews_alltext = [e.text_content() for e in reviews_alltext_elements]
+
+                # check if we have any review that has no text:
+                notcomplete = max([r=="" for r in reviews_alltext])  # True if at least one review is empty
+                if notcomplete:
+                    logger.warning("This is weird, the current hotel has a review without text. It's here: {}".format(reviews_thisurl))
+                    continue
                 responses_elements = tree.xpath('//*[@class="mgrRspnInline"]')
                 responses = [e.text_content() for e in responses_elements]
                 responses_date = []
