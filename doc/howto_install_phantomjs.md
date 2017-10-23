@@ -1,3 +1,33 @@
+# Install PhantomJS to use for non-RSS scrapers
+
+Some non-rss websites use Javascript to make the lay-out of their websites. In this case, using XPaths when trying to retrieve the articles is not possible from the overview page is not possible. In this case, we will have to use Selenium and PhantomJS to being able to work with the website. An example of such a website is https://overons.kpn/en/news. These websites often do not have a page navigation to loop over. This manual will show you how to install PhantomJS and provide an example of a scrapers using Selenium and PhantomJS.
+
+Go to http://phantomjs.org/download.html and download the version of PhantomJS that is app that is applicable to your operating system. After extracting the zip file copy the file phantomjs to a directory in your path, so python can detect it. You can see the path when you execute the following command in bash:
+
+
+```python
+echo $PATH
+```
+
+For instance, I For instance, I put it in the directory ‘/Users/tamara/anaconda/bin’. Put the following command in the head of your python script:
+
+
+```python
+from selenium import webdriver
+```
+
+Put the following two commands in the get method:
+
+
+```python
+driver = webdriver.PhantomJS()
+driver.get(URL)
+```
+
+Below you can see an example of such a scraper containing phantomjs. Now you can test the scraper in INCA as normally. I commented out the download links and packages needed make sure your computer can work with Selenium and PhantomJS in the first 5 lines.
+
+
+```python
 # http://phantomjs.org/download.html
 # https://chromedriver.storage.googleapis.com/index.html?path=2.31/
 # pip install selenium
@@ -70,19 +100,21 @@ class kpn(Scraper):
         self.process_links(links)
     
         try:
-        	button_right = driver.find_element_by_class_name("kpn-icomoon-arrow-right-bold")
-        	while button_right.get_attribute("class").find("kpn-disabled") == -1:
-        		button_right.click()
-        		# processing here
-        		time.sleep(2)
-        		linkobjects = tree.xpath('//*/article[@class="kpn-clear-fix"]/h3//a')
-        		links = [l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
-        		# print('\n'.join(links))
-        		self.process_links(links)
+            button_right = driver.find_element_by_class_name("kpn-icomoon-arrow-right-bold")
+            while button_right.get_attribute("class").find("kpn-disabled") == -1:
+                button_right.click()
+                # processing here
+                time.sleep(2)
+                linkobjects = tree.xpath('//*/article[@class="kpn-clear-fix"]/h3//a')
+                links = [l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+                # print('\n'.join(links))
+                self.process_links(links)
 
-        		button_right = driver.find_element_by_class_name("kpn-icomoon-arrow-right-bold")
+                button_right = driver.find_element_by_class_name("kpn-icomoon-arrow-right-bold")
         except:
-        	print('Error occurred.')
+            print('Error occurred.')
 
         driver.quit()
         return self.releases
+
+```

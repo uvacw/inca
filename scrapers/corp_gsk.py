@@ -10,6 +10,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 'July':7, 'August':8, 'September':9, 'October':10, 'November':11, 'December':12}
+
 class gsk(Scraper):
     """Scrapes GlaxoSmithKline"""
 
@@ -17,14 +19,14 @@ class gsk(Scraper):
         self.database = database
         self.START_URL = "http://www.gsk.com/en-gb/media/press-releases/"
         self.BASE_URL = "http://www.gsk.com/"
+        self.doctype = "GSK (corp)"
+        self.version = ".1"
+        self.date = datetime.datetime(year=2017, month=7, day=24)
 
     def get(self):
         '''                                                                             
         Fetches articles from GSK
         '''
-        self.doctype = "GSK (corp)"
-        self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=7, day=24)
 
         releases = []
 
@@ -48,6 +50,16 @@ class gsk(Scraper):
                     print("no title")
                     title = ""
                 try:
+                    d = tree.xpath('//*/time[@class="bts__date"]//text()')[0].strip()
+                    jaar = int(d[-4:]) 
+                    maand = MAAND2INT[d[2:-4].strip()]
+                    dag = int(d[:2])
+                    datum = datetime.datetime(jaar,maand,dag)
+                except Exception as e:
+                    print('could not parse date')
+                    print(e)
+                    datum = None
+                try:
                     teaser=" ".join(tree.xpath('//*[@class="intro"]/p//text()'))
                 except:
                     teaser= ""
@@ -60,6 +72,7 @@ class gsk(Scraper):
                 text = "".join(text)
                 releases.append({'text':text.strip(),
                                  'teaser': teaser.strip(),
+                                 'date':datum,
                                  'title':title.strip(),
                                  'url':link.strip()})
 

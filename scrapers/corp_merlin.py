@@ -10,64 +10,55 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 'July':7, 'August':8, 'September':9, 'October':10, 'November':11, 'December':12}
-
-class bat(Scraper):
-    """Scrapes British American Tobacco"""
+class merlin(Scraper):
+    """Scrapes Merlin Porperties Socimi SA"""
 
     def __init__(self,database=True):
         self.database = database
-        self.START_URL = "http://www.bat.com/group/sites/UK__9D9KCY.nsf/vwPagesWebLive/DO6YLKYF"
-        self.BASE_URL = "http://www.bat.com"
+        self.START_URL = "http://www.merlinproperties.com/en/press-release/"
+        self.BASE_URL = "http://www.merlinproperties.com/"
 
     def get(self):
         '''                                                                             
-        Fetches articles from British American Tobacco
+        Fetches articles from Merlin Properties Socimi SA
         '''
-        self.doctype = "BAT (corp)"
+        self.doctype = "Merlin (corp)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=26)
+        self.date = datetime.datetime(year=2017, month=8, day=22)
 
         releases = []
 
-        current_url = self.START_URL
-        start_page = requests.get(current_url)
-        tree = fromstring(start_page.text)
-        yearobjects = tree.xpath('//*/ul[@class="ow_tabnav_ul"]//a')
-        years = [self.BASE_URL+l.attrib['href'] for l in yearobjects if 'href' in l.attrib]
-        
-        for year in years:
-
-            current_url = year
-            year_page = requests.get(current_url)
-            tree = fromstring(year_page.text)
-    
-            linkobjects = tree.xpath('//*[@class="stackRow"]//a[@class="link"]')
+        page = 1
+        current_url = self.START_URL+'page/'+str(page)+'/'
+        overview_page = requests.get(current_url)
+        while overview_page.text.find('page-navigation') != -1:
+            tree = fromstring(overview_page.text)
+            
+            linkobjects = tree.xpath('//*/ul[@class="lst-news"]/li//a')
             links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+
             for link in links:
                 logger.debug('ik ga nu {} ophalen'.format(link))
                 current_page = requests.get(link)
                 tree = fromstring(current_page.text)
                 try:
-                    title=" ".join(tree.xpath('//*[@class="title"]/p/text()'))
+                    title=" ".join(tree.xpath('//*/h1[@class="h2"]/text()'))
                 except:
                     print("no title")
                     title = ""
                 try:
-                    d = tree.xpath('//*[@class="standard gutterTop"]/p/strong//text()')[0].strip()
+                    d = tree.xpath('//*/h2[@class="h4"]//text()')[0].strip()
+                    print(d)
                     jaar = int(d[-4:]) 
+                    maand = int(d[3:-5])
                     dag = int(d[:2])
-                    if len("dag")==1:
-                    	maand = MAAND2INT[d[1:-5].strip()]
-                    else:
-                    	maand = MAAND2INT[d[2:-5].strip()]
                     datum = datetime.datetime(jaar,maand,dag)
                 except Exception as e:
                     print('could not parse date')
                     print(e)
                     datum = None
                 try:
-                    text=" ".join(tree.xpath('//*[@class="primaryContent gutterTop"]//text()'))
+                    text=" ".join(tree.xpath('//*[@itemprop="description"]//text()'))
                 except:
                     logger.info("oops - geen textrest?")
                     text = ""
@@ -76,5 +67,9 @@ class bat(Scraper):
                                  'date':datum,
                                  'title':title.strip(),
                                  'url':link.strip()})
+
+            page+=1
+            current_url = self.START_URL+'page/'+str(page)+'/'
+            overview_page = requests.get(current_url)
 
         return releases

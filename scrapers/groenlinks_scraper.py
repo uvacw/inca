@@ -35,7 +35,7 @@ class groenlinks(Scraper):
         releases = []
 
         page = 0
-        current_url = self.START_URL+str(page)
+        current_url = self.START_URL+"?page="+str(page)
         overview_page = requests.get(current_url, timeout = 10)
         first_page_text=""
         while overview_page.text!=first_page_text:
@@ -56,8 +56,8 @@ class groenlinks(Scraper):
                         link = link[25:]
                         current_page = requests.get(link, timeout = 10)
                     except:
-                        print("Connection Error!")
-                        print(str(e))
+                        logger.debug("Connection Error!")
+                        logger.debug(str(e))
                 tree = fromstring(current_page.text)
                 try:
                     title= " ".join(tree.xpath('//*[@id = "page-title"]/text()'))
@@ -65,7 +65,7 @@ class groenlinks(Scraper):
                     logger.debug("no title")
                     title = ""
                 try:
-                    publication_date = "".join(tree.xpath('//*[@class = "submitted-date"]/text()'))
+                    publication_date = "".join(tree.xpath('//*[@class = "submitted submitted-date"]/text()'))
                     MAAND2INT = {"januari":1, "februari":2, "maart":3, "april":4, "mei":5, "juni":6, "juli":7, "augustus":8, "september":9, "oktober":10, "november":11, "december":12}
                     dag = publication_date[:2]
                     jaar= publication_date[-4:]
@@ -75,30 +75,46 @@ class groenlinks(Scraper):
                 except:
                     publication_date = ""
                 try:
-                    teaser=" ".join(tree.xpath('//*[@class = "intro"]/p/text()')).strip()
+                    teaser=" ".join(tree.xpath('//*[@class = "intro"]//p/text()')).strip()
+                    teaser = teaser.replace('\n', '')
+                    teaser = teaser.replace('\xa0', ' ')
                 except:
                     logger.debug("no teaser")
                     teaser = ""
                 try:
-                    text = " ".join(tree.xpath('//*[@class = "content-wrapper"]/p/text()')).strip()
+                    text = " ".join(tree.xpath('//*[@class = "content"]/p/text()')).strip()
+                    text = text.replace('\n', '')
+                    text = text.replace('\t', '')
                 except:
                     logger.info("no text?")
                     text = ""
-                text = "".join(text)
                 try:
-                    quote = " ".join(tree.xpath('//*[@class = "content-wrapper"]/blockquote/p/text()')).strip()
+                    quote = " ".join(tree.xpath('//*[@class = "content"]//blockquote//p/text()')).strip()
+                    quote = quote.replace('\n', '')
                 except:
                     quote = ""
-                quote = "".join(quote)
-                releases.append({'text':text,
+                try:
+                    whole_release = " ".join(tree.xpath('//*[@id = "page-title"]/text()|//*[@class = "intro"]//p/text()|//*[@class = "content"]/p/text()|//*[@class = "content"]//blockquote//p/text()')).strip()
+                    whole_release = whole_release.replace('\n', '')
+                    whole_release = whole_release.replace('\t', '')
+                    whole_release = whole_release.replace('\xa0', '')
+                except:
+                    whole_release = ""
+                
+                #next step necessary as loop somehow runs twice (avoid duplicates)
+                dict = ({'text':text,
                                  'teaser': teaser,
                                  'title':title,
                                  'quote':quote,
                                  'url':link,
-                                 'publication_date':publication_date})
-        
+                                 'publication_date':publication_date,
+                         'whole_release':whole_release})
+                
+                if dict not in releases:
+                    releases.append(dict)
+
             page+=1
-            current_url = self.START_URL+'?page'+str(page)
+            current_url = self.START_URL+'?page='+str(page)
             overview_page=requests.get(current_url, timeout = 10)
 
         return releases

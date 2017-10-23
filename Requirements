@@ -45,5 +45,6 @@ Werkzeug==0.11.10
 nltk==3.2.4
 ImageHash==3.4
 lxml
+selenium
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
 git+git://github.com/clips/pattern.git@development

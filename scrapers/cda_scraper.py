@@ -82,11 +82,16 @@ class cda(Scraper):
                     publication_date = publication_date.date()
                 except:
                     publication_date = ""
-
+                try:
+                    whole_release = "".join(tree.xpath('//*[@class = "pageHeader-content"]//h1/span/text()|//*[@class ="widePhoto-content"]//h1/span/text()|//*[@id = "mainContent"]//div[@class = "mg-text-container"]/p/text()')).strip()
+                    whole_release = " ".join(whole_release.split())
+                except:
+                    whole_release = ""
                 releases.append({'text':text,
                                  'title':title,
                                  'publication_date':publication_date,
-                                 'url':link})
+                                 'url':link,
+                                 'whole_release':whole_release})
             page+=1
             current_url = self.START_URL+'?lookup[page-7430]='+str(page)
             overview_page=requests.get(current_url)
