@@ -159,19 +159,24 @@ class tripadvisor(Scraper):
                     ""
                     logger.info("Hotel with link {} did not have a type of review.".format(link))
                 try:
-                    review_stayed = tree.xpath('//*[@class="recommend-titleInline noRatings"]/text()|//*[@class="recommend-titleInline"]/text()')
-                    logger.debug("This page has {} dates of stay.".format(len(review_stayed)))
-                except:
-                    ""
-                    logger.info("Hotel with link {} did not have dates of stay.".format(reviews_thisurl))
-                try:
                     ratingelements = tree.xpath('//*[@class="rating reviewItemInline"]/span[1]')
                     review_ratings = [e.attrib['class'].lstrip('ui_bubble_rating bubble_') for e in ratingelements]
                     logger.debug("This page has {} ratings.".format(len(review_ratings)))
                 except:
                     ""
                     logger.info("Hotel with link {} did not have a review ratings.".format(reviews_thisurl))
-            
+
+                review_stayed = []
+                review_stayed_elem = tree.xpath('//*[@class="prw_rup prw_reviews_category_ratings_hsx"]')
+                for review in review_stayed_elem:
+                    date = review.text_content()
+                    date_strip = date.replace("Value","").replace("Location","").replace("Sleep","").replace("Quality","").replace("Rooms","").replace("Cleanliness","").replace("Service","")
+                    if date_strip == "":
+                        review_stayed.append('NA')
+                    else:
+                        review_stayed.append(date_strip)
+                logger.debug("This page has {} dates of stay.".format(len(review_stayed)))
+                
                 review_usernames =[]
                 review_locations=[]
                 review_contributions=[]
