@@ -36,7 +36,7 @@ class timeline_generator():
                             "which field should be {qt}-ed".format(**locals()))
 
             # basic elastic query to select documents for each timeseries
-            elastic_query = {'query':{"and":[ {'query_string':{'query':q}}]},
+            elastic_query = {'query':{"bool": { 'must': [ {'query_string':{'query':q}}]}},
                              'aggs':{'timeline' : {"date_histogram": {
                                  "field":timefield,
                                  "interval":granularity
@@ -52,8 +52,6 @@ class timeline_generator():
                 }}
                 )
 
-            if field:
-                elastic_query.update({'fields':[""]})
 
             # add time range if from or to time is specified
             time_range = {timefield:{}}
@@ -70,7 +68,7 @@ class timeline_generator():
                 elastic_query['query']['and'].append({'range':time_range})
 
             logger.debug("elastic query = {elastic_query}".format(**locals()))
-            res = client.search(elastic_index, body=elastic_query)
+            res = client.search(elastic_index, body=elastic_query, size=0)
             logger.debug("found {res[hits][total]} results in total".format(**locals()))
 
             if qt=='count':
