@@ -1,4 +1,4 @@
-# Importing and exporing data
+# Importing and exporting data
 
 When running INCA, next to scraping data, processing data, and analyzing data, you probably also want to be able to import and export data to and from other sources. Doing so is necessary for creating backups, but also for working with data you collected in other ways, or for exporting data to work with in other programs or to share with colleagues. 
 
@@ -40,3 +40,26 @@ elasticdump  --input=incathinkpad.json --output=http://localhost:9200/inca
 ```
 
 Type `elasticdump --help` for more options.
+
+
+## INCA import/export functions
+INCA also has a couple of built-in functions to export to often-used generic formats, especially JSON and CSV.
+
+### doctype_export and import_documents
+`inca.core.database.export_doctype` exports all items from a specific doctype (e.g., all articles from a specific source) to a series of seperate JSON files. It creates a subdirectory `exports` in which it stores all the articles.
+Example:
+```
+inca.core.database.export_doctype('nu')
+```
+Vice versa, you can import a folder with such JSON-files into inca with
+```
+inca.core.database.import_documents('/home/damian/myjsonfiles')
+```
+
+
+### export_csv
+`inca.core.database.export_csv()` creates a subdirectory `exports`  in which it stores a CSV table with all items that match a specific ElasticSearch query. You can specify which keys to include as columns in the CSV table. If no keys are given, doctype, publication_date, title, byline, and text are stored.
+Example:
+```
+inca.core.database.export_csv(query = {'query':{'match':{'doctype':'nu'}}}, keys=['publication_date', 'title', 'teaser_rss'])
+```
