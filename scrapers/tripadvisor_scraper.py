@@ -15,17 +15,17 @@ logger.setLevel(logging.DEBUG)
 
 # For testing purposes, never fetch more than this many pages of reviews
 # set to 1000 or so for production use
-MAXPAGES = 2
+# MAXPAGES = 2
 
 class tripadvisor(Scraper):
     """Scrapes Tripadvisor reviews"""
     
-    def __init__(self, database=True, maxpages = 2, maxreviewpages = 5, maxurls = 90, starturl = "https://www.tripadvisor.com/Hotels-g188590-Amsterdam_North_Holland_Province-Hotels.html"):
+    def __init__(self, database=True, maxpages = 2, maxreviewpages = 5, maxurls = 50, starturl = "https://www.tripadvisor.com/Hotels-g188590-Amsterdam_North_Holland_Province-Hotels.html"):
         '''
         maxpages: number of pages with hostels to scrape
         maxreviewpages: number of pages with reviews *per hostel* to scrape
         starturl: URL to first page with hostel results
-        maxurl: number of urls that are made (note: use a multiple of 30, e.g. 3000 generates 100 links)
+        maxurl: number of urls that are made
         '''
         self.database = database
         self.START_URL = starturl
@@ -52,10 +52,15 @@ class tripadvisor(Scraper):
         part2 = starturl_altering[indices[occur-1]+1:]
         starturl = part1 + "-oa{}-" + part2
 
-        # For testing purposes, change the range
-        for i in range (0, self.MAXURLS, 30):          
+        # Possible urls are created, but the list can't be longer than the maxpages defined above
+        for i in range (0, self.MAXURLS*30, 30):          
             allurls.append(starturl.format(i))
-        allurlsgen = (e for e in allurls)
+        if len(allurls) > self.MAXPAGES:
+            allurlsgen = (e for e in allurls[:int(self.MAXPAGES)])
+            logger.debug('The list of created URLs is longer than the defined max overviewpages. {} page(s) are being scraped'.format(self.MAXPAGES))
+        else:
+            allurlsgen = (e for e in allurls)
+            logger.debug('The list of created URLs is shorter than the defined max overviewpages. {} page(s) are being scraped'.format(len(allurls)))
         thisurl = next(allurlsgen)
         sleep(randrange(5,10))
         req=urllib2.Request(thisurl, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
@@ -131,6 +136,19 @@ class tripadvisor(Scraper):
             linkelement_reviewpage = tree.xpath('//*[@class="quote isNew"]/a | //*[@class="quote"]/a')
             link_reviewpage = [e.attrib['href'] for e in linkelement_reviewpage if 'href' in e.attrib][0]
             reviews_thisurl = self.BASE_URL + link_reviewpage
+
+            # we check how many pages with reviews there are, for this we only need the first review page of the hotel
+            req=urllib2.Request(reviews_thisurl, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
+            htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+            tree = fromstring(htmlsource)
+            maxpages = int(tree.xpath('//*[@class="pageNum last taLnk "]/text()')[0])
+            logger.debug('There seem to be {} pages with reviews.'.format(maxpages))
+            
+            # but if these are more than our maximum set above, we only take so much
+            if maxpages > self.MAXREVIEWPAGES:
+                logger.debug('There seem to be {} pages with reviews, however, we are only going to scrape {}.'.format(maxpages,self.MAXREVIEWPAGES))
+                maxpages = self.MAXREVIEWPAGES
+
             i = 1
             while True:
                 sleep(randrange(5,10))
@@ -239,15 +257,13 @@ class tripadvisor(Scraper):
                     is_sponsored = review.text_content().find('Review collected in partnership with') > -1
                     review_is_sponsored.append(is_sponsored)
              
-                # we check how many pages with reviews there are
-                maxpages = int(tree.xpath('//*[@class="pageNum last taLnk "]/text()')[0])
-                # but if these are more than our maximum set above, we only take so much
-                if maxpages > MAXPAGES:
-                    logger.debug('There seem to be {} pages with reviews, however, we are only going to scrape {}.'.format(maxpages,MAXPAGES))
-                    maxpages = MAXPAGES
+                # go to the next page, unless there is no next page   
                 next_reviewpageelement = tree.xpath('//*[@class="nav next taLnk "]')
-                next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
-                reviews_thisurl = self.BASE_URL + next_pagelink
+                if next_reviewpageelement == []:
+                    break
+                else:
+                    next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
+                    reviews_thisurl = self.BASE_URL + next_pagelink
                 i+=1
                 if i > maxpages:
                     break
