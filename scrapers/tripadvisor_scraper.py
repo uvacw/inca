@@ -206,6 +206,10 @@ class tripadvisor(Scraper):
                         logger.debug('This was an anyonomus guy')
                         review_usernames.append('A TripAdvisor Member')
                         review_locations.append('NA')
+                    elif b.getchildren()[1].text_content() == 'An EasyToBook.com traveler':
+                        logger.debug('This was an EasyToBook.com guest')
+                        review_usernames.append('An EasyToBook.com traveler')
+                        review_locations.append('NA')
                     else:                    
                         relevantinfo = allinfo[0].getchildren()
                         review_usernames.append(relevantinfo[1].text_content())
