@@ -196,6 +196,8 @@ cd inca    # assuming you still are in inca's parent directory
 sudo pip3 install -r Requirements
 ```
 
+** The next paragraph should be unneccessary, as it the step above should have taken care of it already. HOWEVER, in that case, you need to run ``sudo apt-get install libmysqlclient-dev`` before running ``pip3 install -r Requirements**
+
 There is *one* requirement that cannot be installed automatically yet: the pattern.nl package, which allows things like linguistic analyses and sentiment analysis. We need the latest development version, which is not available via pip3 yet.
 
 ```
