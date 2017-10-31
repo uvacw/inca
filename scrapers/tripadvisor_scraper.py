@@ -200,19 +200,15 @@ class tripadvisor(Scraper):
                 review_contributions=[]
                 review_votes=[]
                 bios = tree.xpath('//*[@class="member_info"]')
+                review_usernames =[]
+                review_locations=[]
+                review_contributions=[]
+                review_votes=[]
+                bios = tree.xpath('//*[@class="member_info"]')
                 for b in bios:
                     allinfo = b.getchildren()
-                    if b.getchildren()[1].text_content() == 'A TripAdvisor Member':
-                        logger.debug('This was an anyonomus guy')
-                        review_usernames.append('A TripAdvisor Member')
-                        review_locations.append('NA')
-                    elif b.getchildren()[1].text_content() == 'An EasyToBook.com traveler':
-                        logger.debug('This was an EasyToBook.com guest')
-                        review_usernames.append('An EasyToBook.com traveler')
-                        review_locations.append('NA')
-                    elif b.getchildren()[1].text_content() == 'A Carlson Traveler':
-                        logger.debug('This was a Carlson traveler')
-                        review_usernames.append('A Carlson Traveler')
+                    if b.getchildren()[0].text_content() == '':
+                        review_usernames.append(b.getchildren()[1].text_content())
                         review_locations.append('NA')
                     else:                    
                         relevantinfo = allinfo[0].getchildren()
