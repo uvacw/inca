@@ -164,12 +164,6 @@ class tripadvisor(Scraper):
                     ""
                     logger.info("Hotel with link {} did not have a date.".format(reviews_thisurl))
                 try:
-                    review_headline = tree.xpath('//*[@class="noQuotes"]//text()')
-                    logger.debug("This page has {} headlines.".format(len(review_headline))) 
-                except:
-                    ""
-                    logger.info("Hotel with link {} did not have a headline.".format(link))
-                try:
                     mobiles = tree.xpath('//*[@class="rating reviewItemInline"]')
                     review_mobile = [True if i.xpath('./a') else False for i in mobiles]
                     logger.debug("This page has {} type of reviews.".format(len(review_mobile)))
@@ -184,6 +178,15 @@ class tripadvisor(Scraper):
                     ""
                     logger.info("Hotel with link {} did not have a review ratings.".format(reviews_thisurl))
 
+                review_headline = []
+                review_headline_elem = tree.xpath('//*[@class="noQuotes"]')
+                for headline in review_headline_elem:
+                    if headline.text_content() == '':
+                        review_headline.append('NA')
+                    else:
+                        review_headline.append(headline.text_content())
+                logger.debug("This page has {} headlines.".format(len(review_headline))) 
+                    
                 review_stayed = []
                 review_stayed_elem = tree.xpath('//*[@class="prw_rup prw_reviews_category_ratings_hsx"]')
                 for review in review_stayed_elem:
