@@ -73,9 +73,12 @@ class Scraper(Document):
         logger.info("Started scraping")
         if DATABASE_AVAILABLE == True and self.database==True:
             for doc in self.get(*args, **kwargs):
-                doc = self._add_metadata(doc)
-                self._verify(doc)
-                self._save_document(doc)
+                if type(doc)==dict:
+                    doc = self._add_metadata(doc)
+                    self._save_document(doc)
+                else:
+                    doc = self._add_metadata(doc)
+                    self._save_documents(doc)
         else:
             return [self._add_metadata(doc) for doc in self.get(*args, **kwargs)]
 

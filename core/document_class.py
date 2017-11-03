@@ -13,7 +13,7 @@ from celery import Task
 from core.search_utils import doctype_last, doctype_first
 logger = logging.getLogger(__name__)
 
-from core.database import insert_document, update_document, check_exists
+from core.database import insert_document, insert_documents, update_document, check_exists
 
 class Document(Task):
     '''
@@ -60,17 +60,44 @@ class Document(Task):
         old documents.
 
         '''
-        assert self.doctype, "You need to declare a `self.doctype` in your subclass!"
-        assert self.version, "You need to declare a `self.version` in your subclass!"
-        assert self.functiontype, "You need to declare a `self.functiontype` in your subclass!"
+        if type(document) == list:
+            logger.debug("Detected document batch, forwarding to batch saver")
+            self._save_documents(document, forced=forced)
 
-        document['doctype'] = self.doctype
-        if '_id' in document.keys():
-            custom_identifier = document.pop('_id')
-        else :
-            custom_identifier = None
-        self._verify(document)
-        insert_document(document, custom_identifier=custom_identifier)
+        else:
+            logger.debug("Saving individual document")
+            assert self.doctype, "You need to declare a `self.doctype` in your subclass!"
+            assert self.version, "You need to declare a `self.version` in your subclass!"
+            assert self.functiontype, "You need to declare a `self.functiontype` in your subclass!"
+
+
+            if '_id' in document.keys():
+                custom_identifier = document.pop('_id')
+            else :
+                custom_identifier = None
+            self._verify(document)
+            insert_document(document, custom_identifier=custom_identifier)
+
+    def _save_documents(self, documents, forced=False):
+        """
+        Handles a batch of multiple documents for efficient processing in ES.
+
+        Functionality mirrors that of _save_document, but calls the batch_update
+        on the list of documents rather than individually inserting them.
+        """
+        for document in documents:
+            assert self.doctype, "You need to declare a `self.doctype` in your subclass!"
+            assert self.version, "You need to declare a `self.version` in your subclass!"
+            assert self.functiontype, "You need to declare a `self.functiontype` in your subclass!"
+
+
+            if '_id' in document.keys():
+                custom_identifier = document.pop('_id')
+            else :
+                custom_identifier = None
+            self._verify(document)
+
+        insert_documents(documents)
 
     def _update_document(self, new_document_body):
         '''
@@ -90,10 +117,14 @@ class Document(Task):
         about the script in question.
 
         '''
+        if type(document)==list:
+            return [self._add_metadata(doc) for doc in document]
         try:    docstring = self.get.__doc__
         except:
             try: docstring = self.process.__doc__
             except: docstring = self.run.__doc__
+
+        document['doctype'] = self.doctype
 
         meta = dict(
             ADDED_AT              = datetime.datetime.now(),

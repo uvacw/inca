@@ -23,7 +23,7 @@ import os
 config = configparser.ConfigParser()
 config.read('settings.cfg')
 
-logger = logging.getLogger("INCA.%s" %__name__)
+logger = logging.getLogger("INCA"+__name__)
 logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
 try:
@@ -42,7 +42,7 @@ try:
             # TODO re-activate using the schema, now disabled in order to make existing code
             # work with ES 5 (at least on my system)
             # client.indices.create(elastic_index, json.load(open('schema.json')))
-            client.indices.create(elastic_index, body={"mapping.total_fields.limit": 20000})
+            client.indices.create(elastic_index)
     except Exception as e:
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
 except:
@@ -157,6 +157,54 @@ def insert_document(document, custom_identifier=''):
             doc= {'_id':insert_document(document, custom_identifier)}
     logger.debug('added new document, content: {document}'.format(**locals()))
     return doc["_id"]
+
+def insert_documents(documents, identifiers='id'):
+    """ Insert a batch of documents in ES
+
+    Parameters
+    ----
+    documents : list
+        a list of document dictionaries to be inserted
+    identifiers: string or list
+        Specification of the `_id` to assign to the document in elasticsearch.
+        Can be either:
+            1) A string which specifies which field of the document should be
+               used as the id, reverting to ES generated if the id is missing
+            2) A list of equal size to the documents, containing the id for
+               each document
+    Returns
+    ----
+    List: the ID's under which the documents were inserted
+
+    Note
+    ----
+    This function assumes that the 'doctype' field is declared in each document
+    """
+    # preprocess ids
+    if type(identifiers) == list:
+        logger.debug("Processing identifiers as list")
+        if not len(identifiers) == len(documents):
+            logger.warning("Identifiers and documents are not of same length, "
+            "there are %s docs and %s identifiers!" %(len(documents),len(identifiers))
+            )
+            raise Exception("Unable to process document batch")
+        for doc, identifier in zip(documents, identifiers):
+            doc['_id']    = identifier
+
+    if type(identifiers) == str:
+        logger.debug("Processing identifiers as key")
+        for doc in documents:
+            id_value = doc.get(identifiers,"")
+            if id_value:
+                doc['_id'] = id_value
+
+    for doc in documents:
+        doc['_index'] = elastic_index
+        doc['_type']  = doc['doctype']
+    # Insert documents
+    logger.debug(helpers.bulk(client, documents))
+    return [doc.get('_id','random') for doc in documents]
+
 
 def update_or_insert_document(document, force=False):
     ''' Check whether a document exists, update if so '''
