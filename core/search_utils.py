@@ -250,3 +250,56 @@ def doctype_inspect(doctype):
 
 
     return summary
+
+def list_apps(service_name=None):
+    """Lists the API apps registered in this INCA instance
+
+    Parameters
+    ----
+    service_name : string (default=None)
+        The name of the service, such as 'twitter', 'facebook' or 'google'.If
+        no name is provided, apps for all services are returned
+
+    Returns
+    ----
+    Dictionary or list
+        When a service_name is provided, a list of apps registered for this
+        service are returned. Otherwise, a dictionary with the structure
+        `{service_name : [app1, app2, app3]}` are returned.
+
+    """
+    res = _client.search(index='.apps', doc_type=service_name, size=10000)
+    get_num_credentials = lambda app: _client.search(
+        index='.credentials',
+        doc_type=app['_type']+"_"+app['_id'],
+        size=0)['hits']['total']
+    apps = {}
+    for app in res['hits']['hits']:
+        if service_name and service_name!=app['_type']: continue
+        app_ob = {'name':app['_id'],'credentials': get_num_credentials(app)}
+        if not apps.get(app['_type']):
+            apps[app['_type']] = [app_ob]
+        else:
+            apps[app['_type']].append(app_ob)
+    if service_name:
+        return apps.get(service_name,[])
+    return apps
+
+def list_credentials(service_name, app_name):
+    """Lists the credentials associated with a registered app
+
+    Parameters
+    ----
+    service_name : string
+        a string specifying the name of the service the app targets, such as
+        'twitter','facebook' or 'google'
+    app_name : string
+        a string with the internal application name
+
+    Returns
+    ----
+    A list of credentials belonging to the application
+    """
+    app_type = service_name + "_" + app_name
+    credentials = _client.search(index = ".credentials", doc_type=app_type)
+    return credentials['hits']['hits']
