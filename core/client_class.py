@@ -199,13 +199,25 @@ class Client(Scraper):
 
         logger.info("Starting client")
         if DATABASE_AVAILABLE == True and kwargs.get('database',True):
-            for doc in self.get(credentials = usable_credentials, *args, **kwargs):
-                doc = self._add_metadata(doc)
-                self._verify(doc)
-                self._save_document(doc)
+            for docs in self.get(credentials = usable_credentials, *args, **kwargs):
+                # in case the function yields individual rather than batch results
+                if type(docs) == dict:
+                    docs = [docs]
+                for doc in docs:
+                    doc = self._add_metadata(doc)
+                    self._verify(doc)
+                self._save_documents(docs)
 
         else:
-            return [self._add_metadata(doc) for doc in self.get(*args, **kwargs)]
+            results = []
+            for docs in self.get(*args, **kwargs):
+                # in case the function yields individual rather than batch results
+                if type(docs) == dict:
+                    docs = [docs]
+                for doc in docs:
+                    doc = self._add_metadata(doc)
+                    results.append(doc)
+            return results
 
         logger.info('Done with retrieval')
 
@@ -636,20 +648,18 @@ class Client(Scraper):
         """
         now = datetime.datetime.now()
 
-        # if until:
-        #     waittime = until - now
-        # else:
-        #     waittime = datetime.timedelta(
-        #                 seconds=seconds,
-        #                 minutes=minutes,
-        #                 hours = hours,
-        #                 days = days
-        #                 )
-        # logger.info("Delaying for {waittime}".format(**locals()))
-        logger.info("Delaying for {seconds}".format(**locals()))
-        # if (type(waittime) != float) and (type(waittime) != int):
-        #     waitime = waitime.total_seconds() 
+        if until:
+            waittime = until - now
+        else:
+            waittime = datetime.timedelta(
+                         seconds=seconds,
+                         minutes=minutes,
+                         hours = hours,
+                         days = days
+                         )
+        logger.info("Delaying for {waittime} until {end_of_wait}".format(waittime=waittime, end_of_wait = now +waittime))
+
+
         time.sleep(seconds)
-        # for d in self.run(*args, **kwargs):
-        #     yield d
-        self.run(*args, **kwargs)
+        for d in self.run(*args, **kwargs):
+             yield d

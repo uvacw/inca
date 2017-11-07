@@ -128,18 +128,17 @@ class twitter(Client):
 
     def _set_delay(self, *args, **kwargs):
         now = time.time()
-        earliest = self.load_credentials(app='default',update_last_loaded=False) ## MANUAL WORKAROUND - NEEDS INSPECTION
+        earliest = self.load_credentials(app=kwargs.get('app','default'),update_last_loaded=False) ## MANUAL WORKAROUND - NEEDS INSPECTION
         if earliest:
+            logger.debug("Looking at best credentials")
             sort_field = '_source.' + self.sort_field
             resettime = dotkeys(earliest,sort_field)
-            # print(resettime)
-            # print(now)
             delay_required = resettime - now
             if delay_required < 0 :
-                self.run(*args, **kwargs)
-            self.postpone(seconds = delay_required, *args, **kwargs )
+                return [i for i in self.run(*args, **kwargs)]
+            return [d for d in self.postpone(seconds = delay_required, *args, **kwargs )]
         else:
-            info.warn("No credentials available...")
+            logger.warn("No credentials available...")
 
 class twitter_timeline(twitter):
     '''Class to retrieve twitter timelines for a given account'''
@@ -217,20 +216,20 @@ class twitter_followers(twitter):
 
     '''
 
-    sort_field = "content.resources.followers./followers/ids.reset" 
+    sort_field = "content.resources.followers./followers/ids.reset"
     preference = 'lowest'
 
     # def get(self, credentials, screen_name, cursor = None, force=False):
     def get(self, *args, **kwargs):
         '''retrieved from the twitter followers/ids API'''
 
-        arglocals = locals()['kwargs'] 
+        arglocals = locals()['kwargs']
         credentials = arglocals['credentials']
         if 'cursor' in arglocals.keys():
             cursor = arglocals['cursor']
         else:
             cursor = None
-        logger.info("settings cursor to {cursor}".format(**locals()))
+        logger.debug("settings cursor to {cursor}".format(**locals()))
         screen_name = arglocals['screen_name']
         if 'force' in arglocals.keys():
             force = arglocals['force']
@@ -248,11 +247,11 @@ class twitter_followers(twitter):
         if not force:
             cursor = doctype_last(doctype="twitter_followers",query="user_screen_name:"+screen_name)
             if len(cursor) == 0:
-                logger.info("settings cursor to None as there are no followers for this user")
+                logger.debug("settings cursor to None as there are no followers for this user")
                 cursor = None
             else:
                 cursor = cursor[0].get('_source',{}).get("cursor",None)
-                logger.info("force not requested, settings cursor to {cursor}".format(**locals()))
+                logger.debug("force not requested, settings cursor to {cursor}".format(**locals()))
             pass
 
         try:
@@ -260,7 +259,7 @@ class twitter_followers(twitter):
             user_id = user[0]['id']
             user_follower_count = user[0]['followers_count']
             batchsize = 1
-            counter = 0            
+            counter = 0
             expected_rounds = user_follower_count / 5000
 
 
@@ -280,6 +279,7 @@ class twitter_followers(twitter):
                 batchsize = len(follower_ids)
                 logger.info("retrieved {batchsize} followers for {screen_name} in round {counter} out of {expected_rounds} expected rounds".format(**locals()))
                 counter += 1
+                new_followers = []
                 for num, folid in enumerate(follower_ids):
                     # SKIPPING CHECK_EXISTS LOGIC IN VERSION 0.1
                     # if self._check_exists(tweet['id_str'])[0] and not force:
@@ -295,13 +295,13 @@ class twitter_followers(twitter):
                     follower_info['cursor'] = cursor
 
 
+                    new_followers.append(follower_info)
+                yield new_followers # yield followers as a batch to use ES bulk insertion for efficiency
 
-                    yield follower_info
-                
 
             self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
         except TwythonRateLimitError:
-            logger.info('expended credentials')
+            logger.debug('expended credentials at cursur {cursor}'.format(cursor=cursor))
             try: self.update_credentials(credentials['_id'], **api.get_application_rate_limit_status())
             except TwythonRateLimitError: # when a ratelimit estimate is unavailable
                 self.postpone(self, delaytime=60*5, screen_name=screen_name,
@@ -312,8 +312,7 @@ class twitter_followers(twitter):
                             screen_name=screen_name,
                             force=force,
                             cursor=cursor,
-                            app='default', # MANUAL WORKAROUND - NEEDS TO BE CHECKED,
-                            # method = twitter_followers,
+                            app=credentials['_source']['app']
                             )
 
 # class twitter_friends(twitter):
@@ -359,10 +358,10 @@ class twitter_users_lookup(twitter):
 
 
         try:
-            
+
             batches = [screen_names[x:x+100] for x in range(0, len(screen_names), 100)]
             logger.info("batches: {batches}".format(**locals()))
-            
+
             for batch in batches:
 
 
@@ -375,14 +374,14 @@ class twitter_users_lookup(twitter):
                             )
                         continue
                     user['_id'] = user['id_str']
-                    
-                    
-                    logger.info("retrieved profile for {user[screen_name]} with id {user[_id]}".format(**locals()))
-                    
-                    yield user
 
-                    
-                    
+
+                    logger.info("retrieved profile for {user[screen_name]} with id {user[_id]}".format(**locals()))
+
+                yield users
+
+
+
 
 
 
