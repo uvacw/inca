@@ -394,8 +394,8 @@ class Client(Scraper):
             A string that identiefies the app of credentials to which this
             credential should be added. this will be stored in the _credentials
             index with the doctype <service_name>_<app>
-        credentials : dictionary
-            A dictionary that should be provided for client.get methods as the
+        credentials : string
+            A json-dumped dictionary that should be provided for client.get methods as the
             `credentials` parameter. Generally contains the application token and
             secret, as well as the consumer token and secret
         kwargs
