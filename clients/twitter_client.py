@@ -6,6 +6,7 @@ from core.client_class import Client, elasticsearch_required
 from core.basic_utils import dotkeys
 from twython import Twython, TwythonRateLimitError
 from core.database import client as database_client
+import json
 import logging
 import sys
 import time
@@ -115,10 +116,12 @@ class twitter(Client):
         api = self._get_client(credentials)
         status = api.get_application_rate_limit_status()
 
-        return self.store_credentials(app=appname, credentials=credentials, id=credentials['user_id'], **status)
+        return self.store_credentials(app=appname, credentials=json.dumps(credentials), id=credentials['user_id'], **status)
 
 
     def _get_client(self, credentials):
+        if type(credentials)==str:
+            credentials = json.loads(credentials)
         return Twython(
             credentials['consumer_key'],
             credentials['consumer_secret'],
@@ -212,7 +215,7 @@ class twitter_followers(twitter):
     https://dev.twitter.com/rest/reference/get/followers/ids
 
     Version 0.1 includes only full retrieval for a given point in time, without logic yet to
-    identify new and/or deleted followers.
+    identify new and/or deleted followers
 
     '''
 
