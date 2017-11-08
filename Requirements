@@ -53,8 +53,10 @@ twython==3.4.0
 urllib3==1.15.1
 Werkzeug==0.11.10
 nltk==3.2.4
-ImageHash==3.4
+ImageHash==3.7
 lxml
 selenium
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
 git+git://github.com/clips/pattern.git@development
+nltk==3.2.5
+Pillow==4.3.0
