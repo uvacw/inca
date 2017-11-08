@@ -58,5 +58,4 @@ lxml
 selenium
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
 git+git://github.com/clips/pattern.git@development
-nltk==3.2.5
 Pillow==4.3.0
