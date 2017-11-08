@@ -31,6 +31,29 @@ def doctype_generator(doctype):
         _logger.info("returning {num}".format(**locals()))
         yield doc
 
+def document_generator(query="*"):
+    """A generator to get results for a query
+
+    Parameters
+    ----
+    query : string (default="*")
+        A string query specifying the documents to return
+
+    Yields
+    ----
+    dict representing a document
+    """
+    if not _DATABASE_AVAILABLE:
+        logger.warning("Unable to generate documents, no database available!")
+        yield
+    else:
+        if query == "*": _logger.info("No query specified, returning all documents")
+        es_query = {"query":{"bool":{"must":{"query_string":{"query":query}}}}}
+        for num, doc in enumerate(_scroll_query(es_query)):
+            if not num%10: _logger.info("returning {num}".format(num=num))
+            yield doc
+
+
 def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
     '''Returns the first document of a given doctype
 
