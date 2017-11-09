@@ -56,6 +56,31 @@ Vice versa, you can import a folder with such JSON-files into inca with
 inca.core.database.import_documents('/home/damian/myjsonfiles')
 ```
 
+### Customized exports
+Maybe you want to do more customized exports, for instance all documents from a specific time range. To do so, you can use the Elastic Search query syntax. A Google search will tell you more, but this is the general way it works:
+```
+q1 = inca.core.database.scroll_query({'query':{'match':{'doctype':'nu'}}})
+q2 = inca.core.database.scroll_query({'query':{'range':{'publication_date':{'gte':2014,'lt':2016}}}})
+```
+The first query gives you all articles from nu.nl, the second one all articles from 2015. These are so-called *generators*: you can loop over them just as you would with a list, but the items are only generated once they are needed. Or you can use `next(q1)` to simply get the next item.
+
+The following example illustrates how we can use this to export all documents matching a specific query as json files.
+
+Note that we hash their ID and use it as file name - using the ID itself could fail, if the ID contains slashes (which very likely is the case, as some RSS-scrapers use the URL as ID)
+
+```
+
+import inca
+import json
+import hashlib
+
+for doc in inca.core.database.scroll_query({'query':{'range':{'publication_date':{'gte':2015,'lt':2016}}}}):
+     with open('/path/to/where/to/store/it/{}.json'.format(hashlib.sha224(doc['_id'].encode('utf-8')).hexdigest()), mode='w') as fo:
+
+        fo.write(json.dumps(doc))        
+```
+
+
 
 ### export_csv
 `inca.core.database.export_csv()` creates a subdirectory `exports`  in which it stores a CSV table with all items that match a specific ElasticSearch query. You can specify which keys to include as columns in the CSV table. If no keys are given, doctype, publication_date, title, byline, and text are stored.
