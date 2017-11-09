@@ -99,7 +99,6 @@ class Inca():
                     docstring = self._taskmaster.tasks[k].process.__doc__
                 else:
                     docstring = docstring = self._taskmaster.tasks[k].__doc__
-                print(function, taskname, docstring)
                 setattr(getattr(getattr(getattr(self, function),taskname),'__func__'),'__doc__', docstring)
 
     def _summary(self):
