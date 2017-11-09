@@ -241,37 +241,6 @@ def _remove_dots(document):
     return document
 
 def scroll_query(query,scroll_time='10m', log_interval=None):
-<<<<<<< d13d493144be3816a52ac9261201774e6cc9ad68
-    scroller = client.search(elastic_index,
-                             body=query,
-                             scroll=scroll_time,
-                             # search_type='scan' # DOES NOT SEEM TO BE SUPPORTED BY CURRENT ES-VERSION
-    )
-    sid  = scroller['_scroll_id']
-    size = scroller['hits']['total']
-    tot_size = size # keep total size for logging
-    logger.info('scrolling through {size} results'.format(**locals()))
-    at_num = 0
-    if not log_interval:
-        log_interval = min(tot_size / 10000, 100)
-    while size > 0 :
-        try:
-            page = client.scroll(scroll_id = sid,
-                             scroll = scroll_time)
-        except ConnectionTimeout:
-            time.sleep(1)
-            continue
-        sid = page['_scroll_id']
-        size = len(page['hits']['hits'])
-
-        for doc in page['hits']['hits']:
-            at_num+=1
-            if log_interval and not (at_num % ( int(log_interval) or 2)):
-                pos = (at_num/float(tot_size))*100
-                elements = '='* int(30*(pos)/100)
-                logger.info("At  {pos:10.2f}% [{elements:30.30}] {at_num:10} of {tot_size}".format(**locals()))
-            yield doc
-=======
     """Scroll through the results of a query
 
     Parameters
@@ -310,7 +279,7 @@ def scroll_query(query,scroll_time='10m', log_interval=None):
             perc = ((n+1)/total) / 100
             logger.info("At item {n:10d} of {total} items | {perc:06.2f}".format(n=n+1, total=total, perc=perc))
         yield doc
->>>>>>> Updated scroll query to ES5, fixed issues with fuzzy-matching doctypes
+
 
 
 #####################
