@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 '''
-ooooo ooooo      ooo   .oooooo.         .o.       
-`888' `888b.     `8'  d8P'  `Y8b       .888.      
- 888   8 `88b.    8  888              .8"888.     
- 888   8   `88b.  8  888             .8' `888.    
- 888   8     `88b.8  888            .88ooo8888.   
- 888   8       `888  `88b    ooo   .8'     `888.  
-o888o o8o        `8   `Y8bood8P'  o88o     o8888o 
-                                                  
+ooooo ooooo      ooo   .oooooo.         .o.
+`888' `888b.     `8'  d8P'  `Y8b       .888.
+ 888   8 `88b.    8  888              .8"888.
+ 888   8   `88b.  8  888             .8' `888.
+ 888   8     `88b.8  888            .88ooo8888.
+ 888   8       `888  `88b    ooo   .8'     `888.
+o888o o8o        `8   `Y8bood8P'  o88o     o8888o
+
 Welcome to INCA
 
-This module provides some data-scraping, searching and analysis functionality. 
+This module provides some data-scraping, searching and analysis functionality.
 You can run this locally, at a server, or perhaps on a cluster (hopefully) without too much
 hassle.
 
 Please consult the `README.md` file for more information about setting up and
-running INCA. 
+running INCA.
 '''
 
 import os
@@ -46,6 +46,26 @@ from core.database import config
 
 
 class Inca():
+    """INCA main class for easy access to functionality
+
+    methods
+    ----
+    Scrapers
+        Retrieval methods for RSS feeds and websites. Most scrapers can run
+        out-of-the-box without specifying any parameters. If no database is
+        present, scrapers will return the data as a list.
+    Clients
+        API-clients to get data from various endpoints. You can start using client
+        functionality by:
+        1) Adding an application, using the `<service>_create_app` method
+        2) Add credentials to that application, using `<service>_create_credentials`
+        3) Then run a collection method, such as `twitter_timeline`!
+    Processing
+        These methods change documents by adding fields. Such manipulations can
+        be things such as POS-tags, Sentiment or something else.
+
+
+    """
 
     _taskmaster = Celery(
         backend = config.get('celery', '%s.backend' %config.get('inca','dependencies')),
@@ -66,13 +86,21 @@ class Inca():
     class processing():
         '''Processing options to operate on documents'''
         pass
-        
+
     def _construct_tasks(self, function):
         for k,v in self._taskmaster.tasks.items():
             functiontype = k.split('.',1)[0]
             taskname     = k.rsplit('.',1)[1]
             if functiontype == function:
                 setattr(getattr(self,function),taskname,self._taskmaster.tasks[k].runwrap)
+                if function == 'scrapers':
+                    docstring = self._taskmaster.tasks[k].get.__doc__
+                elif function == "processing":
+                    docstring = self._taskmaster.tasks[k].process.__doc__
+                else:
+                    docstring = docstring = self._taskmaster.tasks[k].__doc__
+                print(function, taskname, docstring)
+                setattr(getattr(getattr(getattr(self, function),taskname),'__func__'),'__doc__', docstring)
 
     def _summary(self):
         summary = ''
@@ -84,7 +112,7 @@ class Inca():
             summary += "...\n"
         return summary
 
-### COMMANDLINE SPECIFICATION ### 
+### COMMANDLINE SPECIFICATION ###
 
 def commandline():
 
@@ -112,7 +140,7 @@ def commandline():
     if not len(args)>=2:
         print(inca._summary())
         return
-                        
+
     tasktype = args[0]
     task     = args[1]
 
@@ -135,11 +163,10 @@ def commandline():
         action = 'celery_batch'
     else:
         action = 'run'
-    
+
     logger.info("running {tasktype} : {task}".format(**locals()))
     task_func(action=action, *args[2:])
     logger.info("finished {tasktype} : {task}".format(**locals()))
 
 if __name__ == '__main__':
     commandline()
-    
