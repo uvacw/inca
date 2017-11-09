@@ -130,15 +130,50 @@ def update_document(document, force=False, retry=0, max_retries=10):
     pass
 
 def delete_document(document_id):
-    ''' delete a document, with parameters '''
+    ''' delete a document
+
+    Parameters
+    ----
+    document_id : string, dict or list
+        A string containing the document id. Alternatively, a document retrieved
+        from elasticsearch from which the `_id` field can be extracted. If a
+        list, it is assumed each element is an id or document to be deleted.
+
+    Returns
+    ----
+    Bool
+        Whether the document was deleted
+
+    '''
+    if type(document_id) == dict:
+        document_id = document_id['_id']
+    elif type(document_id) == list:
+        return [delete_document(d) for d in document_id]
     found, document = check_exists(document_id)
-    if not found: logger.debug('{document_id} does not exist'.format(**locals()))
+    if not found:
+        logger.debug('{document_id} does not exist'.format(**locals()))
+        return False
     response = client.delete(index=elastic_index, id=document['_id'], doc_type=document['_type'])
     return True
 
 def delete_doctype(doctype):
     '''Delete all documents of a given type'''
-    for doc in scroll_query({'filter':{'match':{'_type':doctype}}}):
+    for doc in scroll_query(
+        {
+        "query":
+            {
+            "bool":
+                {
+                "filter":
+                    {
+                    "term" : {
+                        "doctype" : doctype
+                    }
+                    }
+                }
+            }
+        }
+    ):
         delete_document(doc['_id'])
     return True
 
@@ -206,6 +241,7 @@ def _remove_dots(document):
     return document
 
 def scroll_query(query,scroll_time='10m', log_interval=None):
+<<<<<<< d13d493144be3816a52ac9261201774e6cc9ad68
     scroller = client.search(elastic_index,
                              body=query,
                              scroll=scroll_time,
@@ -235,6 +271,46 @@ def scroll_query(query,scroll_time='10m', log_interval=None):
                 elements = '='* int(30*(pos)/100)
                 logger.info("At  {pos:10.2f}% [{elements:30.30}] {at_num:10} of {tot_size}".format(**locals()))
             yield doc
+=======
+    """Scroll through the results of a query
+
+    Parameters
+    ----
+    query : dict
+        An elasticsearch query
+    scroll_time : string (default='10m')
+        A string indicating the time-window to keep the results
+        buffer active in elasticsearch. A small window risks timeouts, a high
+        window risks running into resource ceilings in the database.
+    log_interval : int or float
+        The interval to log an 'INFO'-level update of progress, defaults to
+        argmin (N_results/1000 ; 100). Set to '0' for no logging, a integer for
+        every Nth-results and a float for every Nth-fraction of the total
+
+    yields
+    ----
+    dict
+        A stored document, including elasticsearch metadata
+
+    """
+    if log_interval == 0:
+        total = 0
+        update_step =  -1
+    else:
+        total = client.search(body=query)['hits']['total']
+        if type(log_interval)==int:
+            update_step = log_interval
+        elif type(log_interval)==float:
+            update_step = int(total*log_interval)
+        else:
+            update_step = min((total/1000), 100)
+
+    for n, doc in enumerate(helpers.scan(client, query=query, scroll=scroll_time)):
+        if not (n+1 ) % update_step:
+            perc = ((n+1)/total) / 100
+            logger.info("At item {n:10d} of {total} items | {perc:06.2f}".format(n=n+1, total=total, perc=perc))
+        yield doc
+>>>>>>> Updated scroll query to ES5, fixed issues with fuzzy-matching doctypes
 
 
 #####################
