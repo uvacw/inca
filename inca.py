@@ -97,6 +97,8 @@ class Inca():
                     docstring = self._taskmaster.tasks[k].get.__doc__
                 elif function == "processing":
                     docstring = self._taskmaster.tasks[k].process.__doc__
+                elif function == "clients":
+                    docstring = self._taskmaster.tasks[k].get.__doc__
                 else:
                     docstring = docstring = self._taskmaster.tasks[k].__doc__
                 setattr(getattr(getattr(getattr(self, function),taskname),'__func__'),'__doc__', docstring)
