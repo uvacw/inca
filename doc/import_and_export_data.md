@@ -69,16 +69,41 @@ The following example illustrates how we can use this to export all documents ma
 Note that we hash their ID and use it as file name - using the ID itself could fail, if the ID contains slashes (which very likely is the case, as some RSS-scrapers use the URL as ID)
 
 ```
-
 import inca
 import json
 import hashlib
 
 for doc in inca.core.database.scroll_query({'query':{'range':{'publication_date':{'gte':2015,'lt':2016}}}}):
      with open('/path/to/where/to/store/it/{}.json'.format(hashlib.sha224(doc['_id'].encode('utf-8')).hexdigest()), mode='w') as fo:
-
         fo.write(json.dumps(doc))        
 ```
+
+
+Let's finish with a more sophisticated example. It uses the so-called 'filter'-context, that requires exact matches, and exports all articles from one source in a given timeframe:
+
+```
+import inca
+import json
+import hashlib
+
+q = inca.core.database.scroll_query(
+{
+  "query": {
+    "bool": {
+      "filter": [
+        { "match": { "doctype": "nrc (print)" }},
+        { "range": { "publication_date": { "gte": "2007-01-01", "lt":"2014-01-01" }}}
+      ]
+    }
+  }
+}
+)
+for doc in q:
+     with open('/path/to/store/data/{}.json'.format(hashlib.sha224(doc['_id'].encode('utf-8')).hexdigest()), mode='w') as fo:
+
+        fo.write(json.dumps(doc)) 
+```
+
 
 
 
