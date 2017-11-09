@@ -100,12 +100,10 @@ q = inca.core.database.scroll_query(
 )
 for doc in q:
      with open('/path/to/store/data/{}.json'.format(hashlib.sha224(doc['_id'].encode('utf-8')).hexdigest()), mode='w') as fo:
-
         fo.write(json.dumps(doc)) 
 ```
 
-
-
+More info on the query and filter syntax can be found in the [official documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html)
 
 ### export_csv
 `inca.core.database.export_csv()` creates a subdirectory `exports`  in which it stores a CSV table with all items that match a specific ElasticSearch query. You can specify which keys to include as columns in the CSV table. If no keys are given, doctype, publication_date, title, byline, and text are stored.
