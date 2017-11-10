@@ -19,12 +19,13 @@ logger.setLevel('DEBUG')
 class voedingsforum(Scraper):
     """Scrapes Voedingsforum"""
 
-    def __init__(self,database=True, maxpages=2):
+    def __init__(self,database=True, maxfora=2, maxthreads=2):
    
         self.database = database
         self.START_URL = "http://www.voedingsforum.nl/"
         self.BASE_URL = "http://www.voedingsforum.nl/"
-        self.MAXPAGES = maxpages
+        self.MAXFORA = maxfora
+        self.MAXTHREADS = maxthreads
         
     def get(self):
         '''                                                                             
@@ -114,6 +115,8 @@ class voedingsforum(Scraper):
                         logger.debug(amount_temp)
 
                         pagesub+=1
+                        if pagesub > self.MAXTHREADS:
+                            break
                         next_url = sublink+'?whichpage='+str(pagesub)
                         logger.debug('ik ga nu {} ophalen'.format(next_url))
                         sleep(randrange(5,10))
