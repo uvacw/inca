@@ -81,7 +81,7 @@ class cda(Scraper):
                     publication_date = datetime.datetime(int(jaar), int(MAAND2INT[maand]),int(dag))
                     publication_date = publication_date.date()
                 except:
-                    publication_date = datetime.datetime(1,1,1)
+                    publication_date = None
                 try:
                     whole_release = "".join(tree.xpath('//*[@class = "pageHeader-content"]//h1/span/text()|//*[@class ="widePhoto-content"]//h1/span/text()|//*[@id = "mainContent"]//div[@class = "mg-text-container"]/p/text()')).strip()
                     whole_release = " ".join(whole_release.split())

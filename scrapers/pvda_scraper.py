@@ -72,7 +72,7 @@ class pvda(Scraper):
                     publication_date = datetime.datetime(int(jaar), int(MAAND2INT[maand]),int(dag))
                     publication_date = publication_date.date()
                 except:
-                    publication_date = datetime.datetime(1,1,1)
+                    publication_date = None
 
                 try:
                     text = " ".join(tree.xpath('//*[@class = "content"]//p[not(@class="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/text()|//*[@class = "content"]//p[not(@class ="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/em/text()|//*[@class = "content"]//p[not(@class = "meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/u/text()|//*[@class = "bumpedFont15"]/text()')).strip()

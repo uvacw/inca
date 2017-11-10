@@ -77,7 +77,7 @@ class sp(Scraper):
                     publication_date = datetime.datetime(int(jaar), int(MAAND2INT[maand]),int(dag))
                     publication_date = publication_date.date()
                 except:
-                    publication_date = datetime.datetime(1,1,1)
+                    publication_date = None
 
                 try:
                     text = " ".join(tree.xpath('//*[@id = "content"]//p/text()|//*[@id = "content"]//p/em/text()|//*[@id = "content"]//p/a/text()')[1:]).strip()

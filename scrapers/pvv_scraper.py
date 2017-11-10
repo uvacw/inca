@@ -63,7 +63,7 @@ class pvv(Scraper):
                     publication_date = datetime.datetime.strptime(publication_date, '%Y-%m-%dT%H:%M:%S')
                     publication_date = publication_date.date()
                 except:
-                    publication_date=datetime.datetime(1,1,1)
+                    publication_date= None
                 try:
                     ext_source = tree.xpath('//*[@itemprop="articleBody"]//@href')
                 except:
