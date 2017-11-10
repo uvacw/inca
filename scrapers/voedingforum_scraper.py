@@ -19,12 +19,13 @@ logger.setLevel('DEBUG')
 class voedingsforum(Scraper):
     """Scrapes Voedingsforum"""
 
-    def __init__(self,database=True):
+    def __init__(self,database=True, maxpages=2):
    
         self.database = database
         self.START_URL = "http://www.voedingsforum.nl/"
         self.BASE_URL = "http://www.voedingsforum.nl/"
-
+        self.MAXPAGES = maxpages
+        
     def get(self):
         '''                                                                             
         Fetches articles from Voedingsforum
@@ -128,6 +129,9 @@ class voedingsforum(Scraper):
                     country.append(country_temp)
                     amount.append(amount_temp)
             page+=1
+            if page > self.MAXPAGES:
+                break
+            
             current_url = self.START_URL+'?whichpage='+str(page)
             overview_page = requests.get(current_url)
 
