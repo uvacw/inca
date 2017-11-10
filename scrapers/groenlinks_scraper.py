@@ -29,7 +29,7 @@ class groenlinks(Scraper):
         '''
         self.doctype = "Groenlinks (pol)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=9, day=29)
+        self.date = datetime.datetime(year=2017, month=11, day=10)
 
 
         releases = []
@@ -73,7 +73,7 @@ class groenlinks(Scraper):
                     publication_date = datetime.datetime(int(jaar), int(MAAND2INT[maand]),int(dag))
                     publication_date = publication_date.date()
                 except:
-                    publication_date = ""
+                    publication_date = datetime.datetime(1,1,1)
                 try:
                     teaser=" ".join(tree.xpath('//*[@class = "intro"]//p/text()')).strip()
                     teaser = teaser.replace('\n', '')

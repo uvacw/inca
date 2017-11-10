@@ -30,7 +30,7 @@ class pvv(Scraper):
         '''
         self.doctype = "PVV (pol)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=9, day=29)
+        self.date = datetime.datetime(year=2017, month=11, day=10)
 
         releases = []
 
@@ -63,7 +63,7 @@ class pvv(Scraper):
                     publication_date = datetime.datetime.strptime(publication_date, '%Y-%m-%dT%H:%M:%S')
                     publication_date = publication_date.date()
                 except:
-                    publication_date=""
+                    publication_date=datetime.datetime(1,1,1)
                 try:
                     ext_source = tree.xpath('//*[@itemprop="articleBody"]//@href')
                 except:

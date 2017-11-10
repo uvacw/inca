@@ -32,7 +32,7 @@ class sp(Scraper):
         '''
         self.doctype = "SP (pol)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=9, day=29)
+        self.date = datetime.datetime(year=2017, month=11, day=10)
 
 
         releases = []
@@ -77,7 +77,7 @@ class sp(Scraper):
                     publication_date = datetime.datetime(int(jaar), int(MAAND2INT[maand]),int(dag))
                     publication_date = publication_date.date()
                 except:
-                    publication_date = ""
+                    publication_date = datetime.datetime(1,1,1)
 
                 try:
                     text = " ".join(tree.xpath('//*[@id = "content"]//p/text()|//*[@id = "content"]//p/em/text()|//*[@id = "content"]//p/a/text()')[1:]).strip()
