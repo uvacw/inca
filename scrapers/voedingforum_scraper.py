@@ -6,6 +6,7 @@ import logging
 import re
 from time import sleep
 from random import randrange
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -18,15 +19,11 @@ logger.setLevel('DEBUG')
 class voedingsforum(Scraper):
     """Scrapes Voedingsforum"""
 
-    #def __init__(self,database=True):
-    def __init__(self,database=True, maxpages=2, maxsubpages=2, maxthread=2):
+    def __init__(self,database=True):
    
         self.database = database
         self.START_URL = "http://www.voedingsforum.nl/"
         self.BASE_URL = "http://www.voedingsforum.nl/"
-        self.MAXPAGES = maxpages
-        self.MAXSUBPAGES = maxsubpages
-        self.MAXTHREAD = maxthread
 
     def get(self):
         '''                                                                             
@@ -34,12 +31,18 @@ class voedingsforum(Scraper):
         '''
         self.doctype = "voedingsforum (health)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=10, day=20)
+        self.date = datetime.datetime(year=2017, month=11, day=10)
 
         posts = []
         posts_temp = []
-
-
+        username_temp = []
+        username = []
+        level_temp = []
+        level = []
+        country_temp = []
+        country = []
+        amount_temp = []
+        amount = []
 
         page = 1
         current_url = self.START_URL
@@ -63,8 +66,6 @@ class voedingsforum(Scraper):
             # De loop wordt gestopt door te checken of de pagina de tekst hieronder bevat.
             while overview_pagesub.content.find(b'Foutmelding') == -1:
                 logger.debug('de huidige pagina bevat geen foutmelding')
-                if page > self.MAXSUBPAGES:
-                    break
                 tree_sub = fromstring(overview_pagesub.text)
                 sublinkobjects = tree_sub.xpath('//table//table//tr/td/a[not(@onmouseout)]/@href')
                 logger.debug('this page has {} sublinkobjects'.format(len(sublinkobjects)))
@@ -72,34 +73,45 @@ class voedingsforum(Scraper):
                 for sublink in sublinks:
                     pagesub = 1
                     logger.debug('ik ga nu {} ophalen'.format(sublink))
-                    if pagesub > 1:
-                        break
                     sleep(randrange(5,10))
                     this_page = requests.get(sublink)
                     while True:
                         treesub = fromstring(this_page.text)
-                        thread = (treesub.xpath('//table//span[@id="msg"]'))
+                        thread = treesub.xpath('//table//span[@id="msg"]')
                         messages = [t.text_content() for t in thread]
                         messages = [b.strip() for b in messages]
+                        
 #User information - extracting from the elements. Username and level come together in one list, country of origin and amount of messages in a second list
-                        username_level = []
-                        country_amount = []
+                                              
                         user_elem = treesub.xpath('//*[@class="topiclight" or @class="topicdark"]')
                         for user in user_elem:
                             userinfo = user.getchildren()
                             if len(userinfo) == 2:
-                                username_level.append(userinfo[0].text_content())
-                                country_amount.append(userinfo[1].text_content())
+                                userleveltemp = userinfo[0].text_content().replace("\r\n", " ") .replace("                 ", " ") .replace("  ", "")
+                                username_temp.append(userleveltemp.split(" ")[0])
+                                level_temp.append(userleveltemp.split (" ")[1])
+                                                            
+                                countryamounttemp = userinfo[1].text_content().replace ("Berichten", " ") .replace("\r\n", " ") .replace ("\t\t", "") .replace("                  ", " ") .replace ("   ", " ")
+                                
+                                countrytemp = "".join(re.findall(r"[A-Za-z]", countryamounttemp))
+                                if countrytemp == "":
+                                    country_temp.append("NA")
+                                else:
+                                    country_temp.append(countrytemp)
+
+                                amount_temp.append("".join(re.findall(r"[0-9]", countryamounttemp)))
+           
                             else:
                                 continue
 
-                                               
-                        logger.debug(messages)
-                        logger.debug(username_level)
-                        logger.debug(country_amount)
-
-                        posts_temp.append({'messages': messages})
+                        posts_temp.append(messages)
                         
+                        logger.debug(posts_temp)
+                        logger.debug(username_temp)
+                        logger.debug(level_temp)
+                        logger.debug(country_temp)
+                        logger.debug(amount_temp)
+
                         pagesub+=1
                         next_url = sublink+'?whichpage='+str(pagesub)
                         logger.debug('ik ga nu {} ophalen'.format(next_url))
@@ -111,7 +123,18 @@ class voedingsforum(Scraper):
                         else:
                             this_page = next_page
                     posts.append(posts_temp)
+                    username.append(username_temp)
+                    level.append(level_temp)
+                    country.append(country_temp)
+                    amount.append(amount_temp)
             page+=1
             current_url = self.START_URL+'?whichpage='+str(page)
             overview_page = requests.get(current_url)
-        return posts
+
+
+        allforum = {"messages": posts,
+                    "username": username,
+                    "level": level,
+                    "country": country,
+                    "amount": amount}
+        return allforum
