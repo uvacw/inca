@@ -29,12 +29,12 @@ class groenlinks(Scraper):
         '''
         self.doctype = "Groenlinks (pol)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=9, day=29)
+        self.date = datetime.datetime(year=2017, month=11, day=10)
 
 
         releases = []
 
-        page = 0
+        page = 339
         current_url = self.START_URL+"?page="+str(page)
         overview_page = requests.get(current_url, timeout = 10)
         first_page_text=""
@@ -48,24 +48,44 @@ class groenlinks(Scraper):
             linkobjects = tree.xpath('//*[@class="read-more"]')
             links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
             for link in links:
+                link = link.strip()
                 logger.debug('ik ga nu {} ophalen'.format(link))
                 try:
-                    current_page = requests.get(link, timeout = 10)
+                    current_page = requests.get(link, timeout =10)
+                    pagetype = "normal"
                 except requests.ConnectionError as e:
                     try:
                         link = link[25:]
                         current_page = requests.get(link, timeout = 10)
+                        pagetype = "normal"
+                        if current_page.status_code == 404:
+                            try:
+                                link =  link[:4] + "s" + link[4:]
+                                current_page = requests.get(link, timeout = 10)
+                                pagetype = "special"
+                            except:
+                                logger.debug("URL does not work!")
+                                continue                                
                     except:
                         logger.debug("Connection Error!")
                         logger.debug(str(e))
-                tree = fromstring(current_page.text)
                 try:
-                    title= " ".join(tree.xpath('//*[@id = "page-title"]/text()'))
+                    tree = fromstring(current_page)
+                except:
+                    tree = fromstring(current_page.text)
+                try:
+                    if pagetype == "normal":
+                        title= " ".join(tree.xpath('//*[@id = "page-title"]/text()'))
+                    elif pagetype == "special":
+                        title= " ".join(tree.xpath('//*[@class = "title"]/text()'))
                 except:
                     logger.debug("no title")
                     title = ""
                 try:
-                    publication_date = "".join(tree.xpath('//*[@class = "submitted submitted-date"]/text()'))
+                    if pagetype == "special":
+                        publication_date = "".join(tree.xpath('//*[@class = "submitted"]/span/text()'))
+                    elif pagetype == "normal":
+                        publication_date = "".join(tree.xpath('//*[@class = "submitted submitted-date"]/text()'))
                     MAAND2INT = {"januari":1, "februari":2, "maart":3, "april":4, "mei":5, "juni":6, "juli":7, "augustus":8, "september":9, "oktober":10, "november":11, "december":12}
                     dag = publication_date[:2]
                     jaar= publication_date[-4:]
@@ -73,16 +93,22 @@ class groenlinks(Scraper):
                     publication_date = datetime.datetime(int(jaar), int(MAAND2INT[maand]),int(dag))
                     publication_date = publication_date.date()
                 except:
-                    publication_date = ""
+                    publication_date = None
                 try:
-                    teaser=" ".join(tree.xpath('//*[@class = "intro"]//p/text()')).strip()
+                    if pagetype == "normal":
+                        teaser=" ".join(tree.xpath('//*[@class = "intro"]//p/text()')).strip()
+                    elif pagetype == "special":
+                        teaser = " ".join(tree.xpath('//div[(contains(@class, "field-item even")) and not(contains(@property, "content:encoded"))]/p/text()')).strip()
                     teaser = teaser.replace('\n', '')
                     teaser = teaser.replace('\xa0', ' ')
                 except:
                     logger.debug("no teaser")
                     teaser = ""
                 try:
-                    text = " ".join(tree.xpath('//*[@class = "content"]/p/text()')).strip()
+                    if pagetype == "normal":
+                        text = " ".join(tree.xpath('//*[@class = "content"]/p/text()')).strip()
+                    elif pagetype == "special":
+                        text = " ".join(tree.xpath('//*[@property = "content:encoded"]/p/text()|//*[@property = "content:encoded"]/h2/text()')).strip()
                     text = text.replace('\n', '')
                     text = text.replace('\t', '')
                 except:
@@ -94,7 +120,10 @@ class groenlinks(Scraper):
                 except:
                     quote = ""
                 try:
-                    whole_release = " ".join(tree.xpath('//*[@id = "page-title"]/text()|//*[@class = "intro"]//p/text()|//*[@class = "content"]/p/text()|//*[@class = "content"]//blockquote//p/text()')).strip()
+                    if pagetype == "normal":
+                        whole_release = " ".join(tree.xpath('//*[@id = "page-title"]/text()|//*[@class = "intro"]//p/text()|//*[@class = "content"]/p/text()|//*[@class = "content"]//blockquote//p/text()')).strip()
+                    elif pagetype == "special":
+                        whole_release = " ".join(tree.xpath('//*[@class = "title"]/text()|//*[@property = "content:encoded"]/p/text()|//*[@class = "content"]/p/text()|//*[@class = "content"]//blockquote//p/text()|//div[(contains(@class, "field-item even")) and not(contains(@property, "content:encoded"))]/p/text()')).strip()
                     whole_release = whole_release.replace('\n', '')
                     whole_release = whole_release.replace('\t', '')
                     whole_release = whole_release.replace('\xa0', '')
