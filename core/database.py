@@ -167,7 +167,7 @@ def delete_doctype(doctype):
                 "filter":
                     {
                     "term" : {
-                        "doctype" : doctype
+                        "_type" : doctype
                     }
                     }
                 }
@@ -387,7 +387,7 @@ def restore_backup(name):
 def export_doctype(doctype):
     if not 'exports' in os.listdir('.'):
         os.mkdir('exports')
-    for doc in scroll_query({'query':{'match':{'doctype':doctype}}}):
+    for doc in scroll_query({'query':{'match':{'_type':doctype}}}):
         outpath = os.path.join('exports',doctype)
         if doctype not in os.listdir('exports'):
             os.mkdir(outpath)
