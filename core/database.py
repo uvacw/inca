@@ -19,6 +19,7 @@ import configparser
 import requests
 from celery import Task
 import os
+from urllib.parse import quote_plus
 
 config = configparser.ConfigParser()
 config.read('settings.cfg')
@@ -391,7 +392,7 @@ def export_doctype(doctype):
         outpath = os.path.join('exports',doctype)
         if doctype not in os.listdir('exports'):
             os.mkdir(outpath)
-        with open(os.path.join('exports', doctype, '%s.json' %doc['_id']),'w') as f:
+        with open(os.path.join('exports', doctype, '%s.json' %quote_plus(doc['_id'])),'w') as f:
             f.write(json.dumps(doc))
 
 def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
