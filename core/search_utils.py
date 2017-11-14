@@ -22,7 +22,7 @@ def list_doctypes():
     return overview
 
 def doctype_generator(doctype):
-    logger.warning("Filter has been replaced by query, still need to test whether edge cases might be unintentionally returned")
+    _logger.warning("Filter has been replaced by query, still need to test whether edge cases might be unintentionally returned")
     query = {'query':{'match':{'_type':doctype}}}
     for num, doc in enumerate(_scroll_query(query)):
         if not _DATABASE_AVAILABLE:
