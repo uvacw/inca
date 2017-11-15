@@ -34,7 +34,9 @@ try:
         timeout=60
     )   # should be updated to reflect config
     elastic_index  = config.get("elasticsearch","document_index")
+    #print(elastic_index)
     DATABASE_AVAILABLE = True
+    #print("it is all good up till") 
 
     # initialize mappings if index does not yet exist
     try:
@@ -42,9 +44,12 @@ try:
         if not client.indices.exists(elastic_index):
             # TODO re-activate using the schema, now disabled in order to make existing code
             # work with ES 5 (at least on my system)
-            # client.indices.create(elastic_index, json.load(open('schema.json')))
+            #print("if statement entered")
+            #client.indices.create(elastic_index, json.load(open('schema.json')))
+            #print("it's good unitll now")
             client.indices.create(elastic_index)
     except Exception as e:
+        print("no mapping exists!or smth went wrong")
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
 except:
     logger.warning("No database functionality available")
