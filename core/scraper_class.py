@@ -43,7 +43,6 @@ class Scraper(Document):
     def __init__(self,database=True):
         Document.__init__(self,database)
 
-
     def get(self):
         ''' This docstring should explain how documents are retrieved
 
@@ -58,7 +57,7 @@ class Scraper(Document):
 
         '''
         doc['doctype']  = self.doctype
-        #doc['language'] = self.language
+        #doc['language'] = self.language)
         doc = self._add_metadata(doc)
         self._verify(doc)
         self._save_document(doc)

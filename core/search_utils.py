@@ -23,7 +23,8 @@ def list_doctypes():
     return overview
 
 def doctype_generator(doctype):
-    query = {'query':{'bool':{'filter':{'match':{'_type':doctype}}}}}
+    _logger.warning("Filter has been replaced by query, still need to test whether edge cases might be unintentionally returned")
+    query = {'query':{'match':{'_type':doctype}}}
     for num, doc in enumerate(_scroll_query(query)):
         if not _DATABASE_AVAILABLE:
             _logger.warning("Could not get documents: No database instance available")
