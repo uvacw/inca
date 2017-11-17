@@ -66,15 +66,15 @@ The first query gives you all articles from nu.nl, the second one all articles f
 
 The following example illustrates how we can use this to export all documents matching a specific query as json files.
 
-Note that we hash their ID and use it as file name - using the ID itself could fail, if the ID contains slashes (which very likely is the case, as some RSS-scrapers use the URL as ID)
+Note that we encode their ID and use it as file name - basically, if there is a slash or a similar character that cannot be used in a file name, we replace it.
 
 ```
 import inca
 import json
-import hashlib
+from urllib.parse import quote_plus
 
 for doc in inca.core.database.scroll_query({'query':{'range':{'publication_date':{'gte':2015,'lt':2016}}}}):
-     with open('/path/to/where/to/store/it/{}.json'.format(hashlib.sha224(doc['_id'].encode('utf-8')).hexdigest()), mode='w') as fo:
+     with open('/path/to/where/to/store/it/{}.json'.format(quote_plus(doc['_id'])), mode='w') as fo:
         fo.write(json.dumps(doc))        
 ```
 
@@ -84,14 +84,14 @@ Let's finish with a more sophisticated example. It uses the so-called 'filter'-c
 ```
 import inca
 import json
-import hashlib
+from urllib.parse import quote_plus
 
 q = inca.core.database.scroll_query(
 {
   "query": {
     "bool": {
       "filter": [
-        { "match": { "doctype": "nrc (print)" }},
+        { "match": { "_type": "nrc (print)" }},
         { "range": { "publication_date": { "gte": "2007-01-01", "lt":"2014-01-01" }}}
       ]
     }
@@ -99,7 +99,7 @@ q = inca.core.database.scroll_query(
 }
 )
 for doc in q:
-     with open('/path/to/store/data/{}.json'.format(hashlib.sha224(doc['_id'].encode('utf-8')).hexdigest()), mode='w') as fo:
+     with open('/path/to/store/data/{}.json'.format(quote_plus(doc['_id'])), mode='w') as fo:
         fo.write(json.dumps(doc)) 
 ```
 
