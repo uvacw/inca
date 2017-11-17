@@ -7,6 +7,8 @@ import sys
 from nltk.sentiment import vader
 
 
+logger = logging.getLogger(__name__)
+
 try:
     from pattern.nl import parse
 except:
@@ -16,9 +18,6 @@ except:
 
     pass
 
-
-
-logger = logging.getLogger(__name__)
 
 
 
