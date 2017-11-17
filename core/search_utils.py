@@ -154,7 +154,7 @@ def missing_field(doctype=None, field='_source', stats_only=True):
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get documents missing a field: No database instance available")
         return []
-    query = {'filter':{'missing':{'field':field}}}
+    query = {'query':{'bool':{'must_not':{'exists':{'field':field}}}}}
     if not doctype:
         result = _client.search(_elastic_index, body=query)
     else:
