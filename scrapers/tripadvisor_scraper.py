@@ -20,9 +20,10 @@ logger.setLevel(logging.DEBUG)
 class tripadvisor(Scraper):
     """Scrapes Tripadvisor reviews"""
     
-    def __init__(self, database=True, maxpages = 2, maxreviewpages = 5, maxurls = 50, starturl = "https://www.tripadvisor.com/Hotels-g188590-Amsterdam_North_Holland_Province-Hotels.html"):
+    def __init__(self, database=True, startpage = 1, maxpages = 2, maxreviewpages = 5, maxurls = 50, starturl = "https://www.tripadvisor.com/Hotels-g188590-Amsterdam_North_Holland_Province-Hotels.html"):
         '''
-        maxpages: number of pages with hostels to scrape
+        startpage: the overviewpage where to start
+        maxpages: number of pages with hostels to scrape at one time
         maxreviewpages: number of pages with reviews *per hostel* to scrape
         starturl: URL to first page with hostel results
         maxurl: number of urls that are made
@@ -31,9 +32,12 @@ class tripadvisor(Scraper):
         self.START_URL = starturl
         self.BASE_URL = "http://www.tripadvisor.com"          
         self.MAXPAGES = maxpages
+        self.STARTPAGE = startpage
         self.MAXREVIEWPAGES = maxreviewpages
         self.MAXURLS = maxurls
-        self.BLACKLIST = ["http://www.tripadvisor.com/Hotel_Review-g188590-d189389-Reviews-Sofitel_Legend_The_Grand_Amsterdam-Amsterdam_North_Holland_Province.html","http://www.tripadvisor.com/Hotel_Review-g188590-d3526884-Reviews-Andaz_Amsterdam_Prinsengracht-Amsterdam_North_Holland_Province.html"]   # review pages that never should be fetched (e.g., because they do not conform with the standard layout)
+        self.BLACKLIST = [#"http://www.tripadvisor.com/Hotel_Review-g188590-d189389-Reviews-Sofitel_Legend_The_Grand_Amsterdam-Amsterdam_North_Holland_Province.html",
+                          #"http://www.tripadvisor.com/Hotel_Review-g188590-d3526884-Reviews-Andaz_Amsterdam_Prinsengracht-Amsterdam_North_Holland_Province.html"
+                         ]   # review pages that never should be fetched (e.g., because they do not conform with the standard layout)
  
     def get(self):
         '''Fetches reviews from Tripadvisor.com'''
@@ -53,7 +57,7 @@ class tripadvisor(Scraper):
         starturl = part1 + "-oa{}-" + part2
 
         # Possible urls are created, but the list can't be longer than the maxpages defined above
-        for i in range (0, self.MAXURLS*30, 30):          
+        for i in range (self.STARTPAGE*30, self.MAXURLS*30, 30):          
             allurls.append(starturl.format(i))
         if len(allurls) > self.MAXPAGES:
             allurlsgen = (e for e in allurls[:int(self.MAXPAGES)])
@@ -203,11 +207,6 @@ class tripadvisor(Scraper):
                 review_contributions=[]
                 review_votes=[]
                 bios = tree.xpath('//*[@class="member_info"]')
-                review_usernames =[]
-                review_locations=[]
-                review_contributions=[]
-                review_votes=[]
-                bios = tree.xpath('//*[@class="member_info"]')
                 for b in bios:
                     allinfo = b.getchildren()
                     if b.getchildren()[0].text_content() == '':
@@ -263,17 +262,6 @@ class tripadvisor(Scraper):
                 for review in reviews:
                     is_sponsored = review.text_content().find('Review collected in partnership with') > -1
                     review_is_sponsored.append(is_sponsored)
-             
-                # go to the next page, unless there is no next page   
-                next_reviewpageelement = tree.xpath('//*[@class="nav next taLnk "]')
-                if next_reviewpageelement == []:
-                    break
-                else:
-                    next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
-                    reviews_thisurl = self.BASE_URL + next_pagelink
-                i+=1
-                if i > maxpages:
-                    break
 
                 assert len(review_usernames)==len(review_date)==len(review_headline)==len(review_mobile)==len(review_stayed)==len(review_ratings)==len(review_locations)==len(review_votes)==len(review_contributions)
                 
@@ -328,7 +316,16 @@ class tripadvisor(Scraper):
                         review['responder'] = next(responses_responder_iter)
 
                 logger.debug("This page has {} reviews.".format(len(review_usernames)))
-                
+
+                # go to the next page, unless there is no next page   
+                next_reviewpageelement = tree.xpath('//*[@class="nav next taLnk "]')
+                if next_reviewpageelement == []:
+                    break
+                else:
+                    next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
+                    reviews_thisurl = self.BASE_URL + next_pagelink
+                    logger.debug("The next page is: {}".format(reviews_thisurl))
+                    
                 for i in range(len(review_usernames)):
                     reviews_thishotel.append({'username':review_usernames[i].strip(),
                                               'date':review_date[i].strip(),
@@ -346,7 +343,14 @@ class tripadvisor(Scraper):
                                               })
                 thishotel['reviews'] = reviews_thishotel
 
+                if i >= maxpages:
+                    break
+                i+=1
             hotels_enriched.append(thishotel)
+            
+            #if i >= maxpages:
+            #    break
+            #i+=1
 
         logger.debug('We have fetched all reviews from the hotel-specific webpage that exist. There are {} reviews in total'.format(len(review_usernames)))
         return hotels_enriched
