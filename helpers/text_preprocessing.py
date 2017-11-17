@@ -25,6 +25,23 @@ def generate_word(text_data, normalize='lemmatize', word_filter=False):
             continue
         yield normalizer(word)
 
+
+def extract_data(document, field='text'):
+    """
+    Extracts data from the input document, given a field of interest.\n
+    @param document: the document to extract data from
+    @type document: dictionary
+    @param field: the requested dictionary key pointing to the dict data. If 'all' is given then return the  concatenation of all the dictionaries values with '\n'. If key is not found returns empty string ''
+    @type field: str
+     """
+    if field in document:
+        return document[field]
+    elif field == 'all':
+        return '\n'.join((text_data for text_data in document.values()))
+    else:
+        return ''
+
+
 def dir2docs(dir):
     docs_list = os.listdir(dir)
     docs = []
