@@ -60,12 +60,12 @@ class timeline_generator():
 
             # apply filter if specified
             if type(filter)==str:
-                elastic_query['query']['and'].append({'query_string':{'query':filter}})
+                elastic_query['query']['bool']['must'].append({'query_string':{'query':filter}})
             elif type(filter)==dict:
-                elastic_query['query']['and'].append(filter)
+                elastic_query['query']['bool']['must'].append({"match":filter})
 
             if from_time or to_time:
-                elastic_query['query']['and'].append({'range':time_range})
+                elastic_query['query']['bool']['must'].append({'range':time_range})
 
             logger.debug("elastic query = {elastic_query}".format(**locals()))
             res = client.search(elastic_index, body=elastic_query, size=0)

@@ -5,6 +5,7 @@ from core.database import client as _client
 from core.database import scroll_query as _scroll_query
 from core.database import elastic_index as _elastic_index
 from core.database import DATABASE_AVAILABLE as _DATABASE_AVAILABLE
+from core.database import delete_doctype, delete_document
 import logging as _logging
 from core.basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
@@ -22,7 +23,8 @@ def list_doctypes():
     return overview
 
 def doctype_generator(doctype):
-    query = {'filter':{'match':{'doctype':doctype}}}
+    _logger.warning("Filter has been replaced by query, still need to test whether edge cases might be unintentionally returned")
+    query = {'query':{'match':{'_type':doctype}}}
     for num, doc in enumerate(_scroll_query(query)):
         if not _DATABASE_AVAILABLE:
             _logger.warning("Could not get documents: No database instance available")
@@ -53,10 +55,13 @@ def doctype_first(doctype, num=1, by_field="META.ADDED"):
                           ],
                       "size":num,
                       "query":
-                      {"match":
-                       {"doctype":
-                        doctype
-                       }
+                        { "bool":
+                            { "filter":
+                                { "match":
+                                    { "_type": doctype
+                                    }
+                                }
+                            }
                       }}).get('hits',{}).get('hits',[""])
     return docs
 
@@ -82,11 +87,13 @@ def doctype_last(doctype,num=1, by_field="META.ADDED"):
                           { by_field : {"order":"desc"}}
                           ],
                       "size":num,
-                      "query":
-                      {"match":
-                       {"doctype":
-                        doctype
-                       }
+                      "query": { "bool":
+                          { "filter":
+                              { "match":
+                                  { "_type": doctype
+                                  }
+                              }
+                          }
                       }}).get('hits',{}).get('hits',[""])
     return docs
 
@@ -98,13 +105,13 @@ def doctype_examples(doctype, field=None, seed=42, num=10):
         'size':num,
         "query": {
             "function_score": {
-                "query": {
-
-                        "match": {
-                            "_type": doctype
+                    "query": {"bool":
+                        { "filter":
+                            { "match":
+                                { "_type": doctype
+                                }
                             }
-
-                    },
+                        }},
                 "functions": [
                     {
                         "random_score": {
@@ -136,9 +143,9 @@ def doctype_fields(doctype):
         return []
     from collections import Counter
     key_count = Counter()
-    doc_num   = _client.search(index=_elastic_index, body={'query':{'match':{'doctype':doctype}}})['hits']['total']
+    doc_num   = _client.search(index=_elastic_index, body={'query':{"bool":{"filter":{'match':{'_type':doctype}}}}})['hits']['total']
     mappings = _client.indices.get_mapping(_elastic_index).get(_elastic_index,{}).get('mappings',{}).get(doctype,{}).get('properties',{})
-    coverage = {key:_client.search(_elastic_index,body={'query': {'bool':{'filter':[{'exists':{'field':key}},{'term':{'doctype':doctype}}]}}}).get('hits',{}).get('total',0) for key in mappings.keys() if key!="META"}
+    coverage = {key:_client.search(_elastic_index,body={'query': {'bool':{'filter':[{'exists':{'field':key}},{'term':{'_type':doctype}}]}}}).get('hits',{}).get('total',0) for key in mappings.keys() if key!="META"}
     summary = {k:{'coverage':coverage.get(k,'unknown')/float(doc_num),'type':mappings[k].get('type','unknown')} for
                k in mappings.keys() if k!="META"}
     return summary
@@ -147,7 +154,7 @@ def missing_field(doctype=None, field='_source', stats_only=True):
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get documents missing a field: No database instance available")
         return []
-    query = {'filter':{'missing':{'field':field}}}
+    query = {'query':{'bool':{'must_not':{'exists':{'field':field}}}}}
     if not doctype:
         result = _client.search(_elastic_index, body=query)
     else:

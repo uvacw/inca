@@ -1,3 +1,4 @@
+import requests
 import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
@@ -6,7 +7,6 @@ from core.database import check_exists
 import feedparser
 import re
 import logging
-import requests
 
 logger = logging.getLogger(__name__)
 
@@ -19,18 +19,19 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class rte(rss):
-    """Scrapes rte.ie"""
+class popular(rss):
+    """Banco Popular"""
 
     def __init__(self,database=True):
-        self.database=database
-        self.doctype = "rte (www)"
-        self.rss_url = "https://www.rte.ie/news/rss/news-headlines.xml"
+        self.database = database
+        self.doctype = "Banco Popular (corp)"
+        self.rss_url ='https://www.comunicacionbancopopular.es/feed/?post_type=nota'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date = datetime.datetime(year=2017, month=8, day=30)
+
 
     def parsehtml(self,htmlsource):
-        '''
+        '''                                                                             
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -38,27 +39,25 @@ class rte(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
-
+        tree = fromstring(htmlsource)
         try:
-            tree = fromstring(htmlsource)
+            title="".join(tree.xpath('//*/h3[@class="entry-title single-title"]//text()')).strip()
         except:
-            print("cannot parse?",type(doc),len(doc))
-            print(doc)
-            return("","","", "")
+            print("no title")
         try:
-            title = tree.xpath("//*[@id='main_inner']/header/h1/text()")[0].strip()
+            teaser="".join(tree.xpath('//*[@class="entry-content clearfix"]/strong/p//text()')).strip()
         except:
-            title = ""
-            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
+            teaser= ""
+        teaser = " ".join(teaser.split())
         try:
-            text = " ".join(tree.xpath("//*[@id='main_inner']//p//text()"))
+            text="".join(tree.xpath('//*[@class="entry-content clearfix"]/p//text()')).strip()
         except:
+            logger.info("oops - geen textrest?")
             text = ""
-            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")    
-    
-        extractedinfo={"title":title,
-                       "text":text.replace("\xa0","")
-                      }
+        text = "".join(text)
+        releases={"title":title.strip(),
+                  "teaser":teaser.strip(),
+                  "text":polish(text).strip(),
+                  }
 
-        return extractedinfo 
-            
+        return releases

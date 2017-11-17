@@ -10,6 +10,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 'July':7, 'August':8, 'September':9, 'October':10, 'November':11, 'December':12}
+
 class akzonobel(Scraper):
     """Scrapes Akzo Nobel"""
 
@@ -48,6 +50,17 @@ class akzonobel(Scraper):
                     print("no title")
                     title = ""
                 try:
+                    d = tree.xpath('//*/time[@class="maincontent-date"]//text()')[0].strip()
+                    print(d)
+                    jaar = int(d[-4:]) 
+                    maand = MAAND2INT[d[:-8].strip()]
+                    dag = int(d[-8:-6])
+                    datum = datetime.datetime(jaar,maand,dag)
+                except Exception as e:
+                    print('could not parse date')
+                    print(e)
+                    datum = None
+                try:
                     teaser=" ".join(tree.xpath('//*/p[@class="maincontent-introduction"]//text()'))
                 except:
                     teaser= ""
@@ -59,6 +72,7 @@ class akzonobel(Scraper):
                     text = ""
                 text = "".join(text)
                 releases.append({'text':text.strip(),
+                                 'date':datum,
                                  'teaser': teaser.strip(),
                                  'title':title.strip(),
                                  'url':link.strip()})

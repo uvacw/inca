@@ -9,40 +9,47 @@ import re
 import logging
 
 logger = logging.getLogger(__name__)
-'''
+
+from scrapers.corp_abf import *
 from scrapers.corp_abnamro import *
-from scrapers.corp_acs import *
 from scrapers.corp_aegon import *
 from scrapers.corp_akzonobel import *
-from scrapers.corp_amadeus import *
 from scrapers.corp_asml import *
 from scrapers.corp_barclays import *
 from scrapers.corp_bat import *
+from scrapers.corp_bbva import *
 from scrapers.corp_bhp import *
 from scrapers.corp_boskalis import *
 from scrapers.corp_bp import *
-# from scrapers.corp_bsch import *
+from scrapers.corp_bsch import *
 from scrapers.corp_btgroup import *
 from scrapers.corp_compass import *
 from scrapers.corp_diageo import *
 from scrapers.corp_dsm import *
-from scrapers.corp_exxonmobil import *
+from scrapers.corp_exxon import *
 from scrapers.corp_ferrovial import *
 from scrapers.corp_gamesa import *
 from scrapers.corp_gemalto import *
 from scrapers.corp_glencore import *
 from scrapers.corp_gnf import *
+from scrapers.corp_grifols import *
 from scrapers.corp_gsk import *
 from scrapers.corp_iag import *
-from scrapers.corp_iberdrola import *
-from scrapers.corp_ing import *
-from scrapers.corp_kpn import *
+try:
+    from scrapers.corp_kpn import *
+except:
+    logger.info('Could not import randstad scraper; maybe you do not have a working selenium/phantomJS installation')
 from scrapers.corp_lbg import *
 from scrapers.corp_mapfre import *
+from scrapers.corp_merlin import *
 from scrapers.corp_nationalgrid import *
 from scrapers.corp_philips import *
+from scrapers.corp_popular import *
 from scrapers.corp_prudential import *
-from scrapers.corp_randstad import *
+try:
+	from scrapers.corp_randstad import *
+except:
+	logger.info('Could not import randstad scraper; maybe you do not have a working selenium/phantomJS installation')
 from scrapers.corp_ree import *
 from scrapers.corp_riotinto import *
 from scrapers.corp_sbm import *
@@ -54,7 +61,7 @@ from scrapers.corp_vodafone import *
 from scrapers.corp_vopak import *
 from scrapers.corp_walmart import *
 from scrapers.corp_wolters import *
-'''
+
 
 def polish(textstring):
     #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
