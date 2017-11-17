@@ -281,7 +281,16 @@ class tripadvisor(Scraper):
                 notcomplete = max([r=="" for r in reviews_alltext])  # True if at least one review is empty
                 if notcomplete:
                     logger.warning("This is weird, the current hotel has a review without text. It's here: {}".format(reviews_thisurl))
+                    # go to the next page, unless there is no next page   
+                    next_reviewpageelement = tree.xpath('//*[@class="nav next taLnk "]')
+                    if next_reviewpageelement == []:
+                        break
+                    else:
+                        next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
+                        reviews_thisurl = self.BASE_URL + next_pagelink
+                    logger.debug("The next page is: {}".format(reviews_thisurl))
                     continue
+                
                 responses_elements = tree.xpath('//*[@class="mgrRspnInline"]')
                 responses = [e.text_content() for e in responses_elements]
                 responses_date = []
