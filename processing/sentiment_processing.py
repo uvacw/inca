@@ -42,8 +42,11 @@ class sentiment_pattern(Processer):
         
     def process(self, document_field, *args, **kwargs):
         '''Added sentiment based on Pattern'''
-        language = kwargs['language']
-        
+        try:
+            language = kwargs['language']
+        except:
+            raise Exception("Specify a language, for example language='nl'. We support nl, en, fr, and it")
+
         if language == 'nl':
             try:
                 from pattern.nl import sentiment
