@@ -349,7 +349,7 @@ class lnimporter(importer):
 
             art = {
                    "title":art_title,
-                   "source":"{} (print) ".format(art_source2.lower()),
+                   "source":"{} (print)".format(art_source2.lower()),
                    "text":art_text,
                    "section":art_section.lower(),
                    "byline":art_byline,
