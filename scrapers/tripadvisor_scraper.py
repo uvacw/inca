@@ -79,10 +79,10 @@ class tripadvisor(Scraper):
 
             assert len(links)==len(names)==len(reviewsquantity)
 
-            for i in range(len(links)):
-                thishotel = {'name':names[i].strip(),
-                             'link':links[i].strip(),
-                             'reviewquantity':reviewsquantity[i].strip()}
+            for hotel in range(len(links)):
+                thishotel = {'name':names[hotel].strip(),
+                             'link':links[hotel].strip(),
+                             'reviewquantity':reviewsquantity[hotel].strip()}
                 hotels.append(thishotel)
             # apart from the initial while-loop condition, we also stop the loop once we reach
             # the maximum number of pages defined before:
@@ -153,7 +153,7 @@ class tripadvisor(Scraper):
                 logger.debug('There seem to be {} pages with reviews, however, we are only going to scrape {}.'.format(maxpages,self.MAXREVIEWPAGES))
                 maxpages = self.MAXREVIEWPAGES
 
-            i = 1
+            numberofpage = 1
             while True:
                 sleep(randrange(5,10))
                 req=urllib2.Request(reviews_thisurl, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
@@ -335,31 +335,28 @@ class tripadvisor(Scraper):
                     reviews_thisurl = self.BASE_URL + next_pagelink
                     logger.debug("The next page is: {}".format(reviews_thisurl))
                     
-                for i in range(len(review_usernames)):
-                    reviews_thishotel.append({'username':review_usernames[i].strip(),
-                                              'date':review_date[i].strip(),
-                                              'headline':review_headline[i].strip(),
-                                              'mobile':review_mobile[i],
-                                              'date_stay':review_stayed[i],
-                                              'rating':review_ratings[i],
-                                              'location':review_locations[i],
-                                              'votes':review_votes[i],
-                                              'contributions':review_contributions[i],
-                                              'review':reviews_cleaned[i],
-                                              'images':review_images[i],
-                                              'specific_ratings':review_moreratings[i],
-                                              'partnership':review_is_sponsored[i]
+                for r in range(len(review_usernames)):
+                    reviews_thishotel.append({'username':review_usernames[r].strip(),
+                                              'date':review_date[r].strip(),
+                                              'headline':review_headline[r].strip(),
+                                              'mobile':review_mobile[r],
+                                              'date_stay':review_stayed[r],
+                                              'rating':review_ratings[r],
+                                              'location':review_locations[r],
+                                              'votes':review_votes[r],
+                                              'contributions':review_contributions[r],
+                                              'review':reviews_cleaned[r],
+                                              'images':review_images[r],
+                                              'specific_ratings':review_moreratings[r],
+                                              'partnership':review_is_sponsored[r]
                                               })
                 thishotel['reviews'] = reviews_thishotel
 
-                if i >= maxpages:
+                if numberofpage >= maxpages:
                     break
-                i+=1
+                numberofpage+=1
             hotels_enriched.append(thishotel)
-            
-            #if i >= maxpages:
-            #    break
-            #i+=1
+
 
         logger.debug('We have fetched all reviews from the hotel-specific webpage that exist. There are {} reviews in total'.format(len(review_usernames)))
         return hotels_enriched
