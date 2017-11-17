@@ -31,7 +31,7 @@ def extract_data(document, field='text'):
     Extracts data from the input document, given a field of interest.\n
     @param document: the document to extract data from
     @type document: dictionary
-    @param field: the requested dictionary key pointing to the dict data. If 'all' is given then return the  concatenation of all the dictionaries values with '\n'. If key is not found returns empty string ''
+    @param field: the requested dictionary key pointing to the dict data. If 'all' is given then returns the  concatenation of all the dictionaries values with '\n'. If key is not found returns empty string ''
     @type field: str
      """
     if field in document:
@@ -40,6 +40,16 @@ def extract_data(document, field='text'):
         return '\n'.join((text_data for text_data in document.values()))
     else:
         return ''
+
+def get_doc_data_generator(self, documents, field='text'):
+    """
+    Returns a generator that generates text_data per document according to given field key.\n
+    @param documents: the input dictionaries to generate from
+    @type documents: iterable
+    @param field: the requested key pointing to the dict data. If 'all' is given then returns the  concatenation of all the dictionaries values with '\n'. If key is not found returns empty string ''
+    @type field: str
+    """
+    return (extract_data(doc, field=field) for doc in documents)
 
 
 def dir2docs(dir):
