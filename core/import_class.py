@@ -12,7 +12,7 @@ except:
     logger.warning('No MongoDB support')
 from os import listdir, walk
 from os.path import isfile, join, splitext
-
+import re
 
 
     
@@ -254,20 +254,19 @@ class lnimporter(importer):
         if not len(journal) == len(journal2) == len(loaddate) == len(section) == len(language) == len(byline) == len(length) == len(tekst) == len(pubdate_year) == len(pubdate_dayofweek) ==len(pubdate_day) ==len(pubdate_month):
             logger.warning("!!!!!!!!!!!!!!!!!!!!!!!!!")
             logger.warning("Ooooops! Not all articles seem to have data for each field. These are the numbers of fields that where correctly coded (and, of course, they should be equal to the number of articles, which they aren't in all cases.")
-            logger.warning("journal", len(journal))
-            logger.warning("journal2", len(journal2))
-            logger.warning("loaddate", len(loaddate))
-            logger.warning("pubdate_day",len(pubdate_day))
-            logger.warning("pubdate_month",len(pubdate_month))
-            logger.warning("pubdate_year",len(pubdate_year))
-            logger.warning("pubdate_dayofweek",len(pubdate_dayofweek))
-            logger.warning("section", len(section))
-            logger.warning("language", len(language))
-            logger.warning("byline", len(byline))
-            logger.warning("length", len(length))
-            logger.warning("tekst", len(tekst))
+            logger.warning("journal: {}".format(len(journal)))
+            logger.warning("journal2: {}".format(len(journal2)))
+            logger.warning("loaddate: {}".format(len(loaddate)))
+            logger.warning("pubdate_day: {}".format(len(pubdate_day)))
+            logger.warning("pubdate_month: {}".format(len(pubdate_month)))
+            logger.warning("pubdate_year: {}".format(len(pubdate_year)))
+            logger.warning("pubdate_dayofweek: {}".format(len(pubdate_dayofweek)))
+            logger.warning("section: {}".format(len(section)))
+            logger.warning("language: {}".format(len(language)))
+            logger.warning("byline: {}".format(len(byline)))
+            logger.warning("length: {}".format(len(length)))
+            logger.warning("tekst: {}".format(len(tekst)))
             logger.warning("!!!!!!!!!!!!!!!!!!!!!!!!!")
-            logger.warning()
             logger.warning("Anyhow, we're gonna proceed and set those invalid fields to 'NA'. However, you should be aware of this when analyzing your data!")
         else:
             logger.info("No missing values encountered.")
@@ -350,7 +349,7 @@ class lnimporter(importer):
 
             art = {
                    "title":art_title,
-                   "source":art_source2.lower(),
+                   "source":"{} (print) ".format(art_source2.lower()),
                    "text":art_text,
                    "section":art_section.lower(),
                    "byline":art_byline,
