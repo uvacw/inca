@@ -110,8 +110,12 @@ class lnimporter(importer):
                         "April":4, "april":4, "mei":5, "May":5, "June":6,"juni":6, "July":7, "juli":7,
                         "augustus": 8, "August":8,"september":9,"September":9, "oktober":10,"October":10,
                         "November":11,"november":11,"December":12,"december":12}
+        self.SOURCENAMEMAP={'ad/algemeen dagblad (print)':'ad (print)',
+                                'de telegraaf (print)': 'telegraaf (print)',
+                                'de volkskrant (print)': 'volkskrant (print)',
+                                'nrc handelsblad (print)': 'nrc (print)'}
 
-
+        
     def run(self, pathwithlnfiles , force=False):
         '''imported from newspaper database'''
 
@@ -347,9 +351,13 @@ class lnimporter(importer):
             art_suspicious = jj > .16 * ii
             if art_suspicious: suspicious+=1
 
+            formattedsource = "{} (print)".format(art_source2.lower())
+
+            formattedsource = self.SOURCENAMEMAP.get(formattedsource, formattedsource) # rename source if necessary
+            
             art = {
                    "title":art_title,
-                   "source":"{} (print)".format(art_source2.lower()),
+                   "source": formattedsource,
                    "text":art_text,
                    "section":art_section.lower(),
                    "byline":art_byline,
