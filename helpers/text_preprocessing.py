@@ -7,6 +7,12 @@ stop_words = set(stopwords.words('english'))
 
 
 def get_normalizer(norm_type):
+    """
+    Returns a lambda function that acts as a normalizer for input words/tokens.\n
+    @param norm_type: the normalizer type to 'construct'. Recommend 'lemmatize'
+    @type norm_type: {'stem', 'lemmatize'}, otherwise does not normalize
+    @return: lambda
+    """
     if norm_type == 'stem':
         from nltk.stem import PorterStemmer
         stemmer = PorterStemmer()
@@ -31,7 +37,7 @@ def extract_data(document, field='text'):
     Extracts data from the input document, given a field of interest.\n
     @param document: the document to extract data from
     @type document: dictionary
-    @param field: the requested dictionary key pointing to the dict data. If 'all' is given then returns the  concatenation of all the dictionaries values with '\n'. If key is not found returns empty string ''
+    @param field: the requested dictionary key pointing to the dict data. If 'all' is given then returns the  concatenation of all the dictionaries values with '\n'. If key is not found returns None
     @type field: str
      """
     if field in document:
@@ -39,9 +45,9 @@ def extract_data(document, field='text'):
     elif field == 'all':
         return '\n'.join((text_data for text_data in document.values()))
     else:
-        return ''
+        return None
 
-def get_doc_data_generator(self, documents, field='text'):
+def get_data_generator(self, documents, field='text'):
     """
     Returns a generator that generates text_data per document according to given field key.\n
     @param documents: the input dictionaries to generate from
