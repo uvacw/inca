@@ -40,6 +40,7 @@ import core.taskmanager
 import datetime
 import processing # helps celery recognize the processing tasks
 import scrapers   # helps celery recognize the scraping tasks
+import rssscrapers
 import clients    # helps celery recognize client tasks
 import analysis   # helps celery recognize analysis tasks
 from optparse import OptionParser
@@ -53,12 +54,16 @@ class Inca():
     methods
     ----
     Scrapers
-        Retrieval methods for RSS feeds and websites. Most scrapers can run
+        Retrieval methods for RSS websites. Most scrapers can run
         out-of-the-box without specifying any parameters. If no database is
         present, scrapers will return the data as a list.
 
         usage:
             docs = inca.scrapers.<scraper>()
+
+    Rssscrapers
+        Same as Scrapers, but based on the websites' RSS feeds.
+
     Clients
         API-clients to get data from various endpoints. You can start using client
         functionality by:
@@ -92,9 +97,14 @@ class Inca():
         self._LOCAL_ONLY = distributed
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
+        self._construct_tasks('rssscrapers')
 
     class scrapers():
         '''Scrapers for various (news) outlets '''
+        pass
+
+    class rssscrapers():
+        '''RSS-based crapers for various (news) outlets '''
         pass
 
     class processing():
@@ -136,7 +146,7 @@ class Inca():
                     return endpoint
 
                 endpoint = makefunc(method)
-                if function == 'scrapers':
+                if function == 'scrapers' or function =='rssscrapers':
                     docstring = self._taskmaster.tasks[k].get.__doc__
                 elif function == "processing":
                     docstring = self._taskmaster.tasks[k].process.__doc__
