@@ -63,10 +63,10 @@ def extract_data(document, field='text'):
 
 def get_data_generator(documents, field='text'):
     """
-    Returns a generator that generates text_data per document according to given field key.\n
+    Returns a generator that can be iterated to extract textual data per document, according to the given field key.\n
     :param documents: the input dictionaries to generate from
     :type documents: iterable
-    :param field: the keys specifying the data to extract from the documents
+    :param field: the key specifying the data to extract from the documents. If 'all' is given then returns the concatenation of all the dictionary values with '\\\\n'
     :type field: str
     :return: a generator of textual data
     :rtype: generator
