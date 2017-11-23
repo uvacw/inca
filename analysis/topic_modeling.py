@@ -60,16 +60,19 @@ class Lda(Analysis):
 
         self.nb_docs_trained = 0
 
-    def fit(self, documents, add_prediction='', field='text'):
+    def fit(self, documents, add_prediction='', field='text', nb_topics=20):
         print('Training model ...')
-        self.lda = LdaModel((get_bow(text_data, self.corpus) for text_data in get_data_generator(documents, field=field)), num_topics=nb_topics, alpha='auto')  # alpha can be also set to 'symmetric' or to an explicit array
+
+        cach = (get_bow(text_data, self.corpus) for text_data in get_data_generator(documents, field=field))
+
+        self.lda = LdaModel(cach, num_topics=nb_topics, alpha='auto')  # alpha can be also set to 'symmetric' or to an explicit array
         self.nb_docs_trained = len(self.corpus)
-        lda = gensim.models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=100, update_every=0, passes=20)
+        #lda = gensim.models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=100, update_every=0, passes=20)
 
     def predict(self, documents, add_prediction='', field='text'):
         docs_lda = []
         for doc in documents:
-            docs_lda.append(self.lda[get_bow(extract-data(doc, field=field), self.corpus)])
+            docs_lda.append(self.lda[get_bow(extract_data(doc, field=field), self.corpus)])
             if add_prediction != '':
                 doc[add_prediction] = str(docs_lda[-1])
 
@@ -95,18 +98,19 @@ class TopicModelTrainer:
 
     def train(self, model_type, train_docs, field='text', nb_topics=20):
         """
-        @param model_type: the model to use for inducing topics
-        @type model_type: str
-        @param train_docs: an iterable of dictionaries; the set of documents to train on
-        @type train_docs: iterable
-        @param field: the docs field from which to extract data
-        @type field: str
-        @param nb_topics: the assumed number of underlying topics
-        @type nb_topics: int
+        :param model_type: the model to use for inducing topics
+        :type model_type: str
+        :param train_docs: an iterable of dictionaries; the set of documents to train on
+        :type train_docs: iterable
+        :param field: the docs field from which to extract data
+        :type field: str
+        :param nb_topics: the assumed number of underlying topics
+        :type nb_topics: int
         """
         if model_type == 'lda':
             model = Lda(self.corpus)
-            model.fit([get_bow(doc[field], self.corpus) for doc in train_docs], nb_topics)
+            model.fit(train_docs, add_prediction='', field=field, nb_topics=nb_topics)
+#            model.fit([get_bow(extract_data(doc, field), self.corpus) for doc in train_docs], nb_topics)
         else:
             raise Exception("Topic model of type '{}' is not supported".format(model_type))
         return model
@@ -125,8 +129,10 @@ if __name__ == '__main__':
 
     corp = CorpusCreator.create_corpus(train_docs, field='text', normalizing='lemmatize')
 
-    trainer = TopicModelTrainer(corp)
-    lda = trainer.train('lda', train_docs, field='text', nb_topics=3)
+    print('Corpus initialized. Number of documents included: {}'.format(len(corp)))
 
-    for t in test_docs:
-        lda.get_topic_distribution(t)
+    trainer = TopicModelTrainer(corp)
+    lda = trainer.train('lda', train_docs, field='text', nb_topics=2)
+
+    # for t in test_docs:
+    #     lda.get_topic_distribution(t)
