@@ -14,6 +14,8 @@ from sys import maxunicode
 import unicodedata
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
+import pandas as pd
+import numpy as np
 
 logger = logging.getLogger(__name__)
 tbl = dict.fromkeys(i for i in range(maxunicode) if unicodedata.category(chr(i)).startswith('P'))
@@ -31,25 +33,34 @@ class cosine_similarity():
             second = datetime.date(second[0], second[1], second[2])
             difference = (first-second).days
             return([first, second, difference])
+                            
+    def levenshtein(self, source, target):
+        if len(source) < len(target):
+            return self.levenshtein(target, source)
+        if len(target) == 0:
+            return len(source)
+        source = np.array(tuple(source))
+        target = np.array(tuple(target))
+        previous_row = np.arange(target.size + 1)
+        for s in source:
+            current_row = previous_row + 1
+            current_row[1:] = np.minimum(
+                current_row[1:],
+                np.add(previous_row[:-1], target != s))
+            current_row[1:] = np.minimum(current_row[1:],
+                                         current_row[0:-1] + 1)
+            previous_row = current_row
+            return previous_row[-1]
         
-    def text_processing(self, text, language):
-                                    
-        doc = text.replace(u"`",u"").replace(u"´",u"").translate(tbl)
-        stopwords_list = set(stopwords.words(language))
-        doc1 = " ".join([w for w in doc.split() if w not in stopwords_list])
-        stemmer = SnowballStemmer(language)
-        doc2 = " ".join([stemmer.stem(w) for w in doc1.split()])
-        return doc2
-                            
-                            
-    def analysis(self, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = 0, days_after = 2, language = "dutch", threshold = 0.6,from_time=None, to_time=None):
+    def analysis(self, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = 0, days_after = 2, threshold = 0.6, from_time=None, to_time=None, to_csv = False, method = "cosine"):
         '''
         Source = doctype of source, Sourcetext = field of sourcetext (e.g. 'text'), 
         Sourcedate = field of sourcedate (e.g. 'publication_date'); (repeat for target); 
         Days_before = days target is before source (e.g. -2); Days_after = days target is after source (e.g. 2)
-        Language = language used for text processing
         threshold = threshold to determine at which point similarity is sufficient
         from_time, to_time = optional: specifying a date range to filter source and target articles
+        to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
+        method = options "cosine", "levenshtein" or "both", depending on which method should be used for determining overlap
         '''
         int_allarticles = defaultdict(int)
         comparisons=defaultdict(list)
@@ -81,12 +92,10 @@ class cosine_similarity():
         #Retrieve documents and process them
         
         for doc in source_query:
-            source_new = self.text_processing(doc['_source'][sourcetext], language)
-            source_tuple.append((source_new, doc['_source'][sourcedate]))
+            source_tuple.append((doc['_source'][sourcetext], doc['_source'][sourcedate]))
             allsource +=1
         for doc in target_query:
-            target_new = self.text_processing(doc['_source'][targettext], language)
-            target_tuple.append((target_new, doc['_source'][targetdate]))
+            target_tuple.append((doc['_source'][targettext], doc['_source'][targetdate]))
             alltarget +=1
 
         logger.debug("Processed {} sources in total".format(allsource))
@@ -100,9 +109,7 @@ class cosine_similarity():
                 if day_diff == "No date" or days_after <= day_diff[2] <= days_before:
                     pass
                 else:
-                    source_new = self.text_processing(item[0], language)
-                    target_new = self.text_processing(item1[0], language)
-                    comparisons[day_diff[2]].append((source_new, target_new, day_diff[0], day_diff[1]))
+                    comparisons[day_diff[2]].append((item[0], item1[0], day_diff[0], day_diff[1]))
                     
         #For every key (documents are within 2 days) every pair of documents is evaluated with regard to their similarity
         
@@ -121,32 +128,73 @@ class cosine_similarity():
                     tfidf = vect.fit_transform(item1[:2])
                     pairwise_similarity = tfidf * tfidf.T
                     cx = sp.sparse.coo_matrix(pairwise_similarity)
+                    ls = self.levenshtein(item1[0], item1[1])
                     for i,j,v in zip(cx.row, cx.col, cx.data):
                         if len(cx.data) == 2:
-                            overlap[key1].append("no")
-                            overlap[key1].append(0)
-                        else: 
-                            if v > threshold and i == 0 and j == 1:
-                                overlap[key1].append("yes")
-                                overlap[key1].append(v)                       
-                            elif v <= threshold and i == 0 and j ==1:
+                            if method == "levenshtein":
+                                overlap[key1].append(ls)
+                            elif method == "cosine": 
                                 overlap[key1].append("no")
-                                overlap[key1].append(v)
+                                overlap[key1].append(0)
+                            elif method == "both":
+                                overlap[key1].append("no")
+                                overlap[key1].append(0)
+                                overlap[key1].append(ls)
+                        else:
+                            if v > threshold and i == 0 and j == 1:
+                                if method == "levenshtein":
+                                    overlap[key1].append(ls)
+                                elif method == "cosine": 
+                                    overlap[key1].append("yes")
+                                    overlap[key1].append(v)
+                                elif method == "both":
+                                    overlap[key1].append("yes")
+                                    overlap[key1].append(v)
+                                    overlap[key1].append(ls)
+                            elif v <= threshold and i == 0 and j ==1:
+                                if method == "levenshtein":
+                                    overlap[key1].append(ls)
+                                elif method == "cosine": 
+                                    overlap[key1].append("no")
+                                    overlap[key1].append(v)
+                                elif method == "both":
+                                    overlap[key1].append("no")
+                                    overlap[key1].append(v)
+                                    overlap[key1].append(ls)
 
         for key, value in int_allarticles.items():
             logger.debug("With {} days between the documents: Compared {} documents pairs".format(key, value))
 
-        #Make a folder where all the information is stored in a csv file - can then be used for further analysis
-        
-        if not 'comparisons' in os.listdir('.'):
-            os.mkdir('comparisons')
-        with open(os.path.join('comparisons',"{}.csv".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))),'w') as f:
-            writer=csv.writer(f)
-            headerrow = ["source_date", "day_diff", "source", "target", "made threshold", "similarity"]
-            writer.writerow(headerrow)
-            for key, value  in overlap.items():
-                row = [value[0], value[1], value[2], value[3], value[4], value[5]]
-                writer.writerow(row)
+        #Make dataframe where all the information is stored
+        d = []
+        if method == "levenshtein": 
+            for key, value in overlap.items():
+                row_dict = {'source_date':value[0], 'day_diff':value[1], 'source':value[2], 'target':value[3], 'levenshtein':value[4]}
+                d.append(row_dict)
+            data = pd.DataFrame(d, columns = ["source_date", "day_diff", "source", "target", "levenshtein"])
+            
+        elif method == "cosine":
+            for key, value in overlap.items():
+                row_dict = {'source_date':value[0], 'day_diff':value[1], 'source':value[2], 'target':value[3], 'made_threshold':value[4], 'cosine':value[5]}
+                d.append(row_dict)
+            data = pd.DataFrame(d, columns = ["source_date", "day_diff", "source", "target", "made_threshold", "cosine"])
+            
+        elif method == "both":
+            for key, value in overlap.items():
+                row_dict = {'source_date':value[0], 'day_diff':value[1], 'source':value[2], 'target':value[3], 'made_threshold':value[4], 'cosine':value[5], 'levenshtein': value[6]}
+                d.append(row_dict)
+            data = pd.DataFrame(d, columns = ["source_date", "day_diff", "source", "target", "made_threshold", "cosine", "levenshtein"])
+            
+        if to_csv == True:
+            if not 'comparisons' in os.listdir('.'):
+                os.mkdir('comparisons')
+            data.to_csv(os.path.join('comparisons',"{}.csv".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))),index = False, header = True)
+            return "Saved file {}.csv to comparisons folder".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+
+        else:
+            return data
+                
+            
 
                
         
