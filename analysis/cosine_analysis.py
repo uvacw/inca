@@ -27,11 +27,14 @@ class cosine_similarity():
         if first_date is None or second_date is None:
             return("No date")
         else:
-            first = [int(i) for i in first_date.split("-")]
-            first = datetime.date(first[0], first[1], first[2])
-            second = [int(i) for i in second_date.split("-")]
-            second = datetime.date(second[0], second[1], second[2])
-            difference = (first-second).days
+            try:       # assume datetime objects
+                difference = (first_date-second_date).days
+            except:    # handle strings
+                first = [int(i) for i in first_date[:10].split("-")]
+                first = datetime.date(first[0], first[1], first[2])
+                second = [int(i) for i in second_date[:10].split("-")]
+                second = datetime.date(second[0], second[1], second[2])
+                difference = (first-second).days
             return([first, second, difference])
                             
     def levenshtein(self, source, target):
