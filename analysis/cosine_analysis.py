@@ -94,11 +94,18 @@ class cosine_similarity():
         #Retrieve documents and process them
         
         for doc in source_query:
-            source_tuple.append((doc['_source'][sourcetext], doc['_source'][sourcedate]))
-            allsource +=1
+            try:
+                source_tuple.append((doc['_source'][sourcetext], doc['_source'][sourcedate]))
+                allsource +=1
+            except KeyError:
+                pass
+
         for doc in target_query:
-            target_tuple.append((doc['_source'][targettext], doc['_source'][targetdate]))
-            alltarget +=1
+            try:
+                target_tuple.append((doc['_source'][targettext], doc['_source'][targetdate]))
+                alltarget +=1
+            except KeyError:
+                pass
 
         logger.debug("Processed {} sources in total".format(allsource))
         logger.debug("Processed {} targets in total".format(alltarget))
