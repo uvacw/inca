@@ -62,6 +62,8 @@ class cosine_similarity():
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
         method = options "cosine", "levenshtein" or "both", depending on which method should be used for determining overlap
         '''
+        logger.info("The results of the similarity analysis could be inflated when not using the recommended text processing steps (stopword removal, punctuation removal, stemming) beforehand")
+        
         int_allarticles = defaultdict(int)
         comparisons=defaultdict(list)
         overlap = defaultdict(list)
