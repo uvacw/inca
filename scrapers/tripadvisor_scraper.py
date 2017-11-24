@@ -350,7 +350,7 @@ class tripadvisor(Scraper):
                                               'specific_ratings':review_moreratings[r],
                                               'partnership':review_is_sponsored[r]
                                               })
-                thishotel['reviews'] = reviews_thishotel
+                thishotel['reviews'] += reviews_thishotel
 
                 if numberofpage >= maxpages:
                     break
