@@ -99,7 +99,7 @@ class taz(rss):
                 title       = title,
                 text        = text.strip(),
                 teaser     = description,
-                author      = author,
+                byline      = author,
                 source      = source,
                 category    = category,
                 url         = link,

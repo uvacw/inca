@@ -50,7 +50,7 @@ class zeit(rss):
             title =""
 #category
         try:
-            category = r[0]['url'].split("/")[3]
+            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()')
         except:
             category =""
 #author
@@ -60,13 +60,13 @@ class zeit(rss):
             author =""
 #source
         try:
-            author = tree.xpath('//*[@class="metadata"]//span/text()')[0].replace("Quelle:","").strip()
+            source = tree.xpath('//*[@class="metadata"]//span/text()')[0].replace("Quelle:","").strip()
 
         except:
-            author =""
+            source =""
 #teaser
         try:
-            teaser = tree.xpath('//*[@class="summary"]//text()').strip()
+            teaser = ''.join(tree.xpath('//*[@class="summary"]//text()')).replace('\n','').strip()
         except:
             teaser =""
 #text

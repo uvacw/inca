@@ -61,7 +61,7 @@ class freitag(rss):
             title = ""
 #text
         try:
-            text = tree.xpath('//*[@class="Article"]//*[@class="Content"]/p/text()')
+            text = "".join(tree.xpath('//*[@class="c-container--global-wrapper"]/article//div/div//div[4]//p/text()')).replace('\n','')
         except:
             text = ""
 #author

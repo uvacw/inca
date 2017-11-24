@@ -55,9 +55,9 @@ class wirtschaftswoche(rss):
             teaser = ""
 
 
-#text: werkt nog niet
+#text:
         try:
-            text = tree.xpath('//*[@itemprop="aticleBody"]//text()')
+            text = tree.xpath('//*[@itemprop="articleBody"]//p/text()')
         except:
             text = ""
 
@@ -69,7 +69,7 @@ class wirtschaftswoche(rss):
             
 #source:
         try:
-            source = tree.xpath('//*[@class="hcf-gallery-caption"]//a/text()')
+            source = tree.xpath('//*[@class="hcf-content-wrapper"]//*[@class="hcf-origin"]//text()')
         except:
             source = ""
 

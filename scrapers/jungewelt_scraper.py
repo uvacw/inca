@@ -50,7 +50,7 @@ class jungewelt(rss):
         except:
             title =""
 
-#category:
+#category: this newssite has strange categeories:
         try:
             category = tree.xpath('//*[@class="Date"]//text()')[3].split('/',1)[1]
         except:

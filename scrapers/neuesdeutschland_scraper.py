@@ -51,31 +51,25 @@ class neuesdeutschland(rss):
 #title
 #title pt1:
         try:
-            pt1 = tree.xpath('//*[@class="Article"]//text()')[10]
+            pt1 = tree.xpath('//*[@class="Wrapper"]//article/h1/text()')
         except:
             pt1 =""
 #title pt2:
         try:
-            pt2 = tree.xpath('//*[@class="Article"]//text()')[12]
+            pt2 = tree.xpath('//*[@class="Wrapper"]//article/h2/text()')
         except:
             pt2 =""
         title = pt1 + ":" + pt2
         
-#teaser: cannot scrape the whole teaser, since only the first part is also on the article page
-        try:
-            teaser = tree.xpath('//article//h2/text()')
-        except:
-            teaser =""
+#teaser: not on the same page !!
+
 #author
         try:
             author = tree.xpath('//*[@class="Author"]/text()')[0].replace("Von","")
         except:
             author =""
-#source:
-        try:
-            source = tree.xpath('//*[@class="Main"]//i/text()')
-        except:
-            source =""
+#source: no source. if there is no author then there is no reference at all
+
 #text
         try:
             text = ''.join(tree.xpath('//*[@class="Content"]//p/text()')).strip()
@@ -85,7 +79,6 @@ class neuesdeutschland(rss):
 
         extractedinfo={"title":title,
                        "byline":author,
-                       "byline_source":source,
                        "text":text,
                        "category":category
                       }

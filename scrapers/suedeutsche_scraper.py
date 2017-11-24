@@ -72,9 +72,10 @@ class sueddeutsche(rss):
             author =""
 #source
         try:
-            source = tree.xpath('//*[@class="endofarticle__copyright"]//text()')[0].split('/')
+            source = tree.xpath('//*[@class="endofarticle__copyright"]//text()')[0].split('/')[1:]
         except:
             source =""
+            
             
         extractedinfo={"title":title,
                        "byline":author,

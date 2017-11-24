@@ -24,9 +24,9 @@ class stern(rss):
     def __init__(self,database=True):
         self.database=database
         self.doctype = "stern (www)"
-        self.rss_url='http://www.stern.de/feed/standard/alle-nachrichten/'
+        self.rss_url='https://www.stern.de/feed/standard/alle-nachrichten/'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=11, day=17)
 
     def parsehtml(self,htmlsource):
         '''
@@ -46,26 +46,24 @@ class stern(rss):
             source = tree.xpath('//*[@class="m-source"]//text()')[1]
         except:
             source =""
-        #title (some articles have one and some two titles. this scraper takes both)
+#title (some articles have one and some two titles. this scraper takes both)
         try:
             title = "".join(tree.xpath('//*[@class="article"]//div//h2//text()')).replace('\n','').strip()
-
         except:
             title =""
-        #teaser
+#teaser
         try:
             teaser = "".join(tree.xpath('//*[@class="article-intro"]//text()'))
         except:
             teaser =""
-        #text
+#text
         try:
             text = ''.join(tree.xpath('//*[@class="article"]//*[@itemprop="articleBody"]/p//text()'))
-
         except:
             text =""
+        
         extractedinfo = {"teaser":teaser,
                      "byline_source":source,
                      "title":title,
-                     "text":text
-                    }
+                     "text":text}
         return extractedinfo

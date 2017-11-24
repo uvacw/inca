@@ -67,17 +67,26 @@ class diewelt(rss):
             title2 = ""
             
         title = title1 + title2
-#text
+#text part 1
         try:
-            text = tree.xpath('//*[@data-content="Sticky.ArticleBody"]/div/p/span/text()')+''.join(tree.xpath('//*[@itemprop="articleBody"]/p/text()'))
+            text1 = tree.xpath('//*[@data-content="Sticky.ArticleBody"]/div/p/span/text()')
         except:
-            text =""
-       
+            text1 =""
+#part two of the text
+        try:
+            text2 = tree.xpath('//*[@itemprop="articleBody"]/p/text()')
+        except:
+            text2 =""
 #author
         try:
-            author = tree.xpath('//*[@class="c-author__name"]//text()')[1]
+            author1 = tree.xpath('//*[@class="c-author__name"]//a/text()')
+            if len(author1)==2:
+                author = tree.xpath('//*[@class="c-author__name"]//a/text()')[0]
+            else:
+                author=""
         except:
-            author =""
+            author=""
+                                                                             
 #source
         try:
             source = tree.xpath('//*[@class="c-source"]//text()')
@@ -86,7 +95,7 @@ class diewelt(rss):
             
         extractedinfo={"category":category,
                        "title":title,
-                       "text":text,
+                       "text":text1+text2,
                        "teaser":teaser,
                        "byline":author,
                        "byline_source":source
