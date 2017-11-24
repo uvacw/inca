@@ -18,13 +18,13 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class zeit(rss):
-    """Scrapes zeit.de"""
+class wirtschaftswoche(rss):
+    """Scrapes wiwo.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "zeit (www)"
-        self.rss_url='http://newsfeed.zeit.de/all'
+        self.doctype = "wiwo (www)"
+        self.rss_url='http://www.wiwo.de/contentexport/feed/rss/schlagzeilen'
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=8, day=2)
 
@@ -43,46 +43,51 @@ class zeit(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-#title
-        try:
-            title = tree.xpath('//*[@class="article-header"]//h1/span/text()')
-        except:
-            title =""
 #category
         try:
-            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()')
+            category ="" 
         except:
-            category =""
-#author
-        try:
-            author = tree.xpath('//*[@itemprop="author"]/a/span/text()')
-        except:
-            author =""
-#source
-        try:
-            source = tree.xpath('//*[@class="metadata"]//span/text()')[0].replace("Quelle:","").strip()
-
-        except:
-            source =""
+            category=""
 #teaser
         try:
-            teaser = ''.join(tree.xpath('//*[@class="summary"]//text()')).replace('\n','').strip()
+            teaser = tree.xpath('//*[@class="hcf-teaser"]//text()')
         except:
-            teaser =""
-#text
+            teaser = ""
+
+
+#text:
         try:
-            text = "".join(tree.xpath('//*[@class="paragraph article__item"]//text()')).strip().replace("\n","")
-
+            text = tree.xpath('//*[@itemprop="articleBody"]//p/text()')
         except:
-            text  =""
-        
+            text = ""
 
-        extractedinfo={"title":title,
-                       "category":category,
-                       "teaser":teaser,
-                       "byline":author,
+#author: werkt nog niet
+        try:
+            author = tree.xpath('//*[@class="hcf-author"]//text()')[1]
+        except:
+            author =""
+            
+#source:
+        try:
+            source = tree.xpath('//*[@class="hcf-content-wrapper"]//*[@class="hcf-origin"]//text()')
+        except:
+            source = ""
+
+#title: title is written in two parts. this path gets both with a ':' in the middle.
+
+        try:
+            title = "".join(tree.xpath('//*[@class="hcf-colset1"]//h2//text()'))
+        except:
+            title = ""
+
+
+
+        extractedinfo={"category":category.strip(),
+                       "title":title,
                        "byline_source":source,
-                       "text":text
+                       "text":text,
+                       "teaser":teaser,
+                       "byline":author
                        }
 
         return extractedinfo

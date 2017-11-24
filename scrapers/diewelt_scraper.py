@@ -1,31 +1,34 @@
-from lxml import html
-from urllib import request
-from lxml.html import fromstring
-from scrapers.rss_scraper import rss
-from core.scraper_class import Scraper
-import re
-import feedparser
-import logging
 import datetime
-import locale
-import requests
-from lxml import etree
+from lxml.html import fromstring
+from core.scraper_class import Scraper
+from scrapers.rss_scraper import rss
+from core.database import check_exists
+import feedparser
+import re
+import logging
 
 logger = logging.getLogger(__name__)
 
+def polish(textstring):
+    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split('\n')
+    lead = lines[0].strip()
+    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
+    if rest: result = lead + ' ||| ' + rest
+    else: result = lead
+    return result.strip()
 
 class diewelt(rss):
-    """Scrapes http://www.welt.de/ """
+    """Scrapes welt.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "Die Welt"
-        self.rss_url='http://www.welt.de/?service=Rss'
+        self.doctype = "diewelt (www)"
+        self.rss_url='https://www.welt.de/feeds/topnews.rss'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=11, day=21)
-    
+        self.date    = datetime.datetime(year=2017, month=7, day=2)
 
-    def get(self,**kwargs):
+    def parsehtml(self,htmlsource):
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
@@ -34,106 +37,68 @@ class diewelt(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
 
-        # creating iteration over the rss feed. 
-        req =request.Request("https://www.welt.de/feeds/latest.rss")
-        read = request.urlopen(req).read()
-        tree = etree.fromstring(read)
-        article_urls = tree.xpath("//channel//item//link/text()")
-        categories = tree.xpath("//channel//item//category/text()")
-        dates = tree.xpath("//channel//item//pubDate/text()")
-        titles = tree.xpath("//channel//item//title/text()")
-        authors = tree.xpath("//channel//item//author/text()")
+#category
+        try:
+            category = tree.xpath('//*[@class="c-breadcrumb"]//a/span/text()')[1]
+        except:
+            category =""
 
-        for link,category,xpath_date,title,author in zip(article_urls,categories,dates,titles,authors):      
-            link = link.strip()
-            try: 
-                req_wall = request.Request(link)
-                read_wall = request.urlopen(req_wall).read().decode(encoding="utf-8",errors="ignore")
-                tree_wall = fromstring(read_wall)
-            except:
-                logger.error("HTML tree cannot be parsed")
-
-
-            # For this newspaper there's an extra step in which we need to click on the right link to access the article. 
-            if tree.xpath("boolean(//*[@class='o-teaser__title ']/a[3]/@href)"):
-                link_end = tree_wall.xpath("//*[@class='o-teaser__title ']/a[3]/@href")[0].strip()
-                link = 'https://www.welt.de'+link_end
-
+#teaser
+        try:
+            teaser = tree.xpath('//*[@class="c-summary__intro"]//text()')
+        except:
+            teaser =""
+#title1
+        try:
+            title1 = tree.xpath('//*[@class="c-dreifaltigkeit__headline-wrapper"]//text()')[1]
+        except:
+            title1 =""
+#title2
+        try:
+            title2 = tree.xpath('//*[@class="c-dreifaltigkeit__headline-wrapper"]//text()')[3]
+        except:
+            title2 = ""
             
-            try:
-                req = request.Request(link)
-                read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
-                tree = fromstring(read)
-            except:
-                logger.error("HTML tree cannot be parsed")
-
-
-            # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
-            parag = tree.xpath("//*[@itemprop='articleBody']/p//text()")
-            text = ''
-            i = 0
-            for r in parag:
-                if i < 2:
-                    text += ''+r.strip().replace('\xa0',' ')
-                    i += 1
-                else:
-                    text += ' '+r.strip().replace('\xa0',' ')
-
-            # What's this again?
-            #tree.xpath('//*[@class="c-article-text c-content-container __margin-bottom--is-0"]//p except [@class="o-element__text o-element__text--is-small"]') 
+        title = title1 + title2
+#text part 1
+        try:
+            text1 = tree.xpath('//*[@data-content="Sticky.ArticleBody"]/div/p/span/text()')
+        except:
+            text1 =""
+#part two of the text
+        try:
+            text2 = tree.xpath('//*[@itemprop="articleBody"]/p/text()')
+        except:
+            text2 =""
+#author
+        try:
+            author1 = tree.xpath('//*[@class="c-author__name"]//a/text()')
+            if len(author1)==2:
+                author = tree.xpath('//*[@class="c-author__name"]//a/text()')[0]
+            else:
+                author=""
+        except:
+            author=""
+                                                                             
+#source
+        try:
+            source = tree.xpath('//*[@class="c-source"]//text()')
+        except:
+            source =""
             
-            # Retrieving summary on top of articles
-            try:
-                summary = tree.xpath("//*[@class='c-summary__intro']/text()")[0].strip()
-            except:
-                summary = ''
-
-            # Retrieving subcategory
-            try:
-                subcategory = tree.xpath("//*[@class='o-section c-section ']/text()")[0].strip()
-            except:
-                subcategory = ''
+        extractedinfo={"category":category,
+                       "title":title,
+                       "text":text1+text2,
+                       "teaser":teaser,
+                       "byline":author,
+                       "byline_source":source
+                       }
         
-            # Retrieving the byline_source/source from url
-            try:
-                source = tree.xpath("//*[@class='c-copyright__source']/text()")[0].strip()
-            except:
-                source = ''
-                
-            # Retrieving the byline/author if it can be found otherwise, get the one from RSS feed
-            if tree.xpath("boolean(//*[@class='c-author__name']/a/text())"):
-                author = tree.xpath("//*[@class='c-author__name']/a/text()")[0]
-
-            # Create iso format date 
-            #loc= locale.setlocale(locale.LC_ALL, 'de_DE') #Fri, 09 Dec 2016 14:55:39 +0100
-            try:
-                date = datetime.datetime.strptime(xpath_date[5:],"%d %b %Y %H:%M:%S GMT").isoformat()
-            except:
-                date = ''
-
-            # Check if it's a paid article and if so return so in the tags
-            tags = []
-            if tree.xpath("boolean(//*[@data-external-component='Premium.Article.Content'])"):
-                tags.append('paid')
-            # doing the same if it's a video as there's usually no text accompanying. 
-            if tree.xpath("boolean(//*[@class='c-video-article-content'])"):
-                tags.append('video') 
-
-
-            doc = dict(
-                pub_date    = date,
-                title       = title,
-                text        = text.strip(),
-                summary     = summary,
-                author      = author,
-                source      = source,
-                category    = category,
-                subcategory = subcategory,
-                tags        = tags,
-                url         = link,
-            )
-            doc.update(kwargs)
-            
-            yield doc        
-         
+        return extractedinfo

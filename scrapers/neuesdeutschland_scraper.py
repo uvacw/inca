@@ -18,13 +18,13 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class zeit(rss):
-    """Scrapes zeit.de"""
+class neuesdeutschland(rss):
+    """Scrapes neues-deutschland.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "zeit (www)"
-        self.rss_url='http://newsfeed.zeit.de/all'
+        self.doctype = "neuesdeutschland (www)"
+        self.rss_url='https://www.neues-deutschland.de/rss/neues-deutschland.xml'
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=8, day=2)
 
@@ -43,46 +43,44 @@ class zeit(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-#title
-        try:
-            title = tree.xpath('//*[@class="article-header"]//h1/span/text()')
-        except:
-            title =""
 #category
         try:
-            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()')
+            category = tree.xpath('//*[@class="Active"]//text()')[0]
         except:
             category =""
+#title
+#title pt1:
+        try:
+            pt1 = tree.xpath('//*[@class="Wrapper"]//article/h1/text()')
+        except:
+            pt1 =""
+#title pt2:
+        try:
+            pt2 = tree.xpath('//*[@class="Wrapper"]//article/h2/text()')
+        except:
+            pt2 =""
+        title = pt1 + ":" + pt2
+        
+#teaser: not on the same page !!
+
 #author
         try:
-            author = tree.xpath('//*[@itemprop="author"]/a/span/text()')
+            author = tree.xpath('//*[@class="Author"]/text()')[0].replace("Von","")
         except:
             author =""
-#source
-        try:
-            source = tree.xpath('//*[@class="metadata"]//span/text()')[0].replace("Quelle:","").strip()
+#source: no source. if there is no author then there is no reference at all
 
-        except:
-            source =""
-#teaser
-        try:
-            teaser = ''.join(tree.xpath('//*[@class="summary"]//text()')).replace('\n','').strip()
-        except:
-            teaser =""
 #text
         try:
-            text = "".join(tree.xpath('//*[@class="paragraph article__item"]//text()')).strip().replace("\n","")
-
+            text = ''.join(tree.xpath('//*[@class="Content"]//p/text()')).strip()
         except:
-            text  =""
-        
+            text =""
+
 
         extractedinfo={"title":title,
-                       "category":category,
-                       "teaser":teaser,
                        "byline":author,
-                       "byline_source":source,
-                       "text":text
-                       }
+                       "text":text,
+                       "category":category
+                      }
 
         return extractedinfo

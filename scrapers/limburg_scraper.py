@@ -27,7 +27,7 @@ class hetbelangvanlimburg(rss):
         self.rss_url=['http://www.hbvl.be/rss/section/0DB351D4-B23C-47E4-AEEB-09CF7DD521F9','http://www.hbvl.be/rss/section/A160C0A6-EFC9-45D8-BF88-86B6F09C92A6','http://www.hbvl.be/rss/section/FBAF3E6E-21C4-47D3-8A71-902A5E0A7ECB','http://www.hbvl.be/rss/section/18B4F7EE-C4FD-4520-BC73-52CACBB3931B','http://www.hbvl.be/rss/section/3D61D4A0-88CE-44E9-BCE0-A2AD00AD7D2E','http://www.hbvl.be/rss/section/0AECEA6E-9E2F-4509-A874-A2AD00ADEAA4']
         
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=8, day=2)
 
     def parsehtml(self,htmlsource):
         '''

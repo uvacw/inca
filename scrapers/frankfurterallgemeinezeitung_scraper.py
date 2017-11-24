@@ -18,15 +18,15 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class zeit(rss):
-    """Scrapes zeit.de"""
+class faz(rss):
+    """Scrapes faz.net"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "zeit (www)"
-        self.rss_url='http://newsfeed.zeit.de/all'
+        self.doctype = "faz (www)"
+        self.rss_url='http://www.faz.net/rss/aktuell/'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=8, day=3)
 
     def parsehtml(self,htmlsource):
         '''
@@ -43,46 +43,56 @@ class zeit(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-#title
-        try:
-            title = tree.xpath('//*[@class="article-header"]//h1/span/text()')
-        except:
-            title =""
+
 #category
         try:
-            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()')
+            category = tree.xpath('//*[@class="gh-LogoStage_Top"]//span/text()')[0]
         except:
             category =""
+#teaser
+        try:
+            teaser = ''.join(tree.xpath('//*[@id="TOP"]//*[@class="atc-IntroText"]//text()')).replace('\n','').replace('\t','')
+
+        except:
+            teaser =""
+#title
+        try:
+            title = ''.join(tree.xpath('//*[@class="atc"]//*[@itemprop="headline"]//text()')).replace('\n','').replace('\t','')
+        except:
+            title =""
+            
+#text: still has mistakes in it. scrapes more than just the text. also includes adds between the text.
+
+#text1:
+        try:
+            text1 = ' '.join(tree.xpath('//*[@class="Artikel "]//*[@class="atc-TextFirstLetter"]//text()'))
+
+        except:
+            text1 =""
+#Text2:
+        try:
+            text2 = ' '.join(tree.xpath('//*[@class="Artikel "]//*[@itemprop="articleBody"]/p/text()'))
+
+        except:
+            text2 =""
+        text = text1 + text2
 #author
         try:
-            author = tree.xpath('//*[@itemprop="author"]/a/span/text()')
+            author = ''.join(tree.xpath('//*[@class="atc"]//header//a//text()')).replace('\t','').replace('\n','').strip()
         except:
             author =""
 #source
         try:
-            source = tree.xpath('//*[@class="metadata"]//span/text()')[0].replace("Quelle:","").strip()
-
+            source = ''.join(tree.xpath('//*[@class="quelle"]//text()')).replace('Quelle:',"").replace('\r','').replace('\n','')
         except:
             source =""
-#teaser
-        try:
-            teaser = ''.join(tree.xpath('//*[@class="summary"]//text()')).replace('\n','').strip()
-        except:
-            teaser =""
-#text
-        try:
-            text = "".join(tree.xpath('//*[@class="paragraph article__item"]//text()')).strip().replace("\n","")
-
-        except:
-            text  =""
-        
-
-        extractedinfo={"title":title,
-                       "category":category,
-                       "teaser":teaser,
+            
+        extractedinfo={"category":category,
+                       "title":title,
                        "byline":author,
                        "byline_source":source,
+                       "teaser":teaser,
                        "text":text
                        }
-
+        
         return extractedinfo

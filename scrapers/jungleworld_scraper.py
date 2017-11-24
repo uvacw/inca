@@ -1,3 +1,40 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import datetime
 from lxml.html import fromstring
 from core.scraper_class import Scraper
@@ -10,7 +47,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+ #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
     lines = textstring.strip().split('\n')
     lead = lines[0].strip()
     rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
@@ -18,15 +55,16 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class zeit(rss):
-    """Scrapes zeit.de"""
+class jungleworld(rss):
+    """Scrapes jungle.world.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "zeit (www)"
-        self.rss_url='http://newsfeed.zeit.de/all'
+        self.doctype = "jungleworld (www)"
+        self.rss_url=['https://jungle.world/rss.xml']
+        
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=7, day=3)
 
     def parsehtml(self,htmlsource):
         '''
@@ -43,46 +81,46 @@ class zeit(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-#title
+# category
         try:
-            title = tree.xpath('//*[@class="article-header"]//h1/span/text()')
+            category = tree.xpath('//*[@class="breadcrumb"]//li/a/text()')[-1]
         except:
-            title =""
-#category
-        try:
-            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()')
-        except:
-            category =""
-#author
-        try:
-            author = tree.xpath('//*[@itemprop="author"]/a/span/text()')
-        except:
-            author =""
-#source
-        try:
-            source = tree.xpath('//*[@class="metadata"]//span/text()')[0].replace("Quelle:","").strip()
+            category = ""
+# title
 
-        except:
-            source =""
-#teaser
         try:
-            teaser = ''.join(tree.xpath('//*[@class="summary"]//text()')).replace('\n','').strip()
+            title1 = ''.join(tree.xpath('//*[@class="field field-name-field-dachzeile"]//text()')).replace('\n','').strip()
+        except:
+            title1 = ""
+        try:
+            title2 = tree.xpath('//*[@class="page-title"]//text()')[0]
+        except:
+            title2 =""
+        title = title1 + title2
+# teaser
+        try:
+            teaser = "".join(tree.xpath('//*[@class="lead"]//text()')).replace('\n','').strip()
         except:
             teaser =""
-#text
+            
+# text
         try:
-            text = "".join(tree.xpath('//*[@class="paragraph article__item"]//text()')).strip().replace("\n","")
-
+            text = tree.xpath('//*[@class="ft"]/p/text()')
         except:
-            text  =""
-        
+            text =""
+            
+# author
+        try:
+            author = tree.xpath('//*[@class="autor"]/a/text()')[0]
+        except:
+            author =""
 
-        extractedinfo={"title":title,
-                       "category":category,
-                       "teaser":teaser,
-                       "byline":author,
-                       "byline_source":source,
-                       "text":text
-                       }
+
+        extractedinfo = {"category":category,
+                         "teaser":teaser.strip(),
+                         "byline":author,
+                         "title":title.strip(),
+                         "text":text
+                        }
 
         return extractedinfo

@@ -18,15 +18,15 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class zeit(rss):
-    """Scrapes zeit.de"""
+class focus(rss):
+    """Scrapes focus.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "zeit (www)"
-        self.rss_url='http://newsfeed.zeit.de/all'
+        self.doctype = "focus (www)"
+        self.rss_url='http://rss.focus.de/fol/XML/rss_folnews.xml'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=8, day=2)
+        self.date    = datetime.datetime(year=2017, month=7, day=2)
 
     def parsehtml(self,htmlsource):
         '''
@@ -43,46 +43,44 @@ class zeit(rss):
             print("kon dit niet parsen",type(doc),len(doc))
             print(doc)
             return("","","", "")
-#title
-        try:
-            title = tree.xpath('//*[@class="article-header"]//h1/span/text()')
-        except:
-            title =""
 #category
         try:
-            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()')
+            category = tree.xpath('//*[@id="main"]//ol//a//text()')[1]
         except:
-            category =""
-#author
+            category=""
+            
+#title
         try:
-            author = tree.xpath('//*[@itemprop="author"]/a/span/text()')
-        except:
-            author =""
-#source
-        try:
-            source = tree.xpath('//*[@class="metadata"]//span/text()')[0].replace("Quelle:","").strip()
+            title = tree.xpath('//h1//text()')
 
         except:
-            source =""
+            title = ""
+
+#author: only such a little amount of articles have an author it gets irrelavant for this webside
+        author = ""
+
 #teaser
         try:
-            teaser = ''.join(tree.xpath('//*[@class="summary"]//text()')).replace('\n','').strip()
+            teaser ="".join(tree.xpath('//*[@class="leadIn"]//text()'))
         except:
             teaser =""
+
 #text
         try:
-            text = "".join(tree.xpath('//*[@class="paragraph article__item"]//text()')).strip().replace("\n","")
-
+            text ="".join(tree.xpath('//*[@class="textBlock"]//text()'))
         except:
-            text  =""
-        
+            text = ""
+#source
+        try:
+            source = tree.xpath('//*[@class="created"]//text()')
+        except:
+            source = ""
 
-        extractedinfo={"title":title,
-                       "category":category,
-                       "teaser":teaser,
-                       "byline":author,
-                       "byline_source":source,
-                       "text":text
+        extractedinfo={"category":category,
+                       "teaser":teaser.strip(),
+                       "text":text.strip(),
+                       "bylinesource":source,
+                       "title":title
                        }
 
         return extractedinfo

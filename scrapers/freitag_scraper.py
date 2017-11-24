@@ -1,91 +1,80 @@
-from lxml import html
-from urllib import request
-from lxml.html import fromstring
-from scrapers.rss_scraper import rss
-from core.scraper_class import Scraper
-import re
-import feedparser
-import logging
 import datetime
-import locale
-import requests
-from lxml import etree
+from lxml.html import fromstring
+from core.scraper_class import Scraper
+from scrapers.rss_scraper import rss
+from core.database import check_exists
+import feedparser
+import re
+import logging
 
 logger = logging.getLogger(__name__)
 
+def polish(textstring):
+    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split('\n')
+    lead = lines[0].strip()
+    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
+    if rest: result = lead + ' ||| ' + rest
+    else: result = lead
+    return result.strip()
 
 class freitag(rss):
-    """Scrapes https://www.freitag.de/ """
+    """Scrapes freitag.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "Der Freitag"
+        self.doctype = "freitag (www)"
         self.rss_url='https://www.freitag.de/@@RSS'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=11, day=21)
-    
+        self.date    = datetime.datetime(year=2017, month=9, day=22)
 
-    def get(self,**kwargs):
+    def parsehtml(self,htmlsource):
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        In particular, it extracts the following keys (which should be available in most online news:
+        section    sth. like economy, sports, ...
+        text        the plain text of the article
+        byline      the author, e.g. "Bob Smith"
+        byline_source   sth like ANP
+        '''
+        try:
+            tree = fromstring(htmlsource)
+        except:
+            print("kon dit niet parsen",type(doc),len(doc))
+            print(doc)
+            return("","","", "")
 
-        # creating iteration over the rss feed. 
-        req =request.Request("https://www.freitag.de/@@RSS")
-        read = request.urlopen(req).read()
-        tree = etree.fromstring(read)
-        article_urls = tree.xpath("//channel//item//link/text()")
-        descriptions = tree.xpath("//channel//item//description/text()")
-        dates = tree.xpath("//channel//item//pubDate/text()")
+#category
+        try:
+            category = tree.xpath('//*[@class="x-breadcrumbs"]//a/text()')[1].replace(' ','').replace('\n','')
+        except:
+            category = ""
+#teaser
+        try:
+            teaser = tree.xpath('//*[@id="content"]/div/div/div/div//text()')[:3][-1].replace('\n','').strip()
+        except:
+            teaser = ""
+#title
+        try:
+            title = ''.join(tree.xpath('//*[@class="row"]/h1/text()')[0].replace('\n','')).strip()
+        except:
+            title = ""
+#text
+        try:
+            text = "".join(tree.xpath('//*[@class="c-container--global-wrapper"]/article//div/div//div[4]//p/text()')).replace('\n','')
+        except:
+            text = ""
+#author
+        try:
+            author = ''.join(tree.xpath('//*[@class="row"]//*[@class="author"]/a/text()')).replace('\n','').strip()
+        except:
+            author = ""
+
+        extractedinfo={"category":category,
+                       "title":title,
+                       "text":text,
+                       "byline":author,
+                       "teaser":teaser
+                       }
         
-
-        for link,xpath_date in zip(article_urls,dates):      
-            link = link.strip()
-            
-            try:
-                req = request.Request(link)
-                read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
-                tree = fromstring(read)
-            except:
-                logger.error("HTML tree cannot be parsed")
-
-#parsing teaser
-            try:
-                teaser = tree.xpath("//div[@class='running-text article']/p/span/text() | //div[@class='running-text article']/p/text()")
-            except:
-                teaser =''
-                 
-            # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
-            parag = tree.xpath("//div[@class='text']/p//text()")
-            text = ''
-            for r in parag:
-                text += ' '+r.strip().replace('\xa0',' ')
-        
-        	# Retrieve author    
-            try:
-            	author = tree.xpath("//div[@class='inner']/aside/h1/a/text()")[0].strip()
-            except:
-            	author = ''
-
-            title = tree.xpath("//div[@class='running-text article']/h1/text()")
-
-
-            # source needs to be added. Currently appears in parenthesis at the end of last paragraph. 
-            source = ''
-
-            # Create iso format date 
-            try:
-                date = datetime.datetime.strptime(xpath_date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
-            except:
-                date = ''
-
-
-            doc = dict(
-                pub_date    = date,
-                title       = title,
-                teaser      = teaser,
-                text        = parag,
-                author      = author,
-                source      = source,
-                url         = link,
-            )
-            doc.update(kwargs)
-            
-            yield doc        
+        return extractedinfo
