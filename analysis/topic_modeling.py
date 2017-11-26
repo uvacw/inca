@@ -60,12 +60,35 @@ class Lda(Analysis):
 
         self.nb_docs_trained = 0
 
-    def fit(self, documents, add_prediction='', field='text', nb_topics=20):
-        print('Training model ...')
+    def fit(self, documents, add_prediction='', field='text', nb_topics=20, **kwargs):
+        """
+        This method trains the Lda model by fitting its parameters to the extracted textual data from the given documents\
+        (dictionaries) and selected field key. It infers n number of topics/clusters equal to the given parameter.\
+        Input documents can be optionally mutated by adding to them the trained model "prediction" value.\n
 
-        cach = (get_bow(text_data, self.corpus) for text_data in get_data_generator(documents, field=field))
+        `alpha` and `eta` are hyperparameters that affect sparsity of the document-topic (theta) and topic-word (lambda)\
+         distributions respectively. 'alpha' parameter is learned as an asymmetric prior directly from your data and 'eta'\
+         defaults to a symmetric 1.0/nb_topics prior.\n
 
-        self.lda = LdaModel(cach, num_topics=nb_topics, alpha='auto')  # alpha can be also set to 'symmetric' or to an explicit array
+        `decay` and `offset` parameters are the same as Kappa and Tau_0 in Hoffman et al, respectively.\n\n
+
+        :param documents: the documents (dictionaries) to train on
+        :type documents: iterable
+        :param add_prediction: this switch signals the mutation of the train set documents by adding a key, value pair,\
+            per document. The value holds the documents's topic distribution predicted by the trained model
+        :param field: the requested dictionary/document key pointing to the data. If 'all' is given then returns the\
+            concatenation of all the dictionary values with '\\\\n'
+        :type field: str
+        :param nb_topics: the number of clusters/topics to assume when performing topic modeling. Controls granularity
+        :type nb_topics: int
+
+        :References:
+        * https://radimrehurek.com/gensim/models/ldamodel.html : gensim.models.ldamodel
+        * https://www.di.ens.fr/~fbach/mdhnips2010.pdf : Hoffman et al
+        """
+        print('Training Lda model ...')
+        cached = (get_bow(text_data, self.corpus) for text_data in get_data_generator(documents, field=field))
+        self.lda = LdaModel(cached, num_topics=nb_topics, alpha='auto')  # alpha can be also set to 'symmetric' or to an explicit array
         self.nb_docs_trained = len(self.corpus)
         #lda = gensim.models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=100, update_every=0, passes=20)
 
