@@ -39,7 +39,9 @@ def generate_word(text_data, normalize='lemmatize', word_filter=False):
     """
     normalizer = get_normalizer(normalize)
     for word in (_.lower() for _ in tokenize(text_data)):
-        if word_filter and (word in stop_words or len(word) < 3):
+        if len(word) < 3:
+            continue
+        if word_filter and word in stop_words:
             continue
         yield normalizer(word)
 
