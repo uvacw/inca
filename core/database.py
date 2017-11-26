@@ -214,7 +214,7 @@ use_url: if set to True it is additionally checked whether the url already exist
                 if 'url' in document['_source'].keys():
                     search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
                     if search['hits']['total'] != 0:
-                        logger.info("Document already exists in database")
+                        logger.info("Another document with the same URL already exists in database. Document is not inserted.")
                     else:
                         return insert_document(document)
             elif use_url == False:
