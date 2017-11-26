@@ -50,8 +50,6 @@ except:
     logger.warning("No database functionality available")
     DATABASE_AVAILABLE = False
 
-
-
 def get_document(doc_id):
     if not check_exists(doc_id)[0]:
         logger.debug("No document found with id {doc_id}".format(**locals()))
@@ -76,6 +74,7 @@ def check_exists(document_id):
         time.sleep(1)
         return check_exists(document_id)
 
+        
 def update_document(document, force=False, retry=0, max_retries=10):
     '''
     Documents should usually only be appended, not updated. as such.
@@ -194,13 +193,34 @@ def insert_document(document, custom_identifier=''):
     logger.debug('added new document, content: {document}'.format(**locals()))
     return doc["_id"]
 
-def update_or_insert_document(document, force=False):
-    ''' Check whether a document exists, update if so '''
+def update_or_insert_document(document, force=False, use_url = False):
+    ''' Check whether a document exists, update if so
+use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
+    
     if '_id' in document.keys():
         exists, document = check_exists(document['_id'])
         if exists:
-            return update_document(document, force=force)
-    return insert_document(document)
+            if use_url == True:
+                if 'url' in document['_source'].keys():
+                    search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
+                    if search['hits']['total'] != 0:
+                        return update_document(document, force=force)
+                    else:
+                        logger.info("_id found, but no matching URl. Document is not inserted")
+            elif use_url == False:
+                return update_document(document, force=force)            
+        elif not exists:
+            if use_url == True:
+                if 'url' in document['_source'].keys():
+                    search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
+                    if search['hits']['total'] != 0:
+                        logger.info("Another document with the same URL already exists in database. Document is not inserted.")
+                    else:
+                        return insert_document(document)
+            elif use_url == False:
+                return insert_document(document)
+                        
+
 
 def remove_field(query, field):
     batch = []
@@ -418,6 +438,8 @@ def export_csv(query, keys = ['doctype','publication_date','title','byline','tex
             row = [doc['_source'][k] for k in keys]
             writer.writerow(row)
 
-def import_documents(source_folder, force=False):
+def import_documents(source_folder, force=False, use_url = False):
+    '''use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
+
     for input_file in os.listdir(source_folder):
-        update_or_insert_document(json.load(open(input_file)), force=force)
+        update_or_insert_document(json.load(open(input_file)), force=force, use_url = use_url)
