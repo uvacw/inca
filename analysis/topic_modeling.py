@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import os
 import sys
 import nltk
@@ -10,54 +11,36 @@ from gensim.models.ldamodel import LdaModel
 from core.analysis_base_class import Analysis
 from gensim.corpora.dictionary import Dictionary
 from helpers.text_preprocessing import *
-# from helpers.text_preprocessing import generate_word
-# from helpers.text_preprocessing import dir2docs
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-class CorpusCreator:
-    @staticmethod
-    def create_corpus(documents, field='text', normalizing='lemmatize'):
-        """
-        :param documents: an iterable of documents (dictionaries)
-        :param field: the field from which to extract data
-        :param normalizing: if 'lemmatize' then perfoms word net lemmatization with the default pos noun ('n')
-                            if 'stem' perform stemming with the porter stemmer
-                            else uses the input words as they are.
-        """
-        print('Creating corpus ...')
-        corpus = Corpus(normalizing)
-        for doc in documents:
-            corpus.add_doc(doc, field='text')
-        return corpus
+def create_corpus(documents, field='text', normalizing='lemmatize'):
+    """
+    :param documents: an iterable of documents (dictionaries)
+    :param field: the field from which to extract data
+    :param normalizing: if 'lemmatize' then perfoms word net lemmatization with the default pos noun ('n')
+                        if 'stem' perform stemming with the porter stemmer
+                        else uses the input words as they are.
+    """
+    print('Creating corpus ...')
+    print('caching token represetation from documents ...')
+    token_lists = [[word for word in generate_word(doc_data, normalize=normalizing)] for doc_data in get_data_generator(documents, field=field)]
 
-class Corpus:
+    ddict = Dictionary(token_lists)
+    corpus = [ddict.doc2bow(token_list) for token_list in token_lists]
+    gensim.corpora.MmCorpus.serialize('/tmp/lda.mm', corpus)
 
-    def __init__(self, normalizer):
-        self.normalizer = normalizer
-        self.id2doc = {}  # int => str
-        self.doc2id = {}  # str => int
-        self.next_doc_id = 0
-        self.dict_obj = Dictionary()
+    return ddict, corpus
 
-    def add_doc(self, document, field='text'):
-        self.id2doc[self.next_doc_id] = extract_data(document, field=field)
-        self.doc2id[extract_data(document, field=field)] = self.next_doc_id
-        token_list = [word for word in generate_word(extract_data(document, field=field), normalize=self.normalizer)]
-        self.dict_obj.add_documents([token_list])
-        self.next_doc_id += 1
-
-    def __len__(self):
-        return self.next_doc_id
 
 class Lda(Analysis):
 
-    def __init__(self, corpus):
-        self.corpus = corpus
+    def __init__(self):
         self.times_fitted = 0
+        self.corpus = None
+        self.ddict = None
         self.lda = None
-
         self.nb_docs_trained = 0
 
     def fit(self, documents, add_prediction='', field='text', nb_topics=20, **kwargs):
@@ -86,9 +69,9 @@ class Lda(Analysis):
         * https://radimrehurek.com/gensim/models/ldamodel.html : gensim.models.ldamodel
         * https://www.di.ens.fr/~fbach/mdhnips2010.pdf : Hoffman et al
         """
+        self.ddict, self.corpus = create_corpus(documents, field=field, normalizing='lemmatize')
         print('Training Lda model ...')
-        cached = (get_bow(text_data, self.corpus) for text_data in get_data_generator(documents, field=field))
-        self.lda = LdaModel(cached, num_topics=nb_topics, alpha='auto')  # alpha can be also set to 'symmetric' or to an explicit array
+        self.lda = LdaModel(corpus=self.corpus, num_topics=nb_topics, alpha='auto')  # alpha can be also set to 'symmetric' or to an explicit array
         self.nb_docs_trained = len(self.corpus)
         #lda = gensim.models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=100, update_every=0, passes=20)
 
@@ -100,12 +83,28 @@ class Lda(Analysis):
                 doc[add_prediction] = str(docs_lda[-1])
 
     def update(self, documents, field='text'):
-        corp = CorpusCreator.create_corpus(documents, field=field, normalizing=self.corpus.normalizer)
-        print('Updating model ...')
-        self.lda.update((get_bow(text_data, corp) for text_data in get_data_generator(documents, field=field)))
+        pass
+        # corp = CorpusCreator.create_corpus(documents, field=field, normalizing=self.corpus.normalizer)
+        # print('Updating model ...')
+        # self.lda.update((get_bow(text_data, corp) for text_data in get_data_generator(documents, field=field)))
 
     def interpretation(self):
-        return self.lda.print_topics(num_topics=-1, num_words=10)
+        t = self.lda.num_topics
+        b = str(self.lda.print_topics())
+        probs = re.findall(r'(\d\.\d+)\*', b)
+        id_list = re.findall(r'\"(\d+)\"', b)
+        o = ''
+        for cl in range(t):
+            o += '{}: [{}]\n'.format(cl, ' + '.join(map(lambda x: '{}*"{}"'.format(x[0], self.ddict[int(x[1])]), zip(probs[cl*10:cl*10+10], id_list[cl*10:cl*10+10]))))
+        return o
+            #         for i in map(lambda x: '{}*{}'.format(x[0], l.ddict[int(x[1])]), zip(probs, id_list)):
+    # print(i)
+
+        #     o += '{}: [{}]\n'.format(cl_ind, ', '.join(map(lambda x: '{}*{}', zip(probs[cl_ind*t:cl_ind*t+t], id_list[cl_ind*t:cl_ind*t+t]))))
+
+        # b = '[' + join
+        # TODO iterate through all clusters and do re.sub with regex to print word token instead of id
+#        return self.lda.print_topics(num_topics=-1, num_words=10)
 
     # def quality(self):
 
@@ -113,30 +112,6 @@ class Lda(Analysis):
     #     # self._corpus.add_doc(new_doc, field='text')
     #     self.lda[get_bow(new_doc[field], self.corpus)]
 
-
-class TopicModelTrainer:
-
-    def __init__(self, corpus):
-        self.corpus = corpus
-
-    def train(self, model_type, train_docs, field='text', nb_topics=20):
-        """
-        :param model_type: the model to use for inducing topics
-        :type model_type: str
-        :param train_docs: an iterable of dictionaries; the set of documents to train on
-        :type train_docs: iterable
-        :param field: the docs field from which to extract data
-        :type field: str
-        :param nb_topics: the assumed number of underlying topics
-        :type nb_topics: int
-        """
-        if model_type == 'lda':
-            model = Lda(self.corpus)
-            model.fit(train_docs, add_prediction='', field=field, nb_topics=nb_topics)
-#            model.fit([get_bow(extract_data(doc, field), self.corpus) for doc in train_docs], nb_topics)
-        else:
-            raise Exception("Topic model of type '{}' is not supported".format(model_type))
-        return model
 
 def get_bow(text_data, corpus):
     return corpus.dict_obj.doc2bow([w for w in generate_word(text_data, normalize=corpus.normalizer)])
@@ -150,12 +125,13 @@ if __name__ == '__main__':
     train_docs = dir2docs(train_dir)
     test_docs = dir2docs(test_dir)
 
-    corp = CorpusCreator.create_corpus(train_docs, field='text', normalizing='lemmatize')
+#    ddict, corp = create_corpus(train_docs, field='text', normalizing='lemmatize')
 
-    print('Corpus initialized. Number of documents included: {}'.format(len(corp)))
+ #   print('Corpus initialized. Number of docs included: {}'.format(len(corp)))
+  #  print('Dicttionary initialized. Number of terms included: {}'.format(len(ddict)))
 
-    trainer = TopicModelTrainer(corp)
-    lda = trainer.train('lda', train_docs, field='text', nb_topics=2)
+    l = Lda()
+    l.fit(train_docs, nb_topics=2)
 
     # for t in test_docs:
     #     lda.get_topic_distribution(t)
