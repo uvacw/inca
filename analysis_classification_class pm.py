@@ -9,7 +9,7 @@ from sklearn.cross_validation import KFold
 
 logger = logging.getLogger(__name__)
 
-class Analysis:
+class classification(Analysis):
     
 
 
@@ -41,15 +41,15 @@ class Analysis:
         invalid_docs = []
         valid_docs = []
         for doc in documents:
-            if doc[x_field] not in doc:
+            if doc['_source'][x_field] not in doc:
                 #Be careful, in elasticsearch or json objects, this may be a nested dictionary.
-                invalid_docs.append(doc[_id])
+                invalid_docs.append(doc['_id'])
                 logger.warning("Document has text field missing.")
             else: 
-                valid_docs.append(doc[_id])
+                valid_docs.append(doc['_id'])
             
             else:
-                text = doc[x_field].lower()
+                text = doc['_source'][x_field].lower()
                 for word in text:
                     if word not in string.punctuation or in stopwords:
                         raise ValueError('Either punctuation or stopwords have not been removed. Please preprocess and retry.')
