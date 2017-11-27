@@ -23,9 +23,10 @@ def get_normalizer(norm_type):
         lemmatizer = WordNetLemmatizer()
         return lambda x: lemmatizer.lemmatize(x)
     else:
+        print('No normalization. Not recommended')
         return lambda x: x
 
-def generate_word(text_data, normalize='lemmatize', word_filter=False):
+def generate_word(text_data, normalize='lemmatize', word_filter=True):
     """
     Given input text_data, a normalize 'command' and a stopwords filtering flag, generates a normalized, lowercased word/token provided that it passes the filter and that its length is bigger than 2 characters.\n
     :param text_data: the text from which to generate (i.e. doc['text'])
@@ -38,6 +39,8 @@ def generate_word(text_data, normalize='lemmatize', word_filter=False):
     :rtype: str
     """
     normalizer = get_normalizer(normalize)
+    if word_filter:
+        print("  stopwords are being filtered")
     for word in (_.lower() for _ in tokenize(text_data)):
         if len(word) < 3:
             continue
