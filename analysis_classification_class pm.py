@@ -2,6 +2,7 @@ import logging
 import numpy as np
 import sklearn
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1score, precision_recall_fscore_support
 from sklearn.cross_validation import KFold
 
@@ -13,13 +14,12 @@ class classification(Analysis):
     
 
 
-    def fit(self, documents, _id , x_field, label_field, add_prediction='', **kwargs, n_kfold_splits = 1):
+    def fit(self, documents, _id , x_field, label_field, add_prediction=False, **kwargs, n_kfold_splits = 1):
         """
         This method should train a model on the input documents.\n
         @param documents: the documents (dictionaries) to train on
         """
-        #What is this above documents format. Please look into it. What will be the input?
-        
+         
         """
         @type documents: iterable
         @param _id: 
@@ -31,7 +31,7 @@ class classification(Analysis):
         #To keep add_prediction or not?This is similar to the y_label above. Am i supposed to make something exclusive to my own, or not? 
         """
         @param add_prediction: this switch signals the mutation of the train set documents by adding a key, value pair document.\
-                               If given (add_prediction != ''), then key=add_prediction and value should be the model's output:\n
+                               If given (add_prediction == True), then key=add_prediction and value should be the model's output:\n
                                  * For classification tasks: class labels\n
                                  * For clustering tasks: assigned cluster\n
         @type add_prediction: str
@@ -63,15 +63,13 @@ class classification(Analysis):
 
         
         print(type(labels), labels.shape)
-        
-
 
         vectorizer = CountVectorizer()
         tfidf_transformer = TfidfTransformer()
        
-        wordvec = vectorizer.fit(doc[x_field] for doc in documents if doc[_id] in valid_docs)
+        counts = vectorizer.fit(doc[x_field] for doc in documents if doc['_id'] in valid_docs)
         #vocab = np.array(vectorizer.get_feature_names())
-        
+        '''
         #Sample wthout replacement, 80% of this data as train, and remaining 20% as test.
         N = int(0.8*wordvec.shape[0])
         
@@ -81,37 +79,50 @@ class classification(Analysis):
 
         labels_train_full = labels[:N]
         labels_test_full = label[N:]
+        '''
+        tfidf_full_data = tfidf_transformer.fit_transform(counts)
         
-        tfidf_train_full = tfidf_transformer()
-        self.clf_full =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(tfidf_train_full, labels_train_full)
+        X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, labels, test_size=0.20, shuffle = True, random_state=42)
+        self.clf =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
         
-        #Also, insert functionality for test-train split
+        #If predictions for training documents is wanted
+        if add_prediction ==True:
+            train_predictions = self.clf.predict(X_train)
+        else:
+            train_predictions = None
+        
+        #Think about return statement
+        return (self.clf, train_predictions)
 
-
-        raise NotImplementedError
 
                                                    
                                                    
-    def predict(self, documents, add_prediction='', **kwargs):
+    def predict(self, x_field, documents, add_prediction='', **kwargs):
         """
         This method should perform inference on new unseen documents.\n
         @param documents: the documents (dictionaries) to perform inference on
         @type documents: iterable
+        @param x_field: The name of the field containing the training text data 
+        @type x_field: str
         @param add_prediction: this switch signals the mutation of the given documents by adding a key, value pair document.\
                                If given (add_prediction != ''), then key=add_prediction and value should be the model's output:\n
                                  * For classification tasks: class labels\n
                                  * For clustering tasks: assigned cluster\n
         @type add_prediction: str
         """
-        self.predictions = []
-        clf = self.clf_full
-        for doc in documents:
-            pred = clf.predict(doc)   #what form is doc in? Is it a dictionary? There must be an id too.
-        self.predictions.append(pred)
-        self.indexed_predictions = pd.DataFrame({"prediction":predictions})  #should  I add the key-value pair "id":id ?
+        vectorizer = CountVectorizer()
+        tfidf_transformer = TfidfTransformer()
+        counts_new = vectorizer.fit(doc[x_field] for doc in documents )# if doc['_id'] in valid_docs)
+        tfidf_new = tfidf_transformer.fit_transform(counts)
+
+        clf = self.clf.predict(tfidf_new)
+        self.predictions = clf.predict(doc['_source'][x_field] for doc in documents)  
         
-                                                   
-        raise NotImplementedError
+        #Try and put the predictions into elasticsearch?
+        
+        #return statement, plus logger.info
+                                                          
+        return self.predictions
 
                                                    
                                                    
@@ -121,6 +132,7 @@ class classification(Analysis):
         @param documents: the documents (dictionaries) presented as new evidence to the model. Expected functionality for weight updating
         @type documents: iterable
         """
+        
         raise NotImplementedError
 
        
@@ -148,7 +160,18 @@ class classification(Analysis):
              - inertia: sum of squared distance for each point to it's closest centroid, i.e., its assigned cluster.\n
              - silhouette
         """
-        #How will you do a k fold cross validation? http://zacstewart.com/2015/04/28/document-classification-with-scikit-learn.html
+
+        test_pred = self.clf.predict(self.y_test)
+        self.test_accuracy = metrics.accuracy_score(self.y_test, test_pred)
+        self.test_precision = metrics.precision_score(self.y_test, test_pred)
+        self.test_recall = metrics.recall_score(self.y_test, test_pred)
+        self.test_f1score = metrics.f1_score(self.y_test, test_pred)
+        print("accuracy on test set: "+self.test_accuracy + "\n Precision on test set: " + self.test_precision + "\n Recall on test set: "
+             + self.test_recall + "\n f1score : " +self.f1score)
+        return (self.test_accuracy, self.test_precision, self.test_recall, self.test_f1score)
+    
+        '''
+        #K-fold CV: To be removed
         k_fold = KFold(n=train_data_tf.shape[0], n_splits = n_kfold_splits)
         fscores = []
         precisions = []
@@ -177,8 +200,8 @@ class classification(Analysis):
             print('metrics for fold  ' + str(count)+ '\n') 
             print(precision_recall_fscore_support(test_y, predictions))
         return (precisions, fscores)
-                         
-            
+        '''                 
+           
             
         raise NotImplementedError
 
