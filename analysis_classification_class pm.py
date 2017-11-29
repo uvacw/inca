@@ -18,19 +18,17 @@ class classification(Analysis):
     def fit(self, documents, doctype , x_field, label_field, add_prediction=False, **kwargs):
         """
         This method should train a model on the input documents.\n
+        
         @param documents: the documents (dictionaries) to train on
-        """
-         
-        """
         @type documents: iterable
+        @param doctype: The elasticsearch doctype given to the stored documents
+        @type doctype: str
         @param _id: 
         @type _id:
         @param x_field: The name of the field containing the training text data 
         @type x_field: str
-        @label_field: Name of the field that contains the labels
-        """
-        #To keep add_prediction or not?This is similar to the y_label above. Am i supposed to make something exclusive to my own, or not? 
-        """
+        @param label_field: Name of the field that contains the labels
+        @type label_field: str
         @param add_prediction: this switch signals the mutation of the train set documents by adding a key, value pair document.\
                                If given (add_prediction == True), then key=add_prediction and value should be the model's output:\n
                                  * For classification tasks: class labels\n
