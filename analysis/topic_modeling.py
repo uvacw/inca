@@ -89,33 +89,20 @@ class Lda(Analysis):
         # print('Updating model ...')
         # self.lda.update((get_bow(text_data, corp) for text_data in get_data_generator(documents, field=field)))
 
-    # def interpretation(self):
-    #     ordered_selected_clusters = [_id for _id in range(self.lda.num_topics) if _id in self.selected_clusters]
-    #     top_words = []
-    #     for idd in ordered_selected_clusters:
-    #         top_words.append(self.lda.show_topic(idd))
+    def interpretation(self, prec=3):
+        ordered_selected_clusters = [_id for _id in range(self.lda.num_topics) if _id in self.selected_clusters]
+        body, max_len = self.get_rows([self.lda.show_topic(i) for i in ordered_selected_clusters], prob_precision=prec)
+        header = ' - '.join('{}'.format(idd) + ' '*(3+prec+max_len-len(str(idd))) for idd in ordered_selected_clusters) + '\n'
+        return header + body
 
-    #     b = ''
-    #     b = str(self.lda.print_topics())
-    #     probs = re.findall(r'(\d\.\d+)\*', b)
-    #     id_list = re.findall(r'\"(\d+)\"', b)
-    #     o = ''
-    #     for cl in range(t):
-    #         o += '{}: [{}]\n'.format(cl, ' + '.join(map(lambda x: '{}*"{}"'.format(x[0], self.ddict[int(x[1])]), zip(probs[cl*10:cl*10+10], id_list[cl*10:cl*10+10]))))
-    #     return o
 
-    # def _gen_row(top, prob_precision=3):
-    #     print(type(top))
-    #     max_token_len = max(len(self.ddict[int(top[j][i][0])]) for j in range(len(top)) for i in range(len(top[0])))
-    #     print('max: {}'.format(max_token_len))
-    #     for i in range(len(top[0])):
-    #         print(' |'.join('{}*'.format(str(self.ddict[int(top[j][i][0])]) + ' '*(max_token_len-len(self.ddict[int(top[j][i][0])]))) + "{1:.{0}f}".format(prob_precision, top[j][i][1]) for j in range(len(top))))
-
-    def gen_row(self, top, prob_precision=3):
+    def get_rows(self, top, prob_precision=3):
         max_token_len = max(len(self.ddict[int(top[j][i][0])]) for j in range(len(top)) for i in range(len(top[0])))
-        print('max: {}'.format(max_token_len))
+        #print('max: {}'.format(max_token_len))
+        b = ''
         for i in range(len(top[0])):
-            print(' |'.join('{}*'.format(str(self.ddict[int(top[j][i][0])]) + ' '*(max_token_len-len(self.ddict[int(top[j][i][0])]))) + "{1:.{0}f}".format(prob_precision, top[j][i][1]) for j in range(len(top))))
+            b += ' | '.join('{}*'.format(str(self.ddict[int(top[j][i][0])]) + ' '*(max_token_len-len(self.ddict[int(top[j][i][0])]))) + "{1:.{0}f}".format(prob_precision, top[j][i][1]) for j in range(len(top))) + '\n'
+        return b, max_token_len
 
 
     def select_topics(self, topic_ids):
