@@ -40,15 +40,15 @@ class classification(Analysis):
         #Segregating documents based on whether they have text or not, into 'valid_docs and invalid_docs
         invalid_docs = []
         valid_docs = []
-        s=0
         
         for doc in documents:
             _id = doc["_id"]
             if x_field in doc['_source']:
                 valid_docs.append(doc['_id'])
-                #logger.warning("Document has text field missing.")
             else: 
                 invalid_docs.append(doc['_id'])
+                logger.warning("Document has text field missing.")
+
            #consider not continuing if else if this way. maje it better structured. finish making the list first? 
         for doc in documents:
             if doc['_id'] in valid_docs:
@@ -60,7 +60,7 @@ class classification(Analysis):
         
         
         
-        #YET TO CHANGE NAMES!
+        #The preprocessing functionality may not be needed. Just run a check !
         p = inca.processing.basic_text_processing.lowercase()
         newdocs2 = [e for e in p.runwrap(doctype, field=x_field, save = True, new_key='textLC', force=True)]
         #q = inca.processing.basic_text_processing.remove_punctuation()
@@ -78,15 +78,16 @@ class classification(Analysis):
 
         
         vectorizer = CountVectorizer()
-        tfidf_transformer = TfidfTransformer()
-       
-        
+        tfidf_transformer = TfidfTransformer()               
         counts = vectorizer.fit_transform(doc['_source']['text'] for doc in newdocs2 if doc['_id'] in valid_docs)
         vocab = np.array(vectorizer.get_feature_names())
         
         tfidf_full_data = tfidf_transformer.fit_transform(counts)
         
+        #Split into test and train:
         X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, labels, test_size=0.20, shuffle = True, random_state=42)
+        
+        #Training the classifier
         self.clf =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
         
         #If predictions for training documents is wanted
