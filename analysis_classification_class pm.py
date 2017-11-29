@@ -1,11 +1,23 @@
+import sys
+sys.executable
+sys.path.append('C:/Users/Payal/Documents/GitHub/pattern/')
+import pattern
+import pandas as pd
+import inca
+from inca import Inca
+#from analysis_classification_class import classification
+import core.search_utils
+
 import logging
 import numpy as np
 import sklearn
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import f1score, precision_recall_fscore_support
+from sklearn.metrics import f1_score, precision_recall_fscore_support
 from sklearn.cross_validation import KFold
 from core.analysis_base_class import Analysis
+from scipy.sparse import csr_matrix
+from sklearn.linear_model import SGDClassifier
 
 
 logger = logging.getLogger(__name__)
