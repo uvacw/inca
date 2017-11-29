@@ -42,6 +42,7 @@ class Lda(Analysis):
         self.ddict = None
         self.lda = None
         self.nb_docs_trained = 0
+        self.selected_clusters = set()
 
     def fit(self, documents, add_prediction='', field='text', nb_topics=20, **kwargs):
         """
@@ -88,29 +89,56 @@ class Lda(Analysis):
         # print('Updating model ...')
         # self.lda.update((get_bow(text_data, corp) for text_data in get_data_generator(documents, field=field)))
 
-    def interpretation(self):
-        t = self.lda.num_topics
-        b = str(self.lda.print_topics())
-        probs = re.findall(r'(\d\.\d+)\*', b)
-        id_list = re.findall(r'\"(\d+)\"', b)
-        o = ''
-        for cl in range(t):
-            o += '{}: [{}]\n'.format(cl, ' + '.join(map(lambda x: '{}*"{}"'.format(x[0], self.ddict[int(x[1])]), zip(probs[cl*10:cl*10+10], id_list[cl*10:cl*10+10]))))
-        return o
-            #         for i in map(lambda x: '{}*{}'.format(x[0], l.ddict[int(x[1])]), zip(probs, id_list)):
-    # print(i)
+    # def interpretation(self):
+    #     ordered_selected_clusters = [_id for _id in range(self.lda.num_topics) if _id in self.selected_clusters]
+    #     top_words = []
+    #     for idd in ordered_selected_clusters:
+    #         top_words.append(self.lda.show_topic(idd))
 
-        #     o += '{}: [{}]\n'.format(cl_ind, ', '.join(map(lambda x: '{}*{}', zip(probs[cl_ind*t:cl_ind*t+t], id_list[cl_ind*t:cl_ind*t+t]))))
+    #     b = ''
+    #     b = str(self.lda.print_topics())
+    #     probs = re.findall(r'(\d\.\d+)\*', b)
+    #     id_list = re.findall(r'\"(\d+)\"', b)
+    #     o = ''
+    #     for cl in range(t):
+    #         o += '{}: [{}]\n'.format(cl, ' + '.join(map(lambda x: '{}*"{}"'.format(x[0], self.ddict[int(x[1])]), zip(probs[cl*10:cl*10+10], id_list[cl*10:cl*10+10]))))
+    #     return o
 
-        # b = '[' + join
-        # TODO iterate through all clusters and do re.sub with regex to print word token instead of id
-#        return self.lda.print_topics(num_topics=-1, num_words=10)
+    # def _gen_row(top, prob_precision=3):
+    #     print(type(top))
+    #     max_token_len = max(len(self.ddict[int(top[j][i][0])]) for j in range(len(top)) for i in range(len(top[0])))
+    #     print('max: {}'.format(max_token_len))
+    #     for i in range(len(top[0])):
+    #         print(' |'.join('{}*'.format(str(self.ddict[int(top[j][i][0])]) + ' '*(max_token_len-len(self.ddict[int(top[j][i][0])]))) + "{1:.{0}f}".format(prob_precision, top[j][i][1]) for j in range(len(top))))
 
-    # def quality(self):
+    def gen_row(self, top, prob_precision=3):
+        max_token_len = max(len(self.ddict[int(top[j][i][0])]) for j in range(len(top)) for i in range(len(top[0])))
+        print('max: {}'.format(max_token_len))
+        for i in range(len(top[0])):
+            print(' |'.join('{}*'.format(str(self.ddict[int(top[j][i][0])]) + ' '*(max_token_len-len(self.ddict[int(top[j][i][0])]))) + "{1:.{0}f}".format(prob_precision, top[j][i][1]) for j in range(len(top))))
 
-    # def get_topic_distribution(self, new_doc, field='text'):  # predict/infer
-    #     # self._corpus.add_doc(new_doc, field='text')
-    #     self.lda[get_bow(new_doc[field], self.corpus)]
+
+    def select_topics(self, topic_ids):
+        """Use this method to indicate which topics/clusters you are interested in for "selecting" (i.e. interpreting, visualizing) by providing your desired numerical ids. Note that it only adds to the set of currently "selected" topics the new ids provided. To clear the set before selecting use "clear_selected_topics" first.\n
+        :param topic_ids: the numerical ids of the topics/clusters to add to the "selected" set
+        :type topic_ids: list
+        """
+        self.selected_clusters.update(topic_ids)
+
+    def deselect_topics(self, topic_ids):
+        """Use this method to indicate which topics/clusters you are NOT interested in "selecting" (i.e. for interpreting, visualizing..) by providing your desired numerical ids to exclude from the selected set. It removes the found ids from the set.\n
+        :param topic_ids: the numerical ids of the topics/clusters to remove from the "selected" set
+        :type topic_ids: list
+        """
+        self.selected_clusters.difference_update(topic_ids)
+
+    def select_all_topics(self):
+        """Use this method in case you are want to "select" (i.e. for interpreting, visualizing..) all topics/clusters infered by the model. It adds all numerical topic/cluster ids to the "selected" set."""
+        self.selected_clusters.update(range(self.lda.num_topics))
+
+    def clear_selected_topics(self):
+        """Use this method to clear the selection of topics/clusters. It removes all nnumerical ids from the "selected" set"""
+        self.selected_clusters.clear()
 
 
 def get_bow(text_data, corpus):
@@ -132,6 +160,9 @@ if __name__ == '__main__':
 
     l = Lda()
     l.fit(train_docs, nb_topics=2)
+
+    # b = l.interpretation()
+    # print(b)
 
     # for t in test_docs:
     #     lda.get_topic_distribution(t)
