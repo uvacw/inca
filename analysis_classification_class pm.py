@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1score, precision_recall_fscore_support
 from sklearn.cross_validation import KFold
-
+from core.analysis_base_class import Analysis
 
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,8 @@ class classification(Analysis):
     
 
 
-    def fit(self, documents, _id , x_field, label_field, add_prediction=False, **kwargs, n_kfold_splits = 1):
+
+    def fit(self, documents, doctype , x_field, label_field, add_prediction=False, **kwargs):
         """
         This method should train a model on the input documents.\n
         @param documents: the documents (dictionaries) to train on
@@ -37,65 +38,71 @@ class classification(Analysis):
         @type add_prediction: str
         
         """
+        print(core.search_utils.doctype_fields(doctype))
         #Segregating documents based on whether they have text or not, into 'valid_docs and invalid_docs
         invalid_docs = []
         valid_docs = []
+        s=0
+        
         for doc in documents:
-            if doc['_source'][x_field] not in doc:
-                #Be careful, in elasticsearch or json objects, this may be a nested dictionary.
-                invalid_docs.append(doc['_id'])
-                logger.warning("Document has text field missing.")
-            else: 
+            _id = doc["_id"]
+            s+=1
+            #print(s)
+            if x_field in doc['_source']:
                 valid_docs.append(doc['_id'])
-            
-            else:
+                #logger.warning("Document has text field missing.")
+            else: 
+                invalid_docs.append(doc['_id'])
+           #consider not continuing if else if this way. maje it better structured. finish making the list first? 
+        for doc in documents:
+            if doc['_id'] in valid_docs:
                 text = doc['_source'][x_field].lower()
                 for word in text:
-                    if word not in string.punctuation or in stopwords:
+                    if word not in string.punctuation : #or in stopwords:
                         raise ValueError('Either punctuation or stopwords have not been removed. Please preprocess and retry.')
         
-        y = (doc["_source"]["category"] for doc in newdocs2 if doc["_id"] in valid_docs2)
-        labels_list = []
         
+        
+        
+        #PLEASE CHANGE NAMES!
+        p = inca.processing.basic_text_processing.lowercase()
+        newdocs2 = [e for e in p.runwrap(doctype, field=x_field, save = True, new_key='textLC', force=True)]
+        #q = inca.processing.basic_text_processing.remove_punctuation()
+        #newdocs2 = [e for e in q.runwrap(newdocs, field='textLC',new_key='textnopunc')]
+        print(core.search_utils.doctype_fields(doctype))
+
+        
+        y = (doc["_source"]["category"] for doc in newdocs2 if doc["_id"] in valid_docs)
+        labels_list = []
+
         for i in y:
             labels_list.append(i)
-        labels = pd.DataFrame({'col':label})
+        labels = pd.DataFrame({'col':labels_list})
+
 
         
-        print(type(labels), labels.shape)
-
         vectorizer = CountVectorizer()
         tfidf_transformer = TfidfTransformer()
        
-        counts = vectorizer.fit(doc[x_field] for doc in documents if doc['_id'] in valid_docs)
-        #vocab = np.array(vectorizer.get_feature_names())
-        '''
-        #Sample wthout replacement, 80% of this data as train, and remaining 20% as test.
-        N = int(0.8*wordvec.shape[0])
         
-        i = np.random.choice(np.arange(wordvec.shape[0]), N, replace=False)         
-        train_data_tf = wordvec[i]   
-        #Yet to create the master test set. To be constructed using the remaining indices not used to build traindata
-
-        labels_train_full = labels[:N]
-        labels_test_full = label[N:]
-        '''
+        counts = vectorizer.fit_transform(doc['_source']['text'] for doc in newdocs2 if doc['_id'] in valid_docs)
+        vocab = np.array(vectorizer.get_feature_names())
+        
         tfidf_full_data = tfidf_transformer.fit_transform(counts)
         
         X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, labels, test_size=0.20, shuffle = True, random_state=42)
-        self.clf =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
+        clf =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
         
         #If predictions for training documents is wanted
         if add_prediction ==True:
-            train_predictions = self.clf.predict(X_train)
+            self.train_predictions = self.clf.predict(X_train)
         else:
-            train_predictions = None
+            self.train_predictions = None
         
-        #Think about return statement
-        return (self.clf, train_predictions)
+        return (vocab, clf, labels, invalid_docs, valid_docs)
 
 
-                                                   
+                                              
                                                    
     def predict(self, x_field, documents, add_prediction='', **kwargs):
         """
