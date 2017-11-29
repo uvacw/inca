@@ -46,8 +46,6 @@ class classification(Analysis):
         
         for doc in documents:
             _id = doc["_id"]
-            s+=1
-            #print(s)
             if x_field in doc['_source']:
                 valid_docs.append(doc['_id'])
                 #logger.warning("Document has text field missing.")
@@ -64,7 +62,7 @@ class classification(Analysis):
         
         
         
-        #PLEASE CHANGE NAMES!
+        #YET TO CHANGE NAMES!
         p = inca.processing.basic_text_processing.lowercase()
         newdocs2 = [e for e in p.runwrap(doctype, field=x_field, save = True, new_key='textLC', force=True)]
         #q = inca.processing.basic_text_processing.remove_punctuation()
@@ -91,7 +89,7 @@ class classification(Analysis):
         tfidf_full_data = tfidf_transformer.fit_transform(counts)
         
         X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, labels, test_size=0.20, shuffle = True, random_state=42)
-        clf =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
+        self.clf =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
         
         #If predictions for training documents is wanted
         if add_prediction ==True:
@@ -99,7 +97,7 @@ class classification(Analysis):
         else:
             self.train_predictions = None
         
-        return (vocab, clf, labels, invalid_docs, valid_docs)
+        return (vocab, self.clf, labels, invalid_docs, valid_docs)
 
 
                                               
@@ -119,11 +117,11 @@ class classification(Analysis):
         """
         vectorizer = CountVectorizer()
         tfidf_transformer = TfidfTransformer()
-        counts_new = vectorizer.fit(doc[x_field] for doc in documents )# if doc['_id'] in valid_docs)
+        counts_new = vectorizer.fit(doc['_source'][x_field] for doc in documents )# if doc['_id'] in valid_docs)
         tfidf_new = tfidf_transformer.fit_transform(counts)
 
-        clf = self.clf.predict(tfidf_new)
-        self.predictions = clf.predict(doc['_source'][x_field] for doc in documents)  
+       
+        self.predictions = self.clf.predict(tfidf_new)  
         
         #Try and put the predictions into elasticsearch?
         
