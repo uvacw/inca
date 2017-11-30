@@ -419,7 +419,7 @@ def id2filename(id):
     if len(encoded_filename)>132:
         # many filenames allow a maximum of 255 bytes as file name. However, on
         # encrypted file systems, this can be much lower. Therefore, we play safe
-        hashed_filename = hashlib.md5(encoded_filename.encode('utf-8')).hexdigest()
+        hashed_filename = md5(encoded_filename.encode('utf-8')).hexdigest()
         return encoded_filename[:100]+hashed_filename
     else:
         return encoded_filename
