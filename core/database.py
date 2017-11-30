@@ -222,7 +222,12 @@ use_url: if set to True it is additionally checked whether the url already exist
                 except KeyError:
                     logger.info('No URL found, skipping')
             elif use_url == False:
-                return insert_document(document)
+                return insert_document(document,custom_identifier=document['_id'])
+    else:
+        if use_url == False:
+            return insert_document(document)
+        elif use_url == True:
+            logger.critical('This document has no ID, but you want to check its existence based on the URL. This is not implemented yet, will not insert document')
                         
 
 
