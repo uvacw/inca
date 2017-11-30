@@ -183,14 +183,14 @@ def insert_document(document, custom_identifier=''):
     document = _remove_dots(document)
     if not custom_identifier:
         try:
-            doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document)
+            doc = client.index(index=elastic_index, doc_type=document['_type'], body=document['_source'])
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
         try:
-            doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
+            doc = client.index(index=elastic_index, doc_type=document['_type'], body=document['_source'], id=custom_identifier)
         except ConnectionTimeout:
-            doc= {'_id':insert_document(document, custom_identifier)}
+            doc= {'_id':insert_document(document['_source'], custom_identifier)}
     logger.debug('added new document, content: {document}'.format(**locals()))
     return doc["_id"]
 
@@ -199,7 +199,7 @@ def update_or_insert_document(document, force=False, use_url = False):
 use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
     
     if '_id' in document.keys():
-        exists, document = check_exists(document['_id'])
+        exists, _document = check_exists(document['_id'])
         if exists:
             if use_url == True:
                 if 'url' in document['_source'].keys():
@@ -212,12 +212,15 @@ use_url: if set to True it is additionally checked whether the url already exist
                 return update_document(document, force=force)            
         elif not exists:
             if use_url == True:
-                if 'url' in document['_source'].keys():
-                    search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
-                    if search['hits']['total'] != 0:
-                        logger.info("Another document with the same URL already exists in database. Document is not inserted.")
-                    else:
-                        return insert_document(document)
+                try:
+                    if 'url' in document['_source'].keys():
+                        search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
+                        if search['hits']['total'] != 0:
+                            logger.info("Another document with the same URL already exists in database. Document is not inserted.")
+                        else:
+                            return insert_document(document)
+                except KeyError:
+                    logger.info('No URL found, skipping')
             elif use_url == False:
                 return insert_document(document)
                         
@@ -463,4 +466,5 @@ def import_documents(source_folder, force=False, use_url = False):
     '''use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
 
     for input_file in os.listdir(source_folder):
-        update_or_insert_document(json.load(open(os.path.join(source_folder, input_file))), force=force, use_url = use_url)
+        doc = json.load(open(os.path.join(source_folder, input_file)))
+        update_or_insert_document(doc, force=force, use_url = use_url)
