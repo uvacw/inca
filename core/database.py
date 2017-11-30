@@ -20,6 +20,7 @@ import requests
 from celery import Task
 import os
 from urllib.parse import quote_plus
+from hashlib import md5
 
 config = configparser.ConfigParser()
 config.read('settings.cfg')
@@ -46,7 +47,7 @@ try:
             client.indices.create(elastic_index)
     except Exception as e:
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
-xcept:
+except:
     logger.warning("No database functionality available")
     DATABASE_AVAILABLE = False
 
@@ -405,14 +406,34 @@ def restore_backup(name):
         client.indices.close('inca')
         client.snapshot.restore(repository='inca_backup', snapshot=name)
 
+def id2filename(id):
+    """create a filenmame for exporting docments.
+
+    In principle, documents should be saved as {id}.json. However, as ids can 
+    be arbitrary strings, filenames can (a) be too long or (b) contain illegal 
+    characters like '/'. This function takes care of this
+    """
+    
+    encoded_filename = quote_plus(id)  # use URL encoding to get rid of illegal chacters
+
+    if len(encoded_filename)>132:
+        # many filenames allow a maximum of 255 bytes as file name. However, on
+        # encrypted file systems, this can be much lower. Therefore, we play safe
+        hashed_filename = hashlib.md5(encoded_filename.encode('utf-8')).hexdigest()
+        return encoded_filename[:100]+hashed_filename
+    else:
+        return encoded_filename
+
+        
+    
 def export_doctype(doctype):
     if not 'exports' in os.listdir('.'):
         os.mkdir('exports')
     for doc in scroll_query({'query':{'match':{'_type':doctype}}}):
-        outpath = os.path.join('exports',doctype)
-        if doctype not in os.listdir('exports'):
+        outpath = os.path.join('exports',quote_plus(doctype))
+        if quote_plus(doctype) not in os.listdir('exports'):
             os.mkdir(outpath)
-        with open(os.path.join('exports', doctype, '%s.json' %quote_plus(doc['_id'])),'w') as f:
+        with open(os.path.join('exports', quote_plus(doctype), '%s.json' %id2filename(doc['_id'])),'w') as f:
             f.write(json.dumps(doc))
 
 def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
