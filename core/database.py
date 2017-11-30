@@ -46,7 +46,7 @@ try:
             client.indices.create(elastic_index)
     except Exception as e:
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
-except:
+xcept:
     logger.warning("No database functionality available")
     DATABASE_AVAILABLE = False
 
@@ -442,4 +442,4 @@ def import_documents(source_folder, force=False, use_url = False):
     '''use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
 
     for input_file in os.listdir(source_folder):
-        update_or_insert_document(json.load(open(input_file)), force=force, use_url = use_url)
+        update_or_insert_document(json.load(open(os.path.join(source_folder, input_file))), force=force, use_url = use_url)
