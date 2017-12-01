@@ -20,6 +20,7 @@ import requests
 from celery import Task
 import os
 from urllib.parse import quote_plus
+from hashlib import md5
 
 config = configparser.ConfigParser()
 config.read('settings.cfg')
@@ -182,14 +183,14 @@ def insert_document(document, custom_identifier=''):
     document = _remove_dots(document)
     if not custom_identifier:
         try:
-            doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document)
+            doc = client.index(index=elastic_index, doc_type=document['_type'], body=document['_source'])
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
         try:
-            doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
+            doc = client.index(index=elastic_index, doc_type=document['_type'], body=document['_source'], id=custom_identifier)
         except ConnectionTimeout:
-            doc= {'_id':insert_document(document, custom_identifier)}
+            doc= {'_id':insert_document(document['_source'], custom_identifier)}
     logger.debug('added new document, content: {document}'.format(**locals()))
     return doc["_id"]
 
@@ -198,7 +199,7 @@ def update_or_insert_document(document, force=False, use_url = False):
 use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
     
     if '_id' in document.keys():
-        exists, document = check_exists(document['_id'])
+        exists, _document = check_exists(document['_id'])
         if exists:
             if use_url == True:
                 if 'url' in document['_source'].keys():
@@ -211,14 +212,22 @@ use_url: if set to True it is additionally checked whether the url already exist
                 return update_document(document, force=force)            
         elif not exists:
             if use_url == True:
-                if 'url' in document['_source'].keys():
-                    search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
-                    if search['hits']['total'] != 0:
-                        logger.info("Another document with the same URL already exists in database. Document is not inserted.")
-                    else:
-                        return insert_document(document)
+                try:
+                    if 'url' in document['_source'].keys():
+                        search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
+                        if search['hits']['total'] != 0:
+                            logger.info("Another document with the same URL already exists in database. Document is not inserted.")
+                        else:
+                            return insert_document(document)
+                except KeyError:
+                    logger.info('No URL found, skipping')
             elif use_url == False:
-                return insert_document(document)
+                return insert_document(document,custom_identifier=document['_id'])
+    else:
+        if use_url == False:
+            return insert_document(document)
+        elif use_url == True:
+            logger.critical('This document has no ID, but you want to check its existence based on the URL. This is not implemented yet, will not insert document')
                         
 
 
@@ -405,14 +414,34 @@ def restore_backup(name):
         client.indices.close('inca')
         client.snapshot.restore(repository='inca_backup', snapshot=name)
 
+def id2filename(id):
+    """create a filenmame for exporting docments.
+
+    In principle, documents should be saved as {id}.json. However, as ids can 
+    be arbitrary strings, filenames can (a) be too long or (b) contain illegal 
+    characters like '/'. This function takes care of this
+    """
+    
+    encoded_filename = quote_plus(id)  # use URL encoding to get rid of illegal chacters
+
+    if len(encoded_filename)>132:
+        # many filenames allow a maximum of 255 bytes as file name. However, on
+        # encrypted file systems, this can be much lower. Therefore, we play safe
+        hashed_filename = md5(encoded_filename.encode('utf-8')).hexdigest()
+        return encoded_filename[:100]+hashed_filename
+    else:
+        return encoded_filename
+
+        
+    
 def export_doctype(doctype):
     if not 'exports' in os.listdir('.'):
         os.mkdir('exports')
     for doc in scroll_query({'query':{'match':{'_type':doctype}}}):
-        outpath = os.path.join('exports',doctype)
-        if doctype not in os.listdir('exports'):
+        outpath = os.path.join('exports',quote_plus(doctype))
+        if quote_plus(doctype) not in os.listdir('exports'):
             os.mkdir(outpath)
-        with open(os.path.join('exports', doctype, '%s.json' %quote_plus(doc['_id'])),'w') as f:
+        with open(os.path.join('exports', quote_plus(doctype), '%s.json' %id2filename(doc['_id'])),'w') as f:
             f.write(json.dumps(doc))
 
 def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
@@ -442,4 +471,5 @@ def import_documents(source_folder, force=False, use_url = False):
     '''use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
 
     for input_file in os.listdir(source_folder):
-        update_or_insert_document(json.load(open(input_file)), force=force, use_url = use_url)
+        doc = json.load(open(os.path.join(source_folder, input_file)))
+        update_or_insert_document(doc, force=force, use_url = use_url)
