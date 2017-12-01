@@ -103,7 +103,7 @@ class Inca():
         self._prompt = getattr(make_interface,prompt).prompt
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
-        self._construct_tasks('clients
+        self._construct_tasks('clients')
         self._construct_tasks('rssscrapers')
         if verbose:
             logger.setLevel('INFO')
