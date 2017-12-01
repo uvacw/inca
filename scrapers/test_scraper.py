@@ -14,19 +14,10 @@ class testdocs(Scraper):
     def __init__(self,database=True):
         self.database=database
 
-    def get(self, number=10, bulk=False, **kwargs):
+    def get(self, number=10, **kwargs):
         '''randomly generated document, title and text based on loremipsum module,
-        image is a link to lorempixel random image
-
-        Parameters
-        ----
-        number : int
-            The number of test documents to generated
-        bulk : bool (default=False)
-            Whether to yield single documents (if False) or a list of documents (if True)
-        '''
+        image is a link to lorempixel random image'''
         start = randint(0,1000)
-        batch = []
         for i in range(number):
             fake_id = i+start
             doc = {
@@ -36,16 +27,7 @@ class testdocs(Scraper):
                 "image" : "http://lorempixel.com/400/200/"
             }
             doc.update(kwargs)
-            if not bulk:
-                yield doc
-            else:
-                batch.append(doc)
-                if not len(batch) % (number/10):
-                    yield batch
-                    batch = []
-
-        if bulk and batch:
-            yield batch
+            yield doc
 
 def prettier(text):
     return text.replace("'","")

@@ -10,7 +10,7 @@ import logging as _logging
 from core.basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
 
-_logger = _logging.getLogger("INCA.%s" %__name__)
+_logger = _logging.getLogger(__name__)
 
 def list_doctypes():
     if not _DATABASE_AVAILABLE:
@@ -32,30 +32,7 @@ def doctype_generator(doctype):
         _logger.info("returning {num}".format(**locals()))
         yield doc
 
-def document_generator(query="*"):
-    """A generator to get results for a query
-
-    Parameters
-    ----
-    query : string (default="*")
-        A string query specifying the documents to return
-
-    Yields
-    ----
-    dict representing a document
-    """
-    if not _DATABASE_AVAILABLE:
-        logger.warning("Unable to generate documents, no database available!")
-        yield
-    else:
-        if query == "*": _logger.info("No query specified, returning all documents")
-        es_query = {"query":{"bool":{"must":{"query_string":{"query":query}}}}}
-        for num, doc in enumerate(_scroll_query(es_query)):
-            if not num%10: _logger.info("returning {num}".format(num=num))
-            yield doc
-
-
-def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
+def doctype_first(doctype, num=1, by_field="META.ADDED"):
     '''Returns the first document of a given doctype
 
     Input
@@ -67,42 +44,10 @@ def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
     by_field: string
         The _datetime field by which to determine the
         first document
-    query : string (default None)
-        An Elasticsearch string query to filter results.
-        Example: query="user.screen_name:google
     '''
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get first document: No database instance available")
         return []
-
-    exotic_by_field = by_field.replace('.','.properties.')
-    _logger.debug("looking for {exotic_by_field}".format(exotic_by_field=exotic_by_field))
-    mapping = _client.indices.get_mapping()
-    _logger.debug("Got mapping {mapping}".format(**locals()))
-    target_key = "{_elastic_index}.mappings.{doctype}.properties.{exotic_by_field}".format(_elastic_index=_elastic_index,**locals())
-    _logger.debug("Target key: {target_key}".format(**locals()))
-    found_mapping = _dotkeys(mapping,target_key )
-    _logger.debug("found mapping: {found_mapping}".format(**locals()))
-    if not found_mapping:
-        _logger.debug("Mapping not seen yet")
-        return []
-
-    body = {
-        "sort": [
-            {by_field : {"order":"asc"}}
-            ],
-        "size":num,
-        "query":
-        {"match":
-         {"doctype":
-          doctype
-         }
-        }}
-
-    if query:
-        _logger.debug("adding string query: {query}".format(**locals()))
-        body['query'] = {'query_string':{'query': query}}
-
     docs = _client.search(index=_elastic_index,
                   body={
                       "sort": [
@@ -120,7 +65,7 @@ def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
                       }}).get('hits',{}).get('hits',[""])
     return docs
 
-def doctype_last(doctype,num=1, by_field="META.ADDED", query=None):
+def doctype_last(doctype,num=1, by_field="META.ADDED"):
     '''Returns the last document of a given doctype
 
     Input
@@ -132,42 +77,10 @@ def doctype_last(doctype,num=1, by_field="META.ADDED", query=None):
     by_field: string
         The _datetime field by which to determine the
         last document
-    query : string (default None)
-        An Elasticsearch string query to filter results.
-        Example: query="user.screen_name:google"
     '''
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get last documents: No database instance available")
         return []
-
-    exotic_by_field = by_field.replace('.','.properties.')
-    _logger.debug("looking for {exotic_by_field}".format(exotic_by_field=exotic_by_field))
-    mapping = _client.indices.get_mapping()
-    _logger.debug("Got mapping {mapping}".format(**locals()))
-    target_key = "{_elastic_index}.mappings.{doctype}.properties.{exotic_by_field}".format(_elastic_index=_elastic_index,**locals())
-    _logger.debug("Target key: {target_key}".format(**locals()))
-    found_mapping = _dotkeys(mapping,target_key )
-    _logger.debug("found mapping: {found_mapping}".format(**locals()))
-    if not found_mapping:
-        _logger.debug("Mapping not seen yet")
-        return []
-
-    body = {
-        "sort": [
-            {by_field : {"order":"desc"}}
-            ],
-        "size":num,
-        "query":
-        {"match":
-         {"doctype":
-          doctype
-         }
-        }}
-
-    if query:
-        _logger.debug("adding string query: {query}".format(**locals()))
-        body['query'] = {'query_string':{'query': query}}
-
     docs = _client.search(index=_elastic_index,
                   body={
                       "sort": [
@@ -300,56 +213,3 @@ def doctype_inspect(doctype):
 
 
     return summary
-
-def list_apps(service_name=None):
-    """Lists the API apps registered in this INCA instance
-
-    Parameters
-    ----
-    service_name : string (default=None)
-        The name of the service, such as 'twitter', 'facebook' or 'google'.If
-        no name is provided, apps for all services are returned
-
-    Returns
-    ----
-    Dictionary or list
-        When a service_name is provided, a list of apps registered for this
-        service are returned. Otherwise, a dictionary with the structure
-        `{service_name : [app1, app2, app3]}` are returned.
-
-    """
-    res = _client.search(index='.apps', doc_type=service_name, size=10000)
-    get_num_credentials = lambda app: _client.search(
-        index='.credentials',
-        doc_type=app['_type']+"_"+app['_id'],
-        size=0)['hits']['total']
-    apps = {}
-    for app in res['hits']['hits']:
-        if service_name and service_name!=app['_type']: continue
-        app_ob = {'name':app['_id'],'credentials': get_num_credentials(app)}
-        if not apps.get(app['_type']):
-            apps[app['_type']] = [app_ob]
-        else:
-            apps[app['_type']].append(app_ob)
-    if service_name:
-        return apps.get(service_name,[])
-    return apps
-
-def list_credentials(service_name, app_name):
-    """Lists the credentials associated with a registered app
-
-    Parameters
-    ----
-    service_name : string
-        a string specifying the name of the service the app targets, such as
-        'twitter','facebook' or 'google'
-    app_name : string
-        a string with the internal application name
-
-    Returns
-    ----
-    A list of credentials belonging to the application
-    """
-    app_type = service_name + "_" + app_name
-    credentials = _client.search(index = ".credentials", doc_type=app_type)
-    return credentials['hits']['hits']
