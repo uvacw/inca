@@ -4,7 +4,6 @@ from core.search_utils import doctype_first
 
 import logging
 import json
-from json import JSONDecodeError
 import httplib2
 import requests
 from requests import ConnectionError, ConnectTimeout
@@ -173,7 +172,7 @@ class youtube(Client):
                 if type(response)==tuple and response[0]['status']=="200":
                     try:
                         res = json.loads(response[1].decode('utf-8','ignore'))
-                    except JSONDecodeError:
+                    except ValueError:
                         logger.debug("response is not JSON")
                         res = response[1].decode('utf-8','ignore')
                     return res
