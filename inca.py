@@ -20,6 +20,8 @@ running INCA.
 
 import os
 import logging
+import inspect
+import copy
 
 logging.basicConfig(level="WARN")
 logger = logging.getLogger("INCA")
@@ -39,6 +41,7 @@ import datetime
 
 import processing # helps celery recognize the processing tasks
 import scrapers   # helps celery recognize the scraping tasks
+import rssscrapers
 import clients    # helps celery recognize client tasks
 import analysis   # helps celery recognize analysis tasks
 
@@ -49,6 +52,42 @@ from interface import make_interface
 
 
 class Inca():
+    """INCA main class for easy access to functionality
+
+    methods
+    ----
+    Scrapers
+        Retrieval methods for RSS websites. Most scrapers can run
+        out-of-the-box without specifying any parameters. If no database is
+        present, scrapers will return the data as a list.
+
+        usage:
+            docs = inca.scrapers.<scraper>()
+
+    Rssscrapers
+        Same as Scrapers, but based on the websites' RSS feeds.
+
+    Clients
+        API-clients to get data from various endpoints. You can start using client
+        functionality by:
+        1) Adding an application, using the `<service>_create_app` method
+        2) Add credentials to that application, using `<service>_create_credentials`
+        3) Then run a collection method, such as `twitter_timeline`!
+
+        usage:
+            inca.clients.<service>_create_app(name='default')
+            inca.clients.<service>_create_credentials(app='default')
+            docs = inca.clients.<service>_<functionname>(app='default', *args, **kwargs)
+
+    Processing
+        These methods change documents by adding fields. Such manipulations can
+        be things such as POS-tags, Sentiment or something else.
+
+        usage:
+            modified_docs = inca.processing.<processor>(docs=<original_docs or query>, field=<field to manipulate>, *args, **kwargs)
+
+
+    """
 
     _taskmaster = Celery(
         backend = config.get('celery', '%s.backend' %config.get('inca','dependencies')),
@@ -64,7 +103,8 @@ class Inca():
         self._prompt = getattr(make_interface,prompt).prompt
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
-        self._construct_tasks('clients')
+        self._construct_tasks('clients
+        self._construct_tasks('rssscrapers')
         if verbose:
             logger.setLevel('INFO')
             logger.info("Providing verbose output")
@@ -76,6 +116,10 @@ class Inca():
         '''Scrapers for various (news) outlets '''
         pass
 
+    class rssscrapers():
+        '''RSS-based crapers for various (news) outlets '''
+        pass
+
     class processing():
         '''Processing options to operate on documents'''
         pass
@@ -85,6 +129,22 @@ class Inca():
         pass
 
     def _construct_tasks(self, function):
+        """Construct the appropriate endoints from Celery tasks
+
+        This function serves to create the appropriate functions in the Inca
+        object by intro-specting available functions from the celery taskmaster.
+        Subclasses of Task should then be added automatically.
+
+        Parameters
+        ----
+        function : string
+            The type of function to add, such as 'scrapers' or 'processors'
+
+        Returns
+            None
+
+
+        """
         for k,v in self._taskmaster.tasks.items():
             functiontype = k.split('.',1)[0]
             taskname     = k.rsplit('.',1)[1]
@@ -102,6 +162,31 @@ class Inca():
                         "{service_name}_create_credentials".format(service_name=target_task.service_name), target_task.add_credentials )
                 else:
                     setattr(getattr(self,function),taskname,target_task.runwrap)
+                function_class = getattr(self,function)
+                leaf_class = self._taskmaster.tasks[k]
+                method = leaf_class.runwrap
+                def makefunc(method):
+                    if inspect.isgeneratorfunction(method):
+                        def endpoint(*args, **kwargs):
+                            for i in method(*args, **kwargs):
+                                yield i
+                    else:
+                        def endpoint(*args, **kwargs):
+                            return method(*args, **kwargs)
+                    return endpoint
+
+                endpoint = makefunc(method)
+                if function == 'scrapers' or function =='rssscrapers':
+                    docstring = self._taskmaster.tasks[k].get.__doc__
+                elif function == "processing":
+                    docstring = self._taskmaster.tasks[k].process.__doc__
+                else:
+                    docstring = self._taskmaster.tasks[k].__doc__
+                endpoint.__doc__  = docstring
+                endpoint.__name__ = leaf_class.__name__
+
+                setattr(function_class,taskname,endpoint)
+
 
     def _summary(self):
         summary = ''
@@ -178,6 +263,7 @@ def commandline():
     logger.info("running {tasktype} : {task}".format(**locals()))
     task_func(action=action, *args[2:])
     logger.info("finished {tasktype} : {task}".format(**locals()))
+
 
 if __name__ == '__main__':
     commandline()

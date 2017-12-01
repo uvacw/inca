@@ -30,7 +30,7 @@ class pvda(Scraper):
         '''
         self.doctype = "PvdA (pol)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=9, day=29)
+        self.date = datetime.datetime(year=2017, month=11, day=10)
 
         releases = []
 
@@ -72,7 +72,7 @@ class pvda(Scraper):
                     publication_date = datetime.datetime(int(jaar), int(MAAND2INT[maand]),int(dag))
                     publication_date = publication_date.date()
                 except:
-                    publication_date = ""
+                    publication_date = None
 
                 try:
                     text = " ".join(tree.xpath('//*[@class = "content"]//p[not(@class="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/text()|//*[@class = "content"]//p[not(@class ="meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/em/text()|//*[@class = "content"]//p[not(@class = "meta")and not(@class = "subtitle")and not(ancestor::blockquote)]/u/text()|//*[@class = "bumpedFont15"]/text()')).strip()

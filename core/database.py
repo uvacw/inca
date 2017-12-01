@@ -19,6 +19,7 @@ import configparser
 import requests
 from celery import Task
 import os
+from urllib.parse import quote_plus
 
 config = configparser.ConfigParser()
 config.read('settings.cfg')
@@ -46,8 +47,6 @@ except:
     logger.warning("No database functionality available")
     DATABASE_AVAILABLE = False
 
-
-
 def get_document(doc_id):
     if not check_exists(doc_id)[0]:
         logger.debug("No document found with id {doc_id}".format(**locals()))
@@ -72,6 +71,7 @@ def check_exists(document_id):
         time.sleep(1)
         return check_exists(document_id)
 
+        
 def update_document(document, force=False, retry=0, max_retries=10):
     '''
     Documents should usually only be appended, not updated. as such.
@@ -127,15 +127,50 @@ def update_document(document, force=False, retry=0, max_retries=10):
     pass
 
 def delete_document(document_id):
-    ''' delete a document, with parameters '''
+    ''' delete a document
+
+    Parameters
+    ----
+    document_id : string, dict or list
+        A string containing the document id. Alternatively, a document retrieved
+        from elasticsearch from which the `_id` field can be extracted. If a
+        list, it is assumed each element is an id or document to be deleted.
+
+    Returns
+    ----
+    Bool
+        Whether the document was deleted
+
+    '''
+    if type(document_id) == dict:
+        document_id = document_id['_id']
+    elif type(document_id) == list:
+        return [delete_document(d) for d in document_id]
     found, document = check_exists(document_id)
-    if not found: logger.debug('{document_id} does not exist'.format(**locals()))
+    if not found:
+        logger.debug('{document_id} does not exist'.format(**locals()))
+        return False
     response = client.delete(index=elastic_index, id=document['_id'], doc_type=document['_type'])
     return True
 
 def delete_doctype(doctype):
     '''Delete all documents of a given type'''
-    for doc in scroll_query({'filter':{'match':{'_type':doctype}}}):
+    for doc in scroll_query(
+        {
+        "query":
+            {
+            "bool":
+                {
+                "filter":
+                    {
+                    "term" : {
+                        "_type" : doctype
+                    }
+                    }
+                }
+            }
+        }
+    ):
         delete_document(doc['_id'])
     return True
 
@@ -203,13 +238,33 @@ def insert_documents(documents, identifiers='id'):
     return [doc.get('_id','random') for doc in documents]
 
 
-def update_or_insert_document(document, force=False):
-    ''' Check whether a document exists, update if so '''
+def update_or_insert_document(document, force=False, use_url = False):
+    ''' Check whether a document exists, update if so
+    use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
     if '_id' in document.keys():
         exists, document = check_exists(document['_id'])
         if exists:
-            return update_document(document, force=force)
-    return insert_document(document)
+            if use_url == True:
+                if 'url' in document['_source'].keys():
+                    search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
+                    if search['hits']['total'] != 0:
+                        return update_document(document, force=force)
+                    else:
+                        logger.info("_id found, but no matching URl. Document is not inserted")
+            elif use_url == False:
+                return update_document(document, force=force)            
+        elif not exists:
+            if use_url == True:
+                if 'url' in document['_source'].keys():
+                    search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
+                    if search['hits']['total'] != 0:
+                        logger.info("Another document with the same URL already exists in database. Document is not inserted.")
+                    else:
+                        return insert_document(document)
+            elif use_url == False:
+                return insert_document(document)
+                        
+
 
 def remove_field(query, field):
     batch = []
@@ -251,35 +306,45 @@ def _remove_dots(document):
     return document
 
 def scroll_query(query,scroll_time='10m', log_interval=None):
-    scroller = client.search(elastic_index,
-                             body=query,
-                             scroll=scroll_time,
-                             # search_type='scan' # DOES NOT SEEM TO BE SUPPORTED BY CURRENT ES-VERSION
-    )
-    sid  = scroller['_scroll_id']
-    size = scroller['hits']['total']
-    tot_size = size # keep total size for logging
-    logger.info('scrolling through {size} results'.format(**locals()))
-    at_num = 0
-    if not log_interval:
-        log_interval = min(tot_size / 10000, 100)
-    while size > 0 :
-        try:
-            page = client.scroll(scroll_id = sid,
-                             scroll = scroll_time)
-        except ConnectionTimeout:
-            time.sleep(1)
-            continue
-        sid = page['_scroll_id']
-        size = len(page['hits']['hits'])
+    """Scroll through the results of a query
 
-        for doc in page['hits']['hits']:
-            at_num+=1
-            if log_interval and not (at_num % ( int(log_interval) or 2)):
-                pos = (at_num/float(tot_size))*100
-                elements = '='* int(30*(pos)/100)
-                logger.info("At  {pos:10.2f}% [{elements:30.30}] {at_num:10} of {tot_size}".format(**locals()))
-            yield doc
+    Parameters
+    ----
+    query : dict
+        An elasticsearch query
+    scroll_time : string (default='10m')
+        A string indicating the time-window to keep the results
+        buffer active in elasticsearch. A small window risks timeouts, a high
+        window risks running into resource ceilings in the database.
+    log_interval : int or float
+        The interval to log an 'INFO'-level update of progress, defaults to
+        argmin (N_results/1000 ; 100). Set to '0' for no logging, a integer for
+        every Nth-results and a float for every Nth-fraction of the total
+
+    yields
+    ----
+    dict
+        A stored document, including elasticsearch metadata
+
+    """
+    if log_interval == 0:
+        total = 0
+        update_step =  -1
+    else:
+        total = client.search(body=query)['hits']['total']
+        if type(log_interval)==int:
+            update_step = log_interval
+        elif type(log_interval)==float:
+            update_step = int(total*log_interval)
+        else:
+            update_step = min((total/1000), 100)
+
+    for n, doc in enumerate(helpers.scan(client, query=query, scroll=scroll_time)):
+        if not (n+1 ) % update_step:
+            perc = ((n+1)/total) / 100
+            logger.info("At item {n:10d} of {total} items | {perc:06.2f}".format(n=n+1, total=total, perc=perc))
+        yield doc
+
 
 
 #####################
@@ -387,11 +452,11 @@ def restore_backup(name):
 def export_doctype(doctype):
     if not 'exports' in os.listdir('.'):
         os.mkdir('exports')
-    for doc in scroll_query({'query':{'match':{'doctype':doctype}}}):
+    for doc in scroll_query({'query':{'match':{'_type':doctype}}}):
         outpath = os.path.join('exports',doctype)
         if doctype not in os.listdir('exports'):
             os.mkdir(outpath)
-        with open(os.path.join('exports', doctype, '%s.json' %doc['_id']),'w') as f:
+        with open(os.path.join('exports', doctype, '%s.json' %quote_plus(doc['_id'])),'w') as f:
             f.write(json.dumps(doc))
 
 def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
@@ -417,6 +482,8 @@ def export_csv(query, keys = ['doctype','publication_date','title','byline','tex
             row = [doc['_source'][k] for k in keys]
             writer.writerow(row)
 
-def import_documents(source_folder, force=False):
+def import_documents(source_folder, force=False, use_url = False):
+    '''use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
+
     for input_file in os.listdir(source_folder):
-        update_or_insert_document(json.load(open(input_file)), force=force)
+        update_or_insert_document(json.load(open(input_file)), force=force, use_url = use_url)

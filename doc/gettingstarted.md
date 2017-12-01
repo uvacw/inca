@@ -190,40 +190,18 @@ git config --global user.name <username>
 -	Make a new folder on your computer where you want to work on INCA. Go there using your terminal: ```cd /pathtoyourfolder```
 -	Clone inca to your local folder, using ```git clone https://github.com/uvacw/inca.git```
 -	You are now on the Master branch, which is the latest stable release of INCA. But you probably want to work on the development branch instead, which is the latest version of the code we are developing and improving. You can do so with ```git checkout development```. After that, do ```git pull``` to make sure you really downloaded the latest version.
-- Finally, we have to install the Python packages INCA depends on, such as packages for machine learning, reading RSS feeds, connecting to Elastic Search and so on. You could do so by hand (installing every package as soon as you get an 'import error', but we also made a file to install all of them at once:
+- Finally, we have to install the Python packages INCA depends on, such as packages for machine learning, reading RSS feeds, connecting to Elastic Search and so on. You could do so by hand (installing every package as soon as you get an 'import error', but we also made a file to install all of them at once. First of all, we need one dependency (libmysqlclient-dev, in particular the mysql_config script) that a specific module (pattern needs). On Linux, you can get it as follows:
+
+```
+sudo apt-get install libmysqlclient-dev
+``` 
+Now, you are ready to install all required modules:
+
+
 ```
 cd inca    # assuming you still are in inca's parent directory
 sudo pip3 install -r Requirements
 ```
-
-** The next paragraph should be unneccessary, as it the step above should have taken care of it already. HOWEVER, in that case, you need to run ``sudo apt-get install libmysqlclient-dev`` before running ``pip3 install -r Requirements**
-
-There is *one* requirement that cannot be installed automatically yet: the pattern.nl package, which allows things like linguistic analyses and sentiment analysis. We need the latest development version, which is not available via pip3 yet.
-
-```
-cd ~/Desktop     (or any other folder which is not inside inca)
-git clone https://github.com/clips/pattern
-cd pattern
-git checkout development
-```
-Now, you need to now the folder where pattern has to be placed. Run the following command, it will show you one or more paths. Copy-paste one of them.
-```
-ipython3 -c 'import site;site.getsitepackages()'
-```
-Now, run
-```
-cp -r pattern THEPATHYOUCOPIED
-```
-For example:
-```
-cp -r pattern /Library/Frameworks/Python.framework/Versions/3.4/lib/python3.4/site-packages
-```
-You are done! Check whether it works: This should return (0.9, 1.0):
-```python
-ipython3 -c 'from pattern.nl import sentiment;sentiment("uitstekend, het werkt")'
-```
-
-Now, you can safely remove the pattern folder from your desktop.
 
 
 
