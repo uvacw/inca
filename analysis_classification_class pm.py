@@ -13,7 +13,7 @@ import numpy as np
 import sklearn
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import f1_score, precision_recall_fscore_support
+from sklearn.metrics import f1_score, precision_recall_fscore_support, accuracy_score
 from sklearn.cross_validation import KFold
 from core.analysis_base_class import Analysis
 from scipy.sparse import csr_matrix
@@ -23,28 +23,51 @@ from sklearn.linear_model import SGDClassifier
 logger = logging.getLogger(__name__)
 
 class classification(Analysis):
+# trying to build the analysis class 
+logger = logging.getLogger(__name__)
+from sklearn.metrics import accuracy_score
+
+class classification(Analysis):
+    
+    def __init__(self):
+        self.clf = None
+        self.vocab = None
+        self.train_predictions = None
+        self.X_test = None
+        self.y_test = None
+        self.predictions = None
+        self.accuracy = None
+        
     
 
 
-
-    def fit(self, documents, doctype , x_field, label_field, add_prediction=False, **kwargs):
+    def fit(self, documents, doctype , x_field, label_field, add_prediction=False, testsize = 0.2, min_df = 0.0, max_df = 1.0, vocabulary = None,  tfidf = True, **kwargs):
         """
         This method should train a model on the input documents.\n
-        
         @param documents: the documents (dictionaries) to train on
+        """
+         
+        """
         @type documents: iterable
-        @param doctype: The elasticsearch doctype given to the stored documents
-        @type doctype: str
         @param _id: 
         @type _id:
-        @param x_field: The name of the field containing the training text data 
+        
+        DOTKEYS METHOD DOES NOT WORK YET> DO NOT ADD NESTED KEY FUNCTIONALITY YET.
+        
+        @param x_field: The nested field name that contains the text articles to be classified. Ideally nested within the '_source'
+                        field. For instance, to use nested field x2 as text document which is nested as doc['_source']['x1']['x2'], use
+                        '_source.x1.x2'
+                        (Makes a function call to core.basic_search.utilsdotkeys(dict, key_string) : allows the use of .-separated
+                        nested fields such as 'name.firstname' as dict[name][firstname])
         @type x_field: str
-        @param label_field: Name of the field that contains the labels
+        @param label_field: The nested field name that contains the labels.Ideally would be nested within the '_source' field. For
+                            instance, to use nested field x2 as label which is nested as doc['_source']['x1']['x2'], use '_source.x1.x2'
+                          
         @type label_field: str
         @param add_prediction: this switch signals the mutation of the train set documents by adding a key, value pair document.\
                                If given (add_prediction == True), then key=add_prediction and value should be the model's output:\n
                                  * For classification tasks: class labels\n
-                                 * For clustering tasks: assigned cluster\n
+                                
         @type add_prediction: str
         
         """
@@ -52,29 +75,98 @@ class classification(Analysis):
         #Segregating documents based on whether they have text or not, into 'valid_docs and invalid_docs
         invalid_docs = []
         valid_docs = []
+        s=0
         
         for doc in documents:
             _id = doc["_id"]
+            s+=1
+            #print(s)
             if x_field in doc['_source']:
                 valid_docs.append(doc['_id'])
+                #logger.warning("Document has text field missing.")
             else: 
                 invalid_docs.append(doc['_id'])
-                logger.warning("Document has text field missing.")
-
            #consider not continuing if else if this way. maje it better structured. finish making the list first? 
         for doc in documents:
             if doc['_id'] in valid_docs:
                 text = doc['_source'][x_field].lower()
                 for word in text:
                     if word not in string.punctuation : #or in stopwords:
-                        raise ValueError('Either punctuation or stopwords have not been removed. Please preprocess and retry.')
+                        #raise ValueError('Either punctuation or stopwords have not been removed. Please preprocess and retry.')
+                        logger.warning('Either punctuation or stopwords has not been removed. Proceeding without pre-processing.')
+
         
         
         
-        
-        #The preprocessing functionality may not be needed. Just run a check !
+        #PLEASE CHANGE NAMES!
         p = inca.processing.basic_text_processing.lowercase()
         newdocs2 = [e for e in p.runwrap(doctype, field=x_field, save = True, new_key='textLC', force=True)]
+        #q = inca.processing.basic_text_processing.remove_punctuation()
+        #newdocs2 = [e for e in q.runwrap(newdocs, field='textLC',new_key='textnopunc')]
+        print(core.search_utils.doctype_fields(doctype))
+        documents = newdocs2
+
+        
+        y = (doc["_source"]["category"] for doc in documents if doc["_id"] in valid_docs)
+        labels_list = []
+
+        for i in y:
+            labels_list.append(i)
+        labels = pd.DataFrame({'col':labels_list})
+
+
+        #option for stopwords.
+        
+        vectorizer = CountVectorizer( min_df, max_df, vocabulary) 
+        
+        counts = vectorizer.fit_transform(doc['_source']['text'] for doc in documents if doc['_id'] in valid_docs)
+        #Extract vocabulary list 
+        self.vocab = np.array(vectorizer.get_feature_names())
+        
+        if tfidf:
+            tfidf_transformer = TfidfTransformer()        
+            tfidf_full_data = tfidf_transformer.fit_transform(counts)
+            
+            X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, labels, test_size=testsize, shuffle = True, random_state=42)
+        
+        else:
+            X_train, self.X_test, y_train, self.y_test = train_test_split(counts, labels, test_size = testsize, shuffle = True, random_state=42)
+        
+        self.clf =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
+            
+            
+        #If predictions for training documents are wanted
+        if add_prediction ==True:
+            self.train_predictions = self.clf.predict(X_train)
+        else:
+            self.train_predictions = None
+        
+        #Think about return statement'''
+        return (self.vocab, self.clf, labels, invalid_docs, valid_docs)
+        
+        #return (labels_list, valid_docs, invalid_docs)
+
+
+                                                   
+                                                   
+    def predict(self, x_field=None, documents = None, doctype = None, docs=None, **kwargs):
+        """
+        This method should perform inference on new unseen documents.\n
+        @param documents: the documents (dictionaries) to perform inference on
+        @type documents: iterable
+        @param x_field: The name of the field containing the training text data 
+        @type x_field: str
+        @param add_prediction: this switch signals the mutation of the given documents by adding a key, value pair document.\
+                               If given (add_prediction != ''), then key=add_prediction and value should be the model's output:\n
+                                 * For classification tasks: class labels\n
+                                 * For clustering tasks: assigned cluster\n
+        @type add_prediction: str
+        
+        
+        """
+        '''
+        p = inca.processing.basic_text_processing.lowercase()
+        newdocs3 = [e for e in p.runwrap(doctype, field=x_field, save = True, new_key='textLC', force=True)]
         #q = inca.processing.basic_text_processing.remove_punctuation()
         #newdocs2 = [e for e in q.runwrap(newdocs, field='textLC',new_key='textnopunc')]
         print(core.search_utils.doctype_fields(doctype))
@@ -87,58 +179,25 @@ class classification(Analysis):
             labels_list.append(i)
         labels = pd.DataFrame({'col':labels_list})
 
-
-        
-        vectorizer = CountVectorizer()
-        tfidf_transformer = TfidfTransformer()               
-        counts = vectorizer.fit_transform(doc['_source']['text'] for doc in newdocs2 if doc['_id'] in valid_docs)
-        vocab = np.array(vectorizer.get_feature_names())
-        
-        tfidf_full_data = tfidf_transformer.fit_transform(counts)
-        
-        #Split into test and train:
-        X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, labels, test_size=0.20, shuffle = True, random_state=42)
-        
-        #Training the classifier
-        self.clf =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
-        
-        #If predictions for training documents is wanted
-        if add_prediction ==True:
-            self.train_predictions = self.clf.predict(X_train)
-        else:
-            self.train_predictions = None
-        
-        return (vocab, self.clf, labels, invalid_docs, valid_docs)
-
-
-                                              
-                                                   
-    def predict(self, x_field, documents, add_prediction='', **kwargs):
-        """
-        This method should perform inference on new unseen documents.\n
-        @param documents: the documents (dictionaries) to perform inference on
-        @type documents: iterable
-        @param x_field: The name of the field containing the training text data 
-        @type x_field: str
-        @param add_prediction: this switch signals the mutation of the given documents by adding a key, value pair document.\
-                               If given (add_prediction != ''), then key=add_prediction and value should be the model's output:\n
-                                 * For classification tasks: class labels\n
-                                 * For clustering tasks: assigned cluster\n
-        @type add_prediction: str
-        """
         vectorizer = CountVectorizer()
         tfidf_transformer = TfidfTransformer()
-        counts_new = vectorizer.fit(doc['_source'][x_field] for doc in documents )# if doc['_id'] in valid_docs)
-        tfidf_new = tfidf_transformer.fit_transform(counts)
-
-       
-        self.predictions = self.clf.predict(tfidf_new)  
         
+        counts_new = vectorizer.fit_transform(doc['_source'][x_field] for doc in documents )# if doc['_id'] in valid_docs)
+        tfidf_new = tfidf_transformer.fit_transform(counts)
+'''
+        print(type(self.X_test))
+        #clf = self.clf.predict(tfidf_new)
+        #self.predictions = self.clf.predict(doc['_source'][x_field] for doc in documents)  
+        self.predictions = self.clf.predict(self.X_test)
+        print('no_of predictions haah: ',type(self.predictions))
+        print('no_ of test examples: ', type(self.y_test))
+        self.accuracy = accuracy_score(self.y_test, self.predictions)
         #Try and put the predictions into elasticsearch?
         
         #return statement, plus logger.info
                                                           
-        return self.predictions
+        return (self.predictions, self.accuracy)
+
 
                                                    
                                                    
@@ -176,6 +235,7 @@ class classification(Analysis):
              - inertia: sum of squared distance for each point to it's closest centroid, i.e., its assigned cluster.\n
              - silhouette
         """
+#make the test predictions as an attribute.
 
         test_pred = self.clf.predict(self.y_test)
         self.test_accuracy = metrics.accuracy_score(self.y_test, test_pred)
