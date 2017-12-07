@@ -27,11 +27,11 @@ def create_corpus(documents, field='text', normalizing='lemmatize'):
     print('caching token represetation from documents ...')
     token_lists = [[word for word in generate_word(doc_data, normalize=normalizing)] for doc_data in get_data_generator(documents, field=field)]
 
-    ddict = Dictionary(token_lists)
-    corpus = [ddict.doc2bow(token_list) for token_list in token_lists]
-    gensim.corpora.MmCorpus.serialize('/tmp/lda.mm', corpus)
+    vocabulary = Dictionary(token_lists)
+    corpus = [vocabulary.doc2bow(token_list) for token_list in token_lists]
+#    gensim.corpora.MmCorpus.serialize('/tmp/lda.mm', corpus)
 
-    return ddict, corpus
+    return vocabulary, corpus
 
 
 class Lda(Analysis):
@@ -39,7 +39,7 @@ class Lda(Analysis):
     def __init__(self):
         self.times_fitted = 0
         self.corpus = None
-        self.ddict = None
+        self.vocabulary = None
         self.lda = None
         self.nb_docs_trained = 0
         self.selected_clusters = set()
@@ -70,7 +70,7 @@ class Lda(Analysis):
         * https://radimrehurek.com/gensim/models/ldamodel.html : gensim.models.ldamodel
         * https://www.di.ens.fr/~fbach/mdhnips2010.pdf : Hoffman et al
         """
-        self.ddict, self.corpus = create_corpus(documents, field=field, normalizing='lemmatize')
+        self.vocabulary, self.corpus = create_corpus(documents, field=field, normalizing='lemmatize')
         print('Training Lda model ...')
         self.lda = LdaModel(corpus=self.corpus, num_topics=nb_topics, alpha='auto')  # alpha can be also set to 'symmetric' or to an explicit array
         self.nb_docs_trained = len(self.corpus)
@@ -95,15 +95,12 @@ class Lda(Analysis):
         header = ' - '.join('{}'.format(idd) + ' '*(3+prec+max_len-len(str(idd))) for idd in ordered_selected_clusters) + '\n'
         return header + body
 
-
     def get_rows(self, top, prob_precision=3):
-        max_token_len = max(len(self.ddict[int(top[j][i][0])]) for j in range(len(top)) for i in range(len(top[0])))
-        #print('max: {}'.format(max_token_len))
+        max_token_len = max(len(self.vocabulary[int(top[j][i][0])]) for j in range(len(top)) for i in range(len(top[0])))
         b = ''
         for i in range(len(top[0])):
-            b += ' | '.join('{}*'.format(str(self.ddict[int(top[j][i][0])]) + ' '*(max_token_len-len(self.ddict[int(top[j][i][0])]))) + "{1:.{0}f}".format(prob_precision, top[j][i][1]) for j in range(len(top))) + '\n'
+            b += ' | '.join('{} '.format(str(self.vocabulary[int(top[j][i][0])]) + ' '*(max_token_len-len(self.vocabulary[int(top[j][i][0])]))) + "{1:.{0}f}".format(prob_precision, top[j][i][1]) for j in range(len(top))) + '\n'
         return b, max_token_len
-
 
     def select_topics(self, topic_ids):
         """Use this method to indicate which topics/clusters you are interested in for "selecting" (i.e. interpreting, visualizing) by providing your desired numerical ids. Note that it only adds to the set of currently "selected" topics the new ids provided. To clear the set before selecting use "clear_selected_topics" first.\n
@@ -140,16 +137,12 @@ if __name__ == '__main__':
     train_docs = dir2docs(train_dir)
     test_docs = dir2docs(test_dir)
 
-#    ddict, corp = create_corpus(train_docs, field='text', normalizing='lemmatize')
-
- #   print('Corpus initialized. Number of docs included: {}'.format(len(corp)))
-  #  print('Dicttionary initialized. Number of terms included: {}'.format(len(ddict)))
-
     l = Lda()
-    l.fit(train_docs, nb_topics=2)
+    l.fit(train_docs, nb_topics=11)
 
-    # b = l.interpretation()
-    # print(b)
+    l.select_all_topics()
+    b = l.interpretation()
+    print('\n', b)
 
     # for t in test_docs:
     #     lda.get_topic_distribution(t)
