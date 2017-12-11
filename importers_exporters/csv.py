@@ -67,7 +67,7 @@ class export_csv(Exporter):
 
     batchsize = 1000
 
-    def save(self, documents, fields=None, include_meta=False):
+    def save(self, documents, destination, fields=None, include_meta=False, *args, **kwargs):
         """
 
         Parameters
@@ -86,12 +86,14 @@ class export_csv(Exporter):
         include_meta : bool (default=False)
             Whether to include META fields.
 
+        args/kwargs are passed to csv.DictWriter
+
         """
         if not hasattr(self, 'fields'):
             # keep track of fields
             self.fields = []
 
-        flat_batch = map(self._flatten_doc, documents, include_meta)
+        flat_batch = list(map(lambda doc: self._flatten_doc(doc, include_meta), documents))
         keys = set.union(*[set(d.keys()) for d in flat_batch])
         [self.fields.append(k) for k in keys if k not in self.fields]
 
@@ -106,4 +108,5 @@ class export_csv(Exporter):
         writer = csv.DictWriter(outputfile, self.fields, extrasaction='ignore',*args, **kwargs)
         if new:
             writer.writeheader()
-        writer.writerows(flat_batch)
+        for doc in flat_batch:
+            writer.writerow(doc)

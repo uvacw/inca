@@ -186,6 +186,12 @@ class Inca():
                     docstring = self._taskmaster.tasks[k].get.__doc__
                 elif function == "processing":
                     docstring = self._taskmaster.tasks[k].process.__doc__
+                elif function == "importers_exporters":
+                    t = self._taskmaster.tasks[k]
+                    if hasattr(t,'load'):
+                        docstring = t.load.__doc__
+                    else:
+                        docstring = t.save.__doc__
                 else:
                     docstring = self._taskmaster.tasks[k].__doc__
                 endpoint.__doc__  = docstring

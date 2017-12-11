@@ -142,7 +142,8 @@ class Exporter(BaseImportExport):
     to_file = True
     batchsize = 100
 
-    def __init__(self,*args):
+    def __init__(self,*args, **kwargs):
+        BaseImportExport.__init__(self, *args, **kwargs)
         self.fileobj = None
         self.extension = ''
 
@@ -163,7 +164,7 @@ class Exporter(BaseImportExport):
         """
         raise NotImplementedError
 
-    def _flatten_doc(document, include_meta=False):
+    def _flatten_doc(self, document, include_meta=False):
         """Utility to convert elasticsearch documents to a flat representation
 
         Parameters
@@ -180,13 +181,13 @@ class Exporter(BaseImportExport):
         """
         flat_dict={}
         for k,v in document.items():
-            if k=='META': pass
+            if k=='META' and not include_meta: continue
             if type(v) == str:
                 flat_dict[k]=v
             elif type(v) == list:
                 flat_dict[k]=str(v)
             elif type(v) == dict:
-                for kk,vv in self._flatten_doc(v):
+                for kk,vv in self._flatten_doc(v).items():
                     flat_dict["{k}.{kk}".format(k=k,kk=kk)] = vv
             else:
                 try:
@@ -201,7 +202,7 @@ class Exporter(BaseImportExport):
             yield doc
 
     def _makefile(self, filename, mode='w', overwrite=False):
-        filepath = os.path.dir(filename)
+        filepath = os.path.dirname(filename)
         os.makedirs(filepath, exist_ok=True)
         # handle cases when a path instead of a filename is provided
         if os.path.join(filename,'') == filepath:
