@@ -2,9 +2,9 @@ import tqdm
 import logging
 import os
 import time
-from document_class import Document
+from core.document_class import Document
 from collections import Counter
-from search_utiles import document_generator
+from core.search_utils import document_generator
 
 
 class BaseImportExport(Document):
@@ -31,7 +31,7 @@ class BaseImportExport(Document):
         batch = []
         for i in iterable:
             batch.append(i)
-            if len(batch) == batchsize
+            if len(batch) == batchsize:
                 yield batch
                 batch = []
         if batch:
@@ -39,7 +39,7 @@ class BaseImportExport(Document):
 
 
 
-class Import(BaseImportExport):
+class Importer(BaseImportExport):
     """Base class for data importers"""
 
     functiontype = "importer"
@@ -93,7 +93,7 @@ class Import(BaseImportExport):
             a new document ready for elasticsearch, containing all keys from
             the mapping found in the document
         """
-        new_document = {v:document[k] for k,v in mapping.items() if k in document)}
+        new_document = {v:document[k] for k,v in mapping.items() if k in document}
         # Keep track of missing keys
         self.missing_keys.update([k for k in mapping if k not in document])
 
@@ -134,14 +134,15 @@ class Import(BaseImportExport):
             self._ingest(iterable=batch, doctype=doctype)
             self.processed += len(batch)
 
-class Export(BaseImportExport):
+class Exporter(BaseImportExport):
     """Base class for exporting"""
 
     # set to_file to `False` for subclasses that do not export to files
     # for instance when writing to external databases
     to_file = True
+    batchsize = 100
 
-    def __init__():
+    def __init__(self,*args):
         self.fileobj = None
         self.extension = ''
 
@@ -162,6 +163,38 @@ class Export(BaseImportExport):
         """
         raise NotImplementedError
 
+    def _flatten_doc(document, include_meta=False):
+        """Utility to convert elasticsearch documents to a flat representation
+
+        Parameters
+        ---
+        document : dict
+            A dictionary which may include nested fields
+
+        Returns
+        ----
+        dict
+            A dictionary where values are all strings, Nested keys are
+            merged by '.'
+
+        """
+        flat_dict={}
+        for k,v in document.items():
+            if k=='META': pass
+            if type(v) == str:
+                flat_dict[k]=v
+            elif type(v) == list:
+                flat_dict[k]=str(v)
+            elif type(v) == dict:
+                for kk,vv in self._flatten_doc(v):
+                    flat_dict["{k}.{kk}".format(k=k,kk=kk)] = vv
+            else:
+                try:
+                    flat_dict[k] = str(v)
+                except:
+                    logger.warning("Unable to ready field {k} for writing".format(k=k))
+        return flat_dict
+
     def _retrieve(self, query):
         for doc in document_generator(query):
             self.processed += 1
@@ -178,15 +211,15 @@ class Export(BaseImportExport):
         if self.extension not in filename:
             filename = "{filename}.{extension}".format(filename=filename, extention=self.extension)
         if filename in os.listdir(filepath) and not overwrite:
-            logger.warning("file called {filename} already exists, either provide new filename".format(filename=filename)
-            "or set `overwrite=True`"
+            logger.warning("file called {filename} already exists, either provide new filename"
+            "or set `overwrite=True`".format(filename=filename)
             )
             return False
         else:
             self.fileobj=open(filename, mode)
             return self.fileobj
 
-    def run(self, query="*", destination='exports/', overwrite=False, batchsize=100, *args, **kwargs):
+    def run(self, query="*", destination='exports/', overwrite=False, batchsize=None, *args, **kwargs):
         """Exports documents from the INCA elasticsearch index
 
         DO NOT OVERWRITE
@@ -211,11 +244,15 @@ class Export(BaseImportExport):
             Filenames are generated with extensions declared in 'self.extention'
         overwrite : bool (default=False)
             Whether to write over an existing file (stop if False)
-        batchsize : int (default=100)
+        batchsize : int
             Size of documents to keep in memory for each batch
         *args & **kwargs
             Subclass specific arguments passed to save method
 
         """
+        if not batchsize:
+            batchsize = self.batchsize
         for docbatch in self._process_by_batch(self._retrieve(query), batchsize=batchsize):
             self.save(docbatch, destination=destination, *args, **kwargs)
+        if self.fileobj:
+            self.fileobj.close()
