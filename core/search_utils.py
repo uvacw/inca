@@ -24,7 +24,8 @@ def list_doctypes():
     return overview
 
 def doctype_generator(doctype):
-    query = {'query':{'bool':{'filter':{'match':{'_type':doctype}}}}}
+    _logger.warning("Filter has been replaced by query, still need to test whether edge cases might be unintentionally returned")
+    query = {'query':{'match':{'_type':doctype}}}
     for num, doc in enumerate(_scroll_query(query)):
         if not _DATABASE_AVAILABLE:
             _logger.warning("Could not get documents: No database instance available")
@@ -183,7 +184,6 @@ def doctype_last(doctype,num=1, by_field="META.ADDED", query=None):
         body['query'] = {'query_string':{'query': query}}
 
     docs = _client.search(index=_elastic_index,
-
                   body={
                       "sort": [
                           { by_field : {"order":"desc"}}
@@ -257,7 +257,7 @@ def missing_field(doctype=None, field='_source', stats_only=True):
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get documents missing a field: No database instance available")
         return []
-    query = {'filter':{'missing':{'field':field}}}
+    query = {'query':{'bool':{'must_not':{'exists':{'field':field}}}}}
     if not doctype:
         result = _client.search(_elastic_index, body=query)
     else:
