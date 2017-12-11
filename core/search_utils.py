@@ -36,8 +36,9 @@ def document_generator(query="*"):
 
     Parameters
     ----
-    query : string (default="*")
-        A string query specifying the documents to return
+    query : string (default="*") or dict
+        A string query specifying the documents to return or a dict
+        that is a elasticsearch query
 
     Yields
     ----
@@ -48,10 +49,22 @@ def document_generator(query="*"):
         yield
     else:
         if query == "*": _logger.info("No query specified, returning all documents")
-        es_query = {"query":{"bool":{"must":{"query_string":{"query":query}}}}}
-        for num, doc in enumerate(_scroll_query(es_query)):
-            if not num%10: _logger.info("returning {num}".format(num=num))
-            yield doc
+        if type(query) == str:
+            logger.info("String input: searching for {query}".format(query=query))
+            es_query = {"query":{"bool":{"must":{"query_string":{"query":query}}}}}
+            logger.debug("query: {es_query}".format(es_query=es_query))
+        elif type(query) == dict:
+            logger.info("Dict input: using input as ES query")
+            logger.debug("query: {query}".format(query=json.dumps(query, indent=2)))
+            es_query = query
+        else:
+            logger.warning("Unknown input")
+            es_query = False
+        if es_query:
+            total = _client.search(elastic_index, body=es_query, size=0)['hits']['total']
+            for num, doc in enumerate(_scroll_query(es_query)):
+                if not num%10: _logger.info("returning {num} of {total}".format(num=num, total=total))
+                yield doc
 
 
 def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):

@@ -1,8 +1,10 @@
 import tqdm
 import logging
 import os
+import time
 from document_class import Document
 from collections import Counter
+from search_utiles import document_generator
 
 
 class BaseImportExport(Document):
@@ -101,7 +103,7 @@ class Import(BaseImportExport):
             self.failed_ids.append(document.get('id',document.get('ID',document.get('_id',None))))
         return document
 
-    def load():
+    def load(self):
         """ To be implemented in subclasses
 
         normall called through the 'run' method. Please add to your documentation:
@@ -125,9 +127,95 @@ class Import(BaseImportExport):
         raise NotImplementedError
         yield document
 
-    def run(doctype, mapping, *args, **kwargs):
-        """uses the documents form the load method in batches """
+    def run(self, doctype, mapping, *args, **kwargs):
+        """uses the documents from the load method in batches """
         for batch in self._process_by_batch(load(*args,**kwargs)):
             batch = map(batch, lambda x: self._add_metadata(document=x,mapping=mapping))
             self._ingest(iterable=batch, doctype=doctype)
             self.processed += len(batch)
+
+class Export(BaseImportExport):
+    """Base class for exporting"""
+
+    # set to_file to `False` for subclasses that do not export to files
+    # for instance when writing to external databases
+    to_file = True
+
+    def __init__():
+        self.fileobj = None
+        self.extension = ''
+
+    def save(self, batch_of_documents, destination = "exports", *args, **kwargs):
+        """To be implemented in subclass
+
+        This method should process batches of documents by exporting them in
+        whatever format implemented in the exporter.
+
+        Parameters
+        ----
+        batch_of_documents : list of dicts
+            a list containing the dict of each document as represented in
+            elasticsearch
+
+        ...<arguments specific to exporter>
+
+        """
+        raise NotImplementedError
+
+    def _retrieve(self, query):
+        for doc in document_generator(query):
+            self.processed += 1
+            yield doc
+
+    def _makefile(self, filename, mode='w', overwrite=False):
+        filepath = os.path.dir(filename)
+        os.makedirs(filepath, exist_ok=True)
+        # handle cases when a path instead of a filename is provided
+        if os.path.join(filename,'') == filepath:
+            now = time.localtime()
+            newname = "INCA_export_{now.tm_min}_{now.tm_hour}_{now.tm_mday}_{now.tm_mon}_{now.tm_year}".format(now=now)
+            filename = os.path.join(filename,newname)
+        if self.extension not in filename:
+            filename = "{filename}.{extension}".format(filename=filename, extention=self.extension)
+        if filename in os.listdir(filepath) and not overwrite:
+            logger.warning("file called {filename} already exists, either provide new filename".format(filename=filename)
+            "or set `overwrite=True`"
+            )
+            return False
+        else:
+            self.fileobj=open(filename, mode)
+            return self.fileobj
+
+    def run(self, query="*", destination='exports/', overwrite=False, batchsize=100, *args, **kwargs):
+        """Exports documents from the INCA elasticsearch index
+
+        DO NOT OVERWRITE
+
+        This method is the common-caller for the exporter functionality. Common
+        functionality such as passing the query to ES, retrieving documents,
+        making sure a file exists. The `save` method should implement a
+        batch-wise handling of elasticsearch documents, for instances by
+        writing them to a file.
+
+        Parameters
+        ---
+        query : string or dict
+            The query to select elasticsearch records to export
+        destination : string
+            The destination to which to export records. If the subclass
+            `to_file` property is set to `True`, a fileobject will be opened
+            to that location.
+
+            If the destination is a folder, a filename will be generated.
+
+            Filenames are generated with extensions declared in 'self.extention'
+        overwrite : bool (default=False)
+            Whether to write over an existing file (stop if False)
+        batchsize : int (default=100)
+            Size of documents to keep in memory for each batch
+        *args & **kwargs
+            Subclass specific arguments passed to save method
+
+        """
+        for docbatch in self._process_by_batch(self._retrieve(query), batchsize=batchsize):
+            self.save(docbatch, destination=destination, *args, **kwargs)
