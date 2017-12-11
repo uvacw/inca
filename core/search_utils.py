@@ -9,6 +9,7 @@ from core.database import delete_doctype, delete_document
 import logging as _logging
 from core.basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
+import json as _json
 
 _logger = _logging.getLogger("INCA.%s" %__name__)
 
@@ -45,23 +46,22 @@ def document_generator(query="*"):
     dict representing a document
     """
     if not _DATABASE_AVAILABLE:
-        logger.warning("Unable to generate documents, no database available!")
-        yield
+        _logger.warning("Unable to generate documents, no database available!")
     else:
         if query == "*": _logger.info("No query specified, returning all documents")
         if type(query) == str:
-            logger.info("String input: searching for {query}".format(query=query))
+            _logger.info("String input: searching for {query}".format(query=query))
             es_query = {"query":{"bool":{"must":{"query_string":{"query":query}}}}}
-            logger.debug("query: {es_query}".format(es_query=es_query))
+            _logger.debug("query: {es_query}".format(es_query=es_query))
         elif type(query) == dict:
-            logger.info("Dict input: using input as ES query")
-            logger.debug("query: {query}".format(query=json.dumps(query, indent=2)))
+            _logger.info("Dict input: using input as ES query")
+            _logger.debug("query: {query}".format(query=_json.dumps(query, indent=2)))
             es_query = query
         else:
-            logger.warning("Unknown input")
+            _logger.warning("Unknown input")
             es_query = False
         if es_query:
-            total = _client.search(elastic_index, body=es_query, size=0)['hits']['total']
+            total = _client.search(_elastic_index, body=es_query, size=0)['hits']['total']
             for num, doc in enumerate(_scroll_query(es_query)):
                 if not num%10: _logger.info("returning {num} of {total}".format(num=num, total=total))
                 yield doc
