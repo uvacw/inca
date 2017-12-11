@@ -15,10 +15,12 @@ logger = logging.getLogger(__name__)
 class import_csv(Importer):
     """Read csv files"""
 
-    def _detect_encoding(filename):
+    version = 0.1
+
+    def _detect_encoding(self, filename):
         try:
             with open(filename, mode='rb') as filebuf:
-                encoding = chardet.detect(filebuf.peek(10000))
+                encoding = chardet.detect(filebuf.peek(10000000))
         except FileNotFoundError:
             logger.warning("File `{filename}` does not seem to exist".format(filename=filename))
             return False
@@ -55,9 +57,10 @@ class import_csv(Importer):
             One dict per row of data in the excel file
 
         """
-        encoding = kwargs.get('encoding',self._detect_encoding(filename))
+        encoding = kwargs.pop('encoding',self._detect_encoding(filename))
         if encoding:
-            with csv.DictReader(filename, encoding=encoding, *args, **kwargs) as csv_content:
+            with open(filename, encoding=encoding) as fileobj:
+                csv_content = csv.DictReader(fileobj, *args, **kwargs)
                 for row in csv_content:
                     yield row
 

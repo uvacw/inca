@@ -44,7 +44,7 @@ class Importer(BaseImportExport):
 
     functiontype = "importer"
 
-    def _ingest(iterable, doctype):
+    def _ingest(self, iterable, doctype):
         """Ingest document (batch)
 
         Parameters
@@ -62,19 +62,17 @@ class Importer(BaseImportExport):
         self.doctype = doctype
 
         # handle batches
-        if type(i) == list:
-            i = [ self._add_metadata(ii) for ii in i ]
+        if type(iterable) == list:
+            i = [ self._add_metadata(ii.get('_source',ii)) for ii in iterable ]
         # handle individual docs
         else:
-            i = self._add_metadata(i)
+            i = self._add_metadata(iterable.get('_source',iterable))
 
         # Save document(s) using document base-class method
         self._save_document(i)
 
 
-        return status
-
-    def _apply_mapping(document, mapping):
+    def _apply_mapping(self, document, mapping):
         """Apply a given mapping to a document
 
         Parameters
@@ -101,7 +99,7 @@ class Importer(BaseImportExport):
         if not new_document:
             self.failed += 1
             self.failed_ids.append(document.get('id',document.get('ID',document.get('_id',None))))
-        return document
+        return new_document
 
     def load(self):
         """ To be implemented in subclasses
@@ -127,10 +125,11 @@ class Importer(BaseImportExport):
         raise NotImplementedError
         yield document
 
-    def run(self, doctype, mapping, *args, **kwargs):
+    def run(self, doctype, mapping=None, *args, **kwargs):
         """uses the documents from the load method in batches """
-        for batch in self._process_by_batch(load(*args,**kwargs)):
-            batch = map(batch, lambda x: self._add_metadata(document=x,mapping=mapping))
+        for batch in self._process_by_batch(self.load(*args,**kwargs)):
+            batch = list(map(lambda x: self._add_metadata(document=x,mapping=mapping), batch))
+            batch = list(map(lambda doc: self._apply_mapping(doc,mapping), batch))
             self._ingest(iterable=batch, doctype=doctype)
             self.processed += len(batch)
 
