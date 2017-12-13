@@ -96,10 +96,8 @@ class classification(Analysis):
         labels = pd.DataFrame({'col':labels_list})
 
 
-        #option for stopwords.
         
         vectorizer = CountVectorizer( min_df, max_df, vocabulary) 
-
         counts = vectorizer.fit_transform(doc['_source'][x_field] for doc in documents if doc['_id'] in valid_docs)
         
     #    counts = vectorizer.fit_transform(doc['_source']['textLC'] for doc in documents if doc['_id'] in valid_docs)
@@ -124,7 +122,6 @@ class classification(Analysis):
         else:
             self.train_predictions = None
         
-        #Think about return statement'''
         return (self.vocab, self.clf, labels, invalid_docs, valid_docs)
         
 
@@ -150,7 +147,7 @@ class classification(Analysis):
         #clf = self.clf.predict(tfidf_new)
         #self.predictions = self.clf.predict(doc['_source'][x_field] for doc in documents)  
         self.predictions = self.clf.predict(self.X_test)
-        print('no_of predictions haah: ',type(self.predictions))
+        print('no_of predictions : ',type(self.predictions))
         print('no_ of test examples: ', type(self.y_test))
         self.accuracy = accuracy_score(self.y_test, self.predictions)
         #Try and put the predictions into elasticsearch?
