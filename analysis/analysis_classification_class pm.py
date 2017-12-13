@@ -37,7 +37,7 @@ class classification(Analysis):
         
 
         
-    def fit(self, documents, doctype , x_field, label_field, add_prediction=False, testsize = 0.2, min_df = 0.0, max_df = 1.0, vocabulary = None,  tfidf = True, **kwargs):
+    def fit(self, documents, doctype , x_field, label_field, add_prediction=False, testsize = 0.2, min_df = 0.0, max_df = 1.0, vocabulary =         None,  tfidf = True, **kwargs):
         """
         This method should train a model on the input documents.\n
         @param documents: the documents (dictionaries) to train on
@@ -69,15 +69,15 @@ class classification(Analysis):
         """
         print(core.search_utils.doctype_fields(doctype))
         #Segregating documents based on whether they have text or not, into 'valid_docs and invalid_docs
+        #text_field = core.basic_utils.dotkeys(doc, x_field)
         invalid_docs = []
         valid_docs = []
-        s=0
+
         
         for doc in documents:
-
-            if x_field in doc['_source']:
+            if core.basic_utils.dotkeys(doc, x_field) in doc:
                 valid_docs.append(doc['_id'])
-                text = doc['_source'][x_field].lower()
+                text = core.basic_utils.dotkeys(doc, x_field).lower()
                 for word in text:
                     if string.punctuation in word: #or in stopwords:
                         logger.info('Either punctuation or stopwords has not been removed. Proceeding without pre-processing.')
@@ -88,7 +88,7 @@ class classification(Analysis):
         
         
    
-        y = (doc["_source"]["category"] for doc in documents if doc["_id"] in valid_docs)
+        y = (core.basic_utils.dotkeys(doc, label_field) for doc in documents if doc["_id"] in valid_docs)
         labels_list = []
 
         for i in y:
@@ -98,9 +98,9 @@ class classification(Analysis):
 
         
         vectorizer = CountVectorizer( min_df, max_df, vocabulary) 
-        counts = vectorizer.fit_transform(doc['_source'][x_field] for doc in documents if doc['_id'] in valid_docs)
+        counts = vectorizer.fit_transform(core.basic_utils.dotkeys(doc, x_field) for doc in documents if doc['_id'] in valid_docs)
         
-    #    counts = vectorizer.fit_transform(doc['_source']['textLC'] for doc in documents if doc['_id'] in valid_docs)
+        #counts = vectorizer.fit_transform(doc['_source']['textLC'] for doc in documents if doc['_id'] in valid_docs)
         #Extract vocabulary list 
         self.vocab = np.array(vectorizer.get_feature_names())
         
@@ -108,10 +108,10 @@ class classification(Analysis):
             tfidf_transformer = TfidfTransformer()        
             tfidf_full_data = tfidf_transformer.fit_transform(counts)
             
-            X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, labels, test_size=testsize, shuffle = True, random_state=42)
+            X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, labels, test_size=testsize, shuffle = True,                 random_state=42)
         
         else:
-            X_train, self.X_test, y_train, self.y_test = train_test_split(counts, labels, test_size = testsize, shuffle = True, random_state=42)
+            X_train, self.X_test, y_train, self.y_test = train_test_split(counts, labels, test_size = testsize, shuffle = True,                         random_state=42)
         
         self.clf =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
             
@@ -160,7 +160,7 @@ class classification(Analysis):
                                                    
     def update(self, documents, **kwargs):
         """
-        This method should provide online training functionality. In most cases this should basically result in some weight updating based on new evidence.\n
+        This method should provide online training functionality. In most cases this should basically result in some weight updating based         on new evidence.\n
         @param documents: the documents (dictionaries) presented as new evidence to the model. Expected functionality for weight updating
         @type documents: iterable
         """
@@ -173,8 +173,8 @@ class classification(Analysis):
             
     def interpretation(self, **kwargs):
         """
-        This method should have the functionality to interpret the status of the model after being trained and also document the various design choices\
-        (i.e. parameters settings, assumptions, model selection, test method, dataset used). For example it can return a report-like looking formatted string.\n
+        This method should have the functionality to interpret the status of the model after being trained and also document the various           design choices\
+        (i.e. parameters settings, assumptions, model selection, test method, dataset used). For example it can return a report-like               looking formatted string.\n
         Please consider the following as possible model state interpretation:\n
            * For classification tasks depending on the underlying model: coeficient/feature weights, feature selection (random forest)\n
            * For clustering tasks: clusterings members/structure, distributions
@@ -186,13 +186,13 @@ class classification(Analysis):
             
     def quality(self, **kwargs):
         """
-        This method should have the functionality to report on the quality of the underlying (trained) model used for the analysis (on a dataset).\n
-           * For classification tasks: retrieval metrics precision, recall, f1-score on a test set internally handled; intrinsic evaluation on hidden evidence.\n
-           * For clustering tasks take into consideration application and underlying clustering method since it optimizes against given metric. Example metrics:\n
+        This method should have the functionality to report on the quality of the underlying (trained) model used for the analysis (on a           dataset).\n
+           * For classification tasks: retrieval metrics precision, recall, f1-score on a test set internally handled; intrinsic evaluation         on hidden evidence.\n
+           * For clustering tasks take into consideration application and underlying clustering method since it optimizes against given            metric. Example metrics:\n
              - inertia: sum of squared distance for each point to it's closest centroid, i.e., its assigned cluster.\n
              - silhouette
         """
-#make the test predictions as an attribute.
+        #make the test predictions as an attribute.
 
         test_pred = self.clf.predict(self.y_test)
         self.test_accuracy = accuracy_score(self.y_test, test_pred)
