@@ -74,9 +74,7 @@ class classification(Analysis):
         s=0
         
         for doc in documents:
-            _id = doc["_id"]
-            s+=1
-            #print(s)
+
             if x_field in doc['_source']:
                 valid_docs.append(doc['_id'])
                 text = doc['_source'][x_field].lower()
@@ -84,7 +82,6 @@ class classification(Analysis):
                     if string.punctuation in word: #or in stopwords:
                         logger.info('Either punctuation or stopwords has not been removed. Proceeding without pre-processing.')
                 
-                #logger.warning("Document has text field missing.")
             else: 
                 invalid_docs.append(doc['_id'])
 
