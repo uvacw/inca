@@ -6,6 +6,10 @@ from core.document_class import Document
 from collections import Counter
 from core.search_utils import document_generator
 
+import zipfile
+import gzip
+import tarfile
+import os
 
 class BaseImportExport(Document):
 
@@ -20,7 +24,11 @@ class BaseImportExport(Document):
 
     from core.basic_utils import dotkeys
 
-    def open_file(self, filename, mode='r', force=False):
+    def open_file(self, filename, mode='r', force=False, compression=None):
+        if not os.path.exists(filename):
+            logger.warning("File not found at {filename}".format(filename=filename))
+        if not compression:
+            return open(filename, mode=mode)
         return fileobj
 
     def open_dir(self, path, match="*", mode='r', force=False):
