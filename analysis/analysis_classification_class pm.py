@@ -20,12 +20,12 @@ from scipy.sparse import csr_matrix
 from sklearn.linear_model import SGDClassifier
 
 
+
 logger = logging.getLogger(__name__)
 
 class classification(Analysis):
 # trying to build the analysis class 
 logger = logging.getLogger(__name__)
-from sklearn.metrics import accuracy_score
 
 class classification(Analysis):
     
@@ -38,9 +38,8 @@ class classification(Analysis):
         self.predictions = None
         self.accuracy = None
         
-    
 
-
+        
     def fit(self, documents, doctype , x_field, label_field, add_prediction=False, testsize = 0.2, min_df = 0.0, max_df = 1.0, vocabulary = None,  tfidf = True, **kwargs):
         """
         This method should train a model on the input documents.\n
@@ -83,30 +82,18 @@ class classification(Analysis):
             #print(s)
             if x_field in doc['_source']:
                 valid_docs.append(doc['_id'])
+                text = doc['_source'][x_field].lower()
+                for word in text:
+                    if string.punctuation in word: #or in stopwords:
+                        logger.info('Either punctuation or stopwords has not been removed. Proceeding without pre-processing.')
+                
                 #logger.warning("Document has text field missing.")
             else: 
                 invalid_docs.append(doc['_id'])
-           #consider not continuing if else if this way. maje it better structured. finish making the list first? 
-        for doc in documents:
-            if doc['_id'] in valid_docs:
-                text = doc['_source'][x_field].lower()
-                for word in text:
-                    if word not in string.punctuation : #or in stopwords:
-                        #raise ValueError('Either punctuation or stopwords have not been removed. Please preprocess and retry.')
-                        logger.warning('Either punctuation or stopwords has not been removed. Proceeding without pre-processing.')
 
         
         
-        
-        #PLEASE CHANGE NAMES!
-        p = inca.processing.basic_text_processing.lowercase()
-        newdocs2 = [e for e in p.runwrap(doctype, field=x_field, save = True, new_key='textLC', force=True)]
-        #q = inca.processing.basic_text_processing.remove_punctuation()
-        #newdocs2 = [e for e in q.runwrap(newdocs, field='textLC',new_key='textnopunc')]
-        print(core.search_utils.doctype_fields(doctype))
-        documents = newdocs2
-
-        
+   
         y = (doc["_source"]["category"] for doc in documents if doc["_id"] in valid_docs)
         labels_list = []
 
@@ -118,8 +105,10 @@ class classification(Analysis):
         #option for stopwords.
         
         vectorizer = CountVectorizer( min_df, max_df, vocabulary) 
+
+        counts = vectorizer.fit_transform(doc['_source'][x_field] for doc in documents if doc['_id'] in valid_docs)
         
-        counts = vectorizer.fit_transform(doc['_source']['text'] for doc in documents if doc['_id'] in valid_docs)
+    #    counts = vectorizer.fit_transform(doc['_source']['textLC'] for doc in documents if doc['_id'] in valid_docs)
         #Extract vocabulary list 
         self.vocab = np.array(vectorizer.get_feature_names())
         
@@ -144,11 +133,9 @@ class classification(Analysis):
         #Think about return statement'''
         return (self.vocab, self.clf, labels, invalid_docs, valid_docs)
         
-        #return (labels_list, valid_docs, invalid_docs)
 
 
-                                                   
-                                                   
+                                       
     def predict(self, x_field=None, documents = None, doctype = None, docs=None, **kwargs):
         """
         This method should perform inference on new unseen documents.\n
@@ -164,27 +151,7 @@ class classification(Analysis):
         
         
         """
-        '''
-        p = inca.processing.basic_text_processing.lowercase()
-        newdocs3 = [e for e in p.runwrap(doctype, field=x_field, save = True, new_key='textLC', force=True)]
-        #q = inca.processing.basic_text_processing.remove_punctuation()
-        #newdocs2 = [e for e in q.runwrap(newdocs, field='textLC',new_key='textnopunc')]
-        print(core.search_utils.doctype_fields(doctype))
-
-        
-        y = (doc["_source"]["category"] for doc in newdocs2 if doc["_id"] in valid_docs)
-        labels_list = []
-
-        for i in y:
-            labels_list.append(i)
-        labels = pd.DataFrame({'col':labels_list})
-
-        vectorizer = CountVectorizer()
-        tfidf_transformer = TfidfTransformer()
-        
-        counts_new = vectorizer.fit_transform(doc['_source'][x_field] for doc in documents )# if doc['_id'] in valid_docs)
-        tfidf_new = tfidf_transformer.fit_transform(counts)
-'''
+      
         print(type(self.X_test))
         #clf = self.clf.predict(tfidf_new)
         #self.predictions = self.clf.predict(doc['_source'][x_field] for doc in documents)  
@@ -194,7 +161,6 @@ class classification(Analysis):
         self.accuracy = accuracy_score(self.y_test, self.predictions)
         #Try and put the predictions into elasticsearch?
         
-        #return statement, plus logger.info
                                                           
         return (self.predictions, self.accuracy)
 
@@ -238,10 +204,10 @@ class classification(Analysis):
 #make the test predictions as an attribute.
 
         test_pred = self.clf.predict(self.y_test)
-        self.test_accuracy = metrics.accuracy_score(self.y_test, test_pred)
-        self.test_precision = metrics.precision_score(self.y_test, test_pred)
-        self.test_recall = metrics.recall_score(self.y_test, test_pred)
-        self.test_f1score = metrics.f1_score(self.y_test, test_pred)
+        self.test_accuracy = accuracy_score(self.y_test, test_pred)
+        self.test_precision = precision_score(self.y_test, test_pred, average = 'macro')
+        self.test_recall = recall_score(self.y_test, test_pred, average = 'macro')
+        self.test_f1score = f1_score(self.y_test, test_pred, average = 'macro')
         print("accuracy on test set: "+self.test_accuracy + "\n Precision on test set: " + self.test_precision + "\n Recall on test set: "
              + self.test_recall + "\n f1score : " +self.f1score)
         return (self.test_accuracy, self.test_precision, self.test_recall, self.test_f1score)
