@@ -178,14 +178,25 @@ def delete_doctype(doctype):
 def insert_document(document, custom_identifier=''):
     ''' Insert a new document into the default index '''
     document = _remove_dots(document)
+    
+    # Determine document type for Elasticsearch
+    document_type = document.get('doctype',False)
+    if not document_type:
+        document_type = document.get('_source',{}).get("doctype",False)
+    if not document_type:
+        document_type = document.get("_type",False)
+    # if no document type was found, emit warning and process as "unknown"
+    if not document_type:
+        logger.warning("Document without type supplied for indexing in ES!")
+        document_type = "unknown"
     if not custom_identifier:
         try:
-            doc = client.index(index=elastic_index, doc_type=document['_type'], body=document['_source'])
+            doc = client.index(index=elastic_index, doc_type=document_type, body=document.get('_source',document))
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
         try:
-            doc = client.index(index=elastic_index, doc_type=document['_type'], body=document['_source'], id=custom_identifier)
+            doc = client.index(index=elastic_index, doc_type=document_type, body=document.get('_source',document), id=custom_identifier)
         except ConnectionTimeout:
             doc= {'_id':insert_document(document['_source'], custom_identifier)}
     logger.debug('added new document, content: {document}'.format(**locals()))
