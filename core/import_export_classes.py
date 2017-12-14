@@ -9,7 +9,9 @@ from core.search_utils import document_generator
 import zipfile
 import gzip
 import tarfile
+import bz2
 import os
+import re
 
 class BaseImportExport(Document):
 
@@ -24,15 +26,57 @@ class BaseImportExport(Document):
 
     from core.basic_utils import dotkeys
 
-    def open_file(self, filename, mode='r', force=False, compression=None):
+    def _detect_zip(self,path):
+        filename = os.path.basename(path)
+        for zip_ext in  ['zip','tar.gz','gz','bz2']:
+            if filename[-len(zip_ext):] == zip_ext:
+                return zip_ext
+        return False
+
+    def open_file(self, filename, mode='r', force=False, compression="autodetect"):
         if not os.path.exists(filename):
             logger.warning("File not found at {filename}".format(filename=filename))
+        if compression == "autodetect":
+            compression = self._detect_zip(filename)
         if not compression:
             return open(filename, mode=mode)
+        if compression == 'zip':
+            return zipfile.PyZipFile(filename, mode=mode)
+        if compression == "tar.gz":
+            return tarfile.TarFile(filename, mode=mode)
+        if compression == "gz":
+            return gzip.open(filename, mode=mode)
+        if compression == "bz2":
+            return bz2.open(filename, mode=mode)
         return fileobj
 
-    def open_dir(self, path, match="*", mode='r', force=False):
-        yield fileobj
+    def open_dir(self, path,  mode='r', match=".*", force=False, compression="autodetect"):
+        """Generator that yields all files in given directory
+
+        Parameters
+        ----
+        path : string
+            A path in which to look for files
+        mode : string (default='r')
+            The mode to open files, such as `r` for reading UTF-8, `w` to write
+        match : string (default='.*')
+            a regular expression to match to filenames
+        force : bool (default=False)
+            Whether to return files for writing if they already exist
+        compression : string (default="autodetect")
+            Type of compression to use
+
+
+        """
+        matcher = re.compile(match)
+        for filename in os.listdir(path):
+            # ignore non-matching filenames
+            if not matcher.search(filename): continue
+            fileobj = self.open_file(os.path.join(path,filename),
+                                    mode=mode,
+                                    force=force,
+                                    compression=compression)
+            yield fileobj
 
     def _process_by_batch(self, iterable, batchsize=100):
         batchnum = 0
