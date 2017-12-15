@@ -46,7 +46,7 @@ class voedingsforum(Scraper):
         linkobjects = tree.xpath('//table//b/a')
         links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
         links = links[0:self.MAXFORA]
-        logger.debug("There are {} links".format(len(links)))
+        logger.debug("There are {} subforums in total in the Voedingsforum, and they are:".format(len(links)))
         logger.debug("\n".join(links))
         it = 0
         for link in links:
@@ -60,13 +60,13 @@ class voedingsforum(Scraper):
             current_page = link
             sleep(randrange(5,10))
             overview_pagesub = requests.get(current_page, cookies = {'cookieAccept' : 'True'})
-            logger.debug('now fetching {}'.format(link))
+            logger.debug('now fetching this subforum {}'.format(link))
 # The loop stops by checking whether the next page contains the following text.
             while overview_pagesub.content.find(b'Foutmelding' and b'Geen onderwerpen gevonden') == -1:
-                logger.debug('this page does not contain error messages')
+                logger.debug('this subforum does not contain error messages')
                 tree_sub = fromstring(overview_pagesub.text)
                 sublinkobjects = tree_sub.xpath('//table//table//tr/td/a[not(@onmouseout)]/@href')
-                logger.debug('this page has {} sublinkobjects'.format(len(sublinkobjects)))
+                logger.debug('this subforum has {} threads, and they are:'.format(len(sublinkobjects)))
                 sublinks  = [self.BASE_URL+ li for li in sublinkobjects]
                 logger.debug("\n".join(sublinks))
                 tt = 0
@@ -81,7 +81,7 @@ class voedingsforum(Scraper):
                     currentthread['timesread'] = threadreadclean[tt]
                     currentthread['posts'] = []
                     pagesub = 1
-                    logger.debug('fetching now {}'.format(sublink))
+                    logger.debug('fetching now the following thread {}'.format(sublink))
                     sleep(randrange(5,10))
                     this_page = requests.get(sublink)
                     while True:
@@ -126,9 +126,9 @@ class voedingsforum(Scraper):
                         next_url = sublink+'&whichpage='+str(pagesub)
                         sleep(randrange(5,10))
                         next_page = requests.get(next_url)
-                        logger.debug('fetching now {}'.format(next_url))
+                        logger.debug('fetching now the next page of the thread {}'.format(next_url))
                         if next_page.content.find(b'/_lib/img/icon_user_profile')==-1:
-                            logger.debug('page does not exist, stopping now')
+                            logger.debug('this thread has only one page, continuing to next thread')
                             break
                         else:
                             this_page = next_page
@@ -142,7 +142,7 @@ class voedingsforum(Scraper):
                 current_page = link+'&sortfield=lastpost&sortorder=desc&whichpage='+str(page)
                 sleep(randrange(5,10))
                 overview_pagesub = requests.get(current_page)
-                logger.debug('fetching now {}'.format(current_page))
+                logger.debug('fetching now the next page of the subforum {}'.format(current_page))
                 
                 
             allfora.append(currentforum)
