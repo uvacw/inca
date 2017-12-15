@@ -26,7 +26,7 @@ class import_csv(Importer):
             return False
         return encoding['encoding']
 
-    def load(self, filename, fieldnames=None, *args, **kwargs):
+    def load(self, path, fieldnames=None, *args, **kwargs):
         """Loads a csv file into INCA
 
         Parameters
@@ -40,7 +40,7 @@ class import_csv(Importer):
 
             If 'None', takes the header of the file and uses these fieldnames
             to upload documents
-        filename : string
+        path : string
             The file to load
         fieldnames : list or None
             If None, the first row is assumed to contain headers, else
@@ -48,8 +48,9 @@ class import_csv(Importer):
         delimiter : string
             The character used to seperate columns, often ';', ',' or '\t'
         encoding ; string
-            The encoding in which a file is, defaults to autodetect, but is also
-            commonly 'UTF-16','ANSI','WINDOwS-1251'
+            The encoding in which a file is, defaults to 'utf-8', but is also
+            commonly 'UTF-16','ANSI','WINDOwS-1251'. 'autodetect' will attempt
+            to infer encoding from file contents
 
         yields
         ---
@@ -57,9 +58,9 @@ class import_csv(Importer):
             One dict per row of data in the excel file
 
         """
-        encoding = kwargs.pop('encoding',self._detect_encoding(filename))
+        encoding = kwargs.pop('encoding',"utf-8")
         if encoding:
-            with open(filename, encoding=encoding) as fileobj:
+            with open(path, encoding=encoding) as fileobj:
                 csv_content = csv.DictReader(fileobj, *args, **kwargs)
                 for row in csv_content:
                     yield row
@@ -100,9 +101,12 @@ class export_csv(Exporter):
         keys = set.union(*[set(d.keys()) for d in flat_batch])
         [self.fields.append(k) for k in keys if k not in self.fields]
 
-        self.extension = ".csv"
-        if  self.fileobj:
+        self.extension = "csv"
+        if  self.fileobj and not self.fileobj.closed:
             outputfile = self.fileobj
+            new = False
+        elif self.fileobj:
+            self._makefile(destination, mode='a')
             new = False
         else:
             outputfile = self._makefile(destination)
