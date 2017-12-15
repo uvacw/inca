@@ -91,33 +91,39 @@ class voedingsforum(Scraper):
                         messages = [b.strip() for b in messages]
                         postlist = []
                         for message in messages:
-                            if len(message)>0:
+                            if len(message)>0 and message.find('adsbygoogle') == -1:
                                 postlist.append({'post':message})
 #User information - extracting from the elements. Username and level come together in one list, country of origin and amount of messages in a second list
 
                         user_elem = treesub.xpath('//*[@class="topiclight" or @class="topicdark"]')
-                        # TODO: voor de zekerheid checken of len(user_elem) == aantal posts
-                        ii = 0
-                        for user in user_elem:
-                            userinfo = user.getchildren()
-                            if len(userinfo) == 2:
-                                userlevel = userinfo[0].text_content()
-                                postlist[ii]['username'] = userlevel.split()[0]
-                                postlist[ii]['userlevel'] = userlevel.split()[1]
+
+                        if len([True for u in user_elem if len(u.getchildren()) == 2]) != len(postlist):
+                            logger.warning('OOOPS! We found a different number of posts and users. That seems wrong, but we cannot solve it. We are going to skip the entire page')
+                            
+                        else:   # only if we are sure that we have lists of equal length, we are going to anayze this page
+                            ii = 0
+
+                            for user in user_elem:
+                                userinfo = user.getchildren()
+                                if len(userinfo) == 2:
+                                    userlevel = userinfo[0].text_content()
+                                    postlist[ii]['username'] = userlevel.split()[0]
+                                    postlist[ii]['userlevel'] = userlevel.split()[1]
                                                             
-                                countryamount = userinfo[1].text_content().replace("Berichten", " ").replace("\r\n", " ").replace("\t\t", "").replace("                  ", " ").replace("   ", " ")
+                                    countryamount = userinfo[1].text_content().replace("Berichten", " ").replace("\r\n", " ").replace("\t\t", "").replace("                  ", " ").replace("   ", " ")
 
-                                thiscountrystring = "".join(re.findall(r"[A-Za-z]", countryamount))
-                                if thiscountrystring == "":
-                                    postlist[ii]['usercountry'] ='NA'
-                                else:
-                                    postlist[ii]['usercountry'] = thiscountrystring
-
-                                postlist[ii]['useramountofposts'] = int("".join(re.findall(r"[0-9]", countryamount)))
+                                    thiscountrystring = "".join(re.findall(r"[A-Za-z]", countryamount))
+                                    if thiscountrystring == "":
+                                        postlist[ii]['usercountry'] ='NA'
+                                    else:
+                                        postlist[ii]['usercountry'] = thiscountrystring
+                                        
+                                    postlist[ii]['useramountofposts'] = int("".join(re.findall(r"[0-9]", countryamount)))
+                                    ii+=1
            
-                            else:
-                                continue
-                            ii+=1
+                                else:
+                                    continue
+
 
 
                         pagesub+=1
