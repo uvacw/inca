@@ -13,6 +13,8 @@ import bz2
 import os
 import re
 
+logger = logging.getLogger("INCA:"+__name__)
+
 class BaseImportExport(Document):
 
     def __init__(self, raise_on_fail=False, verbose = True):
@@ -28,26 +30,44 @@ class BaseImportExport(Document):
 
     def _detect_zip(self,path):
         filename = os.path.basename(path)
-        for zip_ext in  ['zip','tar.gz','gz','bz2']:
+        for zip_ext in  ['gz','bz2']:
             if filename[-len(zip_ext):] == zip_ext:
                 return zip_ext
         return False
 
+
     def open_file(self, filename, mode='r', force=False, compression="autodetect"):
-        if not os.path.exists(filename):
+        if mode not in ["w","wb","a","ab"] and not os.path.exists(filename):
             logger.warning("File not found at {filename}".format(filename=filename))
         if compression == "autodetect":
             compression = self._detect_zip(filename)
         if not compression:
             return open(filename, mode=mode)
-        if compression == 'zip':
-            return zipfile.PyZipFile(filename, mode=mode)
-        if compression == "tar.gz":
-            return tarfile.TarFile(filename, mode=mode)
+
+        else:
+            filename += "." + compression
+
+        if mode == 'r':
+            mode = 'rb'
+
+        def cb(fileobj):
+            """monkey-patch fileobject write method to encode"""
+            original_write = fileobj.write
+            def write(input_string):
+                """write with encoding"""
+                bytes_string = input_string.encode()
+                original_write(bytes_string)
+            fileobj.write = write
+            return fileobj
+
+        # compressed formats requiring bytes-styleo pening below here
+
+        if mode == 'w':
+            mode = 'wb'
         if compression == "gz":
-            return gzip.open(filename, mode=mode)
+            return cb(gzip.open(filename, mode=mode))
         if compression == "bz2":
-            return bz2.open(filename, mode=mode)
+            return cb(bz2.open(filename, mode=mode))
         return fileobj
 
     def open_dir(self, path,  mode='r', match=".*", force=False, compression="autodetect"):
@@ -137,12 +157,17 @@ class Importer(BaseImportExport):
             between loaded documents and documents as they should be indexed
             by elasticsearch.
 
+            If mapping is empty, the file contents are assumed to be ingested
+            as is.
+
         Returns
         ---
         dict
             a new document ready for elasticsearch, containing all keys from
             the mapping found in the document
         """
+        if not mapping:
+            return document
         new_document = {v:document[k] for k,v in mapping.items() if k in document}
         # Keep track of missing keys
         self.missing_keys.update([k for k in mapping if k not in document])
@@ -177,11 +202,11 @@ class Importer(BaseImportExport):
         raise NotImplementedError
         yield document
 
-    def run(self, doctype, mapping=None, *args, **kwargs):
+    def run(self, doctype, mapping={}, *args, **kwargs):
         """uses the documents from the load method in batches """
         for batch in self._process_by_batch(self.load(*args,**kwargs)):
-            batch = list(map(lambda x: self._add_metadata(document=x,mapping=mapping), batch))
             batch = list(map(lambda doc: self._apply_mapping(doc,mapping), batch))
+            batch = list(map(lambda x: self._add_metadata(document=x,mapping=mapping), batch))
             self._ingest(iterable=batch, doctype=doctype)
             self.processed += len(batch)
 
@@ -252,23 +277,23 @@ class Exporter(BaseImportExport):
             self.processed += 1
             yield doc
 
-    def _makefile(self, filename, mode='w', overwrite=False):
+    def _makefile(self, filename, mode='w', force=False, compression=False):
         filepath = os.path.dirname(filename)
         os.makedirs(filepath, exist_ok=True)
         # handle cases when a path instead of a filename is provided
-        if os.path.join(filename,'') == filepath:
+        if os.path.isdir(filename):
             now = time.localtime()
-            newname = "INCA_export_{now.tm_min}_{now.tm_hour}_{now.tm_mday}_{now.tm_mon}_{now.tm_year}".format(now=now)
+            newname = "INCA_export_{now.tm_min}_{now.tm_hour}_{now.tm_mday}_{now.tm_mon}_{now.tm_year}{extension}".format(now=now, extension=self.extension)
             filename = os.path.join(filename,newname)
         if self.extension not in filename:
-            filename = "{filename}.{extension}".format(filename=filename, extention=self.extension)
-        if filename in os.listdir(filepath) and not overwrite:
+            filename = "{filename}.{extension}".format(filename=filename, extension=self.extension)
+        if filename in os.listdir(filepath) and not force:
             logger.warning("file called {filename} already exists, either provide new filename"
             "or set `overwrite=True`".format(filename=filename)
             )
             return False
         else:
-            self.fileobj=open(filename, mode)
+            self.fileobj=self.open_file(filename, mode=mode, force=force,compression=compression)
             return self.fileobj
 
     def run(self, query="*", destination='exports/', overwrite=False, batchsize=None, *args, **kwargs):

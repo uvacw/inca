@@ -7,17 +7,20 @@ JSON a nice and easy format for data exchange.
 
 """
 
-from core.importers_exporters import Importer, Exporter
+from core.import_export_classes import Importer, Exporter
 import os
 import json
 import re
+import logging
 
+logger = logging.getLogger("INCA."+__name__)
 
 class import_json(Importer):
     """imports json from from file(s)"""
 
+    version = 0.1
 
-    def load(self, path, mapping=None, compression="autodetect", matches=".*"):
+    def load(self, path, mapping={}, compression="autodetect", matches=".*"):
         """Load JSON objects from file or folder
 
         Parameters
@@ -45,25 +48,57 @@ class import_json(Importer):
         else:
             is_path = os.path.isdir(path)
             if not is_path :
-                with self.open_file(path, mode=mode, compression=compression) as f:
+                with self.open_file(path, mode="r", compression=compression) as f:
                     line = "start"
                     while line:
                         line = f.readline()
+                        if not line: break
                         if type(line)!=str:
                             line = line.decode()
-                        doc = json.loads(doc)
+                        doc = json.loads(line)
                         if doc:
-                            yield doc
+                            print(doc)
+                            yield doc.get('_source',doc)
             if is_path:
                 matcher = re.compile(matches)
                 for filename in os.listdir(path):
                     if not matcher.search(filename): continue
                     yield self.load(os.path.join(path,filename), mapping=mapping, compression=compression)
 
-class export_json(Exporter):
-    """Dump documents to JSON file(s)"""
+class export_json_file(Exporter):
+    """Dump documents to JSON file"""
 
-    extension = ".json"
+    version = 0.1
 
-    def save(self, documents, path):
-        pass
+    def save(self, batch_of_documents, destination, compression=None):
+        self.extension = "json"
+        self.fileobj = self._makefile(destination, mode="w", compression=compression)
+        for document in batch_of_documents:
+            try:
+                doc_dump = json.dumps(document)
+                self.fileobj.write(doc_dump+"\n")
+            except:
+                raise "hell"
+                self.failed += 1
+                self.failed_ids.append(document['_id'])
+        if self.failed:
+            logger.warning("Failed to export {num} documents".format(num=self.failed))
+            logger.info("Failed ids: {ids}".format(ids=', '.join(self.failed_ids)))
+
+class export_json_files(Exporter):
+    """Dump documents to JSON files, one-per-document (NOT RECOMMENDED)"""
+
+    version = 0.1
+
+    def save(self, batch_of_documents, destination, compression=None):
+        self.extension = "json"
+        for document in batch_of_documents:
+            filename = document.get('_id')
+            location = os.path.join(destination,filename)
+            fileobj = self._makefile(location, mode='w', compression=compression)
+            try:
+                json.dump(document, fileobj)
+            except:
+                self.failed +=1
+                self.failed_ids.append(document['_id'])
+            fileobj.close()
