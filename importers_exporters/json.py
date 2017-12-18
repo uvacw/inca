@@ -71,6 +71,16 @@ class export_json_file(Exporter):
     version = 0.1
 
     def save(self, batch_of_documents, destination, compression=None):
+        """Save JSON objects to single file
+
+        Parameters
+        ---
+        batch_of_documents : iterable
+        destination : string
+            The file in which to store the output
+        compression : string (default=None)
+            What compression to use when writing output file
+        """
         self.extension = "json"
         self.fileobj = self._makefile(destination, mode="w", compression=compression)
         for document in batch_of_documents:
@@ -91,6 +101,16 @@ class export_json_files(Exporter):
     version = 0.1
 
     def save(self, batch_of_documents, destination, compression=None):
+    	"""Save JSON objects to multiple files
+
+        Parameters
+        ---
+        batch_of_documents : iterable
+        destination : string
+            The directory in which to store the output files
+        compression : string (default=None)
+            What compression to use when writing output files
+        """
         self.extension = "json"
         for document in batch_of_documents:
             filename = id2filename(document.get('_id'))
