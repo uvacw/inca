@@ -71,7 +71,7 @@ class export_csv(Exporter):
 
     batchsize = 1000
 
-    def save(self, documents, destination, fields=None, include_meta=False, *args, **kwargs):
+    def save(self, documents, destination, fields=None, include_meta=False, remove_linebreaks=True, *args, **kwargs):
         """
 
         Parameters
@@ -89,8 +89,19 @@ class export_csv(Exporter):
             are used.
         include_meta : bool (default=False)
             Whether to include META fields.
+        remove_linebreaks : bool (default=True)
+            Replace line breaks within cells by a space
 
-        args/kwargs are passed to csv.DictWriter
+        args/kwargs are passed to csv.DictWriter.
+        In particular, you might be interested in using the follwing arguments:
+
+        dialect='excel'
+            Ensures compatibility with Microsoft Excel
+
+        delimiter=';'
+            Use a semicolon instead of a comma. This is what Microsoft Excel
+            expects in many locales (e.g., Dutch and German)
+
 
         """
         if not hasattr(self, 'fields'):
@@ -116,4 +127,6 @@ class export_csv(Exporter):
         if new:
             writer.writeheader()
         for doc in flat_batch:
+            if remove_linebreaks:
+                doc = {k: v.replace('\n\r',' ').replace('\n',' ').replace('\'r',' ') for k,v in doc.items()}
             writer.writerow(doc)
