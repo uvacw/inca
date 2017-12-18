@@ -75,7 +75,9 @@ class export_json_file(Exporter):
 
         Parameters
         ---
-        batch_of_documents : iterable
+        batch_of_documents : list of dicts
+            a list containing the dict of each document as represented in
+            elasticsearch
         destination : string
             The file in which to store the output
         compression : string (default=None)
@@ -105,7 +107,9 @@ class export_json_files(Exporter):
 
         Parameters
         ---
-        batch_of_documents : iterable
+        batch_of_documents : list of dicts
+            a list containing the dict of each document as represented in
+            elasticsearch
         destination : string
             The directory in which to store the output files
         compression : string (default=None)
