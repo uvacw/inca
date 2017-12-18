@@ -97,11 +97,9 @@ class export_csv(Exporter):
 
         dialect='excel'
             Ensures compatibility with Microsoft Excel
-
         delimiter=';'
             Use a semicolon instead of a comma. This is what Microsoft Excel
             expects in many locales (e.g., Dutch and German)
-
 
         """
         if not hasattr(self, 'fields'):

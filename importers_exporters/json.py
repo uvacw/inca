@@ -7,7 +7,7 @@ JSON a nice and easy format for data exchange.
 
 """
 
-from core.import_export_classes import Importer, Exporter
+from core.import_export_classes import Importer, Exporter, id2filename
 import os
 import json
 import re
@@ -93,7 +93,7 @@ class export_json_files(Exporter):
     def save(self, batch_of_documents, destination, compression=None):
         self.extension = "json"
         for document in batch_of_documents:
-            filename = document.get('_id')
+            filename = id2filename(document.get('_id'))
             location = os.path.join(destination,filename)
             fileobj = self._makefile(location, mode='w', compression=compression)
             try:

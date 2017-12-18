@@ -5,7 +5,8 @@ import time
 from core.document_class import Document
 from collections import Counter
 from core.search_utils import document_generator
-
+from urllib.parse import quote_plus
+from hashlib import md5
 import zipfile
 import gzip
 import tarfile
@@ -14,6 +15,27 @@ import os
 import re
 
 logger = logging.getLogger("INCA:"+__name__)
+
+
+def id2filename(id):
+    """create a filenmame for exporting docments.
+
+    In principle, documents should be saved as {id}.json. However, as ids can 
+    be arbitrary strings, filenames can (a) be too long or (b) contain illegal 
+    characters like '/'. This function takes care of this
+    """
+    
+    encoded_filename = quote_plus(id)  # use URL encoding to get rid of illegal chacters
+
+    if len(encoded_filename)>132:
+        # many filenames allow a maximum of 255 bytes as file name. However, on
+        # encrypted file systems, this can be much lower. Therefore, we play safe
+        hashed_filename = md5(encoded_filename.encode('utf-8')).hexdigest()
+        return encoded_filename[:100]+hashed_filename
+    else:
+        return encoded_filename
+
+
 
 class BaseImportExport(Document):
 
