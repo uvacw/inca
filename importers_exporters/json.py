@@ -101,7 +101,7 @@ class export_json_files(Exporter):
     version = 0.1
 
     def save(self, batch_of_documents, destination, compression=None):
-    	"""Save JSON objects to multiple files
+        """Save JSON objects to multiple files
 
         Parameters
         ---
