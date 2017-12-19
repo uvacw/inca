@@ -34,7 +34,7 @@ class groenlinks(Scraper):
 
         releases = []
 
-        page = 339
+        page = 1
         current_url = self.START_URL+"?page="+str(page)
         overview_page = requests.get(current_url, timeout = 10)
         first_page_text=""
