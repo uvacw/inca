@@ -9,6 +9,7 @@ from core.database import delete_doctype, delete_document
 import logging as _logging
 from core.basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
+import json as _json
 
 _logger = _logging.getLogger("INCA.%s" %__name__)
 
@@ -37,22 +38,34 @@ def document_generator(query="*"):
 
     Parameters
     ----
-    query : string (default="*")
-        A string query specifying the documents to return
+    query : string (default="*") or dict
+        A string query specifying the documents to return or a dict
+        that is a elasticsearch query
 
     Yields
     ----
     dict representing a document
     """
     if not _DATABASE_AVAILABLE:
-        logger.warning("Unable to generate documents, no database available!")
-        yield
+        _logger.warning("Unable to generate documents, no database available!")
     else:
         if query == "*": _logger.info("No query specified, returning all documents")
-        es_query = {"query":{"bool":{"must":{"query_string":{"query":query}}}}}
-        for num, doc in enumerate(_scroll_query(es_query)):
-            if not num%10: _logger.info("returning {num}".format(num=num))
-            yield doc
+        if type(query) == str:
+            _logger.info("String input: searching for {query}".format(query=query))
+            es_query = {"query":{"bool":{"must":{"query_string":{"query":query}}}}}
+            _logger.debug("query: {es_query}".format(es_query=es_query))
+        elif type(query) == dict:
+            _logger.info("Dict input: using input as ES query")
+            _logger.debug("query: {query}".format(query=_json.dumps(query, indent=2)))
+            es_query = query
+        else:
+            _logger.warning("Unknown input")
+            es_query = False
+        if es_query:
+            total = _client.search(_elastic_index, body=es_query, size=0)['hits']['total']
+            for num, doc in enumerate(_scroll_query(es_query)):
+                if not num%10: _logger.info("returning {num} of {total}".format(num=num, total=total))
+                yield doc
 
 
 def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
@@ -104,6 +117,7 @@ def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
         body['query'] = {'query_string':{'query': query}}
 
     docs = _client.search(index=_elastic_index,
+
                   body={
                       "sort": [
                           {by_field : {"order":"asc"}}
@@ -118,6 +132,7 @@ def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
                                 }
                             }
                       }}).get('hits',{}).get('hits',[""])
+
     return docs
 
 def doctype_last(doctype,num=1, by_field="META.ADDED", query=None):
@@ -182,6 +197,7 @@ def doctype_last(doctype,num=1, by_field="META.ADDED", query=None):
                               }
                           }
                       }}).get('hits',{}).get('hits',[""])
+
     return docs
 
 def doctype_examples(doctype, field=None, seed=42, num=10):

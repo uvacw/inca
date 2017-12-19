@@ -19,8 +19,8 @@ import configparser
 import requests
 from celery import Task
 import os
-from urllib.parse import quote_plus
-from hashlib import md5
+
+from core.filenames import id2filename
 
 config = configparser.ConfigParser()
 config.read('settings.cfg')
@@ -468,28 +468,11 @@ def restore_backup(name):
     if name in [item['snapshot'] for item in list_backup()]:
         client.indices.close('inca')
         client.snapshot.restore(repository='inca_backup', snapshot=name)
-
-def id2filename(id):
-    """create a filenmame for exporting docments.
-
-    In principle, documents should be saved as {id}.json. However, as ids can 
-    be arbitrary strings, filenames can (a) be too long or (b) contain illegal 
-    characters like '/'. This function takes care of this
-    """
-    
-    encoded_filename = quote_plus(id)  # use URL encoding to get rid of illegal chacters
-
-    if len(encoded_filename)>132:
-        # many filenames allow a maximum of 255 bytes as file name. However, on
-        # encrypted file systems, this can be much lower. Therefore, we play safe
-        hashed_filename = md5(encoded_filename.encode('utf-8')).hexdigest()
-        return encoded_filename[:100]+hashed_filename
-    else:
-        return encoded_filename
-
         
     
 def export_doctype(doctype):
+    logger.warning('Deprecation warning: this legacy import/export function will be removed')
+    logger.warning('Use the new Inca.importers_exporters class instead')
     if not 'exports' in os.listdir('.'):
         os.mkdir('exports')
     for doc in scroll_query({'query':{'match':{'_type':doctype}}}):
@@ -511,6 +494,8 @@ def export_csv(query, keys = ['doctype','publication_date','title','byline','tex
     keys: list
         A list of keys to be mapped to columns in the csv file. Often used keys include ['doctype', 'publication_date', 'text', 'feedurl', 'teaser', 'title', 'htmlsource', 'byline', 'url']
     '''
+    logger.warning('Deprecation warning: this legacy import/export function will be removed')
+    logger.warning('Use the new Inca.importers_exporters class instead')
 
     if not 'exports' in os.listdir('.'):
         os.mkdir('exports')
@@ -524,6 +509,8 @@ def export_csv(query, keys = ['doctype','publication_date','title','byline','tex
 
 def import_documents(source_folder, force=False, use_url = False):
     '''use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
+    logger.warning('Deprecation warning: this legacy import/export function will be removed')
+    logger.warning('Use the new Inca.importers_exporters class instead')
 
     for input_file in os.listdir(source_folder):
         doc = json.load(open(os.path.join(source_folder, input_file)))
