@@ -1,12 +1,32 @@
 #!/usr/bin/env python3
 import inca
 
-outlets = ['parool','geenstijl','telegraaf','trouw','nu','volkskrant','ad','metronieuws','nrc','nos']
+outlets = ['ad',
+       'bd',
+       'bndestem',
+       'destentor',
+       'ed',
+       'fok',
+       'frieschdagblad',
+       'geenstijl',
+       'gelderlander',
+       'limburger',
+       'metronieuws',
+       'nos',
+       'nrc',
+       'nu',
+       'parool',
+       'pzc',
+       'telegraaf',
+       'trouw',
+       'tubantia',
+       'volkskrant',
+       'zwartewaterkrant']
 
-for outlet in outlets:
-    print("Scraping {}...".format(outlet))
+for s in outlets:
+    print("Scraping {}...".format(s))
     try:
-        c = "inca.scrapers.news_scraper.{}().run()".format(outlet)
+        c = "inca.scrapers.news_scraper.{}().run()".format(s)
         eval(c)
     except:
-        print("ERROR SCRAPING {}.".format(outlet))
+        print("ERROR SCRAPING {}.".format(s))
