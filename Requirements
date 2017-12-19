@@ -16,8 +16,8 @@ Flask==0.10.1
 flower==0.9.1
 gnureadline>=6.3.3
 httplib2==0.10.3
-ipython==4.2.0
-ipython-genutils==0.1.0
+ipython>=4.2.0
+ipython-genutils>=0.1.0
 itsdangerous==0.24
 Jinja2==2.8
 kombu==3.0.35
