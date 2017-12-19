@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class groenlinks(Scraper):
     """Scrapes Groenlinks"""
 
-    def __init__(self,database=True, maxpages = 2):
+    def __init__(self,database=True, maxpages = 2, startpage = 1):
         '''
         maxpage: number of pages to scrape
         '''
@@ -22,6 +22,7 @@ class groenlinks(Scraper):
         self.START_URL = "https://www.groenlinks.nl/nieuws"
         self.BASE_URL = "https://www.groenlinks.nl"
         self.MAXPAGES = maxpages
+        self.STARTPAGE = startpage
 
     def get(self):
         '''                                                                     
@@ -34,7 +35,7 @@ class groenlinks(Scraper):
 
         releases = []
 
-        page = 339
+        page = self.STARTPAGE
         current_url = self.START_URL+"?page="+str(page)
         overview_page = requests.get(current_url, timeout = 10)
         first_page_text=""
