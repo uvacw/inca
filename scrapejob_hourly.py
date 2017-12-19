@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-import inca
+from inca import Inca
 
+myinca  = Inca()
+'''
 outlets = ['ad',
        'bd',
        'bndestem',
@@ -22,11 +24,18 @@ outlets = ['ad',
        'tubantia',
        'volkskrant',
        'zwartewaterkrant']
+'''
+
+
+outlets = [e for e in dir(myinca.rssscrapers) if not e.startswith('__')]
+
 
 for s in outlets:
     print("Scraping {}...".format(s))
     try:
-        c = "inca.scrapers.news_scraper.{}().run()".format(s)
+        c = "myinca.rssscrapers.{}()".format(s)
         eval(c)
-    except:
-        print("ERROR SCRAPING {}.".format(s))
+    except Exception as ex:
+        print("'\nERROR SCRAPING {}.".format(s))
+        print(ex)
+        print('\n')
