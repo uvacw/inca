@@ -17,7 +17,7 @@ logger.setLevel('DEBUG')
 class voedingsforum(Scraper):
     """Scrapes Voedingsforum"""
 
-    def __init__(self,database=True, maxfora = 2, maxpages=2, maxthreads=2):
+    def __init__(self,database=True, maxfora = 2, maxpages=2, maxthreads=2, forumid = None):
    
         self.database = database
         self.START_URL = "http://www.voedingsforum.nl/"
@@ -25,9 +25,10 @@ class voedingsforum(Scraper):
         self.MAXPAGES = maxpages
         self.MAXTHREADS = maxthreads
         self.MAXFORA = maxfora
+        self.FORUMID = forumid
         
     def get(self):
-        '''                                                                             
+        '''                                                                     
         Fetches articles from Voedingsforum
         '''
         self.doctype = "voedingsforum (health)"
@@ -46,6 +47,10 @@ class voedingsforum(Scraper):
         linkobjects = tree.xpath('//table//b/a')
         links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
         links = links[0:self.MAXFORA]
+
+        if self.FORUMID:
+            links = ["http://www.voedingsforum.nl/forum.asp?FORUM_ID={}".format(self.FORUMID)]
+        
         logger.debug("There are {} subforums in total in the Voedingsforum, and they are:".format(len(links)))
         logger.debug("\n".join(links))
         it = 0
