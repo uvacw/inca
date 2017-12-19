@@ -8,6 +8,5 @@ accounts = ['abertis', 'grupoacsnews', 'amadeusitgroup', 'popular', 'grupobpopul
 
 
 for account in accounts:
-    time.sleep(60)    # rate limits should be handled automatically, but this does not seem to always work. quick and dirty fix is sleeping here
-	myinca.clients.twitter_timeline(screen_name=account)
-
+    myinca.clients.twitter_timeline(screen_name=account)
+    time.sleep(30)    # rate limits should be handled automatically, but this does not seem to always work. quick and dirty fix is sleeping here

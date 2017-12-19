@@ -2,40 +2,15 @@
 from inca import Inca
 
 myinca  = Inca()
-'''
-outlets = ['ad',
-       'bd',
-       'bndestem',
-       'destentor',
-       'ed',
-       'fok',
-       'frieschdagblad',
-       'geenstijl',
-       'gelderlander',
-       'limburger',
-       'metronieuws',
-       'nos',
-       'nrc',
-       'nu',
-       'parool',
-       'pzc',
-       'telegraaf',
-       'trouw',
-       'tubantia',
-       'volkskrant',
-       'zwartewaterkrant']
-'''
+
+outlets = [outlet for outlet in dir(myinca.rssscrapers) if not outlet.startswith('__')]
 
 
-outlets = [e for e in dir(myinca.rssscrapers) if not e.startswith('__')]
-
-
-for s in outlets:
-    print("Scraping {}...".format(s))
+for outlet in outlets:
+    print("Scraping {}...".format(outlet))
     try:
-        c = "myinca.rssscrapers.{}()".format(s)
-        eval(c)
+        eval("myinca.rssscrapers.{}()".format(outlet))
     except Exception as ex:
-        print("'\nERROR SCRAPING {}.".format(s))
+        print("'\nERROR SCRAPING {}.".format(outlet))
         print(ex)
         print('\n')
