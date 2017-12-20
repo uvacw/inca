@@ -14,10 +14,10 @@ elasticsearch-dsl==2.0.0
 feedparser==5.2.1
 Flask==0.10.1
 flower==0.9.1
-gnureadline==6.3.3
+gnureadline>=6.3.3
 httplib2==0.10.3
-ipython==4.2.0
-ipython-genutils==0.1.0
+ipython>=4.2.0
+ipython-genutils>=0.1.0
 itsdangerous==0.24
 Jinja2==2.8
 kombu==3.0.35
@@ -42,10 +42,10 @@ requests==2.10.0
 requests-oauthlib==0.6.2
 requirements==0.1
 rsa==3.4.2
-scipy==0.18.0
+scipy>=0.18.0
 simplegeneric==0.8.1
 six==1.10.0
-statsmodels==0.6.1
+statsmodels>=0.6.1
 toolz==0.8.0
 tornado==4.2
 traitlets==4.2.1
@@ -59,3 +59,4 @@ selenium
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
 git+git://github.com/clips/pattern.git@development
 Pillow==4.3.0
+tqdm

@@ -44,6 +44,7 @@ import scrapers   # helps celery recognize the scraping tasks
 import rssscrapers
 import clients    # helps celery recognize client tasks
 import analysis   # helps celery recognize analysis tasks
+import importers_exporters # helps celery recognize import/export tasks
 
 from optparse import OptionParser
 
@@ -104,7 +105,10 @@ class Inca():
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
         self._construct_tasks('clients')
+        self._construct_tasks('importers_exporters')
         self._construct_tasks('rssscrapers')
+        self._construct_tasks('analysis')
+        
         if verbose:
             logger.setLevel('INFO')
             logger.info("Providing verbose output")
@@ -112,12 +116,17 @@ class Inca():
             logger.setLevel('DEBUG')
             logger.debug("Activating debugmode")
 
+
+    class analysis():
+        '''Data analysis tools'''
+        pass
+    
     class scrapers():
-        '''Scrapers for various (news) outlets '''
+        '''Scrapers for various (news) outlets'''
         pass
 
     class rssscrapers():
-        '''RSS-based crapers for various (news) outlets '''
+        '''RSS-based crapers for various (news) outlets'''
         pass
 
     class processing():
@@ -126,6 +135,10 @@ class Inca():
 
     class clients():
         '''Clients to access (social media) APIs'''
+        pass
+
+    class importers_exporters():
+        '''Importing functions to ingest data '''
         pass
 
     def _construct_tasks(self, function):
@@ -180,6 +193,12 @@ class Inca():
                     docstring = self._taskmaster.tasks[k].get.__doc__
                 elif function == "processing":
                     docstring = self._taskmaster.tasks[k].process.__doc__
+                elif function == "importers_exporters":
+                    t = self._taskmaster.tasks[k]
+                    if hasattr(t,'load'):
+                        docstring = t.load.__doc__
+                    else:
+                        docstring = t.save.__doc__
                 else:
                     docstring = self._taskmaster.tasks[k].__doc__
                 endpoint.__doc__  = docstring
