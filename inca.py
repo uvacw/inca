@@ -26,6 +26,7 @@ import copy
 logging.basicConfig(level="WARN")
 logger = logging.getLogger("INCA")
 
+currentdir = os.getcwd()
 incadir = os.path.dirname(__file__)
 os.chdir(incadir)
 
@@ -53,6 +54,7 @@ from optparse import OptionParser
 from core.database import config
 from interface import make_interface
 
+os.chdir(currentdir)
 
 class Inca():
     """INCA main class for easy access to functionality
