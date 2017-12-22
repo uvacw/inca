@@ -26,11 +26,13 @@ import copy
 logging.basicConfig(level="WARN")
 logger = logging.getLogger("INCA")
 
+incadir = os.path.dirname(__file__)
+os.chdir(incadir)
 
-if not 'settings.cfg' in os.listdir('.'):
+if not 'settings.cfg' in os.listdir(incadir):
     logger.info('No settings found, applying default settings (change in `settings.cfg`)')
     from shutil import copyfile
-    copyfile('default_settings.cfg','settings.cfg')
+    copyfile(os.path.join(incadir,'default_settings.cfg'),os.path.join(incadir,'settings.cfg'))
 
 from celery import Celery, group, chain, chord
 import core
