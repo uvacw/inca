@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
 ooooo ooooo      ooo   .oooooo.         .o.
 `888' `888b.     `8'  d8P'  `Y8b       .888.
@@ -233,7 +233,7 @@ def commandline():
                     help='Refrain from returning documents to stdout (for unix piping) ')
     parser.add_option('-c','--celery', dest='celery', default=False, action='store_true',
                     help='Put tasks in the celery cluster instead of running them locally')
-    parser.add_option('-np', '--no-prompt', dest='noprompt',default=False, action='store_true',
+    parser.add_option('-n', '--no-prompt', dest='noprompt',default=False, action='store_true',
                     help='Never prompt users (usually leads to failure), usefull for headles environments and cronjobs')
 
     options, args = parser.parse_args()
@@ -259,7 +259,7 @@ def commandline():
     try:
         tasktype_ob = getattr(inca,tasktype)
     except:
-        print("Tasktype '{tasktype}' not found! Should be 'scrapers' or 'processing'".format(**locals()))
+        print("Tasktype '{tasktype}' not found! Should be 'rssscrapers', 'scrapers' or 'processing'".format(**locals()))
         return
     try:
         task_func   = getattr(tasktype_ob, task)
