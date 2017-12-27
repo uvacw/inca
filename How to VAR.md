@@ -73,17 +73,26 @@ m.fit(queries=['financial','crisis'], timefield = 'META.ADDED', granularity = 'd
 Possible parameters to change ( not exhaustive list ) :
 
 @queries  = what do you want to query from ES ? eg queries = ['Trump','Hillary']
+ 
 @timefield = what field do you want to use to get the dates/timeline from ? 'META.ADDED'
+
 @granularity = 'day'/'week'/'month' etc 
+
 @nlags -  number of lags to consider, if none - rely on statsmodels to choose lag for you 
 
 kwargs:        
  @level = confidence level for all your test (!) , default = 5%
+ 
  @from_time - beginning time 
+ 
  @to_time - end time, eg [01-12-2017] 
+ 
  @max_order_diff = maximum order of differencing, default = 2  
+ 
  @max_order_detrend = maximum order of detredning, default = 2
+ 
  @stationarity_kpss = True/False, False is default, hence you do ADF test
+ 
  @self.ic = aic/bic/fpe, information criteria, default ='aic'
 
 +some parameters in timeline_analysis
