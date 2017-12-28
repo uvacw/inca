@@ -46,5 +46,6 @@ nltk==3.2.4
 ImageHash==3.4
 lxml
 selenium
+matplotlib
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
 git+git://github.com/clips/pattern.git@development
