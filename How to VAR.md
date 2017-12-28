@@ -67,7 +67,7 @@ fin_model = tsa.VAR()
 
 
 ```python
-m.fit(queries=['financial','crisis'], timefield = 'META.ADDED', granularity = 'day',ic='bic')
+fin_model.fit(queries=['financiele','crisis'], timefield = 'publication_date', granularity = 'day',ic='bic')
 
 ```
 Possible parameters to change ( not exhaustive list ) :
@@ -100,10 +100,10 @@ kwargs:
 3) See and interpret the results: 
 
 ```python
-m.diagnostics()
-m.plot('lag') # no significant pattern there => niiice 
-m.interpretation()
-m.quality() 
+fin_model.diagnostics()
+fin_model.plot('lag') # no significant pattern there => niiice 
+fin_model.interpretation()
+fin_model.quality() 
 
 ```
 4) see if your model makes sense, refit if you want to try something else 
