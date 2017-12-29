@@ -44,7 +44,7 @@ class ad(rss):
             print(doc)
             return("","","", "")
         try:
-            title = tree.xpath('//*/h1[@class="article__title"]/text()')[0]
+            title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
         except:
             title=""
             logger.info("OOps - geen titel?")
@@ -55,13 +55,13 @@ class ad(rss):
             logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
         #1. path: regular intro                                                                                                    
         #2. path: intro when in <b>; found in a2014 04 130                                                                         
-        teaser=tree.xpath('//*/p[@class="article__intro"]//text() | //*/p[@class="article__intro"]//span//text() | //*/p[@class="article__intro"]/span[@class="tag"]//text()') [0]
+        teaser=tree.xpath('//*/p[@class="article__intro"]//text() | //*/p[@class="article__intro"]//span//text() | //*/p[@class="article__intro"]/span[@class="tag"]//text() | //*/p[@class="article__intro"]//b//text()') [0]
         if teaser=="":
             logger.info("OOps - geen eerste alinea?")
         #1. path: regular text                                                                                                     
         #2. path: text with link behind (shown in blue underlined); found in 2014 12 1057                                          
         #3. path: second hadings found in 2014 11 1425   
-        text=" ".join(tree.xpath('//*/p[@class="article__paragraph"]//text() | //*/h2[@class="article__subheader"]//text() | //*/p[@class="liveblog_time-text"]//text() | //*/time[@class="liveblog__time-text"]//text() | //*/p[@class="liveblog__intro"]//text() | //*/p[@class="liveblog__paragraph"]//text()')).strip()
+        text=" ".join(tree.xpath('//*/p[@class="article__paragraph"]//text() | //*/h2[@class="article__subheader"]//text() | //*/p[@class="liveblog_time-text"]//text() | //*/time[@class="liveblog__time-text"]//text() | //*/p[@class="liveblog__intro"]//text() | //*/p[@class="liveblog__paragraph"]//text() | //*/p[@class="article__intro video"]//text()')).strip()
         try:
             author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
         except:
@@ -346,7 +346,7 @@ class volkskrant(rss):
             #5. path: old design regular text
             #6. path: old design second heading
             #7. path:old design text with link
-            textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | /*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text() | //*/div[@class="article__body"]/h2/text() | //*/p[@class="article__body__paragraph first"]/a/text() | //*/p[@class="article__body__paragraph"]/text() | //*/h3[@class="article__body__container-title"]/text()')
+            textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]//text() | //*[@class="article__body__container"]/p[*]//text() | //*[@class="article__body__container"]/h3//text() | //*[@class="article__body__container"]/p/a//text() | //*[@id="art_box2"]/p//text() | //*[@id="art_box2"]/p/strong//text() | /*[@id="art_box2"]/p//text() | //*[@id="art_box2"]/p/a//text() | //*/p[@class="article__body__paragraph first"]//text() | //*/div[@class="article__body"]/h2//text() | //*/p[@class="article__body__paragraph first"]/a//text() | //*/p[@class="article__body__paragraph"]//text() | //*/h3[@class="article__body__container-title"]//text() | //*/p[@itemprop="description"]//text()')
         except:
             logger.info("oops - geen text?")
             textrest=""
@@ -475,7 +475,7 @@ class nrc(rss):
             except:
                 category=""
         try:
-            teaser=tree.xpath('//*[@class="intro article__intro"]/p//text()')[0]
+            teaser=tree.xpath('//*[@class="intro article__intro"]/p//text() | //*[@class="intro article__intro"]//text()')[0]
         except:
             logger.info("OOps - geen eerste alinea?")
             teaser=""
@@ -593,7 +593,7 @@ class parool(rss):
         except:
             teaser=""
             logger.info("oops - geen teaser")
-        text=" ".join(tree.xpath('//*/p[@class="article__body__paragraph first"]//text() | //*/p[@class="article__body__paragraph"]//text()')).strip()
+        text=" ".join(tree.xpath('//*/p[@class="article__body__paragraph first"]//text() | //*/p[@class="article__body__paragraph"]//text() | //*/h2[@class="article__body__title"]//text()')).strip()
         author_text=tree.xpath('//*[@class=" article__author"]//text()')
         try:
             author_door=[e for e in author_text if e.find("Door")>=0][0].strip().replace("(","").replace(")","").replace("Door:","")
@@ -681,9 +681,7 @@ class trouw(rss):
             title=""
             logger.info("OOps - geen titel?")
         try:
-            # teaser=tree.xpath('//*/p[@class="article__introduction__text"]')[0]
-            teaser = tree.xpath('//*/p[@class="article__introduction__text"]')[0].text_content().strip()
-
+            teaser = tree.xpath('//*/p[@class="article__introduction__text"]//text() | //*/section[@class="article__introduction layout__stage--center"]//text()')[0]
         except:
             teaser=" "
             logger.info("oops - geen teaser")
@@ -711,7 +709,7 @@ class trouw(rss):
         #6. Link text                                                                  
         #7. Explanantion box text                                                      
         #8. italics                                                                    
-            textrest=tree.xpath('//*[@class="article__section-title__text heading-3"]/text() | //*[@class="article__paragraph"]/text() | //*[@class="article__quote__text"]/text() | //*[@class="article__framed-text__title"]/text() | //*[@id="art_box2"]/section/p/text() |  //*[@id="art_box2"]/p/a/text() |  //*[@id="art_box2"]//*[@class="embedded-context embedded-context--inzet"]/text() |  //*[@id="art_box2"]/p/em/text()')
+            textrest=tree.xpath('//*[@class="article__section-title__text heading-3"]/text() | //*/p[@class="article__paragraph"]//text() | //*/figcaption[@class="article__photo__caption"]//text() | //*[@class="article__paragraph"]/text() | //*[@class="article__quote__text"]/text() | //*[@class="article__framed-text__title"]/text() | //*[@id="art_box2"]/section/p/text() |  //*[@id="art_box2"]/p/a/text() |  //*[@id="art_box2"]//*[@class="embedded-context embedded-context--inzet"]/text() |  //*[@id="art_box2"]/p/em/text()')
         except:
             textrest=" "
             logger.info("oops - geen textrest")
@@ -806,7 +804,7 @@ class telegraaf(rss):
         except:
             logger.info("OOps - geen eerste alinea?")
             teaser=""
-        text=" ".join(tree.xpath('//*/p[@class="false bottom-margin-6"]//text()')).strip()
+        text=" ".join(tree.xpath('//*/p[@class="false bottom-margin-6"]//text() | //*/p[@class="false bottom-margin-6"]/span[class="bold"]//text()')).strip()
         try:
             author_door = tree.xpath('//*[@class="auteur"]/text() | //*[@class="ui-table ui-gray3"]/span[2]/text()')[0].strip().lstrip("Van ").lstrip("onze").lstrip("door").strip()
         except:
@@ -959,7 +957,7 @@ class geenstijl(rss):
 	'''
 
         tree = fromstring(htmlsource)
-        textrest=tree.xpath('//*[@class="article_content"]/p//text()')
+        textrest=tree.xpath('//*[@class="article_content"]/p//text() | //*[@class="article_content"]/p/strong//text() | //*[@class="article_content"]/p/em//text() | //*/h2[@class="content-title"]//text()')
         if textrest=="":
             logger.info("OOps - empty textrest for?")
         text="\n".join(textrest)
@@ -1051,13 +1049,12 @@ class fok(rss):
         if len(category.split(" ")) >1:
             category=""
         try:
-            textrest=tree.xpath('//*/article[@class="single"]/p//text() | //*[@role="main"]/article/p/text() | //*[@role="main"]/article/p/strong/text() | //*[@role="main"]/article/p/strong/a/text() | //*[@role="main"]/article/p/a/text() | //*[@role="main"]/article/p/em/text() | //*[@id="mainContent"]//*[@role="main"]/article/p/text() | //*[@id="mainContent"]/div[5]/main/article/p/text()')
+            textrest=tree.xpath('//*/article[@class="single"]/p//text() | //*/article[@class="single"]/p/em//text() | //*[@role="main"]/article/p//text() | //*[@role="main"]/article/p/strong//text() | //*[@role="main"]/article/p/strong/a//text() | //*[@role="main"]/article/p/a//text() | //*[@role="main"]/article/p/em//text() | //*[@id="mainContent"]//*[@role="main"]/article/p//text() | //*[@id="mainContent"]/div[5]/main/article/p//text()')
         except:
             print("geen text")
             logger.info("oops - geen textrest?")
             textrest = ""
         text = "\n".join(textrest)
-        textnew=re.sub("Lees ook:"," ",text)
         try:
              author_door = tree.xpath('//*[@class="mainFont"]/text()')[0].strip()
         except:
@@ -1084,7 +1081,7 @@ class fok(rss):
         extractedinfo={"title":title,
                        "teaser":teaser,
                        "category":category.strip(),
-                       "text":textnew.strip(),
+                       "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
                        "images":images}

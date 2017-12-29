@@ -201,7 +201,7 @@ def _doctype_query_or_list(doctype_query_or_list, force=False, field=None, task=
         if not force and field and task and not doctype_query_or_list:
             field = '%s_%s' %(field, task)
             doctype_query_or_list.update({'query':{'missing':{'field':field}}})
-        documents = core.search_utils.scroll_query(doctype_query_or_list)
+        documents = core.database.scroll_query(doctype_query_or_list)
     return documents
 
 def _batcher(stuff, batchsize=10):

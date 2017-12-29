@@ -42,31 +42,25 @@ class abc(rss):
         tree = fromstring(htmlsource)
         try:
             teaser = "".join(tree.xpath('//*[@class="subtitulo gris-oscuro"]/text()')).strip()
-            print("this prints teaser", teaser)
         except:
             teaser = ""
         try:
             title_header="".join(tree.xpath('//*[@class="antetitulo-noticia gris-medio"]/text()')).strip()
         except:
-            print("no title")
+            logger.warning("no title")
             title = ""
         try:
             title_under = "".join(tree.xpath('//*[@class="titulo-noticia"]/text()')).strip()
-#           print("this prints title", title)
         except:
-            print("no title")
             title_under = ""
         title = title_header + "\n" + "\n" + title_under
-        print("this prints title", title)
         try:
             author_raw = tree.xpath('//*[@class="bloque"]/a[@class="alter"]//strong//text()')
         except:
             author_raw = ""
         author = " & ".join(author_raw[:-1]).strip()
-        print("this prints author:", author)
         try:
             category= author_raw [-1].strip()
-            print("this prints category", category)
         except:
             category = ""
         if len(category.split(" ")) >1:
@@ -74,10 +68,8 @@ class abc(rss):
         try:
             text ="".join(tree.xpath('//*[@class="col-A cuerpo-articulo gris-ultra-oscuro"]//div//text()')).strip()
         except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
+            logger.warning("oops - no text?")
             text = ""
-        print("this prints text", text)
         extractedinfo={"title":title.strip(),
                        "author":author.strip(),
                        "category":category.strip(),
@@ -108,26 +100,20 @@ class elpais(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
-        print("LET'S GO"*10)
         tree = fromstring(htmlsource)
         try:
             title_header="".join(tree.xpath('//*[@class="articulo-titulo "]/text()')).strip()
         except:
-            print("no title")
             title = ""
         try:
             title_under = "".join(tree.xpath('//*[@class="articulo-subtitulos"]//text()')).strip()
-#           print("this prints title", title)
         except:
-            print("no title")
             title_under = ""
         title = title_header + "\n" + "\n" + title_under
-        print("this prints title", title)
         try:
             author = "".join(tree.xpath('//*[@class="autor-texto"]//a/text()')).strip().replace("Twitter", "")
         except:
             author = ""
-        print("this prints author:", author)
         try:
             category = "".join(tree.xpath('//*[@class="enlace"]//text()')[1]).strip()
         except:
@@ -135,11 +121,8 @@ class elpais(rss):
         try:
             text ="".join(tree.xpath('//*[@class="articulo-cuerpo"]//text()')).strip()
         except:
-            print("geen text")
             logger.info("oops - geen textrest?")
             text = ""
-            print("this prints text:", author)
-        print("this prints text", text)
         extractedinfo={"title":title.strip(),
                        "author":author.strip(),
                        "category":category.strip(),
@@ -168,36 +151,28 @@ class elmundo(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
-        print("LET'S GO"*10)
         tree = fromstring(htmlsource)
         try:
             title ="".join(tree.xpath('//*[@class="js-headline"]/text()')).strip()
         except:
-            print("no title")
             title = ""
         try:
             teaser = "\n".join(tree.xpath('//*[@class="subtitle-items"]//text()')).strip()
         except:
-            print("no teaser")
             teaser = ""
         try:
             author = "".join(tree.xpath('//*[@class="author-name"]//text()')).strip().replace("| ","\n")
         except:
             author = ""
-            print("this prints author:", author)
         try:
             category = "".join(tree.xpath('//*[@class="first-level"]//text()')).strip()
         except:
-            print("no category")
             category = ""
         try:
             text = "".join(tree.xpath('//*[@itemprop="articleBody"]//p/text()')).strip()
         except:
-            print("geen text")
             logger.info("oops - geen textrest?")
             text = ""
-            print("this prints text:", author)
-        print("this prints text", text)
         extractedinfo={"title":title.strip(),
                        "teaser":teaser.strip(),
                        "author":author.strip(),
