@@ -3,28 +3,23 @@ import pattern
 import pandas as pd
 import inca
 from inca import Inca
-#from analysis_classification_class import classification
 import core.search_utils
-
-
 import logging
 import numpy as np
+import string
 import sklearn
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import train_test_split
-from sklearn import metrics
-#from sklearn.metrics import f1_score, precision_recall_fscore_support
 from sklearn.cross_validation import KFold
 from core.analysis_base_class import Analysis
 from scipy.sparse import csr_matrix
 from sklearn.linear_model import SGDClassifier
-import string
-
 from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score
-
+from sklearn import svm
 from elasticsearch import Elasticsearch
 from datetime import datetime
 es = Elasticsearch()
+
 
 logger = logging.getLogger(__name__)
 
@@ -110,17 +105,21 @@ class classification(Analysis):
             else: 
                 self.invalid_docs.append(doc['_id'])
        
+        #Necessary to redefine documents here.
         documents = client.database.doctype_generator(doctype) 
-
+        
+        #Extracting word counts as featires from example documents
         self.vectorizer = CountVectorizer(min_df = mindf, max_df = maxdf, vocabulary = vocabul) 
         counts = self.vectorizer.fit_transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents if doc['_id'] not in self.invalid_docs), self.labels)
 
         self.vocab = np.array(self.vectorizer.get_feature_names())
            
-    
+        #If tfidf is set to True, it extracts the term-frequency-inverse-document-frequency features from the example documents.
         if tfidf:
-            self.vectorizer = TfidfTransformer()        
-            tfidf_full_data = self.vectorizer.fit_transform(counts, self.labels)
+            documents = client.database.doctype_generator(doctype) 
+            self.vectorizer = TfidfVectorizer(min_df = mindf, max_df = maxdf, vocabulary = vocabul)        
+            tfidf_full_data = self.vectorizer.fit_transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents if doc['_id'] not in self.invalid_docs), self.labels)
+            #Creating the test and train set:
             X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, self.labels, test_size=testsize, shuffle = rand_shuffle, random_state=42)
         
         else:
@@ -154,6 +153,7 @@ class classification(Analysis):
         
         if documents == None:
             documents = self.X_test
+            print('Since no documents were inputted, this shall run the trained model on the test dataset reserved as 20% of the original labeled example dataset.')
         else:
             documents = self.vectorizer.transform(documents)
           
@@ -168,8 +168,8 @@ class classification(Analysis):
  
     def quality(self, **kwargs):
         """
-        This method has the functionality to report on the quality of the underlying Classification (trained) model which was created as a random subset as a proportion of the input documents.\n
-        The size of the test set is controlled through the parameter 'testsize' of the fit method of the Classification analyser object. The default proportion is 0.2, with random shuffle set as True.\n
+        This method has the functionality to report on the quality of the underlying Classification (trained) model which was created as a         random subset as a proportion of the input documents.\n
+        The size of the test set is controlled through the parameter 'testsize' of the fit method of the Classification analyser object.           The default proportion is 0.2, with random shuffle set as True.\n
         It calculates the categorization accuracy, precision, recall and f1-score on the test set of examples.\n
 
         """
