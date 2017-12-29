@@ -26,11 +26,14 @@ import copy
 logging.basicConfig(level="WARN")
 logger = logging.getLogger("INCA")
 
+currentdir = os.getcwd()
+incadir = os.path.dirname(__file__)
+os.chdir(incadir)
 
-if not 'settings.cfg' in os.listdir('.'):
+if not 'settings.cfg' in os.listdir(incadir):
     logger.info('No settings found, applying default settings (change in `settings.cfg`)')
     from shutil import copyfile
-    copyfile('default_settings.cfg','settings.cfg')
+    copyfile(os.path.join(incadir,'default_settings.cfg'),os.path.join(incadir,'settings.cfg'))
 
 from celery import Celery, group, chain, chord
 import core
@@ -51,6 +54,7 @@ from optparse import OptionParser
 from core.database import config
 from interface import make_interface
 
+os.chdir(currentdir)
 
 class Inca():
     """INCA main class for easy access to functionality
@@ -107,6 +111,8 @@ class Inca():
         self._construct_tasks('clients')
         self._construct_tasks('importers_exporters')
         self._construct_tasks('rssscrapers')
+        self._construct_tasks('analysis')
+        
         if verbose:
             logger.setLevel('INFO')
             logger.info("Providing verbose output")
@@ -114,12 +120,17 @@ class Inca():
             logger.setLevel('DEBUG')
             logger.debug("Activating debugmode")
 
+
+    class analysis():
+        '''Data analysis tools'''
+        pass
+    
     class scrapers():
-        '''Scrapers for various (news) outlets '''
+        '''Scrapers for various (news) outlets'''
         pass
 
     class rssscrapers():
-        '''RSS-based crapers for various (news) outlets '''
+        '''RSS-based crapers for various (news) outlets'''
         pass
 
     class processing():
