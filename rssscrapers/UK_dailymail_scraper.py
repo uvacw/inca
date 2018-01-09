@@ -28,7 +28,7 @@ class dailymail(rss):
         self.rss_url='http://www.dailymail.co.uk/articles.rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=9, day=15)
-        
+
     def parsehtml(self,htmlsource):
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
@@ -38,43 +38,42 @@ class dailymail(rss):
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
         '''
-        
+
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("cannot parse?",type(doc),len(doc))
-            logger.warning(doc)
+            logger.warning("Cannot parse HTML tree",type(doc),len(doc))
+            #logger.warning(doc)
             return("","","", "")
         try:
             title = "".join(tree.xpath("//*[@id='js-article-text']/h1/text()"))
         except:
             title = ""
-            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.warning("Could not parse article title")
         try:
             teaser = ". ".join(tree.xpath("//*[@class='mol-bullets-with-font']//text()"))
         except:
             teaser = ""
-            logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article teaser")
         try:
             byline = " ".join(tree.xpath("//*[@class='author-section byline-plain']/a/text()"))
         except:
             byline = ""
-            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")    
+            logger.debug("Could not parse article source")
         try:
             text = " ".join(tree.xpath("//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']/p/a/text()"))
         except:
             text = ""
-            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
-            
-    
+            logger.warning("Could not parse article text")
+
         extractedinfo={"title":title.strip(),
                        "teaser":teaser.strip().replace("\xa0",""),
                        "byline":byline.strip().replace("\n",""),
                        "text":text.strip().replace("\xa0","").replace("\n","")
                       }
 
-        return extractedinfo 
-    
+        return extractedinfo
+
     def parseurl(self,url):
         '''
         Parses the category based on the url

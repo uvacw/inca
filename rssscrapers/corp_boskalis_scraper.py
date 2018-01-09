@@ -43,19 +43,19 @@ class boskalispress (rss):
         try:
             title="".join(tree.xpath('//*/h1[@class="heading--section"]/text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
             title = ""
         try:
             category="".join(tree.xpath('//*/a[@class="btn btn--link"]//text()')).strip()
         except:
+            logger.debug("Could not parse article category")
             category = ""
         if len(category.split(" ")) >1:
             category=""
         try:
             text="".join(tree.xpath('//*[@class="page-content content--main"]//text()')).strip()
         except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         extractedinfo={"title":title.strip(),
@@ -89,7 +89,7 @@ class boskalisnews (rss):
         try:
             title="".join(tree.xpath('//*/h1[@class="heading--section"]/text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
             title = ""
         try:
             category="".join(tree.xpath('//*/span[@class="tag"]//text()')).strip()
@@ -100,8 +100,7 @@ class boskalisnews (rss):
         try:
             text="".join(tree.xpath('//*[@class="page-content content--main"]//text()')).strip()
         except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         extractedinfo={"title":title.strip(),

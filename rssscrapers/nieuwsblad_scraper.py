@@ -50,32 +50,33 @@ class nieuwsblad(rss):
             category = tree.xpath('//*[@class="is-active"]/text()')[0]
         except:
             category= ""
+            logger.debug("Could not parse article category")
 # text
         try:
             textfirstpara = "".join(tree.xpath('//*[@class="article__intro"]/p/text()')).strip()
         except:
             textfirstpara = ""
-            logger.info('No first paragraph?')
+            logger.debug("Could not parse article teaser")
         try:
             textrest = "".join(tree.xpath('//*[@class="article__body"]/p/text() | //*[@class="article__body"]/p/a/text() | //*[@class="article__body"]/p/strong/text()')).strip()
         except:
             textrest = ""
-            logger.info('No text?')
+            logger.warning("Could not parse article text")
         try:
             byline = tree.xpath('//*[@itemprop="author"]/text()')[0]
         except:
             byline = ""
-            logger.info('No author; maybe there is no author?')
+            logger.debug("Could not parse article byline")
         try:
             title = tree.xpath('//*[@class="article__header"]/h1/text()')[0]
         except:
             title = ""
-            logger.info('No title?')
+            logger.warning("Could not parse article title")
         try:
             bylinesource = tree.xpath('//*[@itemprop="sourceOrganization"]/text()')[0]
         except:
             bylinesource = ""
-            logger.info('No source')
+            logger.debug("Could not parse article byline source")
 
         text = textfirstpara + " " + textrest
         text = text.replace("\xa0","")

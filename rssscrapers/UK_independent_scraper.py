@@ -42,36 +42,35 @@ class independent(rss):
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("cannot parse?",type(doc),len(doc))
-            logger.warning(doc)
+            logger.warning("Cannot parse HTML tree",type(doc),len(doc))
+            #logger.warning(doc)
             return("","","", "")
         try:
             title = " ".join(tree.xpath("//*[@itemprop='headline']/text()"))
         except:
             title = ""
-            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.warning("Could not parse article title")
         try:
             teaser = " ".join(tree.xpath("//*[@class='intro']/p/text()"))
         except:
             teaser = ""
-            logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article teaser")
         try:
             byline = " ".join(tree.xpath("//*[@itemprop='name']//text()"))
         except:
             byline = ""
-            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article byline")
         try:
             category = " ".join(tree.xpath("//*[@property='item']//text()"))
         except:
             category = ""
-            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")    
+            logger.debug("Could not parse article category")
         try:
             text = " ".join(tree.xpath("//*[@class='text-wrapper']/p/text()"))
         except:
             text = ""
-            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
-            
-    
+            logger.warning("Could not parse article teaser")
+
         extractedinfo={"title":title.strip(),
                        "teaser":teaser.strip().replace("\xa0",""),
                        "byline":byline.strip(),
@@ -79,4 +78,4 @@ class independent(rss):
                        "text":text.strip()
                       }
 
-        return extractedinfo 
+        return extractedinfo

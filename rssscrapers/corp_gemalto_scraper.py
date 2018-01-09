@@ -43,12 +43,12 @@ class gemalto (rss):
         try:
             title="".join(tree.xpath('//*[@class="sub-content"]/h1/text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
             title = ""
         try:
             text="".join(tree.xpath('//*[@class="ms-rtestate-field"]//text() | //*[@class="articleBody"]/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         extractedinfo={"title":title.strip(),

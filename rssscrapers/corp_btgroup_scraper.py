@@ -29,7 +29,6 @@ class btgroup (rss):
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=28)
 
-
     def parsehtml(self,htmlsource):
         '''                                                                             
         Parses the html source to retrieve info that is not in the RSS-keys
@@ -43,12 +42,12 @@ class btgroup (rss):
         try:
             title="".join(tree.xpath('//*/h1[@class="newsroom-headline fn"]/text()')).strip()
         except:
-            print("no title")
+            logger.warning("could not parse article title")
             title = ""
         try:
             text="".join(tree.xpath('//*[@class="clearfix"]//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("could not parse text title")
             text = ""
         text = "".join(text)
         extractedinfo={"title":title.strip(),

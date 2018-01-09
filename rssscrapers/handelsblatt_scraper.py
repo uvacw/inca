@@ -24,7 +24,7 @@ class handelsblatt(rss):
         self.rss_url='http://www.handelsblatt.com/contentexport/feed/schlagzeilen'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=11, day=21)
-    
+
 
     def get(self,**kwargs):
         '''
@@ -36,7 +36,7 @@ class handelsblatt(rss):
         byline_source   sth like ANP
         '''
 
-        # creating iteration over the rss feed. 
+        # creating iteration over the rss feed.
         req =request.Request("http://www.handelsblatt.com/contentexport/feed/schlagzeilen")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
@@ -46,15 +46,15 @@ class handelsblatt(rss):
         dates = tree.xpath("//channel//item//pubDate/text()")
         titles = tree.xpath("//channel//item//title/text()")
 
-        for link,category,xpath_date,title,description in zip(article_urls,categories,dates,titles,descriptions):      
+        for link,category,xpath_date,title,description in zip(article_urls,categories,dates,titles,descriptions):
             link = link.strip()
-            
+
             try:
                 req = request.Request(link)
                 read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(read)
             except:
-                logger.error("HTML tree cannot be parsed")
+                logger.warning("HTML tree cannot be parsed")
 
 
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
@@ -84,13 +84,13 @@ class handelsblatt(rss):
                     parag3 = tree3.xpath("//*[@class='vhb-article-content']/p//text()")
                     for r in parag3:
                         text += ' '+r.strip().replace('\xa0',' ')
-        
+
             # Retrieving the byline_source/source from url
             if tree.xpath("boolean(//*[@class='vhb-author-content-name']/text())"):
                 source = tree.xpath("//*[@class='vhb-author-content-name']/text()")[0].strip()
             else:
                 source = ''
-            
+
             author = ''
             # there are no authors in this online newspaper
 
@@ -111,5 +111,5 @@ class handelsblatt(rss):
                 url         = link,
             )
             doc.update(kwargs)
-            
-            yield doc        
+
+            yield doc

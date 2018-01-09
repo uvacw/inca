@@ -18,7 +18,7 @@ def polish(textstring):
     if rest: result = lead + ' ||| ' + rest
     else: result = lead
     return result.strip()
-    
+
 class nationalgrid(rss):
     """Scrapes National Grid"""
 
@@ -31,7 +31,7 @@ class nationalgrid(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -43,16 +43,18 @@ class nationalgrid(rss):
         try:
             title="".join(tree.xpath('//*[@class="text"]/h1/text()')).strip()
         except:
-            print("no title")
+            title = ""
+            logger.warning("Could not parse article title")
         try:
             teaser="".join(tree.xpath('//*[@class="text"]/p/text()')).strip()
         except:
             teaser= ""
-            teaser_clean = " ".join(teaser.split())
+            logger.debug("Could not parse article teaser")
+            #teaser_clean = " ".join(teaser.split())
         try:
             text="".join(tree.xpath('//*[@class="panel-body"]/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),

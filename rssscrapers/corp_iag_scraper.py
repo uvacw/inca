@@ -31,7 +31,7 @@ class iag(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -43,11 +43,12 @@ class iag(rss):
         try:
             title="".join(tree.xpath('//*/span[@class="ccbnTtl"]//text()')).strip()
         except:
-            print("no title")
+            title= ""
+            logger.warning("Could not parse article title")
         try:
             text="".join(tree.xpath('//*[@class="cb"]//text() | //*[@class="ca"]//text() | //*[@class="cg"]//text() | //*[@class="cc"]//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),

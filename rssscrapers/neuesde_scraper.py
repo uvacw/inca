@@ -23,11 +23,11 @@ class neues(rss):
         self.rss_url='https://www.neues-deutschland.de/rss/aktuell.php'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=28)
-    
+
 
     def get(self,**kwargs):
 
-        # creating iteration over the rss feed. 
+        # creating iteration over the rss feed.
         req =request.Request("https://www.neues-deutschland.de/rss/aktuell.php")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
@@ -37,15 +37,15 @@ class neues(rss):
         dates = tree.xpath("//channel//item//pubDate/text()")
         titles = tree.xpath("//channel//item//title/text()")
 
-        for link,xpath_date,title,category,description in zip(article_urls,dates,titles,categories,descriptions):      
+        for link,xpath_date,title,category,description in zip(article_urls,dates,titles,categories,descriptions):
             link = link.strip()
-            
+
             try:
                 req = request.Request(link)
                 read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(read)
             except:
-                logger.error("HTML tree cannot be parsed")
+                logger.warning("HTML tree cannot be parsed")
 
 
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
@@ -58,7 +58,7 @@ class neues(rss):
             # Retrieve source, which is usually the second word of articles containing it, nested inside an <em> element.
             try:
                 if tree.xpath("boolean(//*[@class='Content']/p[last()]/i/text())"):
-                    # Using this arbitrary 15 len character to differentiate the potential existence of a researcher description vs. an actual source. The mag doesn't provide class to differentiate. 
+                    # Using this arbitrary 15 len character to differentiate the potential existence of a researcher description vs. an actual source. The mag doesn't provide class to differentiate.
                     if len(tree.xpath("//*[@class='Content']/p[last()]/i/text()")[0]) < 15:
                         source = tree.xpath("//*[@class='Content']/p[last()]/i/text()")[0].strip().replace('(','').replace(')','')
                     else:
@@ -68,7 +68,7 @@ class neues(rss):
             except:
                 source = ''
 
-            # Create iso format date 
+            # Create iso format date
             try:
                 # Wed, 28 Dec 2016 06:56:52 +0100
                 date = datetime.datetime.strptime(xpath_date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
@@ -90,5 +90,5 @@ class neues(rss):
                 tags        = tags,
             )
             doc.update(kwargs)
-            
-            yield doc        
+
+            yield doc

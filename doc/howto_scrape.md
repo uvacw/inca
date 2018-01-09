@@ -95,18 +95,18 @@ Consequently, we have to define the following:
 15.        text        the plain text of the article
 16.        byline      the author, e.g. "Bob Smith"
 17.        byline_source   sth like ANP
-18.        '''
-19.        try:
-20.            tree = fromstring(htmlsource)
-21.        except:
-22.            print("kon dit niet parsen",type(doc),len(doc))
-23.            print(doc)
+18.
+19.        '''
+20.        try:
+21.            tree = fromstring(htmlsource)
+22.        except:
+23.            logger.warning("Could not parse HTML tree",type(doc),len(doc))
 24.            return("","","", "")
 25.        try:
 26.            category = tree.xpath('//*[@class="container"]/h1/text()')[0]
 27.        except:
 28.            category=""
-29.            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+29.            logger.debug("Could not parse article category")
 30.        #1. path: regular intro                                                                                                    
 31.        #2. path: intro when in <b>; found in a2014 04 130                                                                         
 32.        textfirstpara=tree.xpath('//*[@id="detail_content"]/p/text() | //*[@class="intro"]/b/text() | //*[@class="intro"]/span/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text()')
@@ -117,7 +117,7 @@ Consequently, we have to define the following:
 37.        #3. path: second hadings found in 2014 11 1425   
 38.        textrest = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*[@class="article__paragraph"]/span/text() | //*[@id="detail_content"]/section/p/a/text() | //*[@id="detail_content"]/section/p/strong/text() | //*/p[@class="article__paragraph"]/strong/text()')
 39.        if textrest=="":
-40.            logger.info("OOps - empty textrest")
+40.            logger.warning("Could not parse article text")
 41.        text = "\n".join(textfirstpara) + "\n" + "\n".join(textrest)
 42.        try:
 43.            author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
@@ -133,7 +133,7 @@ Consequently, we have to define the following:
 53.                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
 54.            except:
 55.                author_door=""
-56.                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+56.                logger.debug("Could not parse article source")
 57.        try:
 58.            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
 59.            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
@@ -167,7 +167,6 @@ Some handy shortcuts for modifying the xpaths:
 You might want to play around with looking up the xpath, showing the source code, or saving the page in html format. 
 
 **lines 64 - 70**
-
 It does not really matter how you arrive at xpath you are including, as long as you, in the end, succeed in retrieving the extracted info. 
 
 
@@ -264,9 +263,9 @@ data = myscraper.run()
 A good way of using logging when writing scrapers can be:
 
 - emit an error when scraping fails
-- emit a warning when something unexpected  happens
+- emit a warning when something unexpected of significance happens: Specifically, include warnings when the scraper fails to parse the HTML tree, the title and the text 
 - emit an info when, e.g., an element does not contain an expected field (if not important enough for a warning)
-- emit a debug for very detailed steps (e.g., the URL being fetched)
+- emit a debug for very detailed steps (e.g., the URL being fetched, parsing category, parsing source, parsing source byline)
 
 
 ### Scrapers for webpages without RSS feed

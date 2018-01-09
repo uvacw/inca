@@ -30,7 +30,7 @@ class unilever (rss):
         self.date = datetime.datetime(year=2017, month=6, day=14)
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -42,24 +42,25 @@ class unilever (rss):
         try:
             title="".join(tree.xpath('//*/article[@class="content-article"]/h1/text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
             title = ""
         try:
             category="".join(tree.xpath('//*[@class="small-12 end"]/ul/li/a/text()')).strip()
         except:
             category = ""
+            logger.debug("Could not parse article title")
         if len(category.split(" ")) >1:
             category=""
         try:
             teaser="".join(tree.xpath('//*[@class="intro"]/p/text()')).strip()
         except:
-            print("no teaser")
+            logger.debug("Could not parse article title")
             teaser= ""
         teaser_clean = " ".join(teaser.split())
         try:
             text="".join(tree.xpath('//*/article[@class="content-article"]/section//text()')).strip()
         except:
-            print("geen text")
+            logger.warning("Could not parse article text")
             logger.info("oops - geen textrest?")
             text = ""
         text = "".join(text)

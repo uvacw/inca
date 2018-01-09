@@ -43,7 +43,8 @@ class diageopress(rss):
         try:
             title="".join(tree.xpath('//*[@class="col-xs-12 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-0"]/h1/text()')).strip()
         except:
-            print("no title")
+            title = ""
+            logger.warning("Could not parse article title")
         try:
             teaser="".join(tree.xpath('//*/p[@class="intro large"]//text()')).strip()
         except:
@@ -52,7 +53,7 @@ class diageopress(rss):
         try:
             text="".join(tree.xpath('//*[@class="text-container"]/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         extractedinfo={"title":title.strip(),
@@ -86,7 +87,8 @@ class diageonews(rss):
         try:
             title="".join(tree.xpath('//*[@class="col-xs-12 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2"]/h1/text() | //*[@class="col-xs-12 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2"]/h1/text() | //*[@class="col-xs-12 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-0"]/h1/text()')).strip()
         except:
-            print("no title")
+            title = ""
+            logger.warning("Could not parse article title")
         try:
             category="".join(tree.xpath('//*//[@class="badge feature"]//text()')).strip()
         except:
@@ -101,7 +103,7 @@ class diageonews(rss):
         try:
             text="".join(tree.xpath('//*[@class="text-container"]//text() | //*/p[@class="u-top-padding-half"]//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         extractedinfo={"title":title.strip(),

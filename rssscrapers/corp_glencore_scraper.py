@@ -43,11 +43,12 @@ class glencore(rss):
         try:
             title="".join(tree.xpath('//*[@class="typography"]/h1/text()')).strip()
         except:
-            print("no title")
+            title = ""
+            logger.warning("Could not parse article title")
         try:
             text="".join(tree.xpath('//*[@class="typography"]/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),
