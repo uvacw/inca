@@ -95,12 +95,12 @@ Consequently, we have to define the following:
 15.        text        the plain text of the article
 16.        byline      the author, e.g. "Bob Smith"
 17.        byline_source   sth like ANP
-18.        '''
-19.        try:
-20.            tree = fromstring(htmlsource)
-21.        except:
-22.            print("kon dit niet parsen",type(doc),len(doc))
-23.            print(doc)
+18.
+19.        '''
+20.        try:
+21.            tree = fromstring(htmlsource)
+22.        except:
+23.            logger.warning("Could not parse HTML tree",type(doc),len(doc))
 24.            return("","","", "")
 25.        try:
 26.            category = tree.xpath('//*[@class="container"]/h1/text()')[0]
@@ -167,7 +167,6 @@ Some handy shortcuts for modifying the xpaths:
 You might want to play around with looking up the xpath, showing the source code, or saving the page in html format. 
 
 **lines 64 - 70**
-
 It does not really matter how you arrive at xpath you are including, as long as you, in the end, succeed in retrieving the extracted info. 
 
 
@@ -264,9 +263,9 @@ data = myscraper.run()
 A good way of using logging when writing scrapers can be:
 
 - emit an error when scraping fails
-- emit a warning when something unexpected  happens
+- emit a warning when something unexpected of significance happens: Specifically, include warnings when the scraper fails to parse the HTML tree, the title and the text 
 - emit an info when, e.g., an element does not contain an expected field (if not important enough for a warning)
-- emit a debug for very detailed steps (e.g., the URL being fetched)
+- emit a debug for very detailed steps (e.g., the URL being fetched, parsing category, parsing source, parsing source byline)
 
 
 ### Scrapers for webpages without RSS feed
