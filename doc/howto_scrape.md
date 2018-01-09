@@ -106,7 +106,7 @@ Consequently, we have to define the following:
 26.            category = tree.xpath('//*[@class="container"]/h1/text()')[0]
 27.        except:
 28.            category=""
-29.            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+29.            logger.debug("Could not parse article category")
 30.        #1. path: regular intro                                                                                                    
 31.        #2. path: intro when in <b>; found in a2014 04 130                                                                         
 32.        textfirstpara=tree.xpath('//*[@id="detail_content"]/p/text() | //*[@class="intro"]/b/text() | //*[@class="intro"]/span/text() | //*/p[@class="article__intro"]/text() | //*/p[@class="article__intro"]/span/text()')
@@ -117,7 +117,7 @@ Consequently, we have to define the following:
 37.        #3. path: second hadings found in 2014 11 1425   
 38.        textrest = tree.xpath('//*/p[@class="article__paragraph"]/text() | //*[@class="article__paragraph"]/span/text() | //*[@id="detail_content"]/section/p/a/text() | //*[@id="detail_content"]/section/p/strong/text() | //*/p[@class="article__paragraph"]/strong/text()')
 39.        if textrest=="":
-40.            logger.info("OOps - empty textrest")
+40.            logger.warning("Could not parse article text")
 41.        text = "\n".join(textfirstpara) + "\n" + "\n".join(textrest)
 42.        try:
 43.            author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
@@ -133,7 +133,7 @@ Consequently, we have to define the following:
 53.                author_door=tree.xpath('//*[@class="article__source"]/span/text()')[0].strip().lstrip("Door:").strip()
 54.            except:
 55.                author_door=""
-56.                logger.info("No 'author (door)' field encountered - don't worry, maybe it just doesn't exist.")
+56.                logger.debug("Could not parse article source")
 57.        try:
 58.            brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
 59.            author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
