@@ -31,7 +31,7 @@ class popular(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -43,16 +43,18 @@ class popular(rss):
         try:
             title="".join(tree.xpath('//*/h3[@class="entry-title single-title"]//text()')).strip()
         except:
-            print("no title")
+            title = ""
+            logger.warning("Could not parse article title")
         try:
             teaser="".join(tree.xpath('//*[@class="entry-content clearfix"]/strong/p//text()')).strip()
         except:
             teaser= ""
+            logger.debug("Could not parse article teaser")
         teaser = " ".join(teaser.split())
         try:
             text="".join(tree.xpath('//*[@class="entry-content clearfix"]/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),

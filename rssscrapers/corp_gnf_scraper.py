@@ -42,16 +42,18 @@ class gnf(rss):
         try:
             title="".join(tree.xpath('//*/h2[@class="entry-title"]/a//text()')).strip()
         except:
-            print("no title")
+            title = ""
+            logger.warning("Could not parse article title")
         try:
             teaser="".join(tree.xpath('//*[@class="post-content"]/ul//text()')).strip()
         except:
+            logger.debug("Could not parse article teaser")
             teaser= ""
             teaser_clean = " ".join(teaser.split())
         try:
             text="".join(tree.xpath('//*[@class="post-content"]/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.debug("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),

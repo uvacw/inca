@@ -47,26 +47,27 @@ class detijd(rss):
              author = tree.xpath('//*[@class="m-meta__item-container"]//a/text()')[0]
         except:
              author = ""
+             logger.debug("Could not parse article source")
         try:
             textfirstpara = tree.xpath('//*[@class="l-main-container-article__intro highlightable "]/text()').strip()
         except:
             textfirstpara = ""
-            logger.info('No first paragraph?')
+            logger.debug("Could not parse article teaser")
         try:
             textrest = "".join(tree.xpath('//*[@class="l-main-container-article__body clearfix highlightable "]//text()')).strip()
         except:
             textrest =""
-            logger.info('No text?')
+            logger.warning("Could not parse article text")
         try:
             category = tree.xpath('//*[@class="m-breadcrumb__item--last"]/a/span/text()')[0]
         except:
             category =""
-            logger.info('No category')
+            logger.debug("Could not parse article category")
         try:
             title = "".join(tree.xpath('//*[@class="l-grid__item desk-big-five-sixths push-desk-big-one-sixth"]//text()')).strip()
         except:
             title = ""
-            logger.info('No title')
+            logger.warning("Could not parse article title")
 
         texttotal = textfirstpara + " " + textrest
         extractedinfo={"byline":author.strip(),

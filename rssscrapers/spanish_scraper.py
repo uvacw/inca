@@ -31,7 +31,7 @@ class abc(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -44,10 +44,11 @@ class abc(rss):
             teaser = "".join(tree.xpath('//*[@class="subtitulo gris-oscuro"]/text()')).strip()
         except:
             teaser = ""
+            logger.debug("Could not parse article teaser")
         try:
             title_header="".join(tree.xpath('//*[@class="antetitulo-noticia gris-medio"]/text()')).strip()
         except:
-            logger.warning("no title")
+            logger.warning("Could not parse article title")
             title = ""
         try:
             title_under = "".join(tree.xpath('//*[@class="titulo-noticia"]/text()')).strip()
@@ -68,7 +69,7 @@ class abc(rss):
         try:
             text ="".join(tree.xpath('//*[@class="col-A cuerpo-articulo gris-ultra-oscuro"]//div//text()')).strip()
         except:
-            logger.warning("oops - no text?")
+            logger.warning("Could not parse article text")
             text = ""
         extractedinfo={"title":title.strip(),
                        "author":author.strip(),
@@ -92,7 +93,7 @@ class elpais(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -105,6 +106,7 @@ class elpais(rss):
             title_header="".join(tree.xpath('//*[@class="articulo-titulo "]/text()')).strip()
         except:
             title = ""
+            logger.warning("Could not parse article title")
         try:
             title_under = "".join(tree.xpath('//*[@class="articulo-subtitulos"]//text()')).strip()
         except:
@@ -114,14 +116,16 @@ class elpais(rss):
             author = "".join(tree.xpath('//*[@class="autor-texto"]//a/text()')).strip().replace("Twitter", "")
         except:
             author = ""
+            logger.debug("Could not parse article source")
         try:
             category = "".join(tree.xpath('//*[@class="enlace"]//text()')[1]).strip()
         except:
             category = ""
+            logger.debug("Could not parse article category")
         try:
             text ="".join(tree.xpath('//*[@class="articulo-cuerpo"]//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         extractedinfo={"title":title.strip(),
                        "author":author.strip(),
@@ -143,7 +147,7 @@ class elmundo(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -156,22 +160,26 @@ class elmundo(rss):
             title ="".join(tree.xpath('//*[@class="js-headline"]/text()')).strip()
         except:
             title = ""
+            logger.warning("Could not parse article title")
         try:
             teaser = "\n".join(tree.xpath('//*[@class="subtitle-items"]//text()')).strip()
         except:
             teaser = ""
+            logger.debug("Could not parse article teaser")
         try:
             author = "".join(tree.xpath('//*[@class="author-name"]//text()')).strip().replace("| ","\n")
         except:
             author = ""
+            logger.debug("Could not parse article source")
         try:
             category = "".join(tree.xpath('//*[@class="first-level"]//text()')).strip()
         except:
             category = ""
+            logger.debug("Could not parse article category")
         try:
             text = "".join(tree.xpath('//*[@itemprop="articleBody"]//p/text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         extractedinfo={"title":title.strip(),
                        "teaser":teaser.strip(),

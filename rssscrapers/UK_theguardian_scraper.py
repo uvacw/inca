@@ -42,37 +42,37 @@ class theguardian(rss):
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("cannot parse?",type(doc),len(doc))
-            logger.warning(doc)
+            logger.warning("Could not HTML tree",type(doc),len(doc))
+            #logger.warning(doc)
             return("","","", "")
         try:
             title = tree.xpath("//*[@class='content__headline']/text()")[0]
         except:
             title = ""
-            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
-        try:        
+            logger.warning("Could not parse article title")
+        try:
             teaser = tree.xpath("//*[@class='content__standfirst']/p/text()")[0]
         except:
             teaser = ""
-            logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist.")            
-        try:        
+            logger.debug("Could not parse article title")
+        try:
             byline = " ".join(tree.xpath("//*[@class='byline']//text()"))
         except:
             byline = ""
-            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
-        try:        
+            logger.debug("Could not parse article source")
+        try:
             category = tree.xpath("//*[@class='content__section-label__link']//text()")[0]
         except:
             category = ""
-            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")            
-        try:        
+            logger.debug("Could not parse article category")
+        try:
             text = " ".join(tree.xpath("//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']//a/text()"))
         except:
             text = ""
-            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
-   
-            
-            
+            logger.warning("Could not parse article text")
+
+
+
         extractedinfo={"title":title.replace("\n",""),
                        "teaser":teaser.strip(),
                        "byline":byline.strip().replace("\n",""),
@@ -80,4 +80,4 @@ class theguardian(rss):
                        "text":text.replace("\\","")
                       }
 
-        return extractedinfo 
+        return extractedinfo

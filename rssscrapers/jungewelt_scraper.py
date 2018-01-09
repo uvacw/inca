@@ -22,11 +22,11 @@ class jungewelt(rss):
         self.rss_url='https://www.jungewelt.de/feeds/newsticker.rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=28)
-    
+
 
     def get(self,**kwargs):
 
-        # creating iteration over the rss feed. 
+        # creating iteration over the rss feed.
         req =request.Request("https://www.jungewelt.de/feeds/newsticker.rss")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
@@ -36,15 +36,15 @@ class jungewelt(rss):
         dates = tree.xpath("//channel//item//pubDate/text()")
         titles = tree.xpath("//channel//item//title/text()")
 
-        for link,xpath_date,title,category,description in zip(article_urls,dates,titles,categories,descriptions):      
+        for link,xpath_date,title,category,description in zip(article_urls,dates,titles,categories,descriptions):
             link = link.strip()
-            
+
             try:
                 req = request.Request(link)
                 read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(read)
             except:
-                logger.error("HTML tree cannot be parsed")
+                logger.warning("HTML tree cannot be parsed")
 
 
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
@@ -59,7 +59,7 @@ class jungewelt(rss):
                 # check if a sequence of something inside parenthesis () exists, as it is the way that the source is setup for this magazine
                 m = re.search("(\\(.+\\))",tree.xpath("//*[@class='Content']/p[last()-1]/text()")[0],re.M|re.I)
                 if m.group(1):
-                    # Using this arbitrary 15 len character to differentiate the potential existence of a researcher description vs. an actual source. The mag doesn't provide class to differentiate. 
+                    # Using this arbitrary 15 len character to differentiate the potential existence of a researcher description vs. an actual source. The mag doesn't provide class to differentiate.
                     if len(m.group(1)) < 15 and m.group(1) not in ['(...)','(CDU)']:
                         source = m.group(1)
                     else:
@@ -74,7 +74,7 @@ class jungewelt(rss):
             except:
                 author = ''
 
-            # Create iso format date 
+            # Create iso format date
             try:
                 # Wed, 28 Dec 2016 06:56:52 +0100
                 date = datetime.datetime.strptime(xpath_date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
@@ -96,5 +96,5 @@ class jungewelt(rss):
                 tags        = tags,
             )
             doc.update(kwargs)
-            
-            yield doc        
+
+            yield doc

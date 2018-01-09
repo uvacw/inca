@@ -42,35 +42,35 @@ class dailystar(rss):
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("cannot parse?",type(doc),len(doc))
-            logger.warning(doc)
+            logger.warning("Cannot parse HTML tree",type(doc),len(doc))
+            #logger.warning(doc)
             return("","","", "")
         try:
             title = tree.xpath("//*[@itemprop='headline']//text()")[0]
         except:
             title = ""
-            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.warning("Could not parse article title")
         try:
             teaser = tree.xpath("//*[@id='singleArticle']/header/p/text()")[0]
         except:
             teaser = ""
-            logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article teaser")
         try:
             byline = tree.xpath("//*[@class='author']//text()")[0]
         except:
             byline = ""
-            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article source")
         try:
             text = " ".join(tree.xpath("//*[@data-type='article-body']//p/text()"))
         except:
             text = ""
-            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
-            
-    
+            logger.warning("Could not parse article text")
+
+
         extractedinfo={"title":title.strip(),
                        "teaser":teaser.strip(),
                        "byline":byline.strip(),
                        "text":text.replace("\r\n","").replace("\\","").strip()
                       }
 
-        return extractedinfo 
+        return extractedinfo

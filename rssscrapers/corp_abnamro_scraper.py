@@ -43,12 +43,12 @@ class abnamro (rss):
         try:
             title="".join(tree.xpath('//*/article[@class="news-detail"]/h1/text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
             title = ""
         try:
             text="".join(tree.xpath('//*[@itemprop="articleBody"]//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         extractedinfo={"title":title.strip(),

@@ -30,7 +30,7 @@ class walmart(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -42,20 +42,19 @@ class walmart(rss):
         try:
             title="".join(tree.xpath('//*[@class="article-header-title"]/text()')).strip()
         except:
-        #    print("no title")
+            logger.warning("Could not parse article title")
             title = ""
         try:
             category="".join(tree.xpath('//*[@class="article-header-tags"]//a/text()')).strip()
-        #    print("this prints category", category)
         except:
             category = ""
+            logger.debug("Could not parse article title")
         if len(category.split(" ")) >1:
             category=""
         try:
             text="".join(tree.xpath('//*[@class="article-content"]/p/text()')).strip()
         except:
-        #    print("geen text")
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         releases={"title":title.strip(),
                   "category":category.strip(),
