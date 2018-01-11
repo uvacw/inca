@@ -26,11 +26,14 @@ import inspect
 logging.basicConfig(level="WARN")
 logger = logging.getLogger("INCA")
 
+currentdir = os.getcwd()
+incadir = os.path.dirname(__file__)
+os.chdir(incadir)
 
-if not 'settings.cfg' in os.listdir('.'):
+if not 'settings.cfg' in os.listdir(incadir):
     logger.info('No settings found, applying default settings (change in `settings.cfg`)')
     from shutil import copyfile
-    copyfile('default_settings.cfg','settings.cfg')
+    copyfile(os.path.join(incadir,'default_settings.cfg'),os.path.join(incadir,'settings.cfg'))
 
 from celery import Celery, group, chain, chord
 import core
@@ -38,14 +41,20 @@ import configparser
 import core.search_utils
 import core.taskmanager
 import datetime
+
 import processing # helps celery recognize the processing tasks
 import scrapers   # helps celery recognize the scraping tasks
+import rssscrapers
 import clients    # helps celery recognize client tasks
 import analysis   # helps celery recognize analysis tasks
+import importers_exporters # helps celery recognize import/export tasks
+
 from optparse import OptionParser
 
 from core.database import config
+from interface import make_interface
 
+os.chdir(currentdir)
 
 class Inca():
     """INCA main class for easy access to functionality
@@ -53,12 +62,16 @@ class Inca():
     methods
     ----
     Scrapers
-        Retrieval methods for RSS feeds and websites. Most scrapers can run
+        Retrieval methods for RSS websites. Most scrapers can run
         out-of-the-box without specifying any parameters. If no database is
         present, scrapers will return the data as a list.
 
         usage:
             docs = inca.scrapers.<scraper>()
+
+    Rssscrapers
+        Same as Scrapers, but based on the websites' RSS feeds.
+
     Clients
         API-clients to get data from various endpoints. You can start using client
         functionality by:
@@ -88,14 +101,38 @@ class Inca():
 
     database = core.search_utils
 
-    def __init__(self, distributed=False):
+    _prompt = "Placeholder"
+
+    def __init__(self, prompt="TLI", distributed=False, verbose=True, debug=False):
         self._LOCAL_ONLY = distributed
+        self._prompt = getattr(make_interface,prompt).prompt
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
+
         self._analysis_task_constructor()
 
+        self._construct_tasks('clients')
+        self._construct_tasks('importers_exporters')
+        self._construct_tasks('rssscrapers')
+        
+        if verbose:
+            logger.setLevel('INFO')
+            logger.info("Providing verbose output")
+        if debug:
+            logger.setLevel('DEBUG')
+            logger.debug("Activating debugmode")
+
+
+    class analysis():
+        '''Data analysis tools'''
+        pass
+    
     class scrapers():
-        '''Scrapers for various (news) outlets '''
+        '''Scrapers for various (news) outlets'''
+        pass
+
+    class rssscrapers():
+        '''RSS-based crapers for various (news) outlets'''
         pass
 
     class processing():
@@ -144,6 +181,15 @@ class Inca():
 
                 setattr(getattr(self,"analysis"), taskname, analysis_placeholder)
 
+    class clients():
+        '''Clients to access (social media) APIs'''
+        pass
+
+    class importers_exporters():
+        '''Importing functions to ingest data '''
+        pass
+
+
     def _construct_tasks(self, function):
         """Construct the appropriate endoints from Celery tasks
 
@@ -165,6 +211,19 @@ class Inca():
             functiontype = k.split('.',1)[0]
             taskname     = k.rsplit('.',1)[1]
             if functiontype == function:
+                target_task = self._taskmaster.tasks[k]
+                target_task.prompt = self._prompt
+
+                is_client_main_class = hasattr(target_task,"service_name") and target_task.__name__== target_task.service_name
+                if is_client_main_class:
+                    setattr(getattr(self,function),
+                        "{service_name}_create_app".format(service_name=target_task.service_name), target_task.add_application )
+                    setattr(getattr(self,function),
+                        "{service_name}_remove_app".format(service_name=target_task.service_name), target_task.remove_application )
+                    setattr(getattr(self,function),
+                        "{service_name}_create_credentials".format(service_name=target_task.service_name), target_task.add_credentials )
+                else:
+                    setattr(getattr(self,function),taskname,target_task.runwrap)
                 function_class = getattr(self,function)
                 leaf_class = self._taskmaster.tasks[k]
                 method = leaf_class.runwrap
@@ -179,17 +238,22 @@ class Inca():
                     return endpoint
 
                 endpoint = makefunc(method)
-                if function == 'scrapers':
+                if function == 'scrapers' or function =='rssscrapers':
                     docstring = self._taskmaster.tasks[k].get.__doc__
                 elif function == "processing":
                     docstring = self._taskmaster.tasks[k].process.__doc__
+                elif function == "importers_exporters":
+                    t = self._taskmaster.tasks[k]
+                    if hasattr(t,'load'):
+                        docstring = t.load.__doc__
+                    else:
+                        docstring = t.save.__doc__
                 else:
                     docstring = self._taskmaster.tasks[k].__doc__
                 endpoint.__doc__  = docstring
                 endpoint.__name__ = leaf_class.__name__
 
                 setattr(function_class,taskname,endpoint)
-
 
 
     def _summary(self):
@@ -218,6 +282,8 @@ def commandline():
                     help='Refrain from returning documents to stdout (for unix piping) ')
     parser.add_option('-c','--celery', dest='celery', default=False, action='store_true',
                     help='Put tasks in the celery cluster instead of running them locally')
+    parser.add_option('-np', '--no-prompt', dest='noprompt',default=False, action='store_true',
+                    help='Never prompt users (usually leads to failure), usefull for headles environments and cronjobs')
 
     options, args = parser.parse_args()
 
@@ -226,7 +292,12 @@ def commandline():
         parser.print_help()
         return
 
-    inca = Inca()
+    if options.noprompt:
+        prompt="noprompt"
+    else:
+        prompt="TLI"
+
+    inca = Inca(prompt=prompt)
     if not len(args)>=2:
         print(inca._summary())
         return
@@ -247,7 +318,10 @@ def commandline():
         return
 
     if options.verbose:
-        logger.setLevel('INFO')
+        logging.basicConfig(level='INFO')
+
+    if options.debug:
+        logging.basicConfig(level='DEBUG')
 
     if options.celery:
         action = 'celery_batch'

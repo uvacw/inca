@@ -19,7 +19,8 @@ import configparser
 import requests
 from celery import Task
 import os
-from urllib.parse import quote_plus
+
+from core.filenames import id2filename
 
 config = configparser.ConfigParser()
 config.read('settings.cfg')
@@ -40,17 +41,12 @@ try:
     try:
         #if not elastic_index in client.indices.get_aliases().keys():
         if not client.indices.exists(elastic_index):
-            # TODO re-activate using the schema, now disabled in order to make existing code
-            # work with ES 5 (at least on my system)
-            # client.indices.create(elastic_index, json.load(open('schema.json')))
-            client.indices.create(elastic_index)
+            client.indices.create(elastic_index, json.load(open('schema.json')))
     except Exception as e:
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
 except:
     logger.warning("No database functionality available")
     DATABASE_AVAILABLE = False
-
-
 
 def get_document(doc_id):
     if not check_exists(doc_id)[0]:
@@ -76,6 +72,7 @@ def check_exists(document_id):
         time.sleep(1)
         return check_exists(document_id)
 
+        
 def update_document(document, force=False, retry=0, max_retries=10):
     '''
     Documents should usually only be appended, not updated. as such.
@@ -181,26 +178,113 @@ def delete_doctype(doctype):
 def insert_document(document, custom_identifier=''):
     ''' Insert a new document into the default index '''
     document = _remove_dots(document)
+    
+    # Determine document type for Elasticsearch
+    document_type = document.get('doctype',False)
+    if not document_type:
+        document_type = document.get('_source',{}).get("doctype",False)
+    if not document_type:
+        document_type = document.get("_type",False)
+    # if no document type was found, emit warning and process as "unknown"
+    if not document_type:
+        logger.warning("Document without type supplied for indexing in ES!")
+        document_type = "unknown"
     if not custom_identifier:
         try:
-            doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document)
+            doc = client.index(index=elastic_index, doc_type=document_type, body=document.get('_source',document))
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
         try:
-            doc = client.index(index=elastic_index, doc_type=document['doctype'], body=document, id=custom_identifier)
+            doc = client.index(index=elastic_index, doc_type=document_type, body=document.get('_source',document), id=custom_identifier)
         except ConnectionTimeout:
-            doc= {'_id':insert_document(document, custom_identifier)}
+            doc= {'_id':insert_document(document['_source'], custom_identifier)}
     logger.debug('added new document, content: {document}'.format(**locals()))
     return doc["_id"]
 
-def update_or_insert_document(document, force=False):
-    ''' Check whether a document exists, update if so '''
+def insert_documents(documents, identifiers='id'):
+    """ Insert a batch of documents in ES
+
+    Parameters
+    ----
+    documents : list
+        a list of document dictionaries to be inserted
+    identifiers: string or list
+        Specification of the `_id` to assign to the document in elasticsearch.
+        Can be either:
+            1) A string which specifies which field of the document should be
+               used as the id, reverting to ES generated if the id is missing
+            2) A list of equal size to the documents, containing the id for
+               each document
+    Returns
+    ----
+    List: the ID's under which the documents were inserted
+
+    Note
+    ----
+    This function assumes that the 'doctype' field is declared in each document
+    """
+    # preprocess ids
+    if type(identifiers) == list:
+        logger.debug("Processing identifiers as list")
+        if not len(identifiers) == len(documents):
+            logger.warning("Identifiers and documents are not of same length, "
+            "there are %s docs and %s identifiers!" %(len(documents),len(identifiers))
+            )
+            raise Exception("Unable to process document batch")
+        for doc, identifier in zip(documents, identifiers):
+            doc['_id']    = identifier
+
+    if type(identifiers) == str:
+        logger.debug("Processing identifiers as key")
+        for doc in documents:
+            id_value = doc.get(identifiers,"")
+            if id_value:
+                doc['_id'] = id_value
+
+    for doc in documents:
+        doc['_index'] = elastic_index
+        doc['_type']  = doc['doctype']
+    # Insert documents
+    logger.debug(helpers.bulk(client, documents))
+    return [doc.get('_id','random') for doc in documents]
+
+
+def update_or_insert_document(document, force=False, use_url = False):
+    ''' Check whether a document exists, update if so
+    use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
     if '_id' in document.keys():
-        exists, document = check_exists(document['_id'])
+        exists, _document = check_exists(document['_id'])
         if exists:
-            return update_document(document, force=force)
-    return insert_document(document)
+            if use_url == True:
+                if 'url' in document['_source'].keys():
+                    search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
+                    if search['hits']['total'] != 0:
+                        return update_document(document, force=force)
+                    else:
+                        logger.info("_id found, but no matching URl. Document is not inserted")
+            elif use_url == False:
+                return update_document(document, force=force)            
+        elif not exists:
+            if use_url == True:
+                try:
+                    if 'url' in document['_source'].keys():
+                        search = client.search(index = elastic_index, body = {'query':{'match':{'url.keyword':document['_source']['url']}}})
+                        if search['hits']['total'] != 0:
+                            logger.info("Another document with the same URL already exists in database. Document is not inserted.")
+                        else:
+                            return insert_document(document)
+                except KeyError:
+                    logger.info('No URL found, skipping')
+            elif use_url == False:
+                return insert_document(document,custom_identifier=document['_id'])
+    else:
+        if use_url == False:
+            return insert_document(document)
+        elif use_url == True:
+            logger.critical('This document has no ID, but you want to check its existence based on the URL. This is not implemented yet, will not insert document')
+                        
+
 
 def remove_field(query, field):
     batch = []
@@ -384,15 +468,18 @@ def restore_backup(name):
     if name in [item['snapshot'] for item in list_backup()]:
         client.indices.close('inca')
         client.snapshot.restore(repository='inca_backup', snapshot=name)
-
+        
+    
 def export_doctype(doctype):
+    logger.warning('Deprecation warning: this legacy import/export function will be removed')
+    logger.warning('Use the new Inca.importers_exporters class instead')
     if not 'exports' in os.listdir('.'):
         os.mkdir('exports')
     for doc in scroll_query({'query':{'match':{'_type':doctype}}}):
-        outpath = os.path.join('exports',doctype)
-        if doctype not in os.listdir('exports'):
+        outpath = os.path.join('exports',quote_plus(doctype))
+        if quote_plus(doctype) not in os.listdir('exports'):
             os.mkdir(outpath)
-        with open(os.path.join('exports', doctype, '%s.json' %quote_plus(doc['_id'])),'w') as f:
+        with open(os.path.join('exports', quote_plus(doctype), '%s.json' %id2filename(doc['_id'])),'w') as f:
             f.write(json.dumps(doc))
 
 def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
@@ -407,6 +494,8 @@ def export_csv(query, keys = ['doctype','publication_date','title','byline','tex
     keys: list
         A list of keys to be mapped to columns in the csv file. Often used keys include ['doctype', 'publication_date', 'text', 'feedurl', 'teaser', 'title', 'htmlsource', 'byline', 'url']
     '''
+    logger.warning('Deprecation warning: this legacy import/export function will be removed')
+    logger.warning('Use the new Inca.importers_exporters class instead')
 
     if not 'exports' in os.listdir('.'):
         os.mkdir('exports')
@@ -418,6 +507,11 @@ def export_csv(query, keys = ['doctype','publication_date','title','byline','tex
             row = [doc['_source'][k] for k in keys]
             writer.writerow(row)
 
-def import_documents(source_folder, force=False):
+def import_documents(source_folder, force=False, use_url = False):
+    '''use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
+    logger.warning('Deprecation warning: this legacy import/export function will be removed')
+    logger.warning('Use the new Inca.importers_exporters class instead')
+
     for input_file in os.listdir(source_folder):
-        update_or_insert_document(json.load(open(input_file)), force=force)
+        doc = json.load(open(os.path.join(source_folder, input_file)))
+        update_or_insert_document(doc, force=force, use_url = use_url)
