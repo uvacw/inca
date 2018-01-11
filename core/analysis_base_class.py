@@ -1,6 +1,6 @@
+from celery import Task
 
-
-class Analysis:
+class Analysis(Task):
 
     def fit(self, documents, add_prediction='', **kwargs):
         """
@@ -68,4 +68,3 @@ class Analysis:
         @type figure_names: iterable
         """
         raise NotImplementedError
-

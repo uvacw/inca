@@ -21,7 +21,7 @@ running INCA.
 import os
 import logging
 import inspect
-import copy
+
 
 logging.basicConfig(level="WARN")
 logger = logging.getLogger("INCA")
@@ -92,6 +92,7 @@ class Inca():
         self._LOCAL_ONLY = distributed
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
+        self._analysis_task_constructor()
 
     class scrapers():
         '''Scrapers for various (news) outlets '''
@@ -100,6 +101,48 @@ class Inca():
     class processing():
         '''Processing options to operate on documents'''
         pass
+
+    class analysis():
+        '''Perform and summarize analysis done on documents'''
+        pass
+
+    def _analysis_task_constructor(self):
+        """Construct endpoints specifically for analysis tasks
+
+        This function is used when analysis tasks are encountered. The Analysis
+        sub-classes include functionality for fitting, predicting, plotting,
+        updateing and explaining results.
+
+        """
+
+        target_functions = ['fit','predict','plot','interpretation','quality']
+
+        for k,v in self._taskmaster.tasks.items():
+            functiontype = k.split('.',1)[0]
+            taskname     = k.rsplit('.',1)[1]
+            if functiontype == "analysis":
+
+                analysis_class = self._taskmaster.tasks[k]
+
+                def makefunc(method):
+                    if inspect.isgeneratorfunction(method):
+                        def endpoint(*args, **kwargs):
+                            for i in method(*args, **kwargs):
+                                yield i
+                    else:
+                        def endpoint(*args, **kwargs):
+                            return method(*args, **kwargs)
+                    return endpoint
+
+                class analysis_placeholder:
+                    pass
+                analysis_placeholder.__doc__ = analysis_class.__doc__
+
+                for method in target_functions:
+                    endpoint = getattr(analysis_class,method)
+                    setattr(analysis_placeholder,method,endpoint)
+
+                setattr(getattr(self,"analysis"), taskname, analysis_placeholder)
 
     def _construct_tasks(self, function):
         """Construct the appropriate endoints from Celery tasks
