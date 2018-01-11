@@ -117,7 +117,7 @@ class classification(Analysis):
             self.vocab = np.array(self.vectorizer.get_feature_names())
             #Creating the test and train set:
 
-            print('{} x entries and {} y entries'.format(tfidf_full_data.shape[0], len(self.labels )))
+            logger.info('{} x entries and {} y entries'.format(tfidf_full_data.shape[0], len(self.labels )))
             X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, self.labels, test_size=testsize, shuffle = rand_shuffle, random_state=42)
 
         else:
@@ -135,7 +135,8 @@ class classification(Analysis):
             self.train_predictions = None
 
         # return (self.vocab, counts, self.labels)
-        return (self.vocab, self.labels)
+        # return (self.vocab, self.labels)
+        return
 
 
     def predict(self, documents = None, x_field=None,  **kwargs):
@@ -184,4 +185,7 @@ class classification(Analysis):
         self.test_f1score = f1_score(self.y_test, test_pred, average = 'macro')
         print("accuracy on test set: ", self.test_accuracy , "\n Precision on test set: " , self.test_precision , "\n Recall on test set: "
              , self.test_recall , "\n f1score : " , self.test_f1score)
-        return (self.test_accuracy, self.test_precision, self.test_recall, self.test_f1score)
+        return ({'accuracy':self.test_accuracy, 
+                 'precision':self.test_precision, 
+                 'recall':self.test_recall, 
+                 'f1':self.test_f1score})
