@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import core.search_utils
+import core.database
 import logging
 import numpy as np
 import string
@@ -22,21 +23,9 @@ logger = logging.getLogger(__name__)
 class classification(Analysis):
 
     def __init__(self):
-        self.model = None
-        self.vocab = None
-        self.train_predictions = None
-        self.X_test = None
-        self.y_test = None
-        self.predictions = None
-        self.accuracy = None
-        self.valid_docs = []
-        self.invalid_docs = []
-        self.vectorizer = None
+        pass
 
-        self.labels = []
-
-
-    def fit(self, documents, x_field, label_field, doctype=None, add_prediction=False, testsize = 0.2, mindf = 0.0, maxdf = 1.0, rand_shuffle = True, tfidf = True, vocabul = None):
+    def fit(self, documents, x_field, label_field, add_prediction=False, testsize = 0.2, mindf = 0.0, maxdf = 1.0, rand_shuffle = True, tfidf = True, vocabul = None):
         """
         This method should train a Classifier model on the input documents.\n
         @param documents: the documents (stored in elasticsearch) to train on
@@ -83,6 +72,21 @@ class classification(Analysis):
 
 
         """
+
+
+        self.model = None
+        self.vocab = None
+        self.train_predictions = None
+        self.X_test = None
+        self.y_test = None
+        self.predictions = None
+        self.accuracy = None
+        self.valid_docs = []
+        self.invalid_docs = []
+        self.vectorizer = None
+        self.labels = []
+
+
         counter = 0
         invalidchars = set(string.punctuation)
 
@@ -101,24 +105,25 @@ class classification(Analysis):
             else:
                 self.invalid_docs.append(doc['_id'])
 
-        #Necessary to redefine documents here.
-        documents = client.database.doctype_generator(doctype)
+
+        assert len(self.valid_docs) == len(self.labels)
 
         #Extracting word counts as featires from example documents
-        self.vectorizer = CountVectorizer(min_df = mindf, max_df = maxdf, vocabulary = vocabul)
-        counts = self.vectorizer.fit_transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents if doc['_id'] not in self.invalid_docs), self.labels)
-
-        self.vocab = np.array(self.vectorizer.get_feature_names())
-
         #If tfidf is set to True, it extracts the term-frequency-inverse-document-frequency features from the example documents.
+        documents2 = core.database.scroll_query({'query':{'ids':{'values':self.valid_docs}}})
         if tfidf:
-            documents = client.database.doctype_generator(doctype)
             self.vectorizer = TfidfVectorizer(min_df = mindf, max_df = maxdf, vocabulary = vocabul)
-            tfidf_full_data = self.vectorizer.fit_transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents if doc['_id'] not in self.invalid_docs), self.labels)
+            tfidf_full_data = self.vectorizer.fit_transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents2), self.labels)
+            self.vocab = np.array(self.vectorizer.get_feature_names())
             #Creating the test and train set:
+
+            print('{} x entries and {} y entries'.format(tfidf_full_data.shape[0], len(self.labels )))
             X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, self.labels, test_size=testsize, shuffle = rand_shuffle, random_state=42)
 
         else:
+            self.vectorizer = CountVectorizer(min_df = mindf, max_df = maxdf, vocabulary = vocabul)
+            counts = self.vectorizer.fit_transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents2), self.labels)
+            self.vocab = np.array(self.vectorizer.get_feature_names())
             X_train, self.X_test, y_train, self.y_test = train_test_split(counts, self.labels, test_size = testsize, shuffle = rand_shuffle, random_state=42)
 
         self.model =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
@@ -129,10 +134,11 @@ class classification(Analysis):
         else:
             self.train_predictions = None
 
-        return (self.vocab, counts, self.labels)
+        # return (self.vocab, counts, self.labels)
+        return (self.vocab, self.labels)
 
 
-    def predict(self, documents = None, x_field=None, doctype = None,  **kwargs):
+    def predict(self, documents = None, x_field=None,  **kwargs):
         """
         This method performs classification of new unseen documents.\n
         @param documents: the documents to classify.
