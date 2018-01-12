@@ -174,8 +174,6 @@ class tripadvisor(Scraper):
                 elif len(totalreviews) > 7:
                     logger.debug('OOPS, THERE ARE MORE THAN 7 REVIEW ELEMENTS!')
                     logger.error('OOPS, THERE ARE MORE THAN 7 REVIEW ELEMENTS! This is the current link {}. These are the review elements that were found: {}'.format(reviews_thisurl,totalreviews))
-                    #for review in totalreviews:
-                        #if                                            # ADD THIS !!!!!!
                     allreviews = []
                 elif len(totalreviews) < 7:
                     logger.debug('OOPS, THERE ARE MORE THAN 7 REVIEW ELEMENTS!')
@@ -188,14 +186,17 @@ class tripadvisor(Scraper):
                     for element in review.getchildren():
                         if 'quote isNew' in element.values():
                             thisreview['headline'] = element.text_content().strip()
-                        if 'quote' in element.values():
+                        elif 'quote' in element.values():
                             thisreview['headline'] = element.text_content().strip()
+                        else:
+                            thisreview['headline'] = 'NA'                 # CHECK IF THIS WORKS FOR REVIEWS WITHOUT HEADLINE
                         if 'prw_rup prw_reviews_text_summary_hsx' in element.values():
                             thisreview['review'] = element.text_content().strip()
                             if thisreview['review'] == '':
                                 thisreview['review'] = ('UNRETRIEVABLE REVIEW')
                         if 'rating reviewItemInline' in element.values():
                             date = element.getchildren()[1].attrib['title'].strip()
+                            thisreview['date'] = date
                             infodate = element.text_content().strip()
                             splitat_mobile = infodate.find('via mobile')
                             if splitat_mobile > -1:
@@ -208,7 +209,7 @@ class tripadvisor(Scraper):
                             response_elements = element.getchildren()
                             for response_element in response_elements:
                                 if 'prw_rup prw_reviews_response_header' in response_element.values():
-                                    thisreview['response_date'] = response_element.getchildren()[0].getchildren()[0].text_content()        # CALCULATE DATE OF RESPONSE
+                                    thisreview['response_date'] = response_element.getchildren()[0].getchildren()[0].text_content()    
                                     responder = response_element.getchildren()[0].text_content()
                                     splitat_responder = responder.find(', responded')
                                     thisreview['responder'] = responder[:splitat_responder]
@@ -225,42 +226,16 @@ class tripadvisor(Scraper):
                             else:
                                 aboutstay = travelinfo[0].text_content()
                                 firstratings = travelinfo[1].text_content()
-                            splitat_stay = aboutstay.find('traveled')     # CHANGE FOR REVIEWS THAT ONLY HAVE A DATE!!
-                            dateofstay, travelcompany = aboutstay[:splitat_stay-2], aboutstay[splitat_stay:]
-                            thisreview['date_of_stay'] = dateofstay.strip().replace('Stayed: ','')
-                            thisreview['travel_company'] = travelcompany.strip()
+                            splitat_stay = aboutstay.find('traveled')     
+                            if splitat_stay == -1:
+                                thisreview['date_of_stay'] = aboutstay.replace('Stayed: ','').strip()
+                            else:
+                                dateofstay, travelcompany = aboutstay[:splitat_stay-2], aboutstay[splitat_stay:]
+                                thisreview['date_of_stay'] = dateofstay.strip().replace('Stayed: ','')
+                                thisreview['travel_company'] = travelcompany.strip()
                     logger.debug('For this review, the following information was found: {}.'.format(thisreview.keys()))
                     reviews.append(thisreview)
                 logger.debug('This page has {} reviews in total'.format(len(reviews)))
-
-
-                #try:
-                #    ratingelements = tree.xpath('//*[@class="rating reviewItemInline"]/span[1]')
-                #    review_ratings = [e.attrib['class'].lstrip('ui_bubble_rating bubble_') for e in ratingelements]
-                #    logger.debug("This page has a list with {} ratings.".format(len(review_ratings)))
-                #except:
-                #    ""
-                #    logger.info("Hotel with link {} did not have a review ratings.".format(reviews_thisurl))
-
-                #review_headline = []
-                #review_headline_elem = tree.xpath('//*[@class="noQuotes"]')
-                #for headline in review_headline_elem:
-                #    if headline.text_content() == '':
-                #        review_headline.append('NA')
-                #    else:
-                #        review_headline.append(headline.text_content())
-                #logger.debug("This page has a list with {} headlines.".format(len(review_headline))) 
-                    
-                #review_stayed = []
-                #review_stayed_elem = tree.xpath('//*[@class="prw_rup prw_reviews_category_ratings_hsx"]')
-                #for review in review_stayed_elem:
-                #    date = review.text_content()
-                #    date_strip = date.replace("Value","").replace("Location","").replace("Sleep","").replace("Quality","").replace("Rooms","").replace("Cleanliness","").replace("Service","")
-                #    if date_strip == "":
-                #        review_stayed.append('NA')
-                #    else:
-                #        review_stayed.append(date_strip)
-                #logger.debug("This page has a list with {} dates of stay.".format(len(review_stayed)))
                 
                 review_usernames =[]
                 review_locations=[]
@@ -327,48 +302,6 @@ class tripadvisor(Scraper):
 
                 assert len(review_usernames)==len(review_locations)==len(review_votes)==len(review_contributions)==len(review_images)==len(review_moreratings)==len(review_is_sponsored)==len(reviews)
                 logger.debug("All lists have the same length")
-                
-                
-                #reviews_cleaned = []
-                #reviews_alltext_elements = tree.xpath('//*[@class="partial_entry"]')
-                #reviews_alltext = [e.text_content() for e in reviews_alltext_elements]
-                #logger.debug("Now fetching the text of the reviews, we found {} reviews and responses".format(len(reviews_alltext)))
-
-                # check if we have any review that has no text:
-                #notcomplete = max([r=="" for r in reviews_alltext])  # True if at least one review is empty
-                #if notcomplete:
-                #    logger.warning("The current hotel has a review without text. It's here: {}".format(reviews_thisurl))
-                # go to the next page, unless there is no next page   
-                #    next_reviewpageelement = tree.xpath('//*[@class="nav next taLnk "]')
-                #    if next_reviewpageelement == []:
-                #        logger.debug("There is no next page after the current page, so we're breaking")
-                #        break
-                #    else:
-                #        next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
-                #        reviews_thisurl = self.BASE_URL + next_pagelink
-                #    continue
-
-                # alternative approach: we just re-code the empty reviews:
-                #temp = []
-                #for r in reviews_alltext:
-                #    if r.strip()  == '':
-                #        temp.append('REVIEW BY A USER FROM A DIFFERENT WEBSITE')
-                #        logger.debug("This page has an empty review, but it is filled up with text")
-                #    else:
-                #        temp.append(r)
-                #reviews_alltext = temp
-
-                # go to the next page, unless there is no next page   
-                next_reviewpageelement = tree.xpath('//*[@class="nav next taLnk "]')
-                if next_reviewpageelement == []:
-                    logger.debug("There is no next page after the current page, so we're breaking")
-                    break
-                else:
-                    next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
-                    reviews_thisurl = self.BASE_URL + next_pagelink
-                    #logger.debug("The next page is: {}".format(reviews_thisurl))
-
-                assert len(review_usernames)==len(review_locations)==len(review_votes)==len(review_contributions)==len(review_images)==len(review_moreratings)==len(review_is_sponsored)==len(reviews)
                 i = 0
                 for r in reviews:
                     r.update({'username':review_usernames[i].strip(),
@@ -379,30 +312,27 @@ class tripadvisor(Scraper):
                               'specific_ratings':review_moreratings[i],
                               'partnership':review_is_sponsored[i]})
                     i+=1
+                logger.debug("All lists have been added as keys to the dict")
                 thishotel['reviews'] += reviews
-                logger.debug("The reviews have been added to the hotel")               
-                #for r in range(len(reviews)):
-                #    reviews['username']
-                #    reviews_thishotel.append({'username':review_usernames[r].strip(),
-                #                              'location':review_locations[r],
-                #                              'votes':review_votes[r],
-                #                              'contributions':review_contributions[r],
-                #                              'review':reviews[r],
-                #                              'images':review_images[r],
-                #                              'specific_ratings':review_moreratings[r],
-                #                              'partnership':review_is_sponsored[r]
-                #                              })
-                #thishotel['reviews'] += reviews_thishotel
+                logger.debug("The reviews have been added to the hotel") 
+
+                # go to the next page, unless there is no next page   
+                next_reviewpageelement = tree.xpath('//*[@class="nav next taLnk "]')
+                if next_reviewpageelement == []:
+                    logger.debug("There is no next page after the current page, so we're breaking")
+                    break
+                else:
+                    next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
+                    reviews_thisurl = self.BASE_URL + next_pagelink
+                    logger.debug("The next page is: {}".format(reviews_thisurl))
 
                 if numberofpage >= maxpages:
                     break
                 numberofpage+=1
             hotels_enriched.append(thishotel)
 
-
         logger.debug('We have fetched all reviews from the hotel-specific webpage that exist. There are {} reviews in total'.format(len(review_usernames)))
         return hotels_enriched
-
 
 def cleandoc(document):
     for k,v in document.items():
