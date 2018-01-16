@@ -178,9 +178,9 @@ class tripadvisor(Scraper):
                 logger.debug('There are {} reviews being processed'.format(len(allreviews)))
                 if len(allreviews)!= len(totalreviews):
                     logger.error('OOPS, there were more review elements than actual reviews! This is the current link {}. There are {} review elements that were not reviews.'.format(reviews_thisurl,len(totalreviews)-len(allreviews)))
-                maxpages = tree.xpath('//*[@class="pageNum last taLnk "]/text()')
+                totalpages = tree.xpath('//*[@class="pageNum last taLnk "]/text()')
                 if len(allreviews) < 7:
-                    if maxpages == []:
+                    if totalpages == []:
                         logger.debug('This page contains less than 7 reviews, however, it is the last reviewpage, so this makes sense.')
                     else:
                         logger.debug('OOPS, this page contains less than 7 review elements! The htmlsource is saved under \'debugpage:date\' and the reviews are printed below:')
