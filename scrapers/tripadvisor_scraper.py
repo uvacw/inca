@@ -168,25 +168,33 @@ class tripadvisor(Scraper):
                 logger.debug("Fetched the hotel-specific review webpage: {}.".format(reviews_thisurl))
                 tree = fromstring(htmlsource)
                 totalreviews = tree.xpath('//*[@class="innerBubble"]/div[@class="wrap"]') #tree.xpath('//*[@class="wrap"]')
-                if len(totalreviews) == 7:
-                    allreviews = totalreviews
-                    logger.debug('There are 7 reviews being processed')
-                elif len(totalreviews) > 7:
-                    logger.debug('OOPS, THERE ARE MORE THAN 7 REVIEW ELEMENTS!')
-                    logger.error('OOPS, THERE ARE MORE THAN 7 REVIEW ELEMENTS! This is the current link {}. These are the review elements that were found: {}'.format(reviews_thisurl,totalreviews))
-                    for debugreview in totalreviews:
-                        logger.error(debugreview.text_content())
+
+                # Check if the elements that were gathered in 'totalreviews' above are actual reviews
+                allreviews = []
+                for every_review in totalreviews:
+                    for subelement in every_review.getchildren():
+                        if 'prw_rup prw_reviews_text_summary_hsx' in subelement.values():
+                            allreviews.append(every_review)
+                logger.debug('There are {} reviews being processed'.format(len(allreviews)))
+                if len(allreviews)!= len(totalreviews):
+                    logger.error('OOPS, there were more review elements than actual reviews! This is the current link {}. There are {} review elements that were not reviews.'.format(reviews_thisurl,len(totalreviews)-len(allreviews)))
+                maxpages = tree.xpath('//*[@class="pageNum last taLnk "]/text()')
+                if len(allreviews) < 7:
+                    if maxpages == []:
+                        logger.debug('This page contains less than 7 reviews, however, it is the last reviewpage, so this makes sense.')
+                    else:
+                        logger.debug('OOPS, this page contains less than 7 review elements! The htmlsource is saved under \'debugpage:date\' and the reviews are printed below:')
+                        for debugreview in allreviews:
+                            logger.error(debugreview.text_content())
+                        with open('debugpage-{}.html'.format(datetime.datetime.now()), mode='w') as fo:
+                            fo.write(htmlsource)
+                if len(allreviews) > 7:
+                    logger.error('OOPS, this page contains MORE than 7 review elements! The htmlsource is saved under \'debugpage:date\' and this page is skipped')
                     with open('debugpage-{}.html'.format(datetime.datetime.now()), mode='w') as fo:
                         fo.write(htmlsource)
-                    allreviews = []
-                elif len(totalreviews) < 7:
-                    logger.debug('OOPS, THERE ARE LESS THAN 7 REVIEW ELEMENTS!')
-                    logger.error('OOPS, THERE ARE LESS THAN 7 REVIEW ELEMENTS! This is the current link {}. These are the review elements that were found: {}'.format(reviews_thisurl,totalreviews))
-                    for debugreview in totalreviews:
-                        logger.error(debugreview.text_content())
-                    with open('debugpage-{}.html'.format(datetime.datetime.now()), mode='w') as fo:
-                        fo.write(htmlsource)
-                    allreviews = []
+                    continue
+                if allreviews == []:
+                    logger.error('OOPS, this page contains no reviews at all. The htmlsource is saved under \'debugpage:date\' and this page is skipped')
                     
                 reviews = []
                 for review in allreviews:
