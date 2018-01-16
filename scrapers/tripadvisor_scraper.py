@@ -174,10 +174,18 @@ class tripadvisor(Scraper):
                 elif len(totalreviews) > 7:
                     logger.debug('OOPS, THERE ARE MORE THAN 7 REVIEW ELEMENTS!')
                     logger.error('OOPS, THERE ARE MORE THAN 7 REVIEW ELEMENTS! This is the current link {}. These are the review elements that were found: {}'.format(reviews_thisurl,totalreviews))
+                    for debugreview in totalreviews:
+                        logger.error(debugreview.text_content())
+                    with open('debugpage-{}.html'.format(datetime.datetime.now()), mode='w') as fo:
+                        fo.write(htmlsource)
                     allreviews = []
                 elif len(totalreviews) < 7:
-                    logger.debug('OOPS, THERE ARE MORE THAN 7 REVIEW ELEMENTS!')
-                    logger.error('OOPS, THERE ARE MORE THAN 7 REVIEW ELEMENTS! This is the current link {}. These are the review elements that were found: {}'.format(reviews_thisurl,totalreviews))
+                    logger.debug('OOPS, THERE ARE LESS THAN 7 REVIEW ELEMENTS!')
+                    logger.error('OOPS, THERE ARE LESS THAN 7 REVIEW ELEMENTS! This is the current link {}. These are the review elements that were found: {}'.format(reviews_thisurl,totalreviews))
+                    for debugreview in totalreviews:
+                        logger.error(debugreview.text_content())
+                    with open('debugpage-{}.html'.format(datetime.datetime.now()), mode='w') as fo:
+                        fo.write(htmlsource)
                     allreviews = []
                     
                 reviews = []
