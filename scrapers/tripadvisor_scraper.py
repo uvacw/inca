@@ -202,10 +202,8 @@ class tripadvisor(Scraper):
                     for element in review.getchildren():
                         if 'quote isNew' in element.values():
                             thisreview['headline'] = element.text_content().strip()
-                        elif 'quote' in element.values():
+                        if 'quote' in element.values():
                             thisreview['headline'] = element.text_content().strip()
-                        else:
-                            thisreview['headline'] = 'NA'                 # CHECK IF THIS WORKS FOR REVIEWS WITHOUT HEADLINE
                         if 'prw_rup prw_reviews_text_summary_hsx' in element.values():
                             thisreview['review'] = element.text_content().strip()
                             if thisreview['review'] == '':
@@ -236,19 +234,23 @@ class tripadvisor(Scraper):
                         else:
                             thisreview['response'] = 'NA'
                         if 'prw_rup prw_reviews_category_ratings_hsx' in element.values():
-                            travelinfo = element.getchildren()[0].getchildren()[0].getchildren()[0].getchildren()
-                            if len(travelinfo) == 1:
-                                aboutstay = element.getchildren()[0].getchildren()[0].getchildren()[0].text_content()
+                            notravelinfo = element.getchildren()[0].text_content()
+                            if notravelinfo == '':
+                                thisreview['date_of_stay'] = 'NA'
                             else:
-                                aboutstay = travelinfo[0].text_content()
-                                firstratings = travelinfo[1].text_content()
-                            splitat_stay = aboutstay.find('traveled')     
-                            if splitat_stay == -1:
-                                thisreview['date_of_stay'] = aboutstay.replace('Stayed: ','').strip()
-                            else:
-                                dateofstay, travelcompany = aboutstay[:splitat_stay-2], aboutstay[splitat_stay:]
-                                thisreview['date_of_stay'] = dateofstay.strip().replace('Stayed: ','')
-                                thisreview['travel_company'] = travelcompany.strip()
+                                travelinfo = element.getchildren()[0].getchildren()[0].getchildren()[0].getchildren()
+                                if len(travelinfo) == 1:
+                                    aboutstay = element.getchildren()[0].getchildren()[0].getchildren()[0].text_content()
+                                else:
+                                    aboutstay = travelinfo[0].text_content()
+                                    firstratings = travelinfo[1].text_content()
+                                    splitat_stay = aboutstay.find('traveled')     
+                                    if splitat_stay == -1:
+                                        thisreview['date_of_stay'] = aboutstay.replace('Stayed: ','').strip()
+                                    else:
+                                        dateofstay, travelcompany = aboutstay[:splitat_stay-2], aboutstay[splitat_stay:]
+                                        thisreview['date_of_stay'] = dateofstay.strip().replace('Stayed: ','')
+                                        thisreview['travel_company'] = travelcompany.strip()
                     logger.debug('For this review, the following information was found: {}.'.format(thisreview.keys()))
                     reviews.append(thisreview)
                 logger.debug('This page has {} reviews in total'.format(len(reviews)))
