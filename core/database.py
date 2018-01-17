@@ -129,8 +129,8 @@ def update_document(document, force=False, retry=0, max_retries=10):
 
 def check_mapping(doctype):
     '''
-    Checks the way the field "doctype" is mapped (as keyword or as text + keyword to determine whether queries 
-    have to use doctype.keyword or doctype
+    Checks the way the field "doctype" is mapped (as keyword or as text + keyword) to determine whether queries have to use doctype.keyword or doctype.
+    Returns the string 'new_mapping' if the mapping of the doctype conforms to the specification as outlined in schema.json, 'mixed_mapping' if the doctype exists, but does not conform to the specification. In other cases, None is returned.
     '''
     m = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype, {}).get('properties', {}).get('doctype', {})
     try: 
