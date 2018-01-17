@@ -5,7 +5,7 @@ from core.database import client as _client
 from core.database import scroll_query as _scroll_query
 from core.database import elastic_index as _elastic_index
 from core.database import DATABASE_AVAILABLE as _DATABASE_AVAILABLE
-from core.database import delete_doctype, delete_document
+from core.database import delete_doctype, delete_document, check_mapping
 import logging as _logging
 from core.basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
@@ -24,8 +24,16 @@ def list_doctypes():
     return overview
 
 def doctype_generator(doctype):
-    _logger.warning("Filter has been replaced by query, still need to test whether edge cases might be unintentionally returned")
-    query = {'query':{'match':{'_type':doctype}}}
+    if check_mapping(doctype) == "mixed_mapping": 
+        field = "doctype.keyword"
+    elif check_mapping(doctype) == "new_mapping": 
+        field = "doctype"
+    elif check_mapping(doctype) == None: 
+         _logger.warning("Could not find mapping of doctype, please check whether you are using the correct doctype")
+         return []
+        
+    
+    query = {'query':{'term':{field:doctype}}}
     for num, doc in enumerate(_scroll_query(query)):
         if not _DATABASE_AVAILABLE:
             _logger.warning("Could not get documents: No database instance available")
@@ -99,15 +107,22 @@ def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
     if not found_mapping:
         _logger.debug("Mapping not seen yet")
         return []
-
+    if check_mapping(doctype) == "mixed_mapping": 
+        field = "doctype.keyword"
+    elif check_mapping(doctype) == "new_mapping": 
+        field = "doctype"
+    elif check_mapping(doctype) == None: 
+        _logger.warning("Could not find mapping of doctype, please check whether you are using the correct doctype")
+        return []
+  
     body = {
         "sort": [
             {by_field : {"order":"asc"}}
             ],
         "size":num,
         "query":
-        {"match":
-         {"doctype":
+        {"term":
+         {field:
           doctype
          }
         }}
@@ -124,13 +139,9 @@ def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
                           ],
                       "size":num,
                       "query":
-                        { "bool":
-                            { "filter":
-                                { "match":
-                                    { "_type": doctype
-                                    }
-                                }
-                            }
+                        { "term":
+                          { field: doctype
+                          }
                       }}).get('hits',{}).get('hits',[""])
 
     return docs
@@ -166,15 +177,23 @@ def doctype_last(doctype,num=1, by_field="META.ADDED", query=None):
     if not found_mapping:
         _logger.debug("Mapping not seen yet")
         return []
-
+    if check_mapping(doctype) == "mixed_mapping": 
+        field = "doctype.keyword"
+    elif check_mapping(doctype) == "new_mapping": 
+        field = "doctype"
+    elif check_mapping(doctype) == None: 
+        _logger.warning("Could not find mapping of doctype, please check whether you are using the correct doctype")
+        return []
+        
+    
     body = {
         "sort": [
             {by_field : {"order":"desc"}}
             ],
         "size":num,
         "query":
-        {"match":
-         {"doctype":
+        {"term":
+         {field:
           doctype
          }
         }}
@@ -189,13 +208,11 @@ def doctype_last(doctype,num=1, by_field="META.ADDED", query=None):
                           { by_field : {"order":"desc"}}
                           ],
                       "size":num,
-                      "query": { "bool":
-                          { "filter":
-                              { "match":
-                                  { "_type": doctype
-                                  }
-                              }
-                          }
+                      "query":
+                      { "term":{
+                        field:
+                        doctype
+                        }
                       }}).get('hits',{}).get('hits',[""])
 
     return docs
@@ -204,17 +221,22 @@ def doctype_examples(doctype, field=None, seed=42, num=10):
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get example documents: No database instance available")
         return []
+    if check_mapping(doctype) == "mixed_mapping": 
+        field2 = "doctype.keyword"
+    elif check_mapping(doctype) == "new_mapping": 
+        field2 = "doctype"
+    elif check_mapping(doctype) == None: 
+        return _logger.warning("Could not find mapping of doctype, please check whether you are using the correct doctype")
+      
     docs = _client.search(index=_elastic_index, body={
         'size':num,
         "query": {
             "function_score": {
-                    "query": {"bool":
-                        { "filter":
-                            { "match":
-                                { "_type": doctype
+                    "query": {"term":
+                                { field2: doctype
                                 }
                             }
-                        }},
+                        ,
                 "functions": [
                     {
                         "random_score": {
@@ -244,11 +266,19 @@ def doctype_fields(doctype):
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get document information: No database instance available")
         return []
+    if check_mapping(doctype) == "mixed_mapping": 
+        field = "doctype.keyword"
+    elif check_mapping(doctype) == "new_mapping": 
+        field = "doctype"
+    elif check_mapping(doctype) == None: 
+        _logger.warning("Could not find mapping of doctype, please check whether you are using the correct doctype")
+        return []
+      
     from collections import Counter
     key_count = Counter()
-    doc_num   = _client.search(index=_elastic_index, body={'query':{"bool":{"filter":{'match':{'_type':doctype}}}}})['hits']['total']
+    doc_num   = _client.search(index=_elastic_index, body={'query':{"term":{field:doctype}}})['hits']['total']
     mappings = _client.indices.get_mapping(_elastic_index).get(_elastic_index,{}).get('mappings',{}).get(doctype,{}).get('properties',{})
-    coverage = {key:_client.search(_elastic_index,body={'query': {'bool':{'filter':[{'exists':{'field':key}},{'term':{'_type':doctype}}]}}}).get('hits',{}).get('total',0) for key in mappings.keys() if key!="META"}
+    coverage = {key:_client.search(_elastic_index,body={'query': {'bool':{'filter':[{'exists':{'field':key}},{'term':{field:doctype}}]}}}).get('hits',{}).get('total',0) for key in mappings.keys() if key!="META"}
     summary = {k:{'coverage':coverage.get(k,'unknown')/float(doc_num),'type':mappings[k].get('type','unknown')} for
                k in mappings.keys() if k!="META"}
     return summary
