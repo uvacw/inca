@@ -129,7 +129,7 @@ def update_document(document, force=False, retry=0, max_retries=10):
 
 def check_mapping(doctype):
     '''
-    Checks the way the field "doctype" is mapped (as keyword or as text + keyword) to determine whether queries have to use doctype.keyword or doctype.
+    Checks the way the field "doctype" is mapped to determine whether queries have to use doctype.keyword or doctype.
     Returns the string 'new_mapping' if the mapping of the doctype conforms to the specification as outlined in schema.json, 'mixed_mapping' if the doctype exists, but does not conform to the specification. In other cases, None is returned.
     '''
     m = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype, {}).get('properties', {}).get('doctype', {})
@@ -138,6 +138,7 @@ def check_mapping(doctype):
             mapping = 'new_mapping'
         elif m['fields']['keyword']:
             mapping = 'mixed_mapping'
+            logger.warning('Deprecation warning: You still seem to be using an INCA-index in Elsticsearch in without the correct schema. We advise you to migrate, as we will remove support for these databases in the future. The best way to do this is probably to export all documents, set up a fresh elastic search index, and import the documents again.')
     except KeyError: 
         mapping = None
     
