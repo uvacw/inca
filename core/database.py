@@ -128,13 +128,11 @@ def update_document(document, force=False, retry=0, max_retries=10):
     pass
 
 def check_mapping(doctype):
-	'''
-	Checks the way the field "doctype" is mapped (as keyword or as text + keyword to determine whether queries 
-	have to use doctype.keyword or doctype
-	'''
-
-    m = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype, {})\
-.get('properties', {}).get('doctype', {})	
+    '''
+    Checks the way the field "doctype" is mapped (as keyword or as text + keyword to determine whether queries 
+    have to use doctype.keyword or doctype
+    '''
+    m = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype, {}).get('properties', {}).get('doctype', {})
     try: 
         if m['type'] == 'keyword':
             mapping = 'new_mapping'
@@ -142,7 +140,7 @@ def check_mapping(doctype):
             mapping = 'mixed_mapping'
     except KeyError: 
         mapping = None
-	
+    
     return mapping
 
 def delete_document(document_id):
