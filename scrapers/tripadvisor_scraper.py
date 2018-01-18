@@ -33,7 +33,7 @@ class tripadvisor(Scraper):
  
     def get(self):
         '''Fetches reviews from Tripadvisor.com'''
-        self.doctype = "Tripadvisor reviews"
+        self.doctype = "tripadvisor_hotel"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=9, day=8)
         
@@ -101,7 +101,6 @@ class tripadvisor(Scraper):
         logger.debug('We have fetched all overviewpages that exist (or the max number of pages defined). There are {} hotels in total.'.format(len(hotels)))
         
         # Fetch hotel-specific webpages and enrich the hotel dicts
-        hotels_enriched = []
         for hotel in hotels:
             link = hotel['link']
             logger.debug('Fetched the hotel-specific webpage: {}'.format(link))
@@ -280,10 +279,10 @@ class tripadvisor(Scraper):
                         review_votes.append(int(userhistory[3].text_content()))
                     elif len(userhistory) == 2:
                         review_contributions.append(int(userhistory[1].text_content()))      
-                        review_votes.append('NA')
+                        review_votes.append(None)   # cannot be a string as we expect a number
                     else:
-                        review_contributions.append('NA')
-                        review_votes.append('NA')
+                        review_contributions.append(None) # as this field usually contains ints, we cannot add the string 'NA'
+                        review_votes.append(None)   # cannot be a string as we expect a number
                 logger.debug("This page has a list with {} user contributions.".format(len(review_contributions)))
                 logger.debug("This page has a list with {} user votes.".format(len(review_votes)))
                 logger.debug("This page has a list with {} user locations.".format(len(review_locations)))
@@ -347,28 +346,4 @@ class tripadvisor(Scraper):
                 if numberofpage >= maxpages:
                     break
                 numberofpage+=1
-            hotels_enriched.append(thishotel)
-
-        logger.debug('We have fetched all reviews from the hotel-specific webpage that exist. There are {} reviews in total'.format(len(review_usernames)))
-        return hotels_enriched
-
-def cleandoc(document):
-    for k,v in document.items():
-        if type(v)==dict:
-            document[k] = cleandoc(v)
-        elif type(v)==str:
-            if not v.replace('\n','').replace(' ',''):
-                document[k] = ""
-            else:
-                document[k] = v
-        elif type(v) == str:
-            pass
-
-    empty_keys = []
-    for k in document.keys():
-        if not k.replace('\n','').replace(' ','') and not document[k]:
-            empty_keys.append(k)
-    for k in empty_keys:
-        document.pop(k)
-    return document
-
+            yield thishotel
