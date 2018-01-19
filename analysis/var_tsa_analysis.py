@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
-import logging 
+import logging
+from os import environ
 from core.analysis_base_class import Analysis
 from analysis import timeline_analysis as ta
 from statsmodels.tsa.api import VAR as var 
 from statsmodels.tsa.stattools import adfuller,kpss
 from statsmodels.tsa.tsatools import detrend
-from matplotlib import pyplot
 from pandas.plotting import lag_plot
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.stats.diagnostic import acorr_ljungbox
@@ -14,6 +14,14 @@ from statsmodels.tsa.stattools import grangercausalitytests
 from sklearn.metrics import r2_score
 
 logger = logging.getLogger(__name__)
+
+if 'DISPLAY' in environ:
+    from matplotlib import pyplot
+else:
+    logger.warning('$DISPLAY environment variable is not set, trying a different approach. You probably are running INCA on a text console, right?')
+    import matplotlib
+    matplotlib.use('Agg')
+    from matplotlib import pyplot
 
 
 class VAR(Analysis):
