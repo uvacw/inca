@@ -158,6 +158,8 @@ class tripadvisor(Scraper):
             if maxpages > self.MAXREVIEWPAGES:
                 logger.debug('However, we are only going to scrape {}.'.format(self.MAXREVIEWPAGES))
                 maxpages = self.MAXREVIEWPAGES
+            if maxpages < self.MAXREVIEWPAGES:
+                logger.debug('So we are going to scrape {} pages.'.format(maxpages))
 
             numberofpage = 1
             while True:
@@ -166,6 +168,7 @@ class tripadvisor(Scraper):
                 htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 logger.debug("Fetched the hotel-specific review webpage: {}.".format(reviews_thisurl))
                 tree = fromstring(htmlsource)
+                logger.debug('The number of the page is {}.'.format(numberofpage))
                 totalreviews = tree.xpath('//*[@class="innerBubble"]/div[@class="wrap"]') #tree.xpath('//*[@class="wrap"]')
 
                 # Check if the elements that were gathered in 'totalreviews' above are actual reviews
@@ -344,6 +347,7 @@ class tripadvisor(Scraper):
                     logger.debug("The next page is: {}".format(reviews_thisurl))
 
                 if numberofpage >= maxpages:
+                    logger.debug('The page number is above the max number of pages we are scraping, so we stop')
                     break
                 numberofpage+=1
             yield thishotel
