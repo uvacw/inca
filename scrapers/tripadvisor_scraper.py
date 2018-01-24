@@ -35,7 +35,7 @@ class tripadvisor(Scraper):
         '''Fetches reviews from Tripadvisor.com'''
         self.doctype = "tripadvisor_hotel"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=9, day=8)
+        self.date    = datetime.datetime(year=2018, month=1, day=24)
         
         hotels = []
         allurls = []
