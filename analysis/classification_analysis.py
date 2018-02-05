@@ -25,7 +25,7 @@ class classification(Analysis):
     def __init__(self):
         pass
 
-    def fit(self, documents, x_field, label_field, add_prediction=False, testsize = 0.2, mindf = 0.0, maxdf = 1.0, rand_shuffle = True, tfidf = True, vocabul = None, one_pass = False):
+    def fit(self, documents, x_field, label_field, add_prediction=False, testsize = 0.2, mindf = 0.0, maxdf = 1.0, rand_shuffle = True, tfidf = True, vocabul = None):
         """
         This method should train a Classifier model on the input documents.\n
         @param documents: the documents (stored in elasticsearch) to train on
@@ -69,8 +69,6 @@ class classification(Analysis):
                         encountered in the labeled documents are used to form the vocabulary.
         @type vocabul: list, or None type object
         @param one_pass: Keeps all documents in memory instead of retrieving them twice from ElasticSearch
-        @type one_pass: Boolean
-
         """
 
 
@@ -96,8 +94,7 @@ class classification(Analysis):
             if len(core.basic_utils.dotkeys(doc, x_field))>0:
                 self.valid_docs.append(doc['_id'])
                 self.labels.append(core.basic_utils.dotkeys(doc, label_field))
-                if one_pass == True:
-                    self.documents_fulltext.append(core.basic_utils.dotkeys(doc, x_field))
+                self.documents_fulltext.append(core.basic_utils.dotkeys(doc, x_field))
 
                 if counter <5:
                     text = core.basic_utils.dotkeys(doc, x_field).lower()
@@ -111,44 +108,30 @@ class classification(Analysis):
 
         assert len(self.valid_docs) == len(self.labels)
         
-        if one_pass == True:
-            assert len(self.labels) == len(self.documents_fulltext)
-            logger.info("Using one-pass processing. Keeping {} documents in memory".format(len(self.documents_fulltext)))
+    
+        assert len(self.labels) == len(self.documents_fulltext)
+        logger.info("Using one-pass processing. Keeping {} documents in memory".format(len(self.documents_fulltext)))
 
         #Extracting word counts as featires from example documents
         #If tfidf is set to True, it extracts the term-frequency-inverse-document-frequency features from the example documents.
 
-        documents2 = core.database.scroll_query({'query':{'ids':{'values':self.valid_docs}}})
+
         if tfidf:
             self.vectorizer = TfidfVectorizer(min_df = mindf, max_df = maxdf, vocabulary = vocabul)
-            if one_pass == True:
-                tfidf_full_data = self.vectorizer.fit_transform(self.documents_fulltext, self.labels)
-            else:
-                tfidf_full_data = self.vectorizer.fit_transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents2), self.labels)
-            self.vocab = np.array(self.vectorizer.get_feature_names())
-            logger.info('{} x entries and {} y entries'.format(tfidf_full_data.shape[0], len(self.labels )))
-            X_train, self.X_test, y_train, self.y_test = train_test_split(tfidf_full_data, self.labels, test_size=testsize, shuffle = rand_shuffle, random_state=42)
-
         else:
             self.vectorizer = CountVectorizer(min_df = mindf, max_df = maxdf, vocabulary = vocabul)
-            if one_pass == True:
-                counts = self.vectorizer.fit_transform(self.documents_fulltext, self.labels)
-            else:
-                counts = self.vectorizer.fit_transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents2), self.labels)
-            self.vocab = np.array(self.vectorizer.get_feature_names())
-            X_train, self.X_test, y_train, self.y_test = train_test_split(counts, self.labels, test_size = testsize, shuffle = rand_shuffle, random_state=42)
-
+        self.fitted = self.vectorizer.fit_transform(self.documents_fulltext, self.labels)
+        self.vocab = np.array(self.vectorizer.get_feature_names())
+        logger.info('{} x entries and {} y entries'.format(self.fitted.shape[0], len(self.labels )))
+        X_train, self.X_test, y_train, self.y_test = train_test_split(self.fitted, self.labels, test_size=testsize, shuffle = rand_shuffle, random_state=42)
         self.model =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
-        print(type(X_train), '\n', type(self.y_test))
-        #If predictions for training documents are desired
         if add_prediction ==True:
             self.train_predictions = self.model.predict(X_train)
         else:
             self.train_predictions = None
 
-        # return (self.vocab, counts, self.labels)
-        # return (self.vocab, self.labels)
-        return
+        return (self.vocab, self.fitted, self.labels)
+
 
 
     def predict(self, documents = None, x_field=None,  **kwargs):
@@ -156,7 +139,7 @@ class classification(Analysis):
         This method performs classification of new unseen documents.\n
         @param documents: the documents to classify.
         @type documents: iterable, or a scipy sparse csr matrix of features (representing term frequencies or tfidf values).
-        @param x_field: The nested field name that contains the text articles to be classified. Ideally nested within the '_source'
+        @param x_field: The nested field name that contains the text articles to be classified. Ideally nested within the '_source
                         field. For instance, to use nested field x2 as text document which is nested as doc['_source']['x1']['x2'], use
                         '_source.x1.x2'
                         (Makes a function call to core.basic_search.utilsdotkeys(dict, key_string) : allows the use of .-separated
@@ -168,12 +151,18 @@ class classification(Analysis):
 
         if documents == None:
             documents = self.X_test
-            print('Since no documents were inputted, this shall run the trained model on the test dataset reserved as 20% of the original labeled example dataset.')
+            logger.info('Since no documents were inputted, this shall run the trained model on the test dataset reserved as 20% of the original labeled example dataset.')
         else:
-            documents = self.vectorizer.transform(documents)
+            if type(documents[0]) is str:
+                logger.info('It seems that the input documents are a list of strings, proceeding without extracting any specific field')
+                documents = self.vectorizer.transform(documents)
+            elif type(documents[0]) is dict and x_field is not None:
+                logger.info('It seems that the input documents are a list of dicts, extracting the provided x_field')
+                documents = self.vectorizer.transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents))
+            else:
+                raise Exception('You have to input either nothing, or a list of strings, or a list of dicts together with the x_field')
+                
 
-
-        print(type(self.X_test))
         self.predictions = self.model.predict(documents)
         print('no_of predictions : ',len(self.predictions))
 
