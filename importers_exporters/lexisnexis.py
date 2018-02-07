@@ -31,14 +31,28 @@ def _detect_has_header(filename,encoding):
                 return True
             if line.strip().startswith('1 of'):
                 return False
+
+def check_suspicious(text):
+    '''checks whether an article is likely to be a real article
+    or a table with, e.g., sports results or stock exchange rates'''
     
+    ii=0
+    jj=0
+    for token in text.replace(",","").replace(".","").split():
+        ii+=1
+        if token.isdigit():
+            jj+=1
+    # if more than 16% of the tokens are numbers, then suspicious = True.
+    suspicious = jj > .16 * ii
+    return suspicious
+
 
 class lnimporter(Importer):
     """Read Lexis Nexis files"""
 
-    version = 0.1
+    version = 0.2
 
-    def run(self, path, force=False, *args, **kwargs):
+    def run(self, path, *args, **kwargs):
         """uses the documents from the load method in batches """
 
         # this method is overwritten because in contrast to
@@ -56,7 +70,7 @@ class lnimporter(Importer):
         ----
         path : string
             The file to load
-        encoding ; string
+        encoding ; string (optional)
             The encoding in which a file is, defaults to 'utf-8', but is also
             commonly 'UTF-16','ANSI','WINDOwS-1251'. 'autodetect' will attempt
             to infer encoding from file contents
@@ -81,20 +95,6 @@ class lnimporter(Importer):
 
         self.pathwithlnfiles = path
 
-        tekst = {}
-        title ={}
-        byline = {}
-        section = {}
-        length = {}
-        loaddate = {}
-        language = {}
-        pubtype = {}
-        journal = {}
-        journal2={}
-        pubdate_day = {}
-        pubdate_month = {}
-        pubdate_year = {}
-        pubdate_dayofweek = {}
 
         alleinputbestanden = []
         for path, subFolders, files in walk(self.pathwithlnfiles):
@@ -124,56 +124,90 @@ class lnimporter(Importer):
                     matchObj3 = re.match(r"\s+(January|February|March|April|May|June|July|August|September|October|November|December) (\d{1,2}), (\d{4})", line)
                     matchObj4 = re.match(r"\s+(\d{1,2}) (January|February|March|April|May|June|July|August|September|October|November|December) (\d{4}) (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)", line)
                     if matchObj:
+                        # new article starts
+                        if artikel > 0:
+                            # yield article, but not before we processed the first one
+                            formattedsource = "{} (print)".format(journal2.lower())
+                            formattedsource = self.SOURCENAMEMAP.get(formattedsource, formattedsource) # rename source if necessary
+                            # minimal fields to be returned. These really need to be present
+                            art = {
+                                "title":title.strip(),
+                                "doctype": formattedsource,
+                                "text":text,
+                                "publication_date":datetime.datetime(int(pubdate_year),int(pubdate_month),int(pubdate_day)),
+                                }
+                            # add fields where it is okay if they are absent
+                            if len(section)>0:
+                                art["category"] = section.lower()
+                            if len(byline)>0:
+                                art["byline"] = byline
+                            yield art
+
                         artikel += 1
                         logger.info('Now processing article {}'.format(artikel))
 
                         istitle=True #to make sure that text before mentioning of SECTION is regarded as title, not as body
                         firstdate=True # flag to make sure that only the first time a date is mentioned it is regarded as _the_ date
-                        tekst[artikel] = ""
-                        title[artikel] = ""
+                        text = ""
+                        title = ""
+                        byline = ""
+                        section = ""
+                        length = ""
+                        loaddate = ""
+                        language = ""
+                        pubtype = ""
+                        journal = ""
+                        journal2=""
+                        pubdate_day = ""
+                        pubdate_month = ""
+                        pubdate_year = ""
+                        pubdate_dayofweek = ""
+                        suspicious=True
+                        
                         while True:
                             nextline=next(f)
                             if nextline.strip()!="":
-                                journal2[artikel]=nextline.strip()
+                                journal2=nextline.strip()
                                 break
                         continue
+                    
                     if line.startswith("BYLINE"):
-                        byline[artikel] = line.replace("BYLINE: ", "").rstrip("\n")
+                        byline = line.replace("BYLINE: ", "").rstrip("\n")
                     elif line.startswith("SECTION"):
                         istitle=False # everything that follows will be main text rather than title if no other keyword is mentioned
-                        section[artikel] = line.replace("SECTION: ", "").rstrip("\n")
+                        section = line.replace("SECTION: ", "").rstrip("\n")
                     elif line.startswith("LENGTH"):
-                        length[artikel] = line.replace("LENGTH: ", "").rstrip("\n").rstrip(" woorden")
+                        length = line.replace("LENGTH: ", "").rstrip("\n").rstrip(" woorden")
                     elif line.startswith("LOAD-DATE"):
-                        loaddate[artikel] = line.replace("LOAD-DATE: ", "").rstrip("\n")
+                        loaddate = line.replace("LOAD-DATE: ", "").rstrip("\n")
                     elif matchObj2 and firstdate==True:
                         # print matchObj2.string
-                        pubdate_day[artikel]=matchObj2.group(1)
-                        pubdate_month[artikel]=str(self.MONTHMAP[matchObj2.group(2)])
-                        pubdate_year[artikel]=matchObj2.group(3)
-                        pubdate_dayofweek[artikel]=matchObj2.group(4)
+                        pubdate_day=matchObj2.group(1)
+                        pubdate_month=str(self.MONTHMAP[matchObj2.group(2)])
+                        pubdate_year=matchObj2.group(3)
+                        pubdate_dayofweek=matchObj2.group(4)
                         firstdate=False
                     elif matchObj3 and firstdate==True:
-                        pubdate_day[artikel]=matchObj3.group(2)
-                        pubdate_month[artikel]=str(self.MONTHMAP[matchObj3.group(1)])
-                        pubdate_year[artikel]=matchObj3.group(3)
-                        pubdate_dayofweek[artikel]="NA"
+                        pubdate_day=matchObj3.group(2)
+                        pubdate_month=str(self.MONTHMAP[matchObj3.group(1)])
+                        pubdate_year=matchObj3.group(3)
+                        pubdate_dayofweek="NA"
                         firstdate=False
                     elif matchObj4 and firstdate==True:
-                        pubdate_day[artikel]=matchObj4.group(1)
-                        pubdate_month[artikel]=str(self.MONTHMAP[matchObj4.group(2)])
-                        pubdate_year[artikel]=matchObj4.group(3)
-                        pubdate_dayofweek[artikel]=matchObj4.group(4)
+                        pubdate_day=matchObj4.group(1)
+                        pubdate_month=str(self.MONTHMAP[matchObj4.group(2)])
+                        pubdate_year=matchObj4.group(3)
+                        pubdate_dayofweek=matchObj4.group(4)
                         firstdate=False
                     elif (matchObj2 or matchObj3 or matchObj4) and firstdate==False:
                         # if there is a line starting with a date later in the article, treat it as normal text
-                        tekst[artikel] = tekst[artikel] + " " + line.rstrip("\n")
+                        text = text + " " + line.rstrip("\n")
                     elif line.startswith("LANGUAGE"):
-                        language[artikel] = line.replace("LANGUAGE: ", "").rstrip("\n")
+                        language = line.replace("LANGUAGE: ", "").rstrip("\n")
                     elif line.startswith("PUBLICATION-TYPE"):
-                        pubtype[artikel] = line.replace("PUBLICATION-TYPE: ", "").rstrip("\n")
+                        pubtype = line.replace("PUBLICATION-TYPE: ", "").rstrip("\n")
                     elif line.startswith("JOURNAL-CODE"):
-                        journal[artikel] = line.replace("JOURNAL-CODE: ", "").rstrip("\n")
+                        journal = line.replace("JOURNAL-CODE: ", "").rstrip("\n")
                     elif line.lstrip().startswith("Copyright ") or line.lstrip().startswith("All Rights Reserved"):
                         pass
                     elif line.lstrip().startswith("AD/Algemeen Dagblad") or line.lstrip().startswith(
@@ -183,121 +217,23 @@ class lnimporter(Importer):
                         pass
                     else:
                         if istitle:
-                            title[artikel] = title[artikel] + " " + line.rstrip("\n")
+                            title = title + " " + line.rstrip("\n")
                         else:
-                            tekst[artikel] = tekst[artikel] + " " + line.rstrip("\n")
-        logger.info("Done!", artikel, "articles added.")
+                            text = text + " " + line.rstrip("\n")
 
-        if not len(journal) == len(journal2) == len(loaddate) == len(section) == len(language) == len(byline) == len(length) == len(tekst) == len(pubdate_year) == len(pubdate_dayofweek) ==len(pubdate_day) ==len(pubdate_month):
-            logger.warning("!!!!!!!!!!!!!!!!!!!!!!!!!")
-            logger.warning("Ooooops! Not all articles seem to have data for each field. These are the numbers of fields that where correctly coded (and, of course, they should be equal to the number of articles, which they aren't in all cases.")
-            logger.warning("journal: {}".format(len(journal)))
-            logger.warning("journal2: {}".format(len(journal2)))
-            logger.warning("loaddate: {}".format(len(loaddate)))
-            logger.warning("pubdate_day: {}".format(len(pubdate_day)))
-            logger.warning("pubdate_month: {}".format(len(pubdate_month)))
-            logger.warning("pubdate_year: {}".format(len(pubdate_year)))
-            logger.warning("pubdate_dayofweek: {}".format(len(pubdate_dayofweek)))
-            logger.warning("section: {}".format(len(section)))
-            logger.warning("language: {}".format(len(language)))
-            logger.warning("byline: {}".format(len(byline)))
-            logger.warning("length: {}".format(len(length)))
-            logger.warning("tekst: {}".format(len(tekst)))
-            logger.warning("!!!!!!!!!!!!!!!!!!!!!!!!!")
-            logger.warning("Anyhow, we're gonna proceed and set those invalid fields to 'NA'. However, you should be aware of this when analyzing your data!")
-        else:
-            logger.info("No missing values encountered.")
-
-        suspicious=0
-        for i in range(artikel):
-            try:
-                art_source = journal[i + 1]
-            except:
-                art_source = ""
-            try:
-                art_source2 = journal2[i + 1]
-            except:
-                art_source2 = ""
-
-            try:
-                art_loaddate = loaddate[i + 1]
-            except:
-                art_loaddate = ""
-            try:
-                art_pubdate_day = pubdate_day[i + 1]
-            except:
-                art_pubdate_day = "1"
-            try:
-                art_pubdate_month = pubdate_month[i + 1]
-            except:
-                art_pubdate_month = "1"
-            try:
-                art_pubdate_year = pubdate_year[i + 1]
-            except:
-                art_pubdate_year = "1900"
-            try:
-                art_pubdate_dayofweek = pubdate_dayofweek[i + 1]
-            except:
-                art_pubdate_dayofweek = ""
-            try:
-                art_section = section[i + 1]
-            except:
-                art_section = ""
-            try:
-                art_language = language[i + 1]
-            except:
-                art_language = ""
-            try:
-                art_length = length[i + 1]
-            except:
-                art_length = ""
-            try:
-                art_text = tekst[i + 1]
-            except:
-                art_text = ""
-            try:
-                tone=sentiment(art_text)
-                art_polarity=str(tone[0])
-                art_subjectivity=str(tone[1])
-            except:
-                art_polarity=""
-                art_subjectivity=""
-            try:
-                art_byline = byline[i + 1]
-            except:
-                art_byline = ""
-
-            try:
-                art_title = title[i + 1]
-            except:
-                art_title = ""
-
-            # here, we are going to add an extra field for texts that probably are no "real" articles
-            # first criterion: stock exchange notacions and similiar lists:
-            ii=0
-            jj=0
-            for token in art_text.replace(",","").replace(".","").split():
-                ii+=1
-                if token.isdigit():
-                    jj+=1
-            # if more than 16% of the tokens are numbers, then suspicious = True.
-            art_suspicious = jj > .16 * ii
-            if art_suspicious: suspicious+=1
-
-            formattedsource = "{} (print)".format(art_source2.lower())
-
-            formattedsource = self.SOURCENAMEMAP.get(formattedsource, formattedsource) # rename source if necessary
-            
-            art = {
-                   "title":art_title,
-                   "doctype": formattedsource,
-                   "text":art_text,
-                   "category":art_section.lower(),
-                   "byline":art_byline,
-                   "publication_date":datetime.datetime(int(art_pubdate_year),int(art_pubdate_month),int(art_pubdate_day)),
-                   }
-
-            artnoemptykeys={k: v for k, v in art.items() if v}
-            yield artnoemptykeys
-
-
+        # yield the very last article of the whole set 
+        formattedsource = "{} (print)".format(journal2.lower())
+        formattedsource = self.SOURCENAMEMAP.get(formattedsource, formattedsource) # rename source if necessary
+        # minimal fields to be returned. These really need to be present
+        art = {
+            "title":title.strip(),
+            "doctype": formattedsource,
+            "text":text,
+            "publication_date":datetime.datetime(int(pubdate_year),int(pubdate_month),int(pubdate_day)),
+            }
+        # add fields where it is okay if they are absent
+        if len(section)>0:
+            art["category"] = section.lower()
+        if len(byline)>0:
+            art["byline"] = byline
+        yield art
