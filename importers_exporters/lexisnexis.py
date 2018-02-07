@@ -121,8 +121,10 @@ class lnimporter(Importer):
                         continue
                     matchObj = re.match(r"\s+(\d+) of (\d+) DOCUMENTS", line)
                     matchObj2 = re.match(r"\s+(\d{1,2}) (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december) (\d{4}) (maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag)", line)
-                    matchObj3 = re.match(r"\s+(January|February|March|April|May|June|July|August|September|October|November|December) (\d{1,2}), (\d{4})", line)
+                    matchObj2a = re.match(r"\s+(\d{1,2}) ([jJ]anuari|[fF]ebruari|[mM]aart|[aA]pril|[mM]ei|[jJ]uni|[jJ]uli|[aA]ugustus|[sS]eptember|[Oo]ktober|[nN]ovember|[dD]ecember) (\d{4}).*", line)
+                    matchObj3 = re.match(r"\s+(January|February|March|April|May|June|July|August|September|October|November|December) (\d{1,2}),? (\d{4})", line)
                     matchObj4 = re.match(r"\s+(\d{1,2}) (January|February|March|April|May|June|July|August|September|October|November|December) (\d{4}) (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)", line)
+                    matchObj4a = re.match(r"\s+(\d{1,2}) (January|February|March|April|May|June|July|August|September|October|November|December) (\d{4}).*", line)
                     if matchObj:
                         # new article starts
                         if artikel > 0:
@@ -135,6 +137,7 @@ class lnimporter(Importer):
                                 "doctype": formattedsource,
                                 "text":text,
                                 "publication_date":datetime.datetime(int(pubdate_year),int(pubdate_month),int(pubdate_day)),
+                                "suspicious":check_suspicious(text)
                                 }
                             # add fields where it is okay if they are absent
                             if len(section)>0:
@@ -187,6 +190,12 @@ class lnimporter(Importer):
                         pubdate_year=matchObj2.group(3)
                         pubdate_dayofweek=matchObj2.group(4)
                         firstdate=False
+                    elif matchObj2a and firstdate==True:
+                        # print matchObj2.string
+                        pubdate_day=matchObj2a.group(1)
+                        pubdate_month=str(self.MONTHMAP[matchObj2a.group(2).lower()])
+                        pubdate_year=matchObj2a.group(3)
+                        firstdate=False
                     elif matchObj3 and firstdate==True:
                         pubdate_day=matchObj3.group(2)
                         pubdate_month=str(self.MONTHMAP[matchObj3.group(1)])
@@ -199,7 +208,13 @@ class lnimporter(Importer):
                         pubdate_year=matchObj4.group(3)
                         pubdate_dayofweek=matchObj4.group(4)
                         firstdate=False
-                    elif (matchObj2 or matchObj3 or matchObj4) and firstdate==False:
+                    elif matchObj4a and firstdate==True:
+                        pubdate_day=matchObj4a.group(1)
+                        pubdate_month=str(self.MONTHMAP[matchObj4a.group(2)])
+                        pubdate_year=matchObj4a.group(3)
+                        firstdate=False
+
+                    elif (matchObj2 or matchObj2a or matchObj3 or matchObj4 or matchObj4a) and firstdate==False:
                         # if there is a line starting with a date later in the article, treat it as normal text
                         text = text + " " + line.rstrip("\n")
                     elif line.startswith("LANGUAGE"):
