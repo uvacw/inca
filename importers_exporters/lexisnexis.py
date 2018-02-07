@@ -58,12 +58,12 @@ class lnimporter(Importer):
         # this method is overwritten because in contrast to
         # other importers, we do not have a single doctype.
         # Each document can have a different one.
-        for doc in self.load(path, force, *args,**kwargs):
+        for doc in self.load(path, *args,**kwargs):
             self._ingest(iterable=doc, doctype=doc['doctype'])
             self.processed += 1
 
 
-    def load(self, path, force, *args, **kwargs):
+    def load(self, path, *args, **kwargs):
         """Loads a txt files from Lexis Nexis into INCA
 
         Parameters
