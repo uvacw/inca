@@ -58,7 +58,7 @@ class import_csv(Importer):
             One dict per row of data in the excel file
 
         """
-        encoding = kwargs.pop('encoding',"utf-8")
+        encoding = kwargs.pop('encoding','utf-8')
         if encoding:
             with open(path, encoding=encoding) as fileobj:
                 csv_content = csv.DictReader(fileobj, *args, **kwargs)
