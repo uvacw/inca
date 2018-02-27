@@ -58,8 +58,8 @@ To get a better idea, we are going to consider an example case of using VARs. Sa
 1) Import the module, create an instance of VAR   
 
 ```python
-from analysis import VAR_tsa as tsa
-fin_model = tsa.VAR()
+import inca
+fin_model = inca.analysis.var_tsa_analysis.VAR()
 
 ```
 
