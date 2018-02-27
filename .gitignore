@@ -91,3 +91,6 @@ adhoc/
 
 # geen PyCharm-shit
 .idea/
+
+# no jupyter notebook checkpoints
+.ipynb_checkpoints/

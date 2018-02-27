@@ -454,6 +454,23 @@ def list_backups():
                                                                      config.get('elasticsearch','%s.port' %config.get('inca','dependencies'))))
     return response.json()
 
+
+def delete_backup(snapshot=None, dryrun=True):
+    if snapshot is None:
+        print('You need to specify the name of a snapshot to delete. You can get a list of snapshots with .list_backups()')
+        return
+    command = 'http://%s:%s/_snapshot/inca_backup/%s' %(config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
+                                                  config.get('elasticsearch','%s.port' %config.get('inca','dependencies')),
+                                                  snapshot)
+    if dryrun==True:
+        print('This is a dry-run, nothing happens. If you specify dryrun=False, the following DELETE request will be issued:')
+        print(command)
+        return
+    else:
+        response = requests.delete(command)
+        return response.json()
+
+
 def create_backup(name):
     """create a backup of the Elasticsearch indices
 
