@@ -127,6 +127,23 @@ def update_document(document, force=False, retry=0, max_retries=10):
         insert_document(document)
     pass
 
+def check_mapping(doctype):
+    '''
+    Checks the way the field "doctype" is mapped to determine whether queries have to use doctype.keyword or doctype.
+    Returns the string 'new_mapping' if the mapping of the doctype conforms to the specification as outlined in schema.json, 'mixed_mapping' if the doctype exists, but does not conform to the specification. In other cases, None is returned.
+    '''
+    m = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype, {}).get('properties', {}).get('doctype', {})
+    try: 
+        if m['type'] == 'keyword':
+            mapping = 'new_mapping'
+        elif m['fields']['keyword']:
+            mapping = 'mixed_mapping'
+            logger.warning('Deprecation warning: You still seem to be using an INCA-index in Elsticsearch in without the correct schema. We advise you to migrate, as we will remove support for these databases in the future. The best way to do this is probably to export all documents, set up a fresh elastic search index, and import the documents again.')
+    except KeyError: 
+        mapping = None
+    
+    return mapping
+
 def delete_document(document_id):
     ''' delete a document
 
@@ -143,6 +160,8 @@ def delete_document(document_id):
         Whether the document was deleted
 
     '''
+
+    
     if type(document_id) == dict:
         document_id = document_id['_id']
     elif type(document_id) == list:
@@ -156,6 +175,14 @@ def delete_document(document_id):
 
 def delete_doctype(doctype):
     '''Delete all documents of a given type'''
+    if check_mapping(doctype) == "mixed_mapping": 
+        field = "doctype.keyword"
+    elif check_mapping(doctype) == "new_mapping": 
+        field = "doctype"
+    elif check_mapping(doctype) == None: 
+         logger.warning("Could not find mapping of doctype, please check whether you are using the correct doctype")
+         return []
+    
     for doc in scroll_query(
         {
         "query":
@@ -165,7 +192,7 @@ def delete_doctype(doctype):
                 "filter":
                     {
                     "term" : {
-                        "_type" : doctype
+                        field : doctype
                     }
                     }
                 }

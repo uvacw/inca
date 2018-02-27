@@ -22,11 +22,11 @@ class zeit(rss):
         self.rss_url='http://newsfeed.zeit.de/index'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=28)
-    
+
 
     def get(self,**kwargs):
 
-        # creating iteration over the rss feed. 
+        # creating iteration over the rss feed.
         req =request.Request("http://newsfeed.zeit.de/index")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
@@ -36,15 +36,15 @@ class zeit(rss):
         dates = tree.xpath("//channel//item//pubDate/text()")
         titles = tree.xpath("//channel//item//title/text()")
 
-        for link,xpath_date,title,category in zip(article_urls,dates,titles,categories):      
+        for link,xpath_date,title,category in zip(article_urls,dates,titles,categories):
             link = link.strip()
-            
+
             try:
                 req = request.Request(link)
                 read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(read)
             except:
-                logger.error("HTML tree cannot be parsed")
+                logger.warning("HTML tree cannot be parsed")
 
 
             # if article contains multiple plages, go ahead and open the full article in one page:
@@ -78,7 +78,7 @@ class zeit(rss):
             except:
                 description = ''
 
-            # Create iso format date 
+            # Create iso format date
             try:
                 # Wed, 28 Dec 2016 06:56:52 +0100
                 date = datetime.datetime.strptime(xpath_date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
@@ -96,5 +96,5 @@ class zeit(rss):
                 url         = link,
             )
             doc.update(kwargs)
-            
-            yield doc        
+
+            yield doc

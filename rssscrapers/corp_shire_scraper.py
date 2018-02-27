@@ -31,7 +31,7 @@ class shire(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -43,11 +43,12 @@ class shire(rss):
         try:
             title="".join(tree.xpath('//*/span[@id="content_1_rowcontainer_1_pagecontentleftprimary_0_Heading"]/text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
+            title = ""
         try:
             text="".join(tree.xpath('//*[@class="content-primary"]/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),

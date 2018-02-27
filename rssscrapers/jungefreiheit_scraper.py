@@ -23,11 +23,11 @@ class jungefreiheit(rss):
         self.rss_url='https://jungefreiheit.de/feed/'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=11, day=21)
-    
+
 
     def get(self,**kwargs):
 
-        # creating iteration over the rss feed. 
+        # creating iteration over the rss feed.
         req =request.Request("https://jungefreiheit.de/feed/")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
@@ -37,15 +37,15 @@ class jungefreiheit(rss):
         dates = tree.xpath("//channel//item//pubDate/text()")
         titles = tree.xpath("//channel//item//title/text()")
 
-        for link,category,xpath_date,title,description in zip(article_urls,categories,dates,titles,descriptions):      
+        for link,category,xpath_date,title,description in zip(article_urls,categories,dates,titles,descriptions):
             link = link.strip()
-            
+
             try:
                 req = request.Request(link)
                 read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(read)
             except:
-                logger.error("HTML tree cannot be parsed")
+                logger.warning("HTML tree cannot be parsed")
 
 
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
@@ -53,22 +53,22 @@ class jungefreiheit(rss):
             text = ''
             for r in parag:
                 text += ' '+r.strip().replace('\xa0',' ')
-        
-        	# Retrieve author    
+
+        	# Retrieve author
             try:
             	author = tree.xpath("//span[@class='entry-author-name']/text()")[0].strip()
             except:
             	author = ''
 
 
-            # source needs to be added. Currently appears in parenthesis at the end of last paragraph. 
+            # source needs to be added. Currently appears in parenthesis at the end of last paragraph.
             last_stnce = parag[-1]
             try:
                 source = re.findall(r'(\(.+\))',last_stnce[-15:])[0].replace('(','').replace(')','')
             except:
                 source = ''
 
-            # Create iso format date 
+            # Create iso format date
             try:
                 date = datetime.datetime.strptime(xpath_date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
             except:
@@ -86,5 +86,5 @@ class jungefreiheit(rss):
                 url         = link,
             )
             doc.update(kwargs)
-            
-            yield doc        
+
+            yield doc

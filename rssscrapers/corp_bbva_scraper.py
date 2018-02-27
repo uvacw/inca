@@ -43,20 +43,22 @@ class bbva(rss):
         try:
             title="".join(tree.xpath('//*/h1[@class="titular"]//text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
+            title= ""
         try:
             teaser="".join(tree.xpath('//*[@class="entradilla "]//text()')).strip()
         except:
             teaser= ""
-            teaser_clean = " ".join(teaser.split())
+            logger.debug("Could not parse article teaser")
+        teaser_clean = " ".join(teaser.split())
         try:
             text="".join(tree.xpath('//*[@class="container"]/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),
-                  "teaser":teaser.strip(),
+                  "teaser":teaser_clean.strip(),
                   "text":polish(text).strip()
                   }
 

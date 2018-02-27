@@ -23,7 +23,7 @@ class suddeutsche(rss):
         self.rss_url='http://rss.sueddeutsche.de/rss/Topthemen'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=11, day=21)
-    
+
     def get(self,**kwargs):
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
@@ -34,7 +34,7 @@ class suddeutsche(rss):
         byline_source   sth like ANP
         '''
         namespaces = {'dc':'http://purl.org/dc/elements/1.1/'}
-        # creating iteration over the rss feed. 
+        # creating iteration over the rss feed.
         req =request.Request("http://rss.sueddeutsche.de/rss/Topthemen")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
@@ -42,22 +42,22 @@ class suddeutsche(rss):
         dates = tree.xpath("//channel//item//pubDate/text()")
         sources = tree.xpath("//channel//item//dc:publisher/text()",namespaces=namespaces)
 
-        for link,date,source in zip(article_urls,dates,sources): # you go to each article page       
+        for link,date,source in zip(article_urls,dates,sources): # you go to each article page
             link = link.strip()
-            try: 
+            try:
                 req = request.Request(link)
                 read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(read)
             except:
-                logger.error("HTML tree cannot be parsed")
-            
+                logger.warning("HTML tree cannot be parsed")
+
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
             parag = tree.xpath("//*[@id='article-body']/p//text()")[1:]
             text = ''
             for r in parag:
                 text += ' '+r.strip().replace('\xa0',' ')
                 #adding a space at the end of the paragraph.
-            
+
             # Retrieving bullet points on top of articles
             try:
                 summary = tree.xpath("//*[@id='article-body']/p//text()")[0].strip().replace('\xa0',' ')
@@ -73,8 +73,8 @@ class suddeutsche(rss):
             # Retrieving the section/category from url
             matchObj = re.match( r'http://www.sueddeutsche.de/(.*?)/', link, re.M|re.I)
             category = matchObj.group(1)
- 
-                
+
+
             # Retrieving the byline/author
             if tree.xpath("//*[@id='abbr-odg']/text() | //*[@id='abbr-pamu']/text() | //*[@id='abbr-luc']/text()") != []:
                 byline_tree = tree.xpath("//*[@id='abbr-odg']/text() | //*[@id='abbr-pamu']/text() | //*[@id='abbr-luc']/text()")[0]
@@ -92,11 +92,11 @@ class suddeutsche(rss):
 
             if byline_tree.startswith("Von "):
                 byline_tree.replace("Von ","")
-            
-            # Create iso format date 
+
+            # Create iso format date
             loc= locale.setlocale(locale.LC_ALL, 'de_DE') #first set the date to German.
             xpath_date = tree.xpath("//*[@id='sitecontent']/section[1]/time[@datetime]/text()")[0].strip()
-            
+
             # convert to datetime object
             pub_date = datetime.datetime.strptime(date[5:],"%d %b %Y %H:%M:%S GMT").isoformat()
 
@@ -147,4 +147,3 @@ class suddeutsche(rss):
             )
             doc.update(kwargs)
             yield doc
-

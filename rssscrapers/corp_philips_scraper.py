@@ -18,7 +18,7 @@ def polish(textstring):
     if rest: result = lead + ' ||| ' + rest
     else: result = lead
     return result.strip()
-    
+
 class philips(rss):
     """Scrapes Philips """
 
@@ -31,7 +31,7 @@ class philips(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -43,19 +43,18 @@ class philips(rss):
         try:
             title="".join(tree.xpath('//*/span[@class="p-heading-02 p-heading-medium"]//text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
             title = ""
         try:
             teaser="".join(tree.xpath('//*/span[@class="p-body-copy-02"]/text()')).strip()
         except:
-            print("no teaser")
+            logger.debug("Could not parse article teaser")
             teaser= ""
         teaser_clean = " ".join(teaser.split())
         try:
             text="".join(tree.xpath('//*/span[@class="p-body-copy-02"]//text()')).strip()
         except:
-            print("geen text")
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         extractedinfo={"title":title.strip(),

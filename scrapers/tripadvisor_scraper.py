@@ -9,81 +9,84 @@ from random import randrange
 import urllib.request as urllib2
 
 logger = logging.getLogger(__name__)
-
-# gives more output
 logger.setLevel(logging.DEBUG)
-
-# For testing purposes, never fetch more than this many pages of reviews
-# set to 1000 or so for production use
-# MAXPAGES = 2
 
 class tripadvisor(Scraper):
     """Scrapes Tripadvisor reviews"""
     
     def __init__(self, database=True, startpage = 1, maxpages = 2, maxreviewpages = 5, maxurls = 50, starturl = "https://www.tripadvisor.com/Hotels-g188590-Amsterdam_North_Holland_Province-Hotels.html"):
         '''
-        startpage: the overviewpage where to start
-        maxpages: number of pages with hostels to scrape at one time
-        maxreviewpages: number of pages with reviews *per hostel* to scrape
-        starturl: URL to first page with hostel results
-        maxurl: number of urls that are made
+        startpage: the overviewpage where to start scraping
+        maxpages: number of overviewpages with hotels to scrape at one time
+        maxreviewpages: number of pages with reviews per hotel to scrape
+        starturl: URL to first overviewpage (the startpage of a city)
+        maxurl: number of overview pages that are made of the starturl (always set larger than maxpages)
         '''
-        self.database = database
-        self.START_URL = starturl
-        self.BASE_URL = "http://www.tripadvisor.com"          
-        self.MAXPAGES = maxpages
-        self.STARTPAGE = startpage
+        self.database       = database
+        self.START_URL      = starturl
+        self.BASE_URL       = "http://www.tripadvisor.com"          
+        self.MAXPAGES       = maxpages
+        self.STARTPAGE      = startpage
         self.MAXREVIEWPAGES = maxreviewpages
-        self.MAXURLS = maxurls
-        self.BLACKLIST = [#"http://www.tripadvisor.com/Hotel_Review-g188590-d189389-Reviews-Sofitel_Legend_The_Grand_Amsterdam-Amsterdam_North_Holland_Province.html",
-                          #"http://www.tripadvisor.com/Hotel_Review-g188590-d3526884-Reviews-Andaz_Amsterdam_Prinsengracht-Amsterdam_North_Holland_Province.html"
-                         ]   # review pages that never should be fetched (e.g., because they do not conform with the standard layout)
+        self.MAXURLS        = maxurls
+        self.BLACKLIST      = []   # review pages that never should be fetched (e.g. because they do not conform with the standard layout)
  
     def get(self):
         '''Fetches reviews from Tripadvisor.com'''
-        self.doctype = "Tripadvisor reviews"
+        self.doctype = "tripadvisor_hotel"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=9, day=8)
+        self.date    = datetime.datetime(year=2018, month=1, day=24)
         
         hotels = []
         allurls = []
 
-        # Creating the starturl by altering the starturl
+        # Creating the correct url for creating following overviewpages, by altering the starturl
         starturl_altering = self.START_URL + "#BODYCON"
         occur = 2
         indices = [x.start() for x in re.finditer("-",starturl_altering)]
         part1 = starturl_altering[0:indices[occur-1]]
         part2 = starturl_altering[indices[occur-1]+1:]
         starturl = part1 + "-oa{}-" + part2
+        logger.debug('This scraper is scraping information from the following Tripadvisor list of hotels: {}'.format(starturl))
 
         # Possible urls are created, but the list can't be longer than the maxpages defined above
         for i in range (self.STARTPAGE*30, self.MAXURLS*30, 30):          
             allurls.append(starturl.format(i))
         if len(allurls) > self.MAXPAGES:
             allurlsgen = (e for e in allurls[:int(self.MAXPAGES)])
-            logger.debug('The list of created URLs is longer than the defined max overviewpages. {} page(s) are being scraped'.format(self.MAXPAGES))
+            logger.debug('The list of created URLs is longer than the defined max overviewpages. In total, {} page(s) are being scraped'.format(self.MAXPAGES))
         else:
             allurlsgen = (e for e in allurls)
-            logger.debug('The list of created URLs is shorter than the defined max overviewpages. {} page(s) are being scraped'.format(len(allurls)))
+            logger.debug('The list of created URLs is shorter than the defined max overviewpages. In total, {} page(s) are being scraped'.format(len(allurls)))
         thisurl = next(allurlsgen)
         sleep(randrange(5,10))
         req=urllib2.Request(thisurl, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
         htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
-        logger.debug("Fetched the overviewpage: {}".format(thisurl))
-        while htmlsource.find('prw_rup prw_meta_hsx_three_col_listing')!=-1:
+        logger.debug("Fetched the following overviewpage: {}".format(thisurl))
+        page = 1
+        while True:
+        #while htmlsource.find('prw_rup prw_meta_hsx_three_col_listing')!=-1:
             tree = fromstring(htmlsource)
-            linkselement = tree.xpath('//*[@class="property_title"]')
+            if tree.xpath('//*[@class="pageNum first current "]') and page > 1:
+                logger.debug("OOPS, WE ARE BACK AT THE FIRST PAGE AGAIN!")
+                break
+            logger.debug("This page has pagenumber {}".format(page))
+
+            linkselement = tree.xpath('//*[@class="relWrap"]//*[@class="property_title prominent"]')
             links = ["http://www.tripadvisor.com"+ e.attrib['href'] for e in linkselement if 'href' in e.attrib]
-            names = tree.xpath('//*[@class="property_title"]/text()')
-            reviewsquantity = tree.xpath('//*[@class="more review_count"]//text()')
+            names = tree.xpath('//*[@class="relWrap"]//*[@class="property_title prominent"]/text()')
+            reviewsquantity = tree.xpath('//*[@class="review_count"]//text()')
 
             assert len(links)==len(names)==len(reviewsquantity)
+            logger.debug("This overviewpage has {} links to hotels, {} hotel names and {} review quantities".format(len(links),len(names),len(reviewsquantity)))
 
             for hotel in range(len(links)):
                 thishotel = {'name':names[hotel].strip(),
                              'link':links[hotel].strip(),
-                             'reviewquantity':reviewsquantity[hotel].strip()}
+                             'reviewquantity':reviewsquantity[hotel].strip(),
+                             'reviews': []}
                 hotels.append(thishotel)
+                
             # apart from the initial while-loop condition, we also stop the loop once we reach
             # the maximum number of pages defined before:
             try:
@@ -93,30 +96,31 @@ class tripadvisor(Scraper):
             sleep(randrange(5,10))
             req=urllib2.Request(next_url, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
             htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
-            logger.debug("Fetched the overviewpage: {}".format(next_url))
-            
+            logger.debug("Fetched the following overviewpage: {}".format(next_url))
+            page +=1
         logger.debug('We have fetched all overviewpages that exist (or the max number of pages defined). There are {} hotels in total.'.format(len(hotels)))
+        
         # Fetch hotel-specific webpages and enrich the hotel dicts
-        hotels_enriched = []
         for hotel in hotels:
-            logger.debug(hotel)
             link = hotel['link']
             logger.debug('Fetched the hotel-specific webpage: {}'.format(link))
+            logger.debug('This is all the info we already have about the hotel: {}.'.format(hotel))
             sleep(randrange(5,10))
 
             if link not in self.BLACKLIST:
+                logger.debug("This page is not in the blacklist, and is being scraped")
                 req=urllib2.Request(link, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
                 htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(htmlsource)
                 try:
                     overallrating = tree.xpath('//*[@class="overallRating"]/text()')[0]
-                    logger.debug("This page has an overall rating of {}.".format(overallrating))
+                    logger.debug("This hotel has an overall rating of {}.".format(overallrating))
                 except:
                     ""
                     logger.info("Hotel with link {} did not have an overall rating.".format(link))
                 try:
                     ranking = "".join(tree.xpath('//*[@class="header_popularity popIndexValidation"]/a/text() | //*[@class="header_popularity popIndexValidation"]/b/text() | //*[@class="header_popularity popIndexValidation"]/text()'))
-                    logger.debug("This page has a ranking of {}.".format(ranking))
+                    logger.debug("This hotel has a ranking of {}.".format(ranking))
                 except:
                     ""
                     logger.info("Hotel with link {} did not have a ranking.".format(link))   
@@ -128,79 +132,130 @@ class tripadvisor(Scraper):
                 except:
                     thishotel['overall_rating'] = overallrating.strip()
             else:
-                logger.debug('This link was not fetched since it is in the blacklist: {}'.format(link))
+                logger.debug('This link was not fetched since it is on the blacklist: {}'.format(link))
                 continue
                 
             # Fetch hotel-specific reviews and enrich the hotel dicts
             reviews_thishotel=[]
 
-            # the hotel-specific webpage shows the reviews, but only with limited text
+            # The hotel-specific webpage shows the reviews, but only with limited text
             # so we go to the link of the first review which will give an extended list of all reviews
-
             linkelement_reviewpage = tree.xpath('//*[@class="quote isNew"]/a | //*[@class="quote"]/a')
             link_reviewpage = [e.attrib['href'] for e in linkelement_reviewpage if 'href' in e.attrib][0]
             reviews_thisurl = self.BASE_URL + link_reviewpage
 
-            # we check how many pages with reviews there are, for this we only need the first review page of the hotel
+            # We check how many pages with reviews there are, for this we only need the first review page of the hotel
             req=urllib2.Request(reviews_thisurl, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
             htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
             tree = fromstring(htmlsource)
-            maxpages = int(tree.xpath('//*[@class="pageNum last taLnk "]/text()')[0])
-            logger.debug('There seem to be {} pages with reviews.'.format(maxpages))
+            try: 
+                maxpages = int(tree.xpath('//*[@class="pageNum last taLnk "]/text()')[0])
+            except:
+                maxpages = int(1)
+            logger.debug('There seem to be {} page(s) with reviews.'.format(maxpages))
             
             # but if these are more than our maximum set above, we only take so much
             if maxpages > self.MAXREVIEWPAGES:
-                logger.debug('There seem to be {} pages with reviews, however, we are only going to scrape {}.'.format(maxpages,self.MAXREVIEWPAGES))
+                logger.debug('However, we are only going to scrape {}.'.format(self.MAXREVIEWPAGES))
                 maxpages = self.MAXREVIEWPAGES
+            if maxpages < self.MAXREVIEWPAGES:
+                logger.debug('So we are going to scrape {} pages.'.format(maxpages))
 
             numberofpage = 1
             while True:
                 sleep(randrange(5,10))
                 req=urllib2.Request(reviews_thisurl, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
                 htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
-                logger.debug("Fetched the reviews of hotel-specific webpage: {}.".format(reviews_thisurl))
+                logger.debug("Fetched the hotel-specific review webpage: {}.".format(reviews_thisurl))
                 tree = fromstring(htmlsource)
-                try:
-                    date_element = tree.xpath('//*[@class="ratingDate relativeDate"]')
-                    review_date = [e.attrib['title'] for e in date_element if 'title' in e.attrib]
-                    logger.debug("This page has {} dates.".format(len(review_date))) 
-                except:
-                    ""
-                    logger.info("Hotel with link {} did not have a date.".format(reviews_thisurl))
-                try:
-                    mobiles = tree.xpath('//*[@class="rating reviewItemInline"]')
-                    review_mobile = [True if i.xpath('./a') else False for i in mobiles]
-                    logger.debug("This page has {} type of reviews.".format(len(review_mobile)))
-                except:
-                    ""
-                    logger.info("Hotel with link {} did not have a type of review.".format(link))
-                try:
-                    ratingelements = tree.xpath('//*[@class="rating reviewItemInline"]/span[1]')
-                    review_ratings = [e.attrib['class'].lstrip('ui_bubble_rating bubble_') for e in ratingelements]
-                    logger.debug("This page has {} ratings.".format(len(review_ratings)))
-                except:
-                    ""
-                    logger.info("Hotel with link {} did not have a review ratings.".format(reviews_thisurl))
+                logger.debug('The number of the page is {}.'.format(numberofpage))
+                totalreviews = tree.xpath('//*[@class="innerBubble"]/div[@class="wrap"]') #tree.xpath('//*[@class="wrap"]')
 
-                review_headline = []
-                review_headline_elem = tree.xpath('//*[@class="noQuotes"]')
-                for headline in review_headline_elem:
-                    if headline.text_content() == '':
-                        review_headline.append('NA')
+                # Check if the elements that were gathered in 'totalreviews' above are actual reviews
+                allreviews = []
+                for every_review in totalreviews:
+                    for subelement in every_review.getchildren():
+                        if 'prw_rup prw_reviews_text_summary_hsx' in subelement.values():
+                            allreviews.append(every_review)
+                logger.debug('There are {} reviews being processed'.format(len(allreviews)))
+                if len(allreviews)!= len(totalreviews):
+                    logger.error('OOPS, there were more review elements than actual reviews! This is the current link {}. There are {} review elements that were not reviews.'.format(reviews_thisurl,len(totalreviews)-len(allreviews)))
+                totalpages = tree.xpath('//*[@class="pageNum last taLnk "]/text()')
+                if len(allreviews) < 7:
+                    if totalpages == []:
+                        logger.debug('This page contains less than 7 reviews, however, it is the last reviewpage, so this makes sense.')
                     else:
-                        review_headline.append(headline.text_content())
-                logger.debug("This page has {} headlines.".format(len(review_headline))) 
+                        logger.debug('OOPS, this page contains less than 7 review elements! The htmlsource is saved under \'debugpage:date\' and the reviews are printed below:')
+                        for debugreview in allreviews:
+                            logger.error(debugreview.text_content())
+                        with open('debugpage-{}.html'.format(datetime.datetime.now()), mode='w') as fo:
+                            fo.write(htmlsource)
+                if len(allreviews) > 7:
+                    logger.error('OOPS, this page contains MORE than 7 review elements! The htmlsource is saved under \'debugpage:date\' and this page is skipped')
+                    with open('debugpage-{}.html'.format(datetime.datetime.now()), mode='w') as fo:
+                        fo.write(htmlsource)
+                    continue
+                if allreviews == []:
+                    logger.error('OOPS, this page contains no reviews at all. The htmlsource is saved under \'debugpage:date\' and this page is skipped')
                     
-                review_stayed = []
-                review_stayed_elem = tree.xpath('//*[@class="prw_rup prw_reviews_category_ratings_hsx"]')
-                for review in review_stayed_elem:
-                    date = review.text_content()
-                    date_strip = date.replace("Value","").replace("Location","").replace("Sleep","").replace("Quality","").replace("Rooms","").replace("Cleanliness","").replace("Service","")
-                    if date_strip == "":
-                        review_stayed.append('NA')
-                    else:
-                        review_stayed.append(date_strip)
-                logger.debug("This page has {} dates of stay.".format(len(review_stayed)))
+                reviews = []
+                for review in allreviews:
+                    thisreview = {}
+                    for element in review.getchildren():
+                        if 'quote isNew' in element.values():
+                            thisreview['headline'] = element.text_content().strip()
+                        if 'quote' in element.values():
+                            thisreview['headline'] = element.text_content().strip()
+                        if 'prw_rup prw_reviews_text_summary_hsx' in element.values():
+                            thisreview['review'] = element.text_content().strip()
+                            if thisreview['review'] == '':
+                                thisreview['review'] = ('UNRETRIEVABLE REVIEW')
+                        if 'rating reviewItemInline' in element.values():
+                            date = element.getchildren()[1].attrib['title'].strip()
+                            thisreview['date'] = date
+                            infodate = element.text_content().strip()
+                            splitat_mobile = infodate.find('via mobile')
+                            if splitat_mobile > -1:
+                                thisreview['mobile'] = True
+                            else:
+                                thisreview['mobile'] = False
+                            ratingelement = int(element.getchildren()[0].attrib['class'].lstrip('ui_bubble_rating bubble_').replace("0",""))
+                            thisreview['rating'] = ratingelement
+                        if 'mgrRspnInline' in element.values():
+                            response_elements = element.getchildren()
+                            for response_element in response_elements:
+                                if 'prw_rup prw_reviews_response_header' in response_element.values():
+                                    thisreview['response_date'] = response_element.getchildren()[0].getchildren()[0].text_content()    
+                                    responder = response_element.getchildren()[0].text_content()
+                                    splitat_responder = responder.find(', responded')
+                                    thisreview['responder'] = responder[:splitat_responder]
+                                if 'prw_rup prw_reviews_text_summary_hsx' in response_element.values():
+                                    thisreview['response'] = response_element.text_content()
+                            if thisreview['response'] == '':
+                                thisreview['response'] = ('UNRETRIEVABLE RESPONSE')
+                        else:
+                            thisreview['response'] = 'NA'
+                        if 'prw_rup prw_reviews_category_ratings_hsx' in element.values():
+                            notravelinfo = element.getchildren()[0].text_content()
+                            if notravelinfo == '':
+                                thisreview['date_of_stay'] = 'NA'
+                            else:
+                                travelinfo = element.getchildren()[0].getchildren()[0].getchildren()[0].getchildren()
+                                if len(travelinfo) == 1:
+                                    aboutstay = element.getchildren()[0].getchildren()[0].getchildren()[0].text_content()
+                                else:
+                                    aboutstay = travelinfo[0].text_content()
+                                    firstratings = travelinfo[1].text_content()
+                                    splitat_stay = aboutstay.find('traveled')     
+                                    if splitat_stay == -1:
+                                        thisreview['date_of_stay'] = aboutstay.replace('Stayed: ','').strip()
+                                    else:
+                                        dateofstay, travelcompany = aboutstay[:splitat_stay-2], aboutstay[splitat_stay:]
+                                        thisreview['date_of_stay'] = dateofstay.strip().replace('Stayed: ','')
+                                        thisreview['travel_company'] = travelcompany.strip()
+                    logger.debug('For this review, the following information was found: {}.'.format(thisreview.keys()))
+                    reviews.append(thisreview)
+                logger.debug('This page has {} reviews in total'.format(len(reviews)))
                 
                 review_usernames =[]
                 review_locations=[]
@@ -223,30 +278,30 @@ class tripadvisor(Scraper):
                     userhistory_elements = allinfo[1].getchildren()
                     userhistory = userhistory_elements[0].getchildren()     
                     if len(userhistory) == 4:
-                        review_contributions.append(userhistory[1].text_content())
-                        review_votes.append(userhistory[3].text_content())
+                        review_contributions.append(int(userhistory[1].text_content()))
+                        review_votes.append(int(userhistory[3].text_content()))
                     elif len(userhistory) == 2:
-                        review_contributions.append(userhistory[1].text_content())      
-                        review_votes.append('NA')
+                        review_contributions.append(int(userhistory[1].text_content()))      
+                        review_votes.append(None)   # cannot be a string as we expect a number
                     else:
-                        review_contributions.append('NA')
-                        review_votes.append('NA')
-                logger.debug("This page has {} user contributions.".format(len(review_contributions)))
-                logger.debug("This page has {} user votes.".format(len(review_votes)))
-                logger.debug("This page has {} user locations.".format(len(review_locations)))
-                logger.debug("This page has {} usernames.".format(len(review_usernames)))
+                        review_contributions.append(None) # as this field usually contains ints, we cannot add the string 'NA'
+                        review_votes.append(None)   # cannot be a string as we expect a number
+                logger.debug("This page has a list with {} user contributions.".format(len(review_contributions)))
+                logger.debug("This page has a list with {} user votes.".format(len(review_votes)))
+                logger.debug("This page has a list with {} user locations.".format(len(review_locations)))
+                logger.debug("This page has a list with {} usernames.".format(len(review_usernames)))
 
                 review_images = []
-                reviews = tree.xpath('//*[@class="innerBubble"]/div[@class="wrap"]')
-
-                for r in reviews:
+                everyreview = tree.xpath('//*[@class="innerBubble"]/div[@class="wrap"]')
+                for r in everyreview:
                     if r.find('*//noscript/img') is not None:  
                         review_images.append([{'url':e.attrib['src']} for e in r.findall('*//noscript/img')])
                     else:
                         review_images.append([])
-                
+                logger.debug('This page has a list with {} images'.format(len(review_images)))
+                        
                 review_moreratings = []
-                for r in reviews:
+                for r in everyreview:
                     allratings = {}
                     review_ratingthing = []
                     review_ratingvalue = []
@@ -257,128 +312,42 @@ class tripadvisor(Scraper):
                         assert len(review_ratingthing)==len(review_ratingvalue)
                         allratings = dict(zip(review_ratingthing,review_ratingvalue))
                     review_moreratings.append(allratings)
-
+                logger.debug('This page has a list with {} specific ratings (e.g. staff/cleanliness)'.format(len(review_moreratings)))
+                
                 review_is_sponsored = []
-                for review in reviews:
+                for review in everyreview:
                     is_sponsored = review.text_content().find('Review collected in partnership with') > -1
                     review_is_sponsored.append(is_sponsored)
+                logger.debug('This page has a list with {} review sponsorships'.format(len(review_is_sponsored)))
 
-                assert len(review_usernames)==len(review_date)==len(review_headline)==len(review_mobile)==len(review_stayed)==len(review_ratings)==len(review_locations)==len(review_votes)==len(review_contributions)
-                
-                logger.debug('The length of images is {}'.format(len(review_images)))
-                logger.debug('The length of moreratings is {}'.format(len(review_moreratings)))
-                logger.debug('The length of review_is_sponsored is {}'.format(len(review_is_sponsored)))     
-
-                # Now scraping the text of the reviews, including the responses. First, all text (reviews and responses)
-                # is gathered. Responses are then matched to the right review based on the order of the text
-                # (responses always follow the review).
-                
-                reviews_cleaned = []
-                reviews_alltext_elements = tree.xpath('//*[@class="partial_entry"]')
-                reviews_alltext = [e.text_content() for e in reviews_alltext_elements]
-
-                # check if we have any review that has no text:
-                notcomplete = max([r=="" for r in reviews_alltext])  # True if at least one review is empty
-                if notcomplete:
-                    logger.warning("This is weird, the current hotel has a review without text. It's here: {}".format(reviews_thisurl))
-                    # go to the next page, unless there is no next page   
-                    next_reviewpageelement = tree.xpath('//*[@class="nav next taLnk "]')
-                    if next_reviewpageelement == []:
-                        break
-                    else:
-                        next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
-                        reviews_thisurl = self.BASE_URL + next_pagelink
-                    logger.debug("The next page is: {}".format(reviews_thisurl))
-                    continue
-                
-                responses_elements = tree.xpath('//*[@class="mgrRspnInline"]')
-                responses = [e.text_content() for e in responses_elements]
-                responses_date = []
-                responses_responder = []
-                responses_text = []
-                for r in responses:
-                    splitat = r.find('Responded')
-                    responder, text = r[:splitat], r[splitat:]
-                    responses_responder.append(responder)
-                    splitat_date = text.find('ago')+3
-                    date, review = text[:splitat_date], text[splitat_date:]
-                    responses_date.append(date)
-                    splitat_text = review.find('Report response')
-                    review_strip = review[:splitat_text]
-                    responses_text.append(review_strip)
-                for line in reviews_alltext:
-                    if line not in responses_text:
-                        reviews_cleaned.append({'review':line})         
-                    else:
-                        reviews_cleaned[-1]['response']=line
-                #logger.debug('The length of response dates is {}'.format(len(responses_date)))
-                #logger.debug('The length of responders is {}'.format(len(responses_responder)))
-                #logger.debug('The length of responses is {}'.format(len(responses_text)))
-                assert len(responses_date)==len(responses_responder)==len(responses_text)
-                
-                # Add keys to the dicts
-                responses_date_iter = iter(responses_date)
-                responses_responder_iter = iter(responses_responder)
-                for review in reviews_cleaned:
-                    if 'response' in review:
-                        review['date'] = next(responses_date_iter)
-                        review['responder'] = next(responses_responder_iter)
-
-                logger.debug("This page has {} reviews.".format(len(review_usernames)))
+                assert len(review_usernames)==len(review_locations)==len(review_votes)==len(review_contributions)==len(review_images)==len(review_moreratings)==len(review_is_sponsored)==len(reviews)
+                logger.debug("All lists have the same length")
+                i = 0
+                for r in reviews:
+                    r.update({'username':review_usernames[i].strip(),
+                              'location':review_locations[i],
+                              'votes':review_votes[i],
+                              'contributions':review_contributions[i],
+                              'images':review_images[i],
+                              'specific_ratings':review_moreratings[i],
+                              'partnership':review_is_sponsored[i]})
+                    i+=1
+                logger.debug("All lists have been added as keys to the dict")
+                thishotel['reviews'] += reviews
+                logger.debug("The reviews have been added to the hotel") 
 
                 # go to the next page, unless there is no next page   
                 next_reviewpageelement = tree.xpath('//*[@class="nav next taLnk "]')
                 if next_reviewpageelement == []:
+                    logger.debug("There is no next page after the current page, so we're breaking")
                     break
                 else:
                     next_pagelink = [e.attrib['href'] for e in next_reviewpageelement if 'href' in e.attrib][0]
                     reviews_thisurl = self.BASE_URL + next_pagelink
                     logger.debug("The next page is: {}".format(reviews_thisurl))
-                    
-                for r in range(len(review_usernames)):
-                    reviews_thishotel.append({'username':review_usernames[r].strip(),
-                                              'date':review_date[r].strip(),
-                                              'headline':review_headline[r].strip(),
-                                              'mobile':review_mobile[r],
-                                              'date_stay':review_stayed[r],
-                                              'rating':review_ratings[r],
-                                              'location':review_locations[r],
-                                              'votes':review_votes[r],
-                                              'contributions':review_contributions[r],
-                                              'review':reviews_cleaned[r],
-                                              'images':review_images[r],
-                                              'specific_ratings':review_moreratings[r],
-                                              'partnership':review_is_sponsored[r]
-                                              })
-                thishotel['reviews'] = reviews_thishotel
 
                 if numberofpage >= maxpages:
+                    logger.debug('The page number is above the max number of pages we are scraping, so we stop')
                     break
                 numberofpage+=1
-            hotels_enriched.append(thishotel)
-
-
-        logger.debug('We have fetched all reviews from the hotel-specific webpage that exist. There are {} reviews in total'.format(len(review_usernames)))
-        return hotels_enriched
-
-
-def cleandoc(document):
-    for k,v in document.items():
-        if type(v)==dict:
-            document[k] = cleandoc(v)
-        elif type(v)==str:
-            if not v.replace('\n','').replace(' ',''):
-                document[k] = ""
-            else:
-                document[k] = v
-        elif type(v) == str:
-            pass
-
-    empty_keys = []
-    for k in document.keys():
-        if not k.replace('\n','').replace(' ','') and not document[k]:
-            empty_keys.append(k)
-    for k in empty_keys:
-        document.pop(k)
-    return document
-
+            yield thishotel

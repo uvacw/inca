@@ -42,23 +42,19 @@ class exxonmobil(rss):
         tree = fromstring(htmlsource)
         try:
             title="".join(tree.xpath('//*[@class="title"]/text()')).strip()
-            print("this prints title", title)
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
             title = ""
         try:
             teaser="".join(tree.xpath('//*[@class="bwlistitemmargb"]/text()')).strip()
-            print("this prints teaser dirty", teaser)
         except:
-            print("no teaser")
+            logger.debug("Could not parse article teaser")
             teaser= ""
         teaser_clean = " ".join(teaser.split())
         try:
             text_dirty = "".join(tree.xpath('//*[@class="bw-main-content"]//p/text()')).strip()
-            print(type(text_dirty))
-            print(text_dirty)
         except:
-            logger.info("oops - geen text?")
+            logger.warning("Could not parse article text")
             text_dirty = ""
         text = polish(text_dirty)
         releases={"title":title.strip(),

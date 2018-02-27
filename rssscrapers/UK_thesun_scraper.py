@@ -42,43 +42,42 @@ class thesun(rss):
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("cannot parse?",type(doc),len(doc))
-            logger.warning(doc)
+            logger.warning("Could not parse HTML tree",type(doc),len(doc))
+            #logger.warning(doc)
             return("","","", "")
         try:
             title = " ".join(tree.xpath("//*[@class='article__headline-section']//text()"))
         except:
             title = ""
-            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.warning("Could not parse article title")
         try:
             teaser = " ".join(tree.xpath("//*[@class='article__subdeck theme__border-color']//text()"))
         except:
             teaser = ""
-            logger.info("No 'teaser' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article teaser")
         try:
             byline = " ".join(tree.xpath("//*[@class='article__author']//text()"))
         except:
             byline = ""
-            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article source")
         try:
             text = " ".join(tree.xpath("//*[@class='article__content']/p//text()"))
         except:
             text = ""
-            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
-            
-    
+            logger.warning("Could not parse article source")
+
+
         extractedinfo={"title":title.strip(),
                        "teaser":teaser.strip(),
                        "byline":byline.strip().replace("\t","").replace("\n",""),
                        "text":text.strip().replace("\xa0","").replace("\\","").replace("\t","").replace("\n","")
                       }
 
-        return extractedinfo 
-    
+        return extractedinfo
+
     def parseurl(self,url):
         '''
         Parses the category based on the url
         '''
         category = url.split('/')[3]
         return {'category': category}
-        

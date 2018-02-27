@@ -18,7 +18,7 @@ def polish(textstring):
     if rest: result = lead + ' ||| ' + rest
     else: result = lead
     return result.strip()
-    
+
 class prudential(rss):
     """Scrapes Prudential"""
 
@@ -26,12 +26,14 @@ class prudential(rss):
         self.database = database
         self.doctype = "prudential (corp)"
         self.rss_url ='http://news.prudential.com/rss.xml'
+        # note: this url does not work. this one does: http://www.investor.prudential.com/corporate.rss?c=129695&Rule=Cat=news~subcat=ALL
+        # however, in that case parsing does not work anymore.
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=6, day=28)
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -43,17 +45,19 @@ class prudential(rss):
         try:
             title="".join(tree.xpath('//*[@id="articleDateTitle"]/h2/text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
+            title = ""
         try:
             category="".join(tree.xpath('//*[@id="articleTags"]/p/a/text()')).strip()
         except:
             category = ""
-        if len(category.split(" ")) >1:
+            logger.debug("Could not parse article category")
+        if len(category.split(" ")) > 1:
             category=""
         try:
             text="".join(tree.xpath('//*[@id="articleContent"]//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),
@@ -61,4 +65,4 @@ class prudential(rss):
                        "text":polish(text).strip()
                        }
 
-        return release
+        return releases
