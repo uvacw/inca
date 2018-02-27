@@ -67,7 +67,7 @@ fin_model = inca.analysis.var_tsa_analysis.VAR()
 
 
 ```python
-fin_model.fit(queries=['financiele','crisis'], timefield = 'publication_date', granularity = 'day',ic='bic')
+fin_model.fit(queries=['economie','crisis'], timefield = 'publication_date', granularity = 'day',ic='bic')
 
 ```
 Possible parameters to change ( not exhaustive list ) :
@@ -112,9 +112,9 @@ fin_model.quality()
 ## For those brave enough:
 
 consider resources which will make you even more familier with times series var models: 
- http://cadmus.eui.eu/handle/1814/19354
- http://apps.eui.eu/Personal/Canova/Articles/ch4.pdf
- https://www.google.nl/url?sa=t&rct=j&q=&esrc=s&source=web&cd=3&cad=rja&uact=8&ved=0ahUKEwi1puCR2KXYAhWMKFAKHc3rBOwQFgg-MAI&url=https%3A%2F%2Fwww.researchgate.net%2Ffile.PostFileLoader.html%3Fid%3D563d2dbe6225ff39e98b4567%26assetKey%3DAS%253A292924211384321%25401446849982801&usg=AOvVaw0zIYrIXDY0x6gEfgMjrOSw
+- http://cadmus.eui.eu/handle/1814/19354
+- http://apps.eui.eu/Personal/Canova/Articles/ch4.pdf
+- https://www.google.nl/url?sa=t&rct=j&q=&esrc=s&source=web&cd=3&cad=rja&uact=8&ved=0ahUKEwi1puCR2KXYAhWMKFAKHc3rBOwQFgg-MAI&url=https%3A%2F%2Fwww.researchgate.net%2Ffile.PostFileLoader.html%3Fid%3D563d2dbe6225ff39e98b4567%26assetKey%3DAS%253A292924211384321%25401446849982801&usg=AOvVaw0zIYrIXDY0x6gEfgMjrOSw
 
 
 
