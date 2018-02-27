@@ -436,7 +436,7 @@ def delete_backup(snapshot=None, dryrun=True):
                                                   config.get('elasticsearch','%s.port' %config.get('inca','dependencies')),
                                                   snapshot)
     if dryrun==True:
-        print('This is a dry-run, nothing happens. If you specify dryrun=False, the following command will be issued:')
+        print('This is a dry-run, nothing happens. If you specify dryrun=False, the following DELETE request will be issued:')
         print(command)
         return
     else:
