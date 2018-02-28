@@ -115,7 +115,7 @@ class export_csv(Exporter):
             outputfile = self.fileobj
             new = False
         elif self.fileobj:
-            self._makefile(destination, mode='a')
+            outputfile = self._makefile(destination, mode='a')
             new = False
         else:
             outputfile = self._makefile(destination)
