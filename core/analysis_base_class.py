@@ -68,3 +68,21 @@ class Analysis(Task):
         @type figure_names: iterable
         """
         raise NotImplementedError
+
+
+    def runwrap(self, action='run', *args, **kwargs):
+        '''
+        Call the task as either a local or distributed process
+        '''
+        if action == 'run':
+            return self.run(*args, **kwargs)
+
+        if action == 'delay':
+            return self.delay(*args, **kwargs)
+            
+    def run(self, *args, **kwargs):
+        self.fit(*args,**kwargs)
+        # self.predict(*args,**kwargs)
+        self.quality(*args,**kwargs)
+        self.interpetation(*args,**kwargs)
+

@@ -53,14 +53,14 @@ def get_document(doc_id):
         logger.debug("No document found with id {doc_id}".format(**locals()))
         return {}
     else:
-        document = client.get(elastic_index, doc_id)
+        document = client.get(elastic_index, doc_type='_all', id = doc_id)
     return document
 
 def check_exists(document_id):
     if not DATABASE_AVAILABLE: return False, {}
     index = elastic_index
     try:
-        retrieved = client.get(elastic_index,document_id)
+        retrieved = client.get(elastic_index,doc_type='_all', id=document_id)
         logger.debug('elastic_index {index} - document [{document_id}] found, return document'.format(**locals()))
         return True, retrieved
     except NotFoundError:
