@@ -59,12 +59,15 @@ def extract_data(document, field='text'):
     :return: the requested textual data if key is found or if key == 'all'. Else returns None
     :rtype: str
     """
+    if '_source' in document:    # handle ES-style documents
+        document = document['_source']
+        
     if field in document:
         return document[field]
     elif field == 'all':
         return '\n'.join((text_data for text_data in document.values()))
     else:
-        return None
+        return ""
 
 def get_data_generator(documents, field='text'):
     """
