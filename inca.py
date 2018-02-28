@@ -109,8 +109,8 @@ class Inca():
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
 
-        self._analysis_task_constructor()
-
+        #self._analysis_task_constructor()
+        self._construct_tasks('analysis')
         self._construct_tasks('clients')
         self._construct_tasks('importers_exporters')
         self._construct_tasks('rssscrapers')
