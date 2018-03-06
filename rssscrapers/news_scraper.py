@@ -31,12 +31,24 @@ class ad(rss):
     def parsehtml(self,htmlsource):
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -86,10 +98,10 @@ class ad(rss):
 
         images = ad._extract_images(self,tree)
 
-        extractedinfo={"text":text.strip(),
+        extractedinfo={"title":title.strip(),
                        "category":category.strip(),
-                       "title":title.strip(),
                        "teaser":teaser.strip(),
+                       "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
                        "images":images}
@@ -131,13 +143,24 @@ class nu(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
 
         tree = fromstring(htmlsource)
@@ -186,12 +209,12 @@ class nu(rss):
 
         images = nu._extract_images(self,tree)
 
-        extractedinfo={"category":category.strip(),
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
                        "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "title":title,
                        "images":images}
         return extractedinfo
 
@@ -222,14 +245,26 @@ class nos(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -271,8 +306,8 @@ class nos(rss):
         images = nos._extract_images(self,tree)
 
         extractedinfo={"title":title.strip(),
-                       "teaser":teaser.strip(),
                        "category":category.strip(),
+                       "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -316,14 +351,26 @@ class volkskrant(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
 
         tree = fromstring(htmlsource)
 
@@ -415,8 +462,8 @@ class volkskrant(rss):
         images = volkskrant._extract_images(self,tree)
 
         extractedinfo={"title":title.strip(),
-                       "teaser":teaser.strip(),
                        "category":category.strip(),
+                       "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -458,13 +505,24 @@ class nrc(rss):
         self.date    = datetime.datetime(year=2016, month=9, day=10)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section     sth. like economy, sports, ..
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
 
         tree=fromstring(htmlsource)
@@ -531,9 +589,9 @@ class nrc(rss):
 
         images = nrc._extract_images(self,tree)
 
-        extractedinfo={"category":category.strip(),
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
                        "teaser":teaser.strip(),
-                       "title":title.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -584,13 +642,23 @@ class parool(rss):
         return {'category':category}
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
 
         tree = fromstring(htmlsource)
@@ -677,13 +745,24 @@ class trouw(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
 
         tree = fromstring(htmlsource)
@@ -749,8 +828,8 @@ class trouw(rss):
         images = trouw._extract_images(self,tree)
 
         extractedinfo={"title":title.strip(),
-                       "teaser":teaser.strip(),
                        "category":category.strip(),
+                       "teaser":teaser.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -791,14 +870,26 @@ class telegraaf(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
 
         tree = fromstring(htmlsource)
         try:
@@ -859,7 +950,7 @@ class telegraaf(rss):
         return images
 
 class metronieuws(rss):
-    """Scrapes metrnieuwso.nl """
+    """Scrapes metronieuws.nl """
 
     def __init__(self,database=True):
         self.database = database
@@ -869,14 +960,25 @@ class metronieuws(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----  
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
 
         tree = fromstring(htmlsource)
         try:
@@ -929,8 +1031,8 @@ class metronieuws(rss):
 
         images = metronieuws._extract_images(self,tree)
 
-        extractedinfo={"category":category.strip(),
-                       "title":title.strip(),
+        extractedinfo={"title":title.strip(),
+                       "category":category.strip(),
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -966,14 +1068,23 @@ class geenstijl(rss):
         self.date    = datetime.datetime(year=2016, month=9, day=15)
 
     def parsehtml(self,htmlsource):
+         '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
         '''
-	Parses the html source to retrieve info that is not in the RSS-keys
-	In particular, it extracts the following keys (which should be available in most online news:
-	section    sth. like economy, sports, ...
-	text        the plain text of the article
-	byline      the author, e.g. "Bob Smith"
-	byline_source   sth like ANP
-	'''
+
 
         tree = fromstring(htmlsource)
         textrest=tree.xpath('//*[@class="article_content"]/p//text() | //*[@class="article_content"]/p/strong//text() | //*[@class="article_content"]/p/em//text() | //*/h2[@class="content-title"]//text()')
@@ -1001,8 +1112,8 @@ class geenstijl(rss):
         images = geenstijl._extract_images(self,tree)
 
         extractedinfo={"title":title.strip(),
+                       "teaser": teaser.strip(),
                        "text":text.strip(),
-                       "teaser":teaser.strip(),
                        "byline":author_door.replace("\n", " "),
                        "images":images}
 
@@ -1043,14 +1154,26 @@ class fok(rss):
 
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         tree = fromstring(htmlsource)
         try:
             title = tree.xpath('//*/header[@class="hasHidden"]/h1/text()')
@@ -1101,8 +1224,8 @@ class fok(rss):
         images = fok._extract_images(self,tree)
 
         extractedinfo={"title":title,
-                       "teaser":teaser,
                        "category":category.strip(),
+                       "teaser":teaser,
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
@@ -1143,14 +1266,26 @@ class destentor(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=3)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -1259,14 +1394,26 @@ class bd(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=9)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -1372,14 +1519,26 @@ class gelderlander(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=10)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -1482,14 +1641,26 @@ class ed(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=10)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -1600,14 +1771,26 @@ class bndestem(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=17)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -1726,15 +1909,27 @@ class pzc(rss):
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=5, day=17)
 
-    def parsehtml(self,htmlsource):
+    def parsehtml(self,htmlsource)
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -1853,14 +2048,26 @@ class tubantia(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=17)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -1979,14 +2186,26 @@ class limburger(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=17)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -2100,14 +2319,25 @@ class frieschdagblad(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=10)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
@@ -2181,14 +2411,26 @@ class zwartewaterkrant(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=10)
 
     def parsehtml(self,htmlsource):
-        '''
+         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters
+        ----
+        htmlsource: string
+            html retrived from RSS feed
+
+        yields
+        ----  
+        title    the title of the article 
+        category    sth. like economy, sports, ...
+        teaser    the intro to the artcile 
+        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP
+        image: images included in the article
         '''
+
         try:
             tree = fromstring(htmlsource)
         except:
