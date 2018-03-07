@@ -75,7 +75,7 @@ def check_exists(document_id):
         
 def update_document(document, force=False, retry=0, max_retries=10):
     '''
-    Documents should usually only be appended, not updated. as such.
+    Documents should usually only be appended, not updated as such.
 
     input documents should be elasticsearch results with added fields.
 
@@ -138,7 +138,7 @@ def check_mapping(doctype):
             mapping = 'new_mapping'
         elif m['fields']['keyword']:
             mapping = 'mixed_mapping'
-            logger.warning('Deprecation warning: You still seem to be using an INCA-index in Elsticsearch in without the correct schema. We advise you to migrate, as we will remove support for these databases in the future. The best way to do this is probably to export all documents, set up a fresh elastic search index, and import the documents again.')
+            logger.warning('Deprecation warning: You still seem to be using an INCA-index in Elasticsearch without the correct schema. We advise you to migrate, as we will remove support for these databases in the future. The best way to do this is probably to export all documents, set up a fresh elastic search index, and import the documents again.')
     except KeyError: 
         mapping = None
     
@@ -343,7 +343,7 @@ class bulk_upsert(Task):
 
 def _remove_dots(document):
     ''' elasticsearch is allergic to dots like '.' in keys.
-    if you're not carefull, it may choke!
+    if you're not careful, it may choke!
     '''
     for k,v in document.items():
         if '.' in k:
@@ -434,7 +434,13 @@ def create_repository(location):
     -----
     The repository location must match the `path.repo` argument in the
     `elasticsearch.yml` file, generally located in the .../elasticsearch/config
-    path. Elasticsearch must be restarted after the `path.repo` is set or changed.
+    path or, alternatively, in the /etc/elasticsearch path. Elasticsearch must be restarted 
+    after the `path.repo` is set or changed. In case you are having trouble with 
+    starting elasticsearch again, run 
+    
+    ```bash
+    sudo chown elasticsearch.elasticsearch /path/to/inca/backup
+    ```
     '''
 
     body = {
@@ -482,7 +488,7 @@ def create_backup(name):
     Parameters
     ----------
     name : str
-        A string specifying a designation for the snapshot. Usefull
+        A string specifying a designation for the snapshot. Useful
         for selectively loading a backup.
 
     Returns
@@ -509,7 +515,7 @@ def create_backup(name):
     return client.snapshot.create(repository='inca_backup', snapshot=name,body=body)
 
 def restore_backup(name):
-    if name in [item['snapshot'] for item in list_backup()]:
+    if name in [item['snapshot'] for item in list_backups()['snapshots']]:
         client.indices.close('inca')
         client.snapshot.restore(repository='inca_backup', snapshot=name)
         
@@ -528,7 +534,7 @@ def export_doctype(doctype):
 
 def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
     '''
-    Takes a dict with an elastic search query as input and exports the given keys to a csv file
+    Takes a dict with an elasticsearch query as input and exports the given keys to a csv file
 
     input:
     ---
