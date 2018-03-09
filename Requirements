@@ -62,3 +62,4 @@ matplotlib
 git+git://github.com/clips/pattern.git@development
 Pillow==4.3.0
 tqdm
+newspaper3k
