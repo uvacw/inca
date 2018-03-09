@@ -74,47 +74,46 @@ class demorgen(rss):
             category=""
             logger.debug("Could not parse article category")
         try:
-            title = tree.xpath('//*[@class="article__header"]/h1/text()')[0]
+            maintitle = tree.xpath('//*[@class="article__header"]/h1/text()')[0]
         except:
             logger.warning("Could not parse article title")
-            title=""
+            maintitle=""
         try:
-            textrest = " ".join(tree.xpath('//*[@class="article__body__paragraph"]//text()'))
+            subtitle = tree.xpath('//*[@class="article__header"]/p/text()')[0]
+        except:
+            subtitle = ""
+            logger.debug("Could not parse article subtitle")
+        try:
+            body = " ".join(tree.xpath('//*[@class="article__body__paragraph"]//text()')) 
         except:
             logger.warning("Could not parse article text")
-            textrest=""
+            body=""
         # two different paths, since the first paragraph is sometimes in the header, meaning it is a teaser.
         # path 1: when the first paragraph is actually the first paragraph
         # path 2: when the first paragraph is the teaser (teaser is then embedded in one part together with the subtitle)
         try:
-            intro = tree.xpath('//*[@class="article__header"]/p/text()')
-            if intro == []:
+            teaser = "".join(tree.xpath('//*[@class="article__header"]/p//text() | //*/p[@class="article__intro fjs-article__intro"]//text()')).replace('\xa0','')
+            if teaser == []:
                 # article type A
                 try:
-                    textfirstpara = tree.xpath('//*[@class="article__body fjs-article__body"]/p/text()').strip()
+                    textfirstpara = tree.xpath('//*[@class="article__body fjs-article__body"]/p/text()').strip()[0]
                 except:
                     logger.debug("Could not parse article teaser")
                     textfirstpara = ""
             else:
                 # article type B
                 try:
-                    subtitle = tree.xpath('//*[@class="article__header"]/p/text()')[0]
-                except:
-                    subtitle = ""
-                    logger.debug("Could not parse article subtitle")
-                try:
-                    teaser = "".join(tree.xpath('//*[@class="article__header"]/p/text()')[1:])
+                    intro = "".join(tree.xpath('//*[@class="article__header"]/p/text()')[1:])
                     textfirstpara = ""
                 except:
-                    teaser = ""
+                    intro = ""
                     textfirstpara = ""
                     logger.debug("Could not parse article teaser")
         except:
-            textfirstpara =""
+            teaser =""
 
-        title = title + " \n" + subtitle
-        texttotal = textfirstpara + " " + textrest
-        text = texttotal.replace('(+)','').replace('\xa0','').replace('< Lees een maand gratis alle artikels in onze Pluszone via www.demorgen.be/proef','')
+        title = maintitle + " \n" + subtitle
+        text = body.replace('(+)','').replace('\xa0','').replace('< Lees een maand gratis alle artikels in onze Pluszone via www.demorgen.be/proef','')
 
         extractedinfo={"byline":byline.replace("Bewerkt door:","").strip(),
                            "bylinesource":bylinesource.replace("- Bron:","").strip(),
