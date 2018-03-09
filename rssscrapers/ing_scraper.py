@@ -42,18 +42,19 @@ class ing(rss):
         try:
             teaser=tree.xpath('//*[@class="intro-text"]//text()')[0]
         except:
-            logger.info("OOps - geen eerste alinea?")
+            logger.debug("Could not parse article teaser")
             teaser=""
         try:
              text ="".join(tree.xpath('//*[@class="paragraph clearfix"]//text()')).strip()
         except:
-             logger.info("Geen text?")
+             text = ""
+             logger.warning("Could not parse article text")
         text=polish(text)
         try:
             title ="".join(tree.xpath('//*[@class="intro"]//h1/text()')).strip()
         except:
             title = ""
-            logger.warning("No title encountered")
+            logger.warning("Could not parse article title")
 
         images = ing._extract_images(self,tree)
 

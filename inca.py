@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
 ooooo ooooo      ooo   .oooooo.         .o.
 `888' `888b.     `8'  d8P'  `Y8b       .888.
@@ -21,16 +21,19 @@ running INCA.
 import os
 import logging
 import inspect
-import copy
+
 
 logging.basicConfig(level="WARN")
 logger = logging.getLogger("INCA")
 
+currentdir = os.getcwd()
+incadir = os.path.dirname(__file__)
+os.chdir(incadir)
 
-if not 'settings.cfg' in os.listdir('.'):
+if not 'settings.cfg' in os.listdir(incadir):
     logger.info('No settings found, applying default settings (change in `settings.cfg`)')
     from shutil import copyfile
-    copyfile('default_settings.cfg','settings.cfg')
+    copyfile(os.path.join(incadir,'default_settings.cfg'),os.path.join(incadir,'settings.cfg'))
 
 from celery import Celery, group, chain, chord
 import core
@@ -51,6 +54,7 @@ from optparse import OptionParser
 from core.database import config
 from interface import make_interface
 
+os.chdir(currentdir)
 
 class Inca():
     """INCA main class for easy access to functionality
@@ -104,10 +108,12 @@ class Inca():
         self._prompt = getattr(make_interface,prompt).prompt
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
+
+        #self._analysis_task_constructor()
+        self._construct_tasks('analysis')
         self._construct_tasks('clients')
         self._construct_tasks('importers_exporters')
         self._construct_tasks('rssscrapers')
-        self._construct_tasks('analysis')
         
         if verbose:
             logger.setLevel('INFO')
@@ -133,6 +139,48 @@ class Inca():
         '''Processing options to operate on documents'''
         pass
 
+    class analysis():
+        '''Perform and summarize analysis done on documents'''
+        pass
+
+    def _analysis_task_constructor(self):
+        """Construct endpoints specifically for analysis tasks
+
+        This function is used when analysis tasks are encountered. The Analysis
+        sub-classes include functionality for fitting, predicting, plotting,
+        updateing and explaining results.
+
+        """
+
+        target_functions = ['fit','predict','plot','interpretation','quality']
+
+        for k,v in self._taskmaster.tasks.items():
+            functiontype = k.split('.',1)[0]
+            taskname     = k.rsplit('.',1)[1]
+            if functiontype == "analysis":
+
+                analysis_class = self._taskmaster.tasks[k]
+
+                def makefunc(method):
+                    if inspect.isgeneratorfunction(method):
+                        def endpoint(*args, **kwargs):
+                            for i in method(*args, **kwargs):
+                                yield i
+                    else:
+                        def endpoint(*args, **kwargs):
+                            return method(*args, **kwargs)
+                    return endpoint
+
+                class analysis_placeholder:
+                    pass
+                analysis_placeholder.__doc__ = analysis_class.__doc__
+
+                for method in target_functions:
+                    endpoint = getattr(analysis_class,method)
+                    setattr(analysis_placeholder,method,endpoint)
+
+                setattr(getattr(self,"analysis"), taskname, analysis_placeholder)
+
     class clients():
         '''Clients to access (social media) APIs'''
         pass
@@ -140,6 +188,7 @@ class Inca():
     class importers_exporters():
         '''Importing functions to ingest data '''
         pass
+
 
     def _construct_tasks(self, function):
         """Construct the appropriate endoints from Celery tasks
@@ -233,7 +282,7 @@ def commandline():
                     help='Refrain from returning documents to stdout (for unix piping) ')
     parser.add_option('-c','--celery', dest='celery', default=False, action='store_true',
                     help='Put tasks in the celery cluster instead of running them locally')
-    parser.add_option('-np', '--no-prompt', dest='noprompt',default=False, action='store_true',
+    parser.add_option('-n', '--no-prompt', dest='noprompt',default=False, action='store_true',
                     help='Never prompt users (usually leads to failure), usefull for headles environments and cronjobs')
 
     options, args = parser.parse_args()
@@ -259,7 +308,7 @@ def commandline():
     try:
         tasktype_ob = getattr(inca,tasktype)
     except:
-        print("Tasktype '{tasktype}' not found! Should be 'scrapers' or 'processing'".format(**locals()))
+        print("Tasktype '{tasktype}' not found! Should be 'rssscrapers', 'scrapers' or 'processing'".format(**locals()))
         return
     try:
         task_func   = getattr(tasktype_ob, task)

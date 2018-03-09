@@ -42,17 +42,18 @@ class grifols(rss):
         try:
             title="".join(tree.xpath('//*/h2[@class="titulo_noticia"]//text()')).strip()
         except:
-            print("no title")
             title = ""
+            logger.warning("Could not parse article title")
         try:
             teaser="".join(tree.xpath('//*[@class="journal-content-article"]/div/div/ul/li//text()')).strip()
         except:
             teaser= ""
+            logger.debug("Could not parse article teaser")
         teaser = " ".join(teaser.split())
         try:
             text=" ".join(tree.xpath('//*[@class="journal-content-article"]/div/div/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),

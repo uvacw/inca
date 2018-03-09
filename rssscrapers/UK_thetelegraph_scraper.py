@@ -42,29 +42,29 @@ class thetelegraph(rss):
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("cannot parse?",type(doc),len(doc))
-            logger.warning(doc)
+            logger.warning("Could not parse HTML tree",type(doc),len(doc))
+            #logger.warning(doc)
             return("","","", "")
         try:
             title = "".join(tree.xpath("//*[@class='headline__heading']/text()"))
         except:
             title = ""
-            logger.info("No 'title' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.warning("Could not parse article title")
         try:
             category = tree.xpath("//*[@class='breadcrumbs__item-content']/text()")[1]
         except:
             category = ""
-            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article category")
         try:
             byline = "".join(tree.xpath("//*[@class='byline__author-name']//text()"))
         except:
             byline = ""
-            logger.info("No 'byline' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article source")
         try:
             text = "".join(tree.xpath("//*[@itemprop='articleBody']//p/text()|//*[@itemprop='articleBody']//a/text()|//*[@class='m_first-letter m_first-letter--flagged']//text()"))
         except:
             byline = ""
-            logger.info("No 'text' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article source")
 
         extractedinfo={"title":title.strip().replace("\n",""),
                        "category":category.strip(),
@@ -72,4 +72,4 @@ class thetelegraph(rss):
                        "text":text.strip().replace("\xa0","").replace("\\","")
                       }
 
-        return extractedinfo 
+        return extractedinfo

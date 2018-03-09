@@ -43,11 +43,11 @@ class ferrovial(rss):
         try:
             title="".join(tree.xpath('//*[@class="main-content"]/h1[@class="entry-title"]//text()')).strip()
         except:
-            print("no title")
+            logger.warning("Could not parse article title")
         try:
             text="".join(tree.xpath('//*[@class="wysiwyg"]/p//text()')).strip()
         except:
-            logger.info("oops - geen textrest?")
+            logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),

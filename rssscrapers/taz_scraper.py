@@ -23,11 +23,11 @@ class taz(rss):
         self.rss_url='http://www.taz.de/!p4608;rss/'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=25)
-    
+
 
     def get(self,**kwargs):
 
-        # creating iteration over the rss feed. 
+        # creating iteration over the rss feed.
         req =request.Request("http://www.taz.de/!p4608;rss/")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
@@ -37,15 +37,15 @@ class taz(rss):
         dates = tree.xpath("//channel//item//pubDate/text()")
         titles = tree.xpath("//channel//item//title/text()")
 
-        for link,xpath_date,title in zip(article_urls,dates,titles):      
+        for link,xpath_date,title in zip(article_urls,dates,titles):
             link = link.strip()
-            
+
             try:
                 req = request.Request(link)
                 read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(read)
             except:
-                logger.error("HTML tree cannot be parsed")
+                logger.warning("HTML tree cannot be parsed")
 
 
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
@@ -53,8 +53,8 @@ class taz(rss):
             text = ''
             for r in parag:
                 text += ' '+r.strip().replace('\xa0',' ').replace('| ','')
-        
-            # Retrieve author    
+
+            # Retrieve author
             try:
                 author = tree.xpath("//*[@class='rack first_rack']/div/div/a/h4/text()")[0].strip()
             except:
@@ -63,7 +63,7 @@ class taz(rss):
             # Retrieve source, which is usually the second word of articles containing it, nested inside an <em> element.
             try:
                 if tree.xpath("boolean(//*[@class='article first odd']/em/text())"):
-                    # Using this arbitrary 15 len character to differentiate the potential existence of a researcher description vs. an actual source. The mag doesn't provide class to differentiate. 
+                    # Using this arbitrary 15 len character to differentiate the potential existence of a researcher description vs. an actual source. The mag doesn't provide class to differentiate.
                     if len(tree.xpath("//*[@class='article first odd']/em/text()")[0]) < 15:
                         source = tree.xpath("//*[@class='article first odd']/em/text()")[0].strip().replace('(','').replace(')','')
                     else:
@@ -86,9 +86,9 @@ class taz(rss):
             except:
                 category = ''
 
-            # Create iso format date 
+            # Create iso format date
             try:
-                # 25 Dec 2016 12:37:00 +0100    
+                # 25 Dec 2016 12:37:00 +0100
                 date = datetime.datetime.strptime(xpath_date,"%d %b %Y %H:%M:%S %z").isoformat()
             except:
                 date = ''
@@ -105,5 +105,5 @@ class taz(rss):
                 url         = link,
             )
             doc.update(kwargs)
-            
-            yield doc        
+
+            yield doc

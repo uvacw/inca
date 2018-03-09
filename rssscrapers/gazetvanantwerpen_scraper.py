@@ -20,7 +20,7 @@ def polish(textstring):
 
 class gazetvanantwerpen(rss):
     """Scrapes gva.be """
-    
+
     def __init__(self,database=True):
         self.database=database
         self.doctype = "gazetvanantwerpen (www)"
@@ -40,41 +40,41 @@ class gazetvanantwerpen(rss):
 
         tree = fromstring(htmlsource)
 
-        try: 
+        try:
             byline = tree.xpath('//*[@itemprop="author"]/text()')[0]
             if byline == "":
                 logger.info("No author field encountered")
         except:
             byline = ""
-            logger.info("No author field encountered")
+            logger.debug("Could not parse article title")
         try:
             bylinesource = tree.xpath('//*[@itemprop="sourceOrganization"]/text()')[0]
         except:
             bylinesource = ""
-            logger.info("No bylinesource")
+            logger.debug("Could not parse article byline source")
         try:
             textfirstpara = " ".join(tree.xpath('//*[@class="article__intro"]/p/text()')).strip()
         except:
             textfirstpara = ""
-            logger.info("No first paragraph?")
+            logger.debug("Could not parse article teaser")
         try:
             textrest = " ".join(tree.xpath('//*[@class="article__body"]/p/text() | //*[@class="article__body"]/p/b/text() | //*[@class="article__body"]/p/i/text() | //*[@class="article__body"]/p/a/text()')).strip()
         except:
             textrest = ""
-            logger.info("No text?")
+            logger.warning("Could not parse article text")
         try:
             title = tree.xpath('//*[@class="article__header"]/h1/text()')[0]
             if title == "":
-                logger.info("No title?")
+                logger.debug("Could not parse article title?")
         except:
             title = ""
-            logger.info("No title")
+            logger.warning("Could not parse article title")
         try:
             category = tree.xpath('//*[@class="is-active"]/text()')[0]
         except:
             category = ""
-            logger.info("No category")
-            
+            logger.debug("Could not parse article category")
+
 
         text = textfirstpara + " " + textrest
 
@@ -86,6 +86,3 @@ class gazetvanantwerpen(rss):
                        }
 
         return extractedinfo
-
-
-

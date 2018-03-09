@@ -20,7 +20,7 @@ def polish(textstring):
 
 class hetlaatstenieuws(rss):
     """Scrapes hln.be"""
-    
+
     def __init__(self,database=True):
         self.database=database
         self.doctype = "hetlaatstenieuws"
@@ -38,88 +38,87 @@ class hetlaatstenieuws(rss):
         byline_source   sth like ANP
         '''
         logging.basicConfig(level=logging.INFO)
-        
+
 
         tree = fromstring(htmlsource)
-        
+
         try:
             typenews = tree.xpath('//*[@class="regio"]//text()')
             # if the news is not regional, then the website has a different layout
             if typenews == [] or typenews =='':
                 try:
                     category = tree.xpath('//*[@class="actua_nav"]//text()')[1]
-                    if category == "": 
-                        logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+                    #if category == "":
+                    #    logger.debug("Could not parse article category?")
                 except:
                     category=""
-                    logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
-                try: 
+                    logger.debug("Could not parse article category")
+                try:
                     byline = tree.xpath('//*[@class="author"]/text()')[0]
-                    if byline == "":
-                        logger.info("No author field encountered - don't worry, maybe it just doesn't exist.")
+                    #if byline == "":
+                    #    logger.debug("Could not parse article byline?")
                 except:
                     byline=""
-                    logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
+                    logger.debug("Could not parse article byline")
                 try:
                     bylinesource = tree.xpath('//*[@class="author"]/text()')[1]
-                    if bylinesource == "":
-                        logger.info("No bylinesource")
+                    #if bylinesource == "":
+                    #    logger.debug("Could not parse article byline source?")
                 except:
                     bylinesource=""
-                    logger.info("No bylinesource")
+                    logger.debug("Could not parse article byline source")
                 try:
                     title = tree.xpath('//*[@id="articleDetailTitle"]/text()')[0]
                 except:
-                    logger.info("No title?")
+                    logger.warning("Could not parse article title")
                     title=""
                 subtitle = ""
                 try:
                     textfirstpara =" ".join(tree.xpath('//*[@class="intro"]/text() | //*[@class="intro"]/em/text()')).replace("\n","").strip()
                 except:
-                    logger.info("No first paragraph")
+                    logger.debug("Could not parse article teaser")
                     textfirstpara=""
                 try:
                     textrest = " ".join(tree.xpath('//*[@class="clear"]/p/text() | //*[@class="clear"]/p/strong/text() | //*[@class="clear"]/p/em/text() | //*[@class="clear"]/h3/text() | //*[@class="clear"]/p/a/text() | //*[@class="clear"]/p/em/text()'))
                 except:
-                    logger.info("No text?")
+                    logger.warning("Could not parse article text")
                     textrest=""
             # for regional news
             else:
                 category = 'Regio'
-                try: 
+                try:
                     byline = tree.xpath('//*[@class="article__author"]//text()')[0]
-                    if byline == "":
-                        logger.info("No author field encountered - don't worry, maybe it just doesn't exist.")
                 except:
                     byline=""
-                    logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
+                    logger.debug("could not parse article category.")
                 try:
                     bylinesource = tree.xpath('//*[@class="author"]/text()')[1]
-                    if bylinesource == "":
-                        logger.info("No bylinesource")
+                    #if bylinesource == "":
+                    #    logger.info("No bylinesource")
                 except:
                     bylinesource=""
-                    logger.info("No bylinesource")
+                    logger.debug("could not parse article bylinesource")
                 try:
                     title = tree.xpath('//*[@itemprop="headline"]/text()')[0]
                 except:
-                    logger.info("No title?")
+                    logger.warning("could not parse article title.")
                     title=""
                 try:
                     subtitle = tree.xpath('//*[@class="article__subheader"]/text()')[0]
                 except:
-                    logger.info("No subtitle")
+                    subtitle = ""
+                    logger.debug("could not parse article title.")
                 try:
                     textfirstpara =" ".join(tree.xpath('//*[@class="article__intro"]/text()')).replace("\n","").strip()
                 except:
-                    logger.info("No first paragraph")
+                    logger.debug("Could not parse article teaser")
                     textfirstpara=""
                 try:
                     textrest = " ".join(tree.xpath('//*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/text()')).strip()
                 except:
-                    logger.info("No text?")
+                    logger.warning("Could not parse article text")
                     textrest=""
-                
+
             texttotal = textfirstpara + " " + textrest
             text = texttotal.replace('(+)','').replace('\xa0','')
             title = title + "\n" + subtitle
@@ -131,11 +130,8 @@ class hetlaatstenieuws(rss):
                            "title":title.strip()
                           }
         except:
-                logger.info('DIT GAAT HELEMAAL MIS')
-                print(' DIT MOETEN WE ECHT FIXEN')
+                #logger.warning('stuff going wrong in het laatste nieuws scraper')
+                #print(' DIT MOETEN WE ECHT FIXEN')
                 extractedinfo={}
-            
+
         return extractedinfo
-
-
-

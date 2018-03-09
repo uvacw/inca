@@ -23,11 +23,11 @@ class tagesspiegel(rss):
         self.rss_url='http://www.tagesspiegel.de/contentexport/feed/home'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=11, day=21)
-    
+
 
     def get(self,**kwargs):
 
-        # creating iteration over the rss feed. 
+        # creating iteration over the rss feed.
         req =request.Request("http://www.tagesspiegel.de/contentexport/feed/home")
         read = request.urlopen(req).read()
         tree = etree.fromstring(read)
@@ -37,15 +37,15 @@ class tagesspiegel(rss):
         dates = tree.xpath("//channel//item//pubDate/text()")
         titles = tree.xpath("//channel//item//title/text()")
 
-        for link,category,xpath_date,title,description in zip(article_urls,categories,dates,titles,descriptions):      
+        for link,category,xpath_date,title,description in zip(article_urls,categories,dates,titles,descriptions):
             link = link.strip()
-            
+
             try:
                 req = request.Request(link)
                 read = request.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
                 tree = fromstring(read)
             except:
-                logger.error("HTML tree cannot be parsed")
+                logger.warning("HTML tree cannot be parsed")
 
 
             # Retrieving the text of the article. Needs to be done by adding paragraphs together due to structure.
@@ -65,13 +65,13 @@ class tagesspiegel(rss):
                 for r in parag2:
                     text += ' '+r.strip().replace('\xa0',' ')
 
-            # Determining if we're dealing with an article or a debate. 
+            # Determining if we're dealing with an article or a debate.
             if tree.xpath("boolean(//*[@class='dp-debate-summary'])"):
             	article_format = 'Debate'
             else:
             	article_format = 'Article'
-        
-        	# Retrieve author    
+
+        	# Retrieve author
             try:
             	author = tree.xpath("//*[@class='dp-author-name']/text() | //*[@class='dp-moderator-name']/text() | //*[@class='ts-authors']/a/text()")[0].strip()
             except:
@@ -85,7 +85,7 @@ class tagesspiegel(rss):
             # Retrieve source, which is in parenthesis at the end of last paragraph. Check if there are multiple pages, in which case we get it from last page.
             try:
             	if tree.xpath("boolean(//*[@class='ts-link ts-next-page'])"):
-            		# Using this arbitrary 15 len character to differentiate the potential existence of a researcher description vs. an actual source. The mag doesn't provide class to differentiate. 
+            		# Using this arbitrary 15 len character to differentiate the potential existence of a researcher description vs. an actual source. The mag doesn't provide class to differentiate.
             		if len(tree2.xpath("(//*[@itemprop='articleBody']/p)[last()]/em/text() | //*[@itemprop='articleBody']/p/em/text()")[0]) < 15:
             			source = tree2.xpath("(//*[@itemprop='articleBody']/p)[last()]/em/text() | //*[@itemprop='articleBody']/p/em/text()")[0].strip().replace('(','').replace(')','')
             		else:
@@ -99,7 +99,7 @@ class tagesspiegel(rss):
             	source = ''
 
 
-            # Create iso format date 
+            # Create iso format date
             try:
                 date = datetime.datetime.strptime(xpath_date[5:],"%d %b %Y %H:%M:%S %z").isoformat()
             except:
@@ -119,5 +119,5 @@ class tagesspiegel(rss):
                 url         = link,
             )
             doc.update(kwargs)
-            
-            yield doc        
+
+            yield doc

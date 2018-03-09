@@ -53,14 +53,14 @@ def get_document(doc_id):
         logger.debug("No document found with id {doc_id}".format(**locals()))
         return {}
     else:
-        document = client.get(elastic_index, doc_id)
+        document = client.get(elastic_index, doc_type='_all', id = doc_id)
     return document
 
 def check_exists(document_id):
     if not DATABASE_AVAILABLE: return False, {}
     index = elastic_index
     try:
-        retrieved = client.get(elastic_index,document_id)
+        retrieved = client.get(elastic_index,doc_type='_all', id=document_id)
         logger.debug('elastic_index {index} - document [{document_id}] found, return document'.format(**locals()))
         return True, retrieved
     except NotFoundError:
@@ -75,7 +75,7 @@ def check_exists(document_id):
         
 def update_document(document, force=False, retry=0, max_retries=10):
     '''
-    Documents should usually only be appended, not updated. as such.
+    Documents should usually only be appended, not updated as such.
 
     input documents should be elasticsearch results with added fields.
 
@@ -127,6 +127,23 @@ def update_document(document, force=False, retry=0, max_retries=10):
         insert_document(document)
     pass
 
+def check_mapping(doctype):
+    '''
+    Checks the way the field "doctype" is mapped to determine whether queries have to use doctype.keyword or doctype.
+    Returns the string 'new_mapping' if the mapping of the doctype conforms to the specification as outlined in schema.json, 'mixed_mapping' if the doctype exists, but does not conform to the specification. In other cases, None is returned.
+    '''
+    m = client.indices.get_mapping(elastic_index).get(elastic_index,{}).get('mappings',{}).get(doctype, {}).get('properties', {}).get('doctype', {})
+    try: 
+        if m['type'] == 'keyword':
+            mapping = 'new_mapping'
+        elif m['fields']['keyword']:
+            mapping = 'mixed_mapping'
+            logger.warning('Deprecation warning: You still seem to be using an INCA-index in Elasticsearch without the correct schema. We advise you to migrate, as we will remove support for these databases in the future. The best way to do this is probably to export all documents, set up a fresh elastic search index, and import the documents again.')
+    except KeyError: 
+        mapping = None
+    
+    return mapping
+
 def delete_document(document_id):
     ''' delete a document
 
@@ -143,6 +160,8 @@ def delete_document(document_id):
         Whether the document was deleted
 
     '''
+
+    
     if type(document_id) == dict:
         document_id = document_id['_id']
     elif type(document_id) == list:
@@ -156,6 +175,14 @@ def delete_document(document_id):
 
 def delete_doctype(doctype):
     '''Delete all documents of a given type'''
+    if check_mapping(doctype) == "mixed_mapping": 
+        field = "doctype.keyword"
+    elif check_mapping(doctype) == "new_mapping": 
+        field = "doctype"
+    elif check_mapping(doctype) == None: 
+         logger.warning("Could not find mapping of doctype, please check whether you are using the correct doctype")
+         return []
+    
     for doc in scroll_query(
         {
         "query":
@@ -165,7 +192,7 @@ def delete_doctype(doctype):
                 "filter":
                     {
                     "term" : {
-                        "_type" : doctype
+                        field : doctype
                     }
                     }
                 }
@@ -316,7 +343,7 @@ class bulk_upsert(Task):
 
 def _remove_dots(document):
     ''' elasticsearch is allergic to dots like '.' in keys.
-    if you're not carefull, it may choke!
+    if you're not careful, it may choke!
     '''
     for k,v in document.items():
         if '.' in k:
@@ -407,7 +434,13 @@ def create_repository(location):
     -----
     The repository location must match the `path.repo` argument in the
     `elasticsearch.yml` file, generally located in the .../elasticsearch/config
-    path. Elasticsearch must be restarted after the `path.repo` is set or changed.
+    path or, alternatively, in the /etc/elasticsearch path. Elasticsearch must be restarted 
+    after the `path.repo` is set or changed. In case you are having trouble with 
+    starting elasticsearch again, run 
+    
+    ```bash
+    sudo chown elasticsearch.elasticsearch /path/to/inca/backup
+    ```
     '''
 
     body = {
@@ -427,6 +460,23 @@ def list_backups():
                                                                      config.get('elasticsearch','%s.port' %config.get('inca','dependencies'))))
     return response.json()
 
+
+def delete_backup(snapshot=None, dryrun=True):
+    if snapshot is None:
+        print('You need to specify the name of a snapshot to delete. You can get a list of snapshots with .list_backups()')
+        return
+    command = 'http://%s:%s/_snapshot/inca_backup/%s' %(config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
+                                                  config.get('elasticsearch','%s.port' %config.get('inca','dependencies')),
+                                                  snapshot)
+    if dryrun==True:
+        print('This is a dry-run, nothing happens. If you specify dryrun=False, the following DELETE request will be issued:')
+        print(command)
+        return
+    else:
+        response = requests.delete(command)
+        return response.json()
+
+
 def create_backup(name):
     """create a backup of the Elasticsearch indices
 
@@ -438,7 +488,7 @@ def create_backup(name):
     Parameters
     ----------
     name : str
-        A string specifying a designation for the snapshot. Usefull
+        A string specifying a designation for the snapshot. Useful
         for selectively loading a backup.
 
     Returns
@@ -465,7 +515,7 @@ def create_backup(name):
     return client.snapshot.create(repository='inca_backup', snapshot=name,body=body)
 
 def restore_backup(name):
-    if name in [item['snapshot'] for item in list_backup()]:
+    if name in [item['snapshot'] for item in list_backups()['snapshots']]:
         client.indices.close('inca')
         client.snapshot.restore(repository='inca_backup', snapshot=name)
         
@@ -484,7 +534,7 @@ def export_doctype(doctype):
 
 def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
     '''
-    Takes a dict with an elastic search query as input and exports the given keys to a csv file
+    Takes a dict with an elasticsearch query as input and exports the given keys to a csv file
 
     input:
     ---

@@ -20,7 +20,7 @@ def polish(textstring):
 
 class demorgen(rss):
     """Scrapes demorgen.de """
-    
+
     def __init__(self,database=True):
         self.database=database
         self.doctype = "demorgen (www)"
@@ -39,20 +39,20 @@ class demorgen(rss):
         '''
 
         tree = fromstring(htmlsource)
-        try: 
+        try:
             byline = tree.xpath('//*[@class="author-info__name"]/span/text()')[0]
             if byline == "":
-                logger.info("No author field encountered - don't worry, maybe it just doesn't exist.")
+                logger.debug("Could not parse article source")
         except:
             byline=""
-            logger.info("No 'author' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article source")
         try:
             bylinesource = tree.xpath('//*[@class="author-info__source"]/text()')[0]
             if bylinesource == "":
-                logger.info("No bylinesource")
+                logger.debug("Could not parse article source byline")
         except:
             bylinesource=""
-            logger.info("No bylinesource")
+            logger.debug("Could not parse article source byline")
         # two different paths for category:
         # path 1: when the category exists of a main category and a specific category (only second one needed)
         # path 2: when there is just one category
@@ -62,26 +62,26 @@ class demorgen(rss):
                 try:
                     category = tree.xpath('//*[@typeof="v:Breadcrumb"]/a/text()')[-1]
                 except:
-                    logger.info("no category")
+                    logger.debug("Could not parse article category")
                     category = ""
             else:
                 try:
                     category = tree.xpath('//*[@class="breadcrumb__link first last"]/text()')[0]
                 except:
-                    logger.info("no category")
+                    logger.debug("Could not parse article category")
                     category = ""
         except:
             category=""
-            logger.info("No 'category' field encountered - don't worry, maybe it just doesn't exist.")
+            logger.debug("Could not parse article category")
         try:
             title = tree.xpath('//*[@class="article__header"]/h1/text()')[0]
         except:
-            logger.info("No title?")
+            logger.warning("Could not parse article title")
             title=""
         try:
             textrest = " ".join(tree.xpath('//*[@class="article__body__paragraph"]//text()'))
         except:
-            logger.info("No text?")
+            logger.warning("Could not parse article text")
             textrest=""
         # two different paths, since the first paragraph is sometimes in the header, meaning it is a teaser.
         # path 1: when the first paragraph is actually the first paragraph
@@ -93,7 +93,7 @@ class demorgen(rss):
                 try:
                     textfirstpara = tree.xpath('//*[@class="article__body fjs-article__body"]/p/text()').strip()
                 except:
-                    logger.info("No first paragraph")
+                    logger.debug("Could not parse article teaser")
                     textfirstpara = ""
             else:
                 # article type B
@@ -101,14 +101,14 @@ class demorgen(rss):
                     subtitle = tree.xpath('//*[@class="article__header"]/p/text()')[0]
                 except:
                     subtitle = ""
-                    logger.info("No subtitle")
+                    logger.debug("Could not parse article subtitle")
                 try:
                     teaser = "".join(tree.xpath('//*[@class="article__header"]/p/text()')[1:])
                     textfirstpara = ""
                 except:
                     teaser = ""
                     textfirstpara = ""
-                    logger.info("No teaser")
+                    logger.debug("Could not parse article teaser")
         except:
             textfirstpara =""
 
@@ -124,6 +124,3 @@ class demorgen(rss):
                            "teaser":teaser.strip()}
 
         return extractedinfo
-
-
-
