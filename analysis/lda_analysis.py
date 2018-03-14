@@ -15,17 +15,17 @@ from helpers.text_preprocessing import *
 root_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def create_corpus(documents, field='text', normalizing='lemmatize'):
+def create_corpus(documents, field='text', normalizing='lemmatize', language = "english"):
     """
     :param documents: an iterable of documents (dictionaries)
     :param field: the field from which to extract data
-    :param normalizing: if 'lemmatize' then perfoms word net lemmatization with the default pos noun ('n')
+    :param normalizing: if 'lemmatize' then perfoms word net lemmatization with the default pos noun ('n') NOTE: only supported for english
                         if 'stem' perform stemming with the porter stemmer
                         else uses the input words as they are.
     """
     print('Creating corpus ...')
     print('caching token represetation from documents ...')
-    token_lists = [[word for word in generate_word(doc_data, normalize=normalizing)] for doc_data in get_data_generator(documents, field=field)]
+    token_lists = [[word for word in generate_word(doc_data, normalize=normalizing, language = language)] for doc_data in get_data_generator(documents, field=field)]
 
     vocabulary = Dictionary(token_lists)
     corpus = [vocabulary.doc2bow(token_list) for token_list in token_lists]
@@ -44,7 +44,7 @@ class Lda(Analysis):
         self.nb_docs_trained = 0
         self.selected_clusters = set()
 
-    def fit(self, documents, add_prediction='', field='text', nb_topics=20, **kwargs):
+    def fit(self, documents, add_prediction='', field='text', nb_topics=20,  normalizing='stem', language = 'english', **kwargs):
         """
         This method trains the Lda model by fitting its parameters to the extracted textual data from the given documents\
         (dictionaries) and selected field key. It infers n number of topics/clusters equal to the given parameter.\
@@ -65,12 +65,17 @@ class Lda(Analysis):
         :type field: str
         :param nb_topics: the number of clusters/topics to assume when performing topic modeling. Controls granularity
         :type nb_topics: int
+        :param normalizing: if 'lemmatize' then perfoms word net lemmatization with the default pos noun ('n') NOTE: only supported for english
+                        if 'stem' perform stemming with the porter stemmer
+                        else uses the input words as they are.
+        :param language: language of the documents to be classified, important for preprocessing
+        :type language: str
 
         :References:
         * https://radimrehurek.com/gensim/models/ldamodel.html : gensim.models.ldamodel
         * https://www.di.ens.fr/~fbach/mdhnips2010.pdf : Hoffman et al
         """
-        self.vocabulary, self.corpus = create_corpus(documents, field=field, normalizing='lemmatize')
+        self.vocabulary, self.corpus = create_corpus(documents, field=field, normalizing=normalizing, language=language)
         print('Training Lda model ...')
         self.lda = LdaModel(corpus=self.corpus, num_topics=nb_topics, alpha='auto')  # alpha can be also set to 'symmetric' or to an explicit array
         self.nb_docs_trained = len(self.corpus)
