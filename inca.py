@@ -41,7 +41,7 @@ config.read('settings.cfg')
 defaultconfig = configparser.ConfigParser()
 defaultconfig.read('default_settings.cfg')
 
-
+# check for breaking changes in settings.cfg
 for s in defaultconfig.sections():
     for i in defaultconfig.items(s):
         i = i[0]
