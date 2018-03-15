@@ -2,11 +2,15 @@ import os
 import nltk
 from nltk.corpus import stopwords
 from gensim.utils import tokenize
+import configparser
+
+config = configparser.ConfigParser()
+config.read('settings.cfg')
+
+DEFAULTLANGUAGE = config.get('inca','default_data_language')
 
 
-
-
-def get_normalizer(norm_type, language = "english"):
+def get_normalizer(norm_type, language = DEFAULTLANGUAGE):
     """
     Returns a lambda function that acts as a normalizer for input words/tokens.\n
     :param norm_type: the normalizer type to "construct". Recommended 'lemmatize'. If type is not in the allowed types then does not normalize (lambda just forwards the input to output as it is)
@@ -33,7 +37,7 @@ def get_normalizer(norm_type, language = "english"):
         print('No normalization. Not recommended')
         return lambda x: x
 
-def generate_word(text_data, normalize='lemmatize', word_filter=True, language = "dutch"):
+def generate_word(text_data, normalize='lemmatize', word_filter=True, language = DEFAULTLANGUAGE):
     """
     Given input text_data, a normalize 'command' and a stopwords filtering flag, generates a normalized, lowercased word/token provided that it passes the filter and that its length is bigger than 2 characters.\n
     :param text_data: the text from which to generate (i.e. doc['text'])

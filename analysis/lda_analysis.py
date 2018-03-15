@@ -5,6 +5,7 @@ import os
 import sys
 import nltk
 import gensim
+import configparser
 from nltk.corpus import stopwords
 from gensim.utils import tokenize
 from gensim.models.ldamodel import LdaModel
@@ -14,8 +15,12 @@ from helpers.text_preprocessing import *
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
 
+config = configparser.ConfigParser()
+config.read('settings.cfg')
 
-def create_corpus(documents, field='text', normalizing='lemmatize', language = "english"):
+DEFAULTLANGUAGE = config.get('inca','default_data_language')
+
+def create_corpus(documents, field='text', normalizing='lemmatize', language = DEFAULTLANGUAGE):
     """
     :param documents: an iterable of documents (dictionaries)
     :param field: the field from which to extract data
@@ -44,7 +49,7 @@ class Lda(Analysis):
         self.nb_docs_trained = 0
         self.selected_clusters = set()
 
-    def fit(self, documents, add_prediction='', field='text', nb_topics=20,  normalizing='stem', language = 'english', **kwargs):
+    def fit(self, documents, add_prediction='', field='text', nb_topics=20,  normalizing='stem', language = DEFAULTLANGUAGE, **kwargs):
         """
         This method trains the Lda model by fitting its parameters to the extracted textual data from the given documents\
         (dictionaries) and selected field key. It infers n number of topics/clusters equal to the given parameter.\
