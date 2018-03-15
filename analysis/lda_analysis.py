@@ -16,7 +16,7 @@ from helpers.text_preprocessing import *
 root_dir = os.path.dirname(os.path.realpath(__file__))
 
 config = configparser.ConfigParser()
-config.read('settings.cfg')
+config.read('default_settings.cfg')
 
 DEFAULTLANGUAGE = config.get('inca','default_data_language')
 

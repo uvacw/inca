@@ -5,7 +5,7 @@ from gensim.utils import tokenize
 import configparser
 
 config = configparser.ConfigParser()
-config.read('settings.cfg')
+config.read('default_settings.cfg')
 
 DEFAULTLANGUAGE = config.get('inca','default_data_language')
 
