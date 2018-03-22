@@ -24,7 +24,7 @@ class boskalispress (rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "boskalis press (corp)"
+        self.doctype = "boskalispress (corp)"
         self.rss_url ='https://boskalis.com/syndication/press-releases/feed.rss'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=6, day=14)
@@ -70,7 +70,7 @@ class boskalisnews (rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "boskalis news (corp)"
+        self.doctype = "boskalisnews (corp)"
         self.rss_url ='https://boskalis.com/syndication/news-releases/feed.rss'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=6, day=14)

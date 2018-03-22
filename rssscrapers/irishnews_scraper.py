@@ -15,7 +15,7 @@ class bbcni(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "BBC Northern Ireland (www)"
+        self.doctype = "bbcni (www)"
         self.rss_url= "http://feeds.bbci.co.uk/news/northern_ireland/rss.xml?edition=uk#"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=9, day=4)

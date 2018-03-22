@@ -19,16 +19,15 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class popular(rss):
-    """Banco Popular"""
+class redelectrica(rss):
+    """Red Electrica Corp"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "Banco Popular (corp)"
-        self.rss_url ='https://www.comunicacionbancopopular.es/feed/?post_type=nota'
+        self.doctype = "redelectrica (corp)"
+        self.rss_url ='http://www.ree.es/en/feed/press_release/all'
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=8, day=30)
-
+        self.date = datetime.datetime(year=2017, month=7, day=5)
 
     def parsehtml(self,htmlsource):
         '''
@@ -41,25 +40,25 @@ class popular(rss):
         '''
         tree = fromstring(htmlsource)
         try:
-            title="".join(tree.xpath('//*/h3[@class="entry-title single-title"]//text()')).strip()
+            title="".join(tree.xpath('//*[@class="field-item even"]/h2//text()')).strip()
         except:
-            title = ""
             logger.warning("Could not parse article title")
+            title = ""
         try:
-            teaser="".join(tree.xpath('//*[@class="entry-content clearfix"]/strong/p//text()')).strip()
+            teaser="".join(tree.xpath('//*[@class="field-item even"]/ul//text()')).strip()
         except:
             teaser= ""
             logger.debug("Could not parse article teaser")
-        teaser = " ".join(teaser.split())
+            teaser_clean = " ".join(teaser.split())
         try:
-            text="".join(tree.xpath('//*[@class="entry-content clearfix"]/p//text()')).strip()
+            text="".join(tree.xpath('//*[@class="field-item even"]/p//text()')).strip()
         except:
             logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),
                   "teaser":teaser.strip(),
-                  "text":polish(text).strip(),
+                  "text":polish(text).strip()
                   }
 
         return releases

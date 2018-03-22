@@ -24,7 +24,7 @@ class diageopress(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "diageo (corp)"
+        self.doctype = "diageopress (corp)"
         self.rss_url ='https://www.diageo.com/en/rss/press-releases/'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=6, day=28)
@@ -68,7 +68,7 @@ class diageonews(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "diageo (corp)"
+        self.doctype = "diageonews (corp)"
         self.rss_url ='https://www.diageo.com/en/rss/all-news-and-media/'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=6, day=28)

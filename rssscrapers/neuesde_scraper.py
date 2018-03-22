@@ -14,12 +14,12 @@ from lxml import etree
 logger = logging.getLogger(__name__)
 
 
-class neues(rss):
+class neuesdeutschland(rss):
     """Scrapes http://www.handelsblatt.com/ """
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "https://www.neues-deutschland.de"
+        self.doctype = "neuesdeutschland"
         self.rss_url='https://www.neues-deutschland.de/rss/aktuell.php'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=28)

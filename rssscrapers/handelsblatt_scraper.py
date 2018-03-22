@@ -20,7 +20,7 @@ class handelsblatt(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "Handelsblatt"
+        self.doctype = "handelsblatt"
         self.rss_url='http://www.handelsblatt.com/contentexport/feed/schlagzeilen'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=11, day=21)

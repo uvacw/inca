@@ -19,18 +19,18 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class ree(rss):
-    """Red Electrica Corp"""
+class gasnaturalfenosa(rss):
+    """Gas Natural Fenosa"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "Red Electrica Corp (corp)"
-        self.rss_url ='http://www.ree.es/en/feed/press_release/all'
+        self.doctype = "gasnaturalfenosa (corp)"
+        self.rss_url ='http://prensagnf.azurewebsites.net/feed/'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=5)
 
     def parsehtml(self,htmlsource):
-        '''
+        '''                                                                             
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
@@ -40,20 +40,20 @@ class ree(rss):
         '''
         tree = fromstring(htmlsource)
         try:
-            title="".join(tree.xpath('//*[@class="field-item even"]/h2//text()')).strip()
+            title="".join(tree.xpath('//*/h2[@class="entry-title"]/a//text()')).strip()
         except:
-            logger.warning("Could not parse article title")
             title = ""
+            logger.warning("Could not parse article title")
         try:
-            teaser="".join(tree.xpath('//*[@class="field-item even"]/ul//text()')).strip()
+            teaser="".join(tree.xpath('//*[@class="post-content"]/ul//text()')).strip()
         except:
-            teaser= ""
             logger.debug("Could not parse article teaser")
+            teaser= ""
             teaser_clean = " ".join(teaser.split())
         try:
-            text="".join(tree.xpath('//*[@class="field-item even"]/p//text()')).strip()
+            text="".join(tree.xpath('//*[@class="post-content"]/p//text()')).strip()
         except:
-            logger.warning("Could not parse article text")
+            logger.debug("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),
