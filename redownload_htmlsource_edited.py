@@ -19,12 +19,12 @@ p = inca.processing.repair_processing.redownload()
 # ad: need to fix cookie wall first
 
 
-newspapers = [ #{ 'doctype': 'ad',
-               #  'from_time': '2014-04-01',
-               #  'to_time': '2014-09-01' },
-               #{ 'doctype': 'ad',
-               #  'from_time': '2016-08-01',
-               #  'to_time': '2017-04-01' }, 
+newspapers = [ { 'doctype': 'ad',
+                 'from_time': '2014-04-01',
+                 'to_time': '2014-09-01' },
+               { 'doctype': 'ad',
+                 'from_time': '2016-08-01',
+                 'to_time': '2017-04-01' }, 
                #{ 'doctype': 'fok',
                #  'from_time': '2015-02-01',
                #  'to_time': '2017-04-01' },
@@ -43,9 +43,9 @@ newspapers = [ #{ 'doctype': 'ad',
             #{ 'doctype': 'spits',
             #     'from_time': '2014-01-01',
             #     'to_time': '2015-12-01' },
-               { 'doctype': 'telegraaf',
-                 'from_time': '2014-01-01',
-                 'to_time': '2018-01-01' },
+           #    { 'doctype': 'telegraaf',      AL GEDAAN
+           #      'from_time': '2014-01-01',   AL GEDAAN
+           #      'to_time': '2018-01-01' },   AL GEDAAN
            #{ 'doctype': 'trouw',
            #      'from_time': '2015-02-01',
            #      'to_time': '2015-06-01' },
