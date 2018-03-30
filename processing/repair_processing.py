@@ -71,6 +71,6 @@ class redownload(Processer):
         if linkpreprocessor is None:
             link = document_field
         else:
-            link = linkpreprocessor(document_field)
+            link = linkpreprocessor(self, document_field)
         newdownload = downloadfunction(self, link)        
         return newdownload
