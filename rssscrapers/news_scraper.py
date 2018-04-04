@@ -36,6 +36,7 @@ class ad(rss):
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
+        paywall_na     whether text is behind a paywall    
         '''
         try:
             tree = fromstring(htmlsource)
@@ -43,6 +44,11 @@ class ad(rss):
             logger.warning("Could not parse HTML tree",type(doc),len(doc))
             #print(doc)
             return("","","", "")
+        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
         except:
@@ -92,7 +98,8 @@ class ad(rss):
                        "teaser":teaser.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images":images}
+                       "images":images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
@@ -323,10 +330,15 @@ class volkskrant(rss):
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
+        paywall_na     whether text is behind a paywall
         '''
 
         tree = fromstring(htmlsource)
-
+        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
         except:
@@ -420,7 +432,8 @@ class volkskrant(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images": images}
+                       "images": images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
@@ -591,9 +604,15 @@ class parool(rss):
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
+        paywall_na whether the text is behind a paywall
         '''
 
         tree = fromstring(htmlsource)
+        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
         except:
@@ -638,7 +657,8 @@ class parool(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images": images}
+                       "images": images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
@@ -684,9 +704,15 @@ class trouw(rss):
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
+        paywall_na    whether the text is behind a paywall
         '''
 
         tree = fromstring(htmlsource)
+        paywall = tree.xpath('//*[@class ="paywall-notice__body"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article__header__title"]/text()')[0]
         except:
@@ -754,7 +780,8 @@ class trouw(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images":images}
+                       "images":images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
@@ -786,7 +813,7 @@ class telegraaf(rss):
     def __init__(self,database=True):
         self.database = database
         self.doctype = "telegraaf (www)"
-        self.rss_url='http://www.telegraaf.nl/rss/'
+        self.rss_url='http://www.telegraaf.nl/rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
@@ -798,9 +825,15 @@ class telegraaf(rss):
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
+        paywall_na    whether the text is behind a paywall
         '''
 
         tree = fromstring(htmlsource)
+        paywall = tree.xpath('//*[@class ="bg-premium all-paddings-6"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article-title playfair-bold-l no-top-margin no-bottom-margin gray1"]/text() | //*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()') [0]
         except:
@@ -837,7 +870,8 @@ class telegraaf(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images":images}
+                       "images":images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
