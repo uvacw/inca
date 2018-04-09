@@ -60,7 +60,7 @@ selenium
 matplotlib
 gensim
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
-# git+git://github.com/clips/pattern.git@development
+git+git://github.com/clips/pattern.git@development
 Pillow==4.3.0
 tqdm
 spacy
