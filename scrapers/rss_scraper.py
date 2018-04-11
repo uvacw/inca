@@ -127,7 +127,7 @@ class rss(Scraper):
                             doc.update(parsed)
                     parsedurl = self.parseurl(link)
                     doc.update(parsedurl)
-                    docnoemptykeys={k: v for k, v in doc.items() if v}
+                    docnoemptykeys={k: v for k, v in doc.items() if v or v ==False}
                     yield docnoemptykeys
 
     def get_page_body(self,url,**kwargs):
