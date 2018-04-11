@@ -18,7 +18,7 @@ class zeit(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "zeit"
+        self.doctype = "zeit (www)"
         self.rss_url='http://newsfeed.zeit.de/index'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=28)
