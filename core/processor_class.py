@@ -12,10 +12,11 @@ yields a key:value pair per document, but does not need to return the old docume
 
 import logging
 from core.document_class import Document
-from core.database import get_document, update_document, check_exists, config
+from core.database import get_document, update_document, check_exists, config, check_mapping
 import core
 
 logger = logging.getLogger(__name__)
+logger.setLevel('DEBUG')
 
 class Processer(Document):
     '''
@@ -42,7 +43,7 @@ class Processer(Document):
         '''CHANGE THIS METHOD, should return the changed document'''
         return updated_field
 
-    def runwrap(self, docs_or_query,action='run' , *args, **kwargs):
+    def runwrap(self, docs_or_query,field,force=False, action='run' , *args, **kwargs):
         '''
         Run a processor by supplying a list of documents, a query or a doctype .
         Actions specify the way in which the task should be run.
@@ -54,11 +55,11 @@ class Processer(Document):
         action: on of ['run','delay', 'batch' ]
 
         '''
-        documents = _doctype_query_or_list(docs_or_query)
+        documents = _doctype_query_or_list(docs_or_query,field=field, force=force)
 
         if action == 'run':
             for doc in documents:
-                yield self.run(doc, *args, **kwargs)
+                yield self.run(doc, field, *args, **kwargs)
 
         elif action == 'delay':
             for doc in documents:
@@ -107,7 +108,9 @@ class Processer(Document):
             are not supported when forcing.
         '''
 
-        # 1. check if document or id --> return doc
+        # 1. check if document or id --> return do
+        #print(document)
+        #print(type(document))
         logger.debug("trying to process: ",document)
         masked = False # expect a document to be processed as-is (assumes ES origin)
         if not (type(document)==dict):
@@ -136,11 +139,14 @@ class Processer(Document):
         # 4. process document
         document['_source'][new_key] = self.process(document['_source'][field], *args, **kwargs)
         # 3. add metadata
-        document['_source'] = self._add_metadata(document['_source'])
+        # document['_source'] = self._add_metadata(document['_source'])
         # 4. check metadata
-        self._verify(document['_source'])
+        # self._verify(document['_source'])
         # 5. save if requested
-        if save: update_document(document, force=force)
+        if save:
+            #print('ABOUT TO SAVE')
+            #print(document)
+            update_document(document, force=force)
         # 6. emit dotkey-field
         if masked:
             document = document['_source']
@@ -173,30 +179,56 @@ def _doctype_query_or_list(doctype_query_or_list, force=False, field=None, task=
     -------
     Iterable
     '''
+
     if type(doctype_query_or_list)==list:
         documents = doctype_query_or_list
     elif type(doctype_query_or_list)==str:
         if doctype_query_or_list in core.database.client.indices.get_mapping()[config.get('elasticsearch','document_index')]['mappings'].keys():
             logger.info("assuming documents of given type should be processed")
+            if check_mapping(doctype_query_or_list) == "mixed_mapping": 
+                doctypefield = "doctype.keyword"
+            elif check_mapping(doctype_query_or_list) == "new_mapping": 
+                doctypefield = "doctype"
+            elif check_mapping(doctype_query_or_list) == None: 
+                raise()
             if force or not field:
-                documents = core.database.scroll_query({'query':{'match':{'doctype':"%s"%doctype_query_or_list}}})
+                documents = core.database.scroll_query({'query':{'match':{doctypefield:"%s"%doctype_query_or_list}}})
             elif not force and field:
                 logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
-                documents = core.database.scroll_query(
-                    {'filter':{'and': [
-                            {'match':{'doctype':doctype_query_or_list}},
-                            {'missing':{'field': '%s_%s' %(field, task)}}]
-                               }})
+                #documents = core.database.scroll_query(
+                #    {'filter':{'and': [
+                #            {'match':{doctypefield:doctype_query_or_list}},
+                #            {'missing':{'field': '%s_%s' %(field, task)}}]
+                #               }})
+                q = {"query":
+                            {
+                            "bool":
+                                {'must_not':
+                                     {
+                                    'exists':{'field':'{}_{}'.format(field,task)}}, 
+                            "filter":
+                                {
+                                "term" : {
+                                    doctypefield : doctype_query_or_list
+                                    }
+                                }
+                            }}}
+                logger.debug(q)
+                documents = core.database.scroll_query(q)
+
+
         else:
             logger.info("assuming input is a query_string")
             if force or not field:
                 documents = core.database.scroll_query({'query':{'query_string':{'query': doctype_query_or_list}}})
             elif not force and field:
                 logger.info("force=False, ignoring documents where the result key exists (and has non-NULL value)")
-                documents = core.database.scroll_query({'query':{'and':[
-                    {'missing':{'field':'%s_%s' %(field, task)}},
-                    {'query_string':{'query':doctype_query_or_list}}
-                ]}})
+                #documents = core.database.scroll_query({'query':{'and':[
+                #    {'missing':{'field':'%s_%s' %(field, task)}},
+                #    {'query_string':{'query':doctype_query_or_list}}
+                #]}})
+                documents = core.database.scroll_query({'query':{'query_string':{'query': "({}) AND NOT _exists_:{}_{}".format(doctype_query_or_list,field,task)}}})
+
     else:
         if not force and field and task and not doctype_query_or_list:
             field = '%s_%s' %(field, task)
