@@ -23,7 +23,7 @@ class ing(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "nu"
+        self.doctype = "ing (corp)"
         self.rss_url='https://www.ing.nl/nieuws/nieuws_en_persberichten/news.xml?format=rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2018, month=10, day=6)

@@ -24,7 +24,7 @@ class bbva(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "BBVA (corp)"
+        self.doctype = "bbva(corp)"
         self.rss_url ='https://www.bbva.com/en/rss/press-releases'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=5)

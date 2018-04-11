@@ -892,7 +892,7 @@ class telegraaf(rss):
                 images=[]
         return images
 
-class metronieuws(rss):
+class metro(rss):
     """Scrapes metrnieuwso.nl """
 
     def __init__(self,database=True):
