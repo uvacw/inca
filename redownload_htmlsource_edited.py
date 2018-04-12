@@ -19,12 +19,12 @@ p = inca.processing.repair_processing.redownload()
 # ad: need to fix cookie wall first
 
 
-newspapers = [ { 'doctype': 'ad',
-                 'from_time': '2014-04-01',
-                 'to_time': '2014-09-01' },
-               { 'doctype': 'ad',
-                 'from_time': '2016-08-01',
-                 'to_time': '2017-04-01' }, 
+newspapers = [ #{ 'doctype': 'ad',
+               #  'from_time': '2014-04-01',
+               #  'to_time': '2014-09-01' },
+               #{ 'doctype': 'ad',
+               #  'from_time': '2016-08-01',
+               #  'to_time': '2017-04-01' }, 
                #{ 'doctype': 'fok',
                #  'from_time': '2015-02-01',
                #  'to_time': '2017-04-01' },
@@ -46,12 +46,12 @@ newspapers = [ { 'doctype': 'ad',
            #    { 'doctype': 'telegraaf',      AL GEDAAN
            #      'from_time': '2014-01-01',   AL GEDAAN
            #      'to_time': '2018-01-01' },   AL GEDAAN
-           #{ 'doctype': 'trouw',
-           #      'from_time': '2015-02-01',
-           #      'to_time': '2015-06-01' },
-           #{ 'doctype': 'trouw',
-           #      'from_time': '2016-10-01',
-           #      'to_time': '2017-04-01' }
+           { 'doctype': 'trouw',
+                 'from_time': '2015-02-01',
+                 'to_time': '2015-06-01' },
+           { 'doctype': 'trouw',
+                 'from_time': '2016-10-01',
+                 'to_time': '2017-04-01' }
             ]
 
 for newspaper in newspapers:
@@ -59,7 +59,7 @@ for newspaper in newspapers:
     time_range = { 'range': { 'publication_date': { 'gte': newspaper['from_time'], 'lte': newspaper['to_time'] } } }
     query = { 'query': { 'bool': { 'filter': [{ 'term': { '_type': "{} (www)".format(newspaper['doctype']) }}, time_range] } } }
     print(query)
-    ids = [ d['_id'] for d in inca.core.database.scroll_query(query) ]
+    ids_urls = [ (d['_id'],d['_source']['url']) for d in inca.core.database.scroll_query(query) ]
     if newspaper['doctype'] == 'metro':
         f = eval('inca.rssscrapers.news_scraper.metronieuws.get_page_body')
         g = eval('inca.rssscrapers.news_scraper.metronieuws.getlink')
@@ -67,8 +67,8 @@ for newspaper in newspapers:
        f  = eval('inca.rssscrapers.news_scraper.{}.get_page_body'.format(newspaper['doctype']))
        g  = eval('inca.rssscrapers.news_scraper.{}.getlink'.format(newspaper['doctype']))
 
-    for i in ids:
-            print(i)
+    for i,u in ids_urls:
+            print(i,u)
             sleep(random.uniform(5,10))
             try:
                 p.run(i, 'url', downloadfunction=f, linkpreprocessor = g, save=True)
