@@ -120,7 +120,7 @@ class herald(rss):
 
         return extractedinfo
 
-class independent-irl(rss):
+class independent_irl(rss):
     """Scrapes independent.ie"""
 
     def __init__(self,database=True):
