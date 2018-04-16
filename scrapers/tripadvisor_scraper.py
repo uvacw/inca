@@ -209,7 +209,7 @@ class tripadvisor(Scraper):
                         if 'prw_rup prw_reviews_text_summary_hsx' in element.values():
                             thisreview['review'] = element.text_content().strip()
                             if thisreview['review'] == '':
-                                thisreview['review'] = ('UNRETRIEVABLE REVIEW')
+                                thisreview['review'] = 'UNRETRIEVABLE REVIEW'
                         if 'rating reviewItemInline' in element.values():
                             date = element.getchildren()[1].attrib['title'].strip()
                             thisreview['date'] = date
