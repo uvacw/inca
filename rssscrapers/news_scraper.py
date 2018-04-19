@@ -786,7 +786,7 @@ class telegraaf(rss):
     def __init__(self,database=True):
         self.database = database
         self.doctype = "telegraaf (www)"
-        self.rss_url='http://www.telegraaf.nl/rss/'
+        self.rss_url='http://www.telegraaf.nl/rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
@@ -844,14 +844,15 @@ class telegraaf(rss):
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img_list = element.xpath('//*[@class="image ui-bottom-margin-3 ui-top-margin-2 img-left"]//img')
+            img_list = element.xpath('//*[@class="__picture picture height-100 absolute top-left-corner width-100 no-borders"]//img')
             if len(img_list)>0:
                 img = img_list[0]
-                image = {'url' : img.attrib['src'],
+                image = {'url' : self.rss_url[:-4] + img.attrib['src'],
                      #'height' : img.attrib['height'],
                      #'width' : img.attrib['width'],
                      #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
-                     'alt' : img.attrib['alt']}
+                     #'alt' : img.attrib['alt']
+                }
                 if image['url'] not in [i['url'] for i in images]:
                     images.append(image)
             else:
