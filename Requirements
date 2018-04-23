@@ -7,6 +7,7 @@ billiard==3.3.0.23
 celery==3.1.23
 chardet==2.3.0
 coverage==4.1
+colorama
 cytoolz==0.8.0
 decorator==4.0.9
 elasticsearch==5.4.0
