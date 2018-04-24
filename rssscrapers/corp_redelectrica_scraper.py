@@ -19,6 +19,7 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
+
 class ree(rss):
     """Scrapes Red Electrica Corp"""
 

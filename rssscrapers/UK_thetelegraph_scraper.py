@@ -24,7 +24,7 @@ class thetelegraph(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "telegraph (www)"
+        self.doctype = "thetelegraph (www)"
         self.rss_url = "http://www.telegraph.co.uk/rss.xml"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=9, day=11)

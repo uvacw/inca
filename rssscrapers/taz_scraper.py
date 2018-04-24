@@ -14,6 +14,7 @@ from lxml import etree
 logger = logging.getLogger(__name__)
 
 
+
 class taz(rss):
     """Scrapes taz.de """
 

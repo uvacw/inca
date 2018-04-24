@@ -58,7 +58,11 @@ ImageHash==3.7
 lxml
 selenium
 matplotlib
+gensim
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
 git+git://github.com/clips/pattern.git@development
 Pillow==4.3.0
 tqdm
+newspaper3k
+spacy
+https://github.com/explosion/spacy-models/releases/download/nl_core_news_sm-2.0.0/nl_core_news_sm-2.0.0.tar.gz

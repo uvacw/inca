@@ -14,7 +14,7 @@ from lxml import etree
 logger = logging.getLogger(__name__)
 
 
-class tagesspiegel(rss):
+class dertagesspiegel(rss):
     """Scrapes http://www.handelsblatt.com/ """
 
     def __init__(self,database=True):

@@ -95,7 +95,7 @@ class elpais(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "abc (www)"
+        self.doctype = "elpais (www)"
         self.rss_url ='http://ep00.epimg.net/rss/elpais/portada.xml'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=5, day=10)

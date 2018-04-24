@@ -19,7 +19,7 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class independent(rss):
+class independent_uk(rss):
     """Scrapes independent.co.uk"""
 
     def __init__(self,database=True):

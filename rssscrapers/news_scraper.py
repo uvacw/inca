@@ -47,6 +47,7 @@ class ad(rss):
         byline    the author, e.g. "Bob Smith"
         byline_source    sth like ANP
         image: images included in the article
+        paywall_na    whether the text is behind a paywall
         '''
 
         try:
@@ -55,6 +56,11 @@ class ad(rss):
             logger.warning("Could not parse HTML tree",type(doc),len(doc))
             #print(doc)
             return("","","", "")
+        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
         except:
@@ -104,7 +110,8 @@ class ad(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images":images}
+                       "images":images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
@@ -369,11 +376,16 @@ class volkskrant(rss):
         byline    the author, e.g. "Bob Smith"
         byline_source    sth like ANP
         image: images included in the article
+        paywall_na    whether the text is behind a paywall
         '''
 
 
         tree = fromstring(htmlsource)
-
+        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
         except:
@@ -467,7 +479,8 @@ class volkskrant(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images": images}
+                       "images": images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
@@ -659,9 +672,15 @@ class parool(rss):
         byline    the author, e.g. "Bob Smith"
         byline_source    sth like ANP
         image: images included in the article
+        paywall_na    whether the text is behind a paywall
         '''
 
         tree = fromstring(htmlsource)
+        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
         except:
@@ -706,7 +725,8 @@ class parool(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images": images}
+                       "images": images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
@@ -763,9 +783,15 @@ class trouw(rss):
         byline    the author, e.g. "Bob Smith"
         byline_source    sth like ANP
         image: images included in the article
+        paywall_na    whether the text is behind a paywall
         '''
 
         tree = fromstring(htmlsource)
+        paywall = tree.xpath('//*[@class ="paywall-notice__body"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article__header__title"]/text()')[0]
         except:
@@ -833,7 +859,8 @@ class trouw(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images":images}
+                       "images":images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
@@ -865,7 +892,7 @@ class telegraaf(rss):
     def __init__(self,database=True):
         self.database = database
         self.doctype = "telegraaf (www)"
-        self.rss_url='http://www.telegraaf.nl/rss/'
+        self.rss_url='http://www.telegraaf.nl/rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
@@ -888,10 +915,16 @@ class telegraaf(rss):
         byline    the author, e.g. "Bob Smith"
         byline_source    sth like ANP
         image: images included in the article
+        paywall_na    whether the text is behind a paywall
         '''
 
 
         tree = fromstring(htmlsource)
+        paywall = tree.xpath('//*[@class ="bg-premium all-paddings-6"]')
+        if paywall:
+            paywall_na = True
+        else:
+            paywall_na = False
         try:
             title = tree.xpath('//*/h1[@class="article-title playfair-bold-l no-top-margin no-bottom-margin gray1"]/text() | //*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()') [0]
         except:
@@ -928,29 +961,33 @@ class telegraaf(rss):
                        "text":text.strip(),
                        "byline":author_door.replace("\n", " "),
                        "byline_source":author_bron.replace("\n"," ").strip(),
-                       "images":images}
+                       "images":images,
+                       "paywall_na":paywall_na}
 
         return extractedinfo
 
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img_list = element.xpath('//*[@class="image ui-bottom-margin-3 ui-top-margin-2 img-left"]//img')
+            img_list = element.xpath('//*[@class="__picture picture height-100 absolute top-left-corner width-100 no-borders"]//img')
             if len(img_list)>0:
                 img = img_list[0]
-                image = {'url' : img.attrib['src'],
+                image = {'url' : self.rss_url[:-4] + img.attrib['src'],
                      #'height' : img.attrib['height'],
                      #'width' : img.attrib['width'],
                      #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
-                     'alt' : img.attrib['alt']}
+                     #'alt' : img.attrib['alt']
+                }
                 if image['url'] not in [i['url'] for i in images]:
                     images.append(image)
             else:
                 images=[]
         return images
 
-class metronieuws(rss):
-    """Scrapes metronieuws.nl """
+
+
+class metro(rss):
+    """Scrapes metronieuwso.nl """
 
     def __init__(self,database=True):
         self.database = database

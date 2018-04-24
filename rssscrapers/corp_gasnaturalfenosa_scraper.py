@@ -19,12 +19,21 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
+<<<<<<< HEAD:rssscrapers/corp_gnf_scraper.py
 class gnf(rss):
     """Scrapes Gas Natural Fenosa"""
 
     def __init__(self,database=True):
         self.database = database
         self.doctype = "gnf (corp)"
+=======
+class gasnaturalfenosa(rss):
+    """Gas Natural Fenosa"""
+
+    def __init__(self,database=True):
+        self.database = database
+        self.doctype = "gasnaturalfenosa (corp)"
+>>>>>>> development:rssscrapers/corp_gasnaturalfenosa_scraper.py
         self.rss_url ='http://prensagnf.azurewebsites.net/feed/'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=5)
