@@ -987,7 +987,7 @@ class telegraaf(rss):
 
 
 class metro(rss):
-    """Scrapes metronieuwso.nl """
+    """Scrapes metronieuws.nl """
 
     def __init__(self,database=True):
         self.database = database
