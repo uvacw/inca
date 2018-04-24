@@ -143,7 +143,7 @@ class nu(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -245,7 +245,7 @@ class nos(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -351,7 +351,7 @@ class volkskrant(rss):
 
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -505,7 +505,7 @@ class nrc(rss):
         self.date    = datetime.datetime(year=2016, month=9, day=10)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -642,7 +642,7 @@ class parool(rss):
         return {'category':category}
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -745,7 +745,7 @@ class trouw(rss):
 
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -870,7 +870,7 @@ class telegraaf(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -960,7 +960,7 @@ class metronieuws(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -1068,7 +1068,7 @@ class geenstijl(rss):
         self.date    = datetime.datetime(year=2016, month=9, day=15)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -1154,7 +1154,7 @@ class fok(rss):
 
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -1266,7 +1266,7 @@ class destentor(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=3)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -1394,7 +1394,7 @@ class bd(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=9)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -1519,7 +1519,7 @@ class gelderlander(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=10)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -1641,7 +1641,7 @@ class ed(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=10)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -1771,7 +1771,7 @@ class bndestem(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=17)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -1909,7 +1909,7 @@ class pzc(rss):
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=5, day=17)
 
-    def parsehtml(self,htmlsource)
+    def parsehtml(self,htmlsource):
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
@@ -2048,7 +2048,7 @@ class tubantia(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=17)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -2186,7 +2186,7 @@ class limburger(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=17)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -2319,7 +2319,7 @@ class frieschdagblad(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=10)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -2411,7 +2411,7 @@ class zwartewaterkrant(rss):
         self.date    = datetime.datetime(year=2017, month=5, day=10)
 
     def parsehtml(self,htmlsource):
-         '''
+        '''
         Parses the html source to retrieve info that is not in the RSS-keys
         
 

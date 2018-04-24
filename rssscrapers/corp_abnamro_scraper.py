@@ -46,7 +46,7 @@ class abnamro (rss):
         text    the plain text of the article
         '''
         
-tree = fromstring(htmlsource)
+        tree = fromstring(htmlsource)
         try:
             title="".join(tree.xpath('//*/article[@class="news-detail"]/h1/text()')).strip()
         except:

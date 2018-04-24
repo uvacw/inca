@@ -30,22 +30,21 @@ class btgroup (rss):
         self.date = datetime.datetime(year=2017, month=7, day=28)
 
     def parsehtml(self,htmlsource):
-       '''                                                                                                                                                                                                                                                               
-       Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                 
-       
-       Parameters                                                                                                                                                                                                                                                         
-       ----                                                                                                                                                                                                                                                              
-       htmlsource: string                                                                                                                                                                                                                                                 
-           html retrived from RSS feed                                                                                                                                                                                                                                   
+        '''                                                                                                                                                                                                        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                
+
+        Parameters                                                                                                                                                                                                                                                         
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                   
            
 
-        yields                                                                                                                                                                                                                                                             
-        ----                                                                                                                                                                                                                                                               
-        title    the title of the article                                                                                                                                                                                                                                   
-        text    the plain text of the article                                                                                                                                                                                                                              
+         yields                                                                                                                                                                                                                                                             
+         ----                                                                                                                                                                                                                                                               
+         title    the title of the article                                                                                                                                                                                                                                   
+         text    the plain text of the article                                                                                                                                                                                                                              
         '''
         
-       tree = fromstring(htmlsource)
+        tree = fromstring(htmlsource)
         try:
             title="".join(tree.xpath('//*/h1[@class="newsroom-headline fn"]/text()')).strip()
         except:
