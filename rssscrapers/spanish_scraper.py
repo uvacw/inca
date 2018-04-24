@@ -31,14 +31,23 @@ class abc(rss):
 
 
     def parsehtml(self,htmlsource):
+        '''                                                                                                                                                                                                                                                                
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                
+        
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                     
+
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article
+        text    the plain text of the article                                                                                                                                                                                                                               
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                              
+        byline_source    sth like ANP                                                                                                                                                                                                                                       
+        category    sth. like economy, sports, ...                                                                                                                                                                                                                          
         '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
+        
         tree = fromstring(htmlsource)
         try:
             teaser = "".join(tree.xpath('//*[@class="subtitulo gris-oscuro"]/text()')).strip()

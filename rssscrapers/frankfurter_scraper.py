@@ -19,7 +19,7 @@ class frankfurter(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "frankfurter"
+        self.doctype = "frankfurter (www)"
         self.rss_url='http://www.faz.net/rss/aktuell/'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=11, day=21)

@@ -23,19 +23,27 @@ class hetlaatstenieuws(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "hetlaatstenieuws"
+        self.doctype = "hetlaatstenieuws (www)"
         self.rss_url= "http://www.hln.be/rss.xml"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=5, day=10)
 
     def parsehtml(self,htmlsource):
-        '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        '''                                                                                                                                                                                                                                                                
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                 
+
+        Parameters                                                                                                                                                                                                                                                         
+        ----                                                                                                                                                                                                                                                               
+        htmlsource: string                                                                                                                                                                                                                                               
+            html retrived from RSS feed                                                                                                                                                                                                                                     
+            
+        yields                                                                                                                                                                                                                                                         
+        ----                                                                                                                                                                                                                                                              
+        title    the title of the article                                                                                                                                                                                                                                   
+        category    sth. like economy, sports, ...                                                                                                                                                                                                                          
+        text    the plain text of the article                                                                                                                                                                                                                              
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                             
+        byline_source    sth like ANP                                                                                                                                                                                                                                       
         '''
         logging.basicConfig(level=logging.INFO)
 
@@ -123,11 +131,11 @@ class hetlaatstenieuws(rss):
             text = texttotal.replace('(+)','').replace('\xa0','')
             title = title + "\n" + subtitle
             bylinesource2 = "".join(re.findall(r"Bron:(.*)",bylinesource))
-            extractedinfo={"byline":byline.replace("Door:","").replace("\n"," ").replace("Bewerkt door:","").strip(),
-                           "bylinesource":bylinesource2.strip(),
-                           "text":text.replace("\n","").strip(),
+            extractedinfo={"title":title.strip(),
                            "category":category.replace("\n","").strip(),
-                           "title":title.strip()
+                           "text":text.replace("\n","").strip(),
+                           "byline":byline.replace("Door:","").replace("\n"," ").replace("Bewerkt door:","").strip(),
+                           "bylinesource":bylinesource2.strip()
                           }
         except:
                 #logger.warning('stuff going wrong in het laatste nieuws scraper')

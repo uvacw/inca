@@ -20,24 +20,31 @@ def polish(textstring):
     return result.strip()
 
 class ree(rss):
-    """Red Electrica Corp"""
+    """Scrapes Red Electrica Corp"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "Red Electrica Corp (corp)"
+        self.doctype = "red electrica corp (corp)"
         self.rss_url ='http://www.ree.es/en/feed/press_release/all'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=5)
 
     def parsehtml(self,htmlsource):
+        '''                                                                                                                                                                                                                                                              
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                 
+
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                               
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                     
+
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article
+        teaser    the intro to the artcile 
+        text    the plain text of the article                                                                                                                                                                                                                               
         '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
+
         tree = fromstring(htmlsource)
         try:
             title="".join(tree.xpath('//*[@class="field-item even"]/h2//text()')).strip()

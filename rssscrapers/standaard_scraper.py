@@ -31,14 +31,23 @@ class standaard(rss):
         self.date    = datetime.datetime(year=2016, month=5, day=3)
 
     def parsehtml(self,htmlsource):
+        '''                                                                                                                                                                                                                                                                
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                
+
+        Parameters                                                                                                                                                                                                                                                         
+        ----                                                                                                                                                                                                                                                               
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                     
+            
+        yields                                                                                                                                                                                                                                                             
+        ----                                                                                                                                                                                                                                                               
+        title    the title of the article                                                                                                                                                                                                                                  
+        text    the plain text of the article                                                                                                                                                                                                                             
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                             
+        byline_source    sth like ANP                                                                                                                                                                                                                                      
+        category    sth. like economy, sports, ...                                                                                                                                                                                                                         
         '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
+        
         try:
             tree = fromstring(htmlsource)
         except:
@@ -90,11 +99,11 @@ class standaard(rss):
 
         text = text.replace("\xad","")
         text = textfirstpara + " " + text
-        extractedinfo = {"category":category,
+        extractedinfo = {"title":title.strip(),
                          "text":text.strip(),
-                         "bylinesource":source.strip(),
                          "byline":author.strip(),
-                         "title":title.strip()
+                         "byline_source":source.strip(),
+                         "category":category,
                         }
 
         return extractedinfo
