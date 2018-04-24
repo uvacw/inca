@@ -19,25 +19,34 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class gasnaturalfenosa(rss):
-    """Gas Natural Fenosa"""
+class gnf(rss):
+    """Scrapes Gas Natural Fenosa"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "gasnaturalfenosa (corp)"
+        self.doctype = "gnf (corp)"
         self.rss_url ='http://prensagnf.azurewebsites.net/feed/'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=5)
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        '''                                                                                                                                                                                                                                                                 
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                 
+
+
+        Parameters                                                                                                                                                                                                                                                         
+        ----                                                                                                                                                                                                                                                               
+        htmlsource: string                                                                                                                                                                                                                                                
+            html retrived from RSS feed                                                                                                                                                                                                                                    
+
+
+        yields                                                                                                                                                                                                                                                             
+        ----                                                                                                                                                                                                                                                               
+        title    the title of the article                                                                                                                                                                                                                                   
+        teaser    the intro to the artcile                                                                                                                                                                                                                                  
+        text    the plain text of the article                                                                                                                                                                                                                               
         '''
+
         tree = fromstring(htmlsource)
         try:
             title="".join(tree.xpath('//*/h2[@class="entry-title"]/a//text()')).strip()

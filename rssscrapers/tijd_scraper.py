@@ -29,14 +29,23 @@ class detijd(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
+        '''                                                                                                                                                                                                                                                                
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                
+        
+        Parameters                                                                                                                                                                                                                                                         
+        ----                                                                                                                                                                                                                                                                
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                     
+
+
+        yields                                                                                                                                                                                                                                                             
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article                                                                                                                                                                                                                                  
+        text    the plain text of the article                                                                                                                                                                                                                               
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                             
+        category    sth. like economy, sports, ...                                                                                                                                                                                                                          
         '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
+       
         try:
             tree = fromstring(htmlsource)
         except:
@@ -70,10 +79,10 @@ class detijd(rss):
             logger.warning("Could not parse article title")
 
         texttotal = textfirstpara + " " + textrest
-        extractedinfo={"byline":author.strip(),
+        extractedinfo={"title":title,
                        "text":texttotal.strip(),
-                       "category":category.strip(),
-                       "title":title,
+                       "byline":author.strip(),
+                       "category":category.strip()
                        }
 
         return extractedinfo

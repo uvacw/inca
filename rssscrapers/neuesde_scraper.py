@@ -19,7 +19,7 @@ class neuesdeutschland(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "neuesdeutschland (www)"
+        self.doctype = "neues deutschland (www)"
         self.rss_url='https://www.neues-deutschland.de/rss/aktuell.php'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=28)

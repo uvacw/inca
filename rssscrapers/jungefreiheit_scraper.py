@@ -19,7 +19,7 @@ class jungefreiheit(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "jungefreiheit (www)"
+        self.doctype = "junge freiheit (www)"
         self.rss_url='https://jungefreiheit.de/feed/'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=11, day=21)

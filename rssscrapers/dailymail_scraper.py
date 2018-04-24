@@ -18,7 +18,7 @@ class dailymail(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "dailymail"
+        self.doctype = "dailymail (www)"
         self.rss_url='http://www.dailymail.co.uk/articles.rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=11, day=21)

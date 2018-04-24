@@ -30,13 +30,19 @@ class thetelegraph(rss):
         self.date    = datetime.datetime(year=2017, month=9, day=11)
 
     def parsehtml(self,htmlsource):
-        '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        '''        
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                             
+        
+        Parameters                                                                                                                                                                                                                                                          
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article                                                                                                                                                                                                                                   
+        category    sth. like economy, sports, ...                                                                                                                                                                                                                         
+        byline      the author, e.g. "Bob Smith"                                                                                                                                                                                                                            
+        text    the plain text of the article                                                                                                                                                                                                                               
         '''
 
         try:
