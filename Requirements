@@ -10,7 +10,6 @@ coverage==4.1
 cytoolz==0.8.0
 decorator==4.0.9
 elasticsearch==5.4.0
-elasticsearch-dsl==2.0.0
 feedparser==5.2.1
 Flask==0.10.1
 flower==0.9.1
