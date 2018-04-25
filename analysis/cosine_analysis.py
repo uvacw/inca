@@ -2,6 +2,7 @@
 This file contains the basics to determine the overlap based on cosine similarity
 '''
 
+from core.analysis_base_class import Analysis
 import datetime 
 from collections import defaultdict
 import scipy as sp
@@ -20,7 +21,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 tbl = dict.fromkeys(i for i in range(maxunicode) if unicodedata.category(chr(i)).startswith('P'))
 
-class cosine_similarity():
+class cosine_similarity(Analysis):
     '''Compares documents from source and target, showing their cosine distance'''
     
     def date_comparison(self, first_date, second_date):
@@ -55,7 +56,7 @@ class cosine_similarity():
             previous_row = current_row
             return previous_row[-1]
         
-    def analysis(self, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = 0, days_after = 2, threshold = 0.6, from_time=None, to_time=None, to_csv = False, method = "cosine"):
+    def fit(self, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = 0, days_after = 2, threshold = 0.6, from_time=None, to_time=None, to_csv = False, method = "cosine"):
         '''
         Source = doctype of source, Sourcetext = field of sourcetext (e.g. 'text'), 
         Sourcedate = field of sourcedate (e.g. 'publication_date'); (repeat for target); 
@@ -209,7 +210,16 @@ class cosine_similarity():
             
 
                
-        
+    def predict(self, *args, **kwargs):
+        pass
+
+    def quality(self, *args, **kwargs):
+        pass
+
+    def interpretation(self, *args, **kwargs):
+        pass
+
+    
 
 
 
