@@ -26,7 +26,7 @@ def _annotate(text, key, question, highlight_regexp, window=150, display=True):
             for i in range(numberofmatches):
                 #print('Occurance {} of {}'.format(i+1,numberofmatches))
                 r=re.search(highlight_regexp,reststring)
-                print(Fore.LIGHTBLACK_EX+'Next match:')
+                print(Fore.LIGHTBLACK_EX+'Next match:'+Style.RESET_ALL)
                 if poscount+r.start() < window:
                     print(text[poscount:poscount+r.start()], end='')
                     print(Fore.GREEN+text[poscount+r.start():poscount+r.end()], end='')
