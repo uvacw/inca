@@ -7,10 +7,10 @@ billiard==3.3.0.23
 celery==3.1.23
 chardet==2.3.0
 coverage==4.1
+colorama
 cytoolz==0.8.0
 decorator==4.0.9
 elasticsearch==5.4.0
-elasticsearch-dsl==2.0.0
 feedparser==5.2.1
 Flask==0.10.1
 flower==0.9.1
@@ -58,7 +58,11 @@ ImageHash==3.7
 lxml
 selenium
 matplotlib
+gensim
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
 git+git://github.com/clips/pattern.git@development
 Pillow==4.3.0
 tqdm
+newspaper3k
+spacy
+https://github.com/explosion/spacy-models/releases/download/nl_core_news_sm-2.0.0/nl_core_news_sm-2.0.0.tar.gz

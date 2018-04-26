@@ -21,7 +21,7 @@ running INCA.
 import os
 import logging
 import inspect
-
+import configparser
 
 logging.basicConfig(level="WARN")
 logger = logging.getLogger("INCA")
@@ -34,6 +34,24 @@ if not 'settings.cfg' in os.listdir(incadir):
     logger.info('No settings found, applying default settings (change in `settings.cfg`)')
     from shutil import copyfile
     copyfile(os.path.join(incadir,'default_settings.cfg'),os.path.join(incadir,'settings.cfg'))
+
+config = configparser.ConfigParser()
+config.read('settings.cfg')
+
+defaultconfig = configparser.ConfigParser()
+defaultconfig.read('default_settings.cfg')
+
+# check for breaking changes in settings.cfg
+for s in defaultconfig.sections():
+    for i in defaultconfig.items(s):
+        i = i[0]
+        try:
+            config.get(s,i)
+        except:
+            logger.error('Your file settings.cfg does not have the key {} in the section [{}]. \nHave a look at default_settings.cfg for an example of a valid settings file. You could consider just copying default_settings.cfg to settings.cfg.\nQuitting now: You will have to solve this first.'.format(i,s))
+            from sys import exit
+            exit()
+
 
 from celery import Celery, group, chain, chord
 import core
@@ -109,8 +127,8 @@ class Inca():
         self._construct_tasks('scrapers')
         self._construct_tasks('processing')
 
-        #self._analysis_task_constructor()
-        self._construct_tasks('analysis')
+        self._analysis_task_constructor()
+        # self._construct_tasks('analysis')
         self._construct_tasks('clients')
         self._construct_tasks('importers_exporters')
         self._construct_tasks('rssscrapers')

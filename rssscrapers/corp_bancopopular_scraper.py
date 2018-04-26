@@ -19,57 +19,55 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class prudential(rss):
-    """Scrapes Prudential"""
+
+class popular(rss):
+    """Scrapes Banco Popular"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "prudential (corp)"
-        self.rss_url ='http://news.prudential.com/rss.xml'
-        # note: this url does not work. this one does: http://www.investor.prudential.com/corporate.rss?c=129695&Rule=Cat=news~subcat=ALL
-        # however, in that case parsing does not work anymore.
+        self.doctype = "banco popular (corp)"
+        self.rss_url ='https://www.comunicacionbancopopular.es/feed/?post_type=nota'
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=6, day=28)
+        self.date = datetime.datetime(year=2017, month=8, day=30)
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                                                                                                                                                                                                                
+        '''                                                                                                                                                                                                                                                               
         Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                 
-        
+
         Parameters                                                                                                                                                                                                                                                         
         ----                                                                                                                                                                                                                                                               
-        htmlsource: string                                                                                                                                                                                                                                                  
+        htmlsource: string                                                                                                                                                                                                                                                 
             html retrived from RSS feed                                                                                                                                                                                                                                     
             
         yields                                                                                                                                                                                                                                                             
         ----                                                                                                                                                                                                                                                               
-        title    the title of the article                                                                                                                                                                                                                                   
-        category    sth. like economy, sports, ...                                                                                                                                                                                                                          
-        text    the plain text of the article                                                                                                                                                                                                                               
+        title    the title of the article                                                                                                                                                                                                                                  
+        teaser    the intro to the artcile                                                                                                                                                                                                                                 
+        text    the plain text of the article                                                                                                                                                                                                                              
         '''
 
         tree = fromstring(htmlsource)
         try:
-            title="".join(tree.xpath('//*[@id="articleDateTitle"]/h2/text()')).strip()
+            title="".join(tree.xpath('//*/h3[@class="entry-title single-title"]//text()')).strip()
         except:
-            logger.warning("Could not parse article title")
             title = ""
+            logger.warning("Could not parse article title")
         try:
-            category="".join(tree.xpath('//*[@id="articleTags"]/p/a/text()')).strip()
+            teaser="".join(tree.xpath('//*[@class="entry-content clearfix"]/strong/p//text()')).strip()
         except:
-            category = ""
-            logger.debug("Could not parse article category")
-        if len(category.split(" ")) > 1:
-            category=""
+            teaser= ""
+            logger.debug("Could not parse article teaser")
+        teaser = " ".join(teaser.split())
         try:
-            text="".join(tree.xpath('//*[@id="articleContent"]//text()')).strip()
+            text="".join(tree.xpath('//*[@class="entry-content clearfix"]/p//text()')).strip()
         except:
             logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
         releases={"title":title.strip(),
-                       "category":category.strip(),
-                       "text":polish(text).strip()
-                       }
+                  "teaser":teaser.strip(),
+                  "text":polish(text).strip(),
+                  }
 
         return releases

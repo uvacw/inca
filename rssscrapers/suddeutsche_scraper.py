@@ -19,7 +19,7 @@ class suddeutsche(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "suddeutsche"
+        self.doctype = "suddeutsche (www)"
         self.rss_url='http://rss.sueddeutsche.de/rss/Topthemen'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=11, day=21)

@@ -51,7 +51,7 @@ class redownload(Processer):
     '''
 
 
-    def process(self, document_field, downloadfunction, **kwargs):
+    def process(self, document_field, downloadfunction, linkpreprocessor=None, **kwargs):
         '''
         Takes a document and a parsing function and re-parses the HTML source.
 
@@ -68,5 +68,9 @@ class redownload(Processer):
         p.run('https://www.nu.nl/-/4959386/','url',downloadfunction=inca.scrapers.news_scraper.nu.get_page_body)
     
         '''
-        newdownload = downloadfunction(self, document_field)        
+        if linkpreprocessor is None:
+            link = document_field
+        else:
+            link = linkpreprocessor(self, document_field)
+        newdownload = downloadfunction(self, link)        
         return newdownload

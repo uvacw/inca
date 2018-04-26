@@ -15,19 +15,26 @@ class bbcni(rss):
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "BBC Northern Ireland (www)"
+        self.doctype = "bbc northern ireland (www)"
         self.rss_url= "http://feeds.bbci.co.uk/news/northern_ireland/rss.xml?edition=uk#"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=9, day=4)
 
     def parsehtml(self,htmlsource):
-        '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        '''                                                                                                                                                                                                                                                               
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                               
+
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                    
+        
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article                                                                                                                                                                                                                                   
+        text    the plain text of the article                                                                                                                                                                                                                               
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                              
+        byline_source    sth like ANP                                                                                                                                                                                                                                       
         '''
 
         try:
@@ -65,6 +72,7 @@ class bbcni(rss):
                       }
 
         return extractedinfo
+
 class herald(rss):
     """Scrapes herald.ie"""
 
@@ -76,14 +84,21 @@ class herald(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-        '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
+        '''                                                                                                                                                                                                                                                               
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                               
+
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                    
+        
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article                                                                                                                                                                                                                                   
+        text    the plain text of the article                                                                                                                                                                                                                               
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                              
+        byline_source    sth like ANP                                                                                                                                                                                                                                       
+        '''       
 
         try:
             tree = fromstring(htmlsource)
@@ -120,7 +135,7 @@ class herald(rss):
 
         return extractedinfo
 
-class independent(rss):
+class independent_irl(rss):
     """Scrapes independent.ie"""
 
     def __init__(self,database=True):
@@ -131,13 +146,20 @@ class independent(rss):
         self.date    = datetime.datetime(year=2017, month=8, day=30)
 
     def parsehtml(self,htmlsource):
-        '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        '''                                                                                                                                                                                                                                                               
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                               
+
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                    
+        
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article                                                                                                                                                                                                                                   
+        text    the plain text of the article                                                                                                                                                                                                                               
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                              
+        byline_source    sth like ANP                                                                                                                                                                                                                                       
         '''
 
         try:
@@ -167,9 +189,9 @@ class independent(rss):
         bylinesource = " ".join(re.findall(sourcecandidates,lastlines))
 
         extractedinfo={"title":title,
+                       "text":text.replace("\\","").replace("\n","").strip(),
                        "byline":byline,
-                       "bylinesource":bylinesource,
-                       "text":text.replace("\\","").replace("\n","").strip()
+                       "bylinesource":bylinesource
                       }
 
         return extractedinfo
@@ -184,15 +206,22 @@ class irishexaminer(rss):
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=8, day=30)
 
-    def parsehtml(self,htmlsource):
-        '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
+    def parsehtml(self,htmlsource): 
+        '''                                                                                                                                                                                                                                                               
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                               
+
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                    
+        
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article                                                                                                                                                                                                                                   
+        text    the plain text of the article
+        teaser    the intro to the artcile                                                                                                                                                                                                                                
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                             
+        '''       
 
         try:
             tree = fromstring(htmlsource)
@@ -245,14 +274,22 @@ class irishtimes(rss):
         return response.text
 
     def parsehtml(self,htmlsource):
-        '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
+        '''                                                                                                                                                                                                                                                               
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                               
+
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                    
+        
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article 
+        teaser    the intro to the artcile                                                                                                                                                                                                                                   
+        text    the plain text of the article                                                                                                                                                                                                                               
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                              
+        paywall_na    article behind paywall                                                                                                                                                                                                                                       
+        '''        
 
         try:
             tree = fromstring(htmlsource)
@@ -307,13 +344,18 @@ class rte(rss):
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
     def parsehtml(self,htmlsource):
-        '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        '''                                                                                                                                                                                                                                                               
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                               
+
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                    
+        
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article                                                                                                                                                                                                                                   
+        text    the plain text of the article                                                                                                                                                                                                                              
         '''
 
         try:
@@ -350,14 +392,21 @@ class thejournal(rss):
         self.date    = datetime.datetime(year=2017, month=9, day=4)
 
     def parsehtml(self,htmlsource):
-        '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
+        '''                                                                                                                                                                                                                                                               
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                               
+
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                    
+        
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article
+        teaser    the intro to the artcile                                                                                                                                                                                                                                  
+        text    the plain text of the article                                                                                                                                                                                                                               
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                              
+        '''        
 
         try:
             tree = fromstring(htmlsource)

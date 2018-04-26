@@ -20,25 +20,33 @@ def polish(textstring):
     return result.strip()
     
 class diageopress(rss):
-    """Scrapes Diageo Press Releases"""
+    """Scrapes diageo.com"""
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "diageo (corp)"
+        self.doctype = "diageopress (corp)"
         self.rss_url ='https://www.diageo.com/en/rss/press-releases/'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=6, day=28)
 
 
     def parsehtml(self,htmlsource):
-        '''                                                                             
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        '''                                                                                                                                                                                                                                                               
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                
+
+
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                  
+            html retrived from RSS feed                                                                                                                                                                                                                                    
+            
+        yields                                                                                                                                                                                                                                                             
+        ----                                                                                                                                                                                                                                                               
+        title    the title of the article                                                                                                                                                                                                                                  
+        teaser    the intro to the artcile 
+        text    the plain text of the article                                                                                                                                                                                                                              
         '''
+
         tree = fromstring(htmlsource)
         try:
             title="".join(tree.xpath('//*[@class="col-xs-12 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-0"]/h1/text()')).strip()
@@ -68,7 +76,7 @@ class diageonews(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "diageo (corp)"
+        self.doctype = "diageonews (corp)"
         self.rss_url ='https://www.diageo.com/en/rss/all-news-and-media/'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=6, day=28)

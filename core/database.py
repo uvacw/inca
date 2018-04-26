@@ -352,14 +352,14 @@ def _remove_dots(document):
             document[k.replace('.','_')]= _remove_dots(v)
     return document
 
-def scroll_query(query,scroll_time='10m', log_interval=None):
+def scroll_query(query,scroll_time='30m', log_interval=None):
     """Scroll through the results of a query
 
     Parameters
     ----
     query : dict
         An elasticsearch query
-    scroll_time : string (default='10m')
+    scroll_time : string (default='30m')
         A string indicating the time-window to keep the results
         buffer active in elasticsearch. A small window risks timeouts, a high
         window risks running into resource ceilings in the database.

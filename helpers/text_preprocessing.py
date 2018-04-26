@@ -2,11 +2,15 @@ import os
 import nltk
 from nltk.corpus import stopwords
 from gensim.utils import tokenize
+import configparser
 
-stop_words = set(stopwords.words('english'))
+config = configparser.ConfigParser()
+config.read('settings.cfg')
+
+DEFAULTLANGUAGE = config.get('inca','default_data_language')
 
 
-def get_normalizer(norm_type):
+def get_normalizer(norm_type, language = DEFAULTLANGUAGE):
     """
     Returns a lambda function that acts as a normalizer for input words/tokens.\n
     :param norm_type: the normalizer type to "construct". Recommended 'lemmatize'. If type is not in the allowed types then does not normalize (lambda just forwards the input to output as it is)
@@ -14,19 +18,26 @@ def get_normalizer(norm_type):
     :return: the lambda callable object to perform normalization
     :rtype: lambda
     """
-    if norm_type == 'stem':
+    if norm_type == 'stem' and language == "english":
         from nltk.stem import PorterStemmer
         stemmer = PorterStemmer()
         return lambda x: stemmer.stem(x)
-    elif norm_type == 'lemmatize':
+    elif norm_type == "stem" and language != "english":
+        from nltk.stem.snowball import SnowballStemmer
+        stemmer = SnowballStemmer(language)
+        return lambda x: stemmer.stem(x)
+    elif norm_type == 'lemmatize' and language =="english":
         from nltk.stem import WordNetLemmatizer
         lemmatizer = WordNetLemmatizer()
         return lambda x: lemmatizer.lemmatize(x)
+    elif norm_type == 'lemmatize' and language != "english":
+        print('Lemmatization only supported for english. Please use stem, otherwise no normalization')
+        return lambda x: x 
     else:
         print('No normalization. Not recommended')
         return lambda x: x
 
-def generate_word(text_data, normalize='lemmatize', word_filter=True):
+def generate_word(text_data, normalize='lemmatize', word_filter=True, language = DEFAULTLANGUAGE):
     """
     Given input text_data, a normalize 'command' and a stopwords filtering flag, generates a normalized, lowercased word/token provided that it passes the filter and that its length is bigger than 2 characters.\n
     :param text_data: the text from which to generate (i.e. doc['text'])
@@ -35,10 +46,13 @@ def generate_word(text_data, normalize='lemmatize', word_filter=True):
     :type normalize: {'stem', 'lemmatize'}, else does not normalize
     :param word_filter: switch/flag to control stopwords filtering
     :type word_filter: boolean
+    :param language: choose language of stopwords
+    :type language: str
     :return: the generated word/token
     :rtype: str
     """
-    normalizer = get_normalizer(normalize)
+    stop_words = set(stopwords.words(language))
+    normalizer = get_normalizer(normalize, language = language)
     if word_filter:
         print("  stopwords are being filtered")
     for word in (_.lower() for _ in tokenize(text_data)):

@@ -19,7 +19,7 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class independent(rss):
+class independent_uk(rss):
     """Scrapes independent.co.uk"""
 
     def __init__(self,database=True):
@@ -32,11 +32,19 @@ class independent(rss):
     def parsehtml(self,htmlsource):
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
+        
+
+        Parameters                                                                                                                                                        
+        ----                                                                                                                                                               
+        htmlsource: string                                                                                                                                     
+
+        yields                                                                                                                                                                     
+        ----                                                                                                                                                                       
+        title    the title of the article                                                                                                                                          
+        teaser    the intro to the artcile                                                                                                                                         
+        byline      the author, e.g. "Bob Smith" 
+        category    sth. like economy, sports, ... 
+        text    the plain text of the article                                                                                                                                      
         '''
 
         try:

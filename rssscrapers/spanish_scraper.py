@@ -31,14 +31,23 @@ class abc(rss):
 
 
     def parsehtml(self,htmlsource):
+        '''                                                                                                                                                                                                                                                                
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                
+        
+        Parameters                                                                                                                                                                                                                                                        
+        ----                                                                                                                                                                                                                                                              
+        htmlsource: string                                                                                                                                                                                                                                                 
+            html retrived from RSS feed                                                                                                                                                                                                                                     
+
+        yields                                                                                                                                                                                                                                                              
+        ----                                                                                                                                                                                                                                                                
+        title    the title of the article
+        text    the plain text of the article                                                                                                                                                                                                                               
+        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                              
+        byline_source    sth like ANP                                                                                                                                                                                                                                       
+        category    sth. like economy, sports, ...                                                                                                                                                                                                                          
         '''
-        Parses the html source to retrieve info that is not in the RSS-keys
-        In particular, it extracts the following keys (which should be available in most online news:
-        section    sth. like economy, sports, ...
-        text        the plain text of the article
-        byline      the author, e.g. "Bob Smith"
-        byline_source   sth like ANP
-        '''
+        
         tree = fromstring(htmlsource)
         try:
             teaser = "".join(tree.xpath('//*[@class="subtitulo gris-oscuro"]/text()')).strip()
@@ -86,7 +95,7 @@ class elpais(rss):
 
     def __init__(self,database=True):
         self.database = database
-        self.doctype = "abc (www)"
+        self.doctype = "elpais (www)"
         self.rss_url ='http://ep00.epimg.net/rss/elpais/portada.xml'
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=5, day=10)
