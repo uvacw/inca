@@ -120,6 +120,8 @@ If you want to install packages, you should use the command: ``` conda install <
 
 ## STEP 3: Installing Elastic Search
 
+**NB: The current version of Elasticsearch is 6. At this moment, INCA only works with ES 5. Make sure you install a past release, such as 5.4.2**
+
 ### Install Elastic Search on Ubuntu
 
 -	Install Java first:
