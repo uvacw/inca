@@ -45,12 +45,19 @@ def _annotate(text, key, question, highlight_regexp, window=150, display=True):
 class annotate(Processer):
     '''Adds human annotations'''
 
-    def process(self, document_field, highlight_regexp = None, questions = {'relevance':'Is this relevant?'}, window=150):
+    def process(self, document_field, highlight_regexp = None, questions = {'relevance':'Is this relevant?'}, extra_filterquestion = False, window=150):
         '''human annotations'''
 
         while True:
             annotations = {}
             display=True
+            if extra_filterquestion==True:
+                filterquestion = _annotate(document_field,'filter','Should this item be annotated? [y/n]', highlight_regexp, window=window, display=display)
+                annotations['filter'] = filterquestion
+                display=False
+                if filterquestion.strip().lower()=='n':
+                    continue
+                
             for key, question in questions.items():
                 annotations[key] = _annotate(document_field,key,question, highlight_regexp, window=window, display=display)
                 display=False
