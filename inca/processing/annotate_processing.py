@@ -26,7 +26,7 @@ def _annotate(text, key, question, highlight_regexp, window=150, display=True):
             for i in range(numberofmatches):
                 #print('Occurance {} of {}'.format(i+1,numberofmatches))
                 r=re.search(highlight_regexp,reststring)
-                print(poscount)
+                print(Fore.Gray+'Next match:')
                 if poscount+r.start() < window:
                     print(text[poscount:poscount+r.start()], end='')
                     print(Fore.GREEN+text[poscount+r.start():poscount+r.end()], end='')
@@ -56,14 +56,15 @@ class annotate(Processer):
                 annotations['filter'] = filterquestion
                 display=False
                 if filterquestion.strip().lower()=='n':
-                    continue
-                
+                    confirm = input(Fore.RED+'\nIs this correct? [y/n]')
+                    if confirm.strip().lower()=='y':
+                        return annotations
             for key, question in questions.items():
                 annotations[key] = _annotate(document_field,key,question, highlight_regexp, window=window, display=display)
                 display=False
             print(Fore.RED+'You annotated this document as follows:'+Style.RESET_ALL)
             print(annotations)
-            confirm = input(Fore.RED+'\nIs this correct? [Y/N]')
+            confirm = input(Fore.RED+'\nIs this correct? [y/n]')
             if confirm.strip().lower()=='y':
                 return annotations
     
