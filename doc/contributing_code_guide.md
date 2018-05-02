@@ -42,12 +42,12 @@ by making a new branch. You might, for example, want to pick up the
 issue "scraper for financial times". You would do the following:
 
 ```bash
-YOU@HOME> cd /path/to/INCA # go to inca directory
+YOU@HOME> cd /path/to/inca # go to inca directory
 YOU@HOME> git pull # get the most recent version of the code
 YOU@HOME> git checkout development #switch to the development branches
 #make a new branch based on the development branch for your additions
 YOU@HOME> git checkout -b financial_times
-YOU@HOME> vim scrapers/financial_times.py # start coding!
+YOU@HOME> emacs scrapers/financial_times.py # start coding!
 ...
 YOU@HOME> git add scrapers/financial_times.py # add your added files
 # Be clear in your commit messages!

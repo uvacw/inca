@@ -205,8 +205,6 @@ cd inca    # assuming you still are in inca's parent directory
 sudo pip3 install -r Requirements
 ```
 
-
-
 ## STEP 6: Adapt the settings
 
 INCA needs to be configured - in particular, you need to tell INCA things like how to access ElasticSearch or where to store images. 
@@ -254,3 +252,12 @@ print(mijntekst[0]['_source']['text'])
 Please check the [Contributing Code Guide](https://github.com/uvacw/inca/blob/development/doc/Contributing%20Code%20Guide.md) for the next steps!
 
 
+
+## [OPTIONAL] Make INCA available as a module that can be imported from everywhere
+If you are a USER of INCA (i.e., not a DEVELOPER; you do not really want to work on INCA an contribute, but just use it), you can now install Inca as a module that is available from anywhere on your system:
+
+```
+cd <pathtoyourincafolder>
+sudo pip3 install .
+```
+If you want to work on INCA itself, you probably do NOT want to do it to avoid confusion.
