@@ -17,16 +17,14 @@ class sp(Scraper):
     """Scrapes SP"""
 
     def __init__(self):
-        '''
-        maxpages = number of pages to scrape
-        '''
         
         self.START_URL = "http://www.sp.nl/nu/"
         self.BASE_URL = "http://www.sp.nl"
 
-    def get(self):
+    def get(self, maxpages = 1):
         '''                                                                     
         Fetches articles from SP
+        maxpages = number of pages to scrape
         '''
         self.doctype = "SP (pol)"
         self.version = ".1"

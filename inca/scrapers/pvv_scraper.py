@@ -12,19 +12,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 class pvv(Scraper):
-    """Scrapes PVV"""
-    
     def __init__(self):
-        '''
-        maxpage = number of pages to scrape
-        '''
         
         self.START_URL = "https://www.pvv.nl/in-de-media/persberichten.html"
         self.BASE_URL = "https://www.pvv.nl"
 
-    def get(self):
+    def get(self, maxpages = 1):
         '''                                                                     
         Fetches articles from PVV
+        maxpage = number of pages to scrape
         '''
         self.doctype = "PVV (pol)"
         self.version = ".1"
@@ -38,7 +34,7 @@ class pvv(Scraper):
         first_page_text=""
         while overview_page.text!=first_page_text:
             logger.debug("How fetching overview page {}".format(page))
-            if page > self.MAXPAGES:
+            if page > maxpages:
                 break
             elif page ==1:
                 first_page_text=overview_page.text

@@ -16,16 +16,15 @@ class groenlinks(Scraper):
     """Scrapes Groenlinks"""
 
     def __init__(self):
-        '''
-        maxpage: number of pages to scrape
-        '''
+
         
         self.START_URL = "https://www.groenlinks.nl/nieuws"
         self.BASE_URL = "https://www.groenlinks.nl"
 
-    def get(self):
+    def get(self, maxpages = 1):
         '''                                                                     
         Fetches articles from Groenlinks
+        maxpage: number of pages to scrape
         '''
         self.doctype = "Groenlinks (pol)"
         self.version = ".1"
@@ -38,7 +37,7 @@ class groenlinks(Scraper):
         first_page_text=""
         while overview_page.text!=first_page_text:
             logger.debug("How fetching overview page {}".format(page))
-            if page > self.MAXPAGES:
+            if page > maxpages:
                 break
             elif page ==1:
                 first_page_text=overview_page.text             

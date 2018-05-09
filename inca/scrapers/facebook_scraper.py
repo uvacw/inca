@@ -21,27 +21,25 @@ class facebook(Scraper):
     """Scrapes facebook pages"""
 
     def __init__(self):
-        '''
-        maxpages = number of pages to scrape
-	pagename = name of page one wants to scrape
-	app_id = individual facebook developer id
-	app_secret = individual facebook developer secret
-        '''
+
         self.BASE_URL = "https://www.facebook.com/"
         self.START_URL = "https://graph.facebook.com/v2.6/"
 
 	
-    def get(self):
+    def get(self, pagename = "pagename", app_id = "APP_ID", app_secret = "APP_SECRET", maxpages = 1):
         '''                                                                     
         Fetches posts from facebook page
+        maxpages = number of pages to scrape
+	pagename = name of page one wants to scrape
+	app_id = individual facebook developer id
+	app_secret = individual facebook developer secret
         '''
         self.doctype = "facebook"
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=10, day=20)
               
 	#retrieve the ID of the facebook page (needed for scraping)
-        pagename = self.PAGENAME
-        facebookpage = str(self.BASE_URL + self.PAGENAME)
+        facebookpage = str(self.BASE_URL + pagename)
         driver =  webdriver.Chrome()
         #note: using chrome instead of firefox because of bug in geckodriver that does not allow sending keys
         driver.get("https://findmyfbid.com/")
@@ -54,7 +52,7 @@ class facebook(Scraper):
         driver.quit()
 
 	#make access token
-        access_token = self.APP_ID + "|" + self.APP_SECRET
+        access_token = self.app_id + "|" + self.app_secret
 	
 	#construct the first  URL string
         page  = 1
@@ -69,7 +67,7 @@ class facebook(Scraper):
         overview_page = requests.get(current_url)
         while has_next_page:
             #retrieve data            
-            if page > self.MAXPAGES:
+            if page > maxpages:
                 break
             elif page ==1:
                 first_page_text=overview_page.text
