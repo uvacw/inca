@@ -36,7 +36,7 @@ class pvda(Scraper):
         first_page_text=""
         while overview_page.text!=first_page_text:
             logger.debug("How fetching overview page {}".format(page))
-            if page maxpages:
+            if page > maxpages:
                 break
             elif page ==1:
                 first_page_text=overview_page.text
