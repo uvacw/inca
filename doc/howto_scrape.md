@@ -189,15 +189,15 @@ You can test your scraper on your own system before pushing it. Start Python3 in
 and import inca. Please note: you do not have to activate Elastic Search for this (as you are just testing the materials).
 Hence, be prepared to recieve the following warnings:]
 
-_WARNING:INCAcore.database:No database functionality available_
+_WARNING:INCAcore.database:No database functionality available. This means you will not be able to SAVE the results of any scraper or processor!_
 _WARNING:processing.basic_text_processing:Pattern is NOT python 3 compatible...skipping_
 
-When creating running a scraper, please give the argument `database = False`, as you just want to work with test data.
+When creating running a scraper, please give the argument `save = False`, as you just want to work with test data.
 
 ```python
 import inca
 myinca = inca.Inca()
-data = myinca.rssscraperss.nu(database=False)
+data = myinca.rssscraperss.nu(save=False)
 ```
 
 Now, you can start playing around with the data (`r`).
