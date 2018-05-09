@@ -13,12 +13,11 @@ logger = logging.getLogger(__name__)
 class groenlinks(Scraper):
     """Scrapes Groenlinks"""
 
-    def __init__(self,database=True, maxpages = 2, startpage = 1):
+    def __init__(self,maxpages = 2, startpage = 1):
         '''
         maxpage: number of pages to scrape
         '''
         
-        self.database = database
         self.START_URL = "https://www.groenlinks.nl/nieuws"
         self.BASE_URL = "https://www.groenlinks.nl"
         self.MAXPAGES = maxpages

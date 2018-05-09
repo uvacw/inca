@@ -21,8 +21,7 @@ logger = logging.getLogger(__name__)
 class kpn(Scraper):
     """Scrapes KPN"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "http://corporate.kpn.com/press/press-releases.htm"
         self.BASE_URL = "http://corporate.kpn.com/"
         self.doctype = "KPN"

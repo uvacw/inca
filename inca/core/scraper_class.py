@@ -62,7 +62,8 @@ class Scraper(Document):
         self._verify(doc)
         self._save_document(doc)
 
-    def run(self, *args, **kwargs):
+    def run(self, database=True, *args, **kwargs):
+        self.database = database
         '''
         DO NOT OVERWRITE THIS METHOD
 

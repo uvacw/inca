@@ -15,8 +15,7 @@ MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 
 class abf(Scraper):
     """Scrapes Associated British Foods"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "https://www.abf.co.uk/media/news"
         self.BASE_URL = "http://www.abf.co.uk/"
         self.doctype = "ABF (corp)"

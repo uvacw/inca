@@ -44,8 +44,8 @@ class rss(Scraper):
         By overwriting the getlink function, modifications to the link can be made, e.g. to bypass cookie walls
     '''
 
-    def __init__(self,database=True):
-        Scraper.__init__(self,database)
+    def __init__(self):
+        Scraper.__init__(self)
         self.doctype = "rss"
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)

@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 class dsm(Scraper):
     """Scrapes DSM"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "https://www.dsm.com/corporate/media/informationcenter-news."
         self.BASE_URL = "https://www.dsm.com/"
         self.doctype = "DSM (corp)"

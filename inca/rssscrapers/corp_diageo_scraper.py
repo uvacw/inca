@@ -22,8 +22,7 @@ def polish(textstring):
 class diageopress(rss):
     """Scrapes diageo.com"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "diageopress (corp)"
         self.rss_url ='https://www.diageo.com/en/rss/press-releases/'
         self.version = ".1"
@@ -74,8 +73,7 @@ class diageopress(rss):
 class diageonews(rss):
     """Scrapes Diageo News"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "diageonews (corp)"
         self.rss_url ='https://www.diageo.com/en/rss/all-news-and-media/'
         self.version = ".1"

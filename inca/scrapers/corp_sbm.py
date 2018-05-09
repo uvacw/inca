@@ -15,8 +15,7 @@ MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 
 class sbm(Scraper):
     """Scrapes SBM Offshore 2013-present"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "http://www.sbmoffshore.com/investor-relations-centre/press-releases/"
         self.BASE_URL = "http://www.sbmoffshore.com/"
 

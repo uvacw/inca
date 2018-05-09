@@ -22,8 +22,7 @@ def polish(textstring):
 class gnf(rss):
     """Scrapes Gas Natural Fenosa"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "gnf (corp)"
         self.rss_url ='http://prensagnf.azurewebsites.net/feed/'
         self.version = ".1"

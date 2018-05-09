@@ -22,8 +22,7 @@ def polish(textstring):
 class shire(rss):
     """Scrapes Shire"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "shire (corp)"
         self.rss_url ='https://www.shire.com/feeds/press-releases'
         self.version = ".1"

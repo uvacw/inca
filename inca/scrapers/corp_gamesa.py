@@ -15,8 +15,7 @@ MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 
 class gamesa(Scraper):
     """Scrapes Gamesa"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "http://www.gamesacorp.com/"
         self.BASE_URL = "http://www.gamesacorp.com/"
         self.doctype = "Gamesa (corp)"

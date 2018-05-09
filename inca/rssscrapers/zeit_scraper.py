@@ -16,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 class zeit(rss):
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "zeit (www)"
         self.rss_url='http://newsfeed.zeit.de/index'
         self.version = ".1"

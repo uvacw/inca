@@ -22,8 +22,7 @@ class standaard(rss):
     """Scrapes standaard.be"""
 #rss feed different for all categories, only subcategories for nieuws so far included
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "standaard (www)"
         self.rss_url=['http://www.standaard.be/rss/section/1f2838d4-99ea-49f0-9102-138784c7ea7c','http://www.standaard.be/rss/section/e70ccf13-a2f0-42b0-8bd3-e32d424a0aa0','http://www.standaard.be/rss/section/ab8d3fd8-bf2f-487a-818b-9ea546e9a859','http://www.standaard.be/rss/section/eb1a6433-ca3f-4a3b-ab48-a81a5fb8f6e2','http://www.standaard.be/rss/section/451c8e1e-f9e4-450e-aa1f-341eab6742cc','http://www.standaard.be/rss/section/8f693cea-dba8-46e4-8575-807d1dc2bcb7','http://www.standaard.be/rss/section/113a9a78-f65a-47a8-bd1c-b24483321d0f','http://www.standaard.be/rss/section/1f2838d4-99ea-49f0-9102-138784c7ea7c']
 

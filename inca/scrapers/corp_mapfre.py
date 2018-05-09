@@ -15,8 +15,7 @@ MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 
 class mapfre(Scraper):
     """Scrapes Mapfre"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "https://noticias.mapfre.com/en/category/news-corporate/"
         self.BASE_URL = "https://noticias.mapfre.com/"
         self.doctype = "Mapfre (corp)"

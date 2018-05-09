@@ -22,8 +22,7 @@ def polish(textstring):
 class riotinto(rss):
     """Scrapes Rio Tinto"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "riotinto (corp)"
         self.rss_url ='http://coapi.riotinto.com/rss/130'
         self.version = ".1"

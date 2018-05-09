@@ -22,8 +22,7 @@ def polish(textstring):
 class iag(rss):
     """Scrapes IAG"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "iag (corp)"
         self.rss_url ='http://www.iairgroup.com/corporate.rss?c=240949&Rule=Cat=news~subcat=ALL'
         self.version = ".1"

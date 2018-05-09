@@ -15,8 +15,7 @@ MAAND2INT = {'Jan':1,'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6, 'Jul':7, 'Aug'
 class barclays(Scraper):
     """Scrapes Barclays"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "http://www.newsroom.barclays.com/Releases/ReleasesPage.aspx"
         self.BASE_URL = "http://www.newsroom.barclays.com/"
         self.current_year = 2017

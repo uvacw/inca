@@ -10,13 +10,12 @@ logger = logging.getLogger(__name__)
 class hostelworld(Scraper):
     """Scrapes Hostelworld reviews"""
     
-    def __init__(self,database=True,maxpages = 2, maxreviewpages = 5, starturl = "http://www.hostelworld.com/hostels/Amsterdam"):
+    def __init__(self,maxpages = 2, maxreviewpages = 5, starturl = "http://www.hostelworld.com/hostels/Amsterdam"):
         '''
         maxpage: number of pages with hostels to scrape
         maxreviewpages: number of pages with reviews *per hostel* to scrape
         starturl: URL to first page with hostel results
         '''
-        self.database=database
         self.START_URL = starturl
         self.BASE_URL = "http://www.hostelworld.com/"
         self.MAXPAGES = maxpages

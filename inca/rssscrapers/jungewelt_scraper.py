@@ -16,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 class jungewelt(rss):
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "junge welt (www)"
         self.rss_url='https://www.jungewelt.de/feeds/newsticker.rss'
         self.version = ".1"

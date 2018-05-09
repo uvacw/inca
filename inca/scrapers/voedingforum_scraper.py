@@ -17,9 +17,8 @@ logger.setLevel('DEBUG')
 class voedingsforum(Scraper):
     """Scrapes Voedingsforum"""
 
-    def __init__(self,database=True, maxfora = 2, maxpages=2, maxthreads=2, forumid = None):
+    def __init__(self, maxfora = 2, maxpages=2, maxthreads=2, forumid = None):
    
-        self.database = database
         self.START_URL = "http://www.voedingsforum.nl/"
         self.BASE_URL = "http://www.voedingsforum.nl/"
         self.MAXPAGES = maxpages
