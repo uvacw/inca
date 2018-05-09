@@ -54,7 +54,7 @@ s = inca.__main__.rssscrapers.news_scraper.nu()
 
 ## 3. Scrapers and Processors "run" automatically upon calling, arguments moved from __init__ to run
 
-As the example in the previous section showed, there is no need any more to explicitly call the `run()` method: this is done automatically. Relatedly, the arguments that are passed when calling a scraper are not passed to `__init__()` any more, but to `run()` (and possibly passed through to `.get()` or whatever). This holds true for scrapers, processors, and so on. If your scraper needs some specific arguments (like previously `database=True`, see also below), this cannot be realized via the `__init__()` method any more.
+As the example in the previous section showed, there is no need any more to explicitly call the `run()` method: this is done automatically. Relatedly, the arguments that are passed when calling a scraper are not passed to `__init__()` any more, but to `run()` (and possibly passed through to `.get()` or whatever). This holds true for scrapers, processors, and so on. If your scraper needs some specific arguments (e.g., `maxpages`, `starturl`, ...), this cannot be realized via the `__init__()` method any more. Instead, add these arguments to the `.get()` method of your scraper.
 
 
 
