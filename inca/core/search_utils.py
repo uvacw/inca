@@ -38,7 +38,7 @@ def doctype_generator(doctype):
         if not _DATABASE_AVAILABLE:
             _logger.warning("Could not get documents: No database instance available")
             break
-        _logger.info("returning {num}".format(**locals()))
+        if not num%100: _logger.info("returning {num}".format(**locals()))
         yield doc
 
 def document_generator(query="*"):
@@ -72,7 +72,7 @@ def document_generator(query="*"):
         if es_query:
             total = _client.search(_elastic_index, body=es_query, size=0)['hits']['total']
             for num, doc in enumerate(_scroll_query(es_query)):
-                if not num%10: _logger.info("returning {num} of {total}".format(num=num, total=total))
+                if not num%100: _logger.info("returning {num} of {total}".format(num=num, total=total))
                 yield doc
 
 

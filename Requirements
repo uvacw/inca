@@ -59,8 +59,10 @@ lxml
 selenium
 matplotlib
 gensim
+# Pattern is now optional as it is not stable for Python3 yet
+# uncomment to install it
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
-git+git://github.com/clips/pattern.git@development
+# git+git://github.com/clips/pattern.git@development
 Pillow==4.3.0
 tqdm
 newspaper3k
