@@ -16,13 +16,10 @@ class cda(Scraper):
     """Scrapes CDA"""
 
     def __init__(self):
-        '''
-        maxpages = number of pages to scrape
-        '''
         self.START_URL = "https://www.cda.nl/actueel/nieuws"
         self.BASE_URL = "https://www.cda.nl"
 
-    def get(self):
+    def get(self, maxpages=1):
         '''                                                                     
         Fetches articles from CDA
         '''
@@ -30,6 +27,7 @@ class cda(Scraper):
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=11, day=10)
 
+        logger.info('Scraping a maximum of {} pages'.format(maxpages))
         releases = []
 
         page = 0
@@ -38,7 +36,7 @@ class cda(Scraper):
         first_page_text = ""
         while overview_page.text!=first_page_text:
             logger.debug("How fetching overview page {}".format(page))
-            if page > self.MAXPAGES:
+            if page > maxpages:
                 break
             elif page ==1:
                 first_page_text=overview_page.text
