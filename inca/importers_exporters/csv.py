@@ -102,14 +102,16 @@ class export_csv(Exporter):
             expects in many locales (e.g., Dutch and German)
 
         """
-        if not hasattr(self, 'fields'):
-            # keep track of fields
-            self.fields = []
+        if fields is None: fields=[]
+        self.fields = ['_source.{}'.format(f) for f in fields]
 
         flat_batch = list(map(lambda doc: self._flatten_doc(doc, include_meta), documents))
-        keys = set.union(*[set(d.keys()) for d in flat_batch])
-        [self.fields.append(k) for k in keys if k not in self.fields]
+        if len(self.fields)==0:
+            keys = set.union(*[set(d.keys()) for d in flat_batch])
+            [self.fields.append(k) for k in keys if k not in self.fields]
 
+        logger.info('Exporting these fields: {}'.format(self.fields))
+        
         self.extension = "csv"
         if  self.fileobj and not self.fileobj.closed:
             outputfile = self.fileobj
