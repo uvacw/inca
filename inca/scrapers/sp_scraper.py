@@ -16,14 +16,13 @@ logger = logging.getLogger(__name__)
 class sp(Scraper):
     """Scrapes SP"""
 
-    def __init__(self, maxpages = 2):
+    def __init__(self):
         '''
         maxpages = number of pages to scrape
         '''
         
         self.START_URL = "http://www.sp.nl/nu/"
         self.BASE_URL = "http://www.sp.nl"
-        self.MAXPAGES = maxpages
 
     def get(self):
         '''                                                                     

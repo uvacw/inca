@@ -62,14 +62,27 @@ class Scraper(Document):
         self._verify(doc)
         self._save_document(doc)
 
-    def run(self, database=True, *args, **kwargs):
-        self.database = database
+    def run(self, database=True, startpage = 1, maxpages = 2, maxreviewpages = 5, maxurls = 50, maxfora = 2, maxthreads=2, forumid = None, pagename = "groenlinks", app_id = "appID", app_secret = "appSecret", starturl = "starturl", *args, **kwargs):
+        
         '''
         DO NOT OVERWRITE THIS METHOD
 
         This is an internal function that calls the 'get' method and saves the
         resulting documents.
         '''
+        self.database = database
+        self.STARTPAGE = startpage
+        self.MAXPAGES = maxpages
+        self.MAXREVIEWPAGES = maxreviewpages
+        self.MAXURLS = maxurls
+        self.MAXFORA = maxfora
+        self.MAXTHREADS = maxthreads
+        self.FORUMID = forumid
+        self.PAGENAME = pagename
+        self.APP_ID = app_id
+        self.APP_SECRET = app_secret
+        self.STARTURL = starturl
+
         logger.info("Started scraping")
         if DATABASE_AVAILABLE == True and self.database==True:
             for doc in self.get(*args, **kwargs):

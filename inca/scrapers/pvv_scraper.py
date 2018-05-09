@@ -14,14 +14,13 @@ logger = logging.getLogger(__name__)
 class pvv(Scraper):
     """Scrapes PVV"""
     
-    def __init__(self, maxpages = 2):
+    def __init__(self):
         '''
         maxpage = number of pages to scrape
         '''
         
         self.START_URL = "https://www.pvv.nl/in-de-media/persberichten.html"
         self.BASE_URL = "https://www.pvv.nl"
-        self.MAXPAGES = maxpages
 
     def get(self):
         '''                                                                     

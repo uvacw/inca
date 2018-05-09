@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class facebook(Scraper):
     """Scrapes facebook pages"""
 
-    def __init__(self, maxpages = 2, pagename = "groenlinks", app_id = "appID", app_secret = "appSecret"):
+    def __init__(self):
         '''
         maxpages = number of pages to scrape
 	pagename = name of page one wants to scrape
@@ -29,10 +29,7 @@ class facebook(Scraper):
         '''
         self.BASE_URL = "https://www.facebook.com/"
         self.START_URL = "https://graph.facebook.com/v2.6/"
-        self.MAXPAGES = maxpages
-        self.PAGENAME = pagename
-        self.APP_ID = app_id
-        self.APP_SECRET = app_secret
+
 	
     def get(self):
         '''                                                                     

@@ -15,13 +15,12 @@ logger = logging.getLogger(__name__)
 class cda(Scraper):
     """Scrapes CDA"""
 
-    def __init__(self, maxpages = 2):
+    def __init__(self):
         '''
         maxpages = number of pages to scrape
         '''
         self.START_URL = "https://www.cda.nl/actueel/nieuws"
         self.BASE_URL = "https://www.cda.nl"
-        self.MAXPAGES = maxpages
 
     def get(self):
         '''                                                                     
@@ -30,7 +29,6 @@ class cda(Scraper):
         self.doctype = "CDA (pol)"
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=11, day=10)
-        
 
         releases = []
 

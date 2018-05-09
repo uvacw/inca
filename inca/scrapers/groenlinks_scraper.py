@@ -10,18 +10,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+scraper = Scraper()
+
 class groenlinks(Scraper):
     """Scrapes Groenlinks"""
 
-    def __init__(self,maxpages = 2, startpage = 1):
+    def __init__(self):
         '''
         maxpage: number of pages to scrape
         '''
         
         self.START_URL = "https://www.groenlinks.nl/nieuws"
         self.BASE_URL = "https://www.groenlinks.nl"
-        self.MAXPAGES = maxpages
-        self.STARTPAGE = startpage
 
     def get(self):
         '''                                                                     
@@ -30,8 +30,6 @@ class groenlinks(Scraper):
         self.doctype = "Groenlinks (pol)"
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=11, day=10)
-
-
         releases = []
 
         page = self.STARTPAGE
