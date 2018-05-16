@@ -22,7 +22,7 @@ def polish(textstring):
 class asml (rss):
     """Scrapes ASML"""
 
-    def __init__(self,database=True):
+    def __init__(self):
         self.doctype = "asml (corp)"
         self.rss_url ='https://www.asml.com/asml/rss/pressreleases'
         self.version = ".1"

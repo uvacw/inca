@@ -29,7 +29,7 @@ Why did we do this? Because it makes INCA *pip installable*! (more about that la
 
 ## 2. Instantiate the Inca() class instead of direct access to functions
 
-Already before, there were basically to ways of using inca. The first one directly accessed all functionlity, for instance like this:
+Already before, there were basically to ways of using inca. The first one directly accessed all functionalities, for instance like this:
 ```python
 import inca
 s = inca.rssscrapers.news_scraper.nu()
@@ -42,7 +42,7 @@ myinca = Inca()
 myinca.rssscrapers.nu()
 ```
 
-The second way is *strongly* preferred, because the `myinca` instance contains exactly the functionality the enduser needs, nicely ordered and searchable via TAB-completion. Also, it hides all unnecessary (and/or dangerous) internal functions from the user. The new version of inca, in fact, *only* allows the second version. All new functionality must be build to be usable this way.
+The second way is *strongly* preferred, because the `myinca` instance contains exactly the functionality the enduser needs, nicely ordered and searchable via TAB-completion. Also, it hides all unnecessary (and/or dangerous) internal functions from the user. The new version of inca, in fact, *only* allows the second version. All new functionality must be built to be usable this way.
 
 If, for a transition period, you *really* need to access functions directly in the old way, you need to do so via inserting an additional `__main`:
 ```python
@@ -65,10 +65,10 @@ Upon instantiating a scraper, it was possible to pass an argument `database` tha
 
 - The argument has been renamed to `save`, which is clearer and more consistent with the argument that processors take (there, it has always been `save`)
 - `save` is now an argument of the `.get()` method of each scraper, to where it gets passed when supplied to `run` (which happens automatically when a scraper is used in the new way as described above).
-Thus, if you want to scape without saving, just do:
+Thus, if you want to scrape without saving, just do:
 ```python
 data = myinca.rssscrapers.nu(save=False)
 ```
-- We removed the functionality that returned data regardless of the setting of the save-functionality if Elasticsearch is not running on the system. If Elasticseach is not running, the user gets a warning upon importing inca, but subsequently needs to make sure that `save=False` is used. The reason is that it is preferrable to have an error than to have the user wrongly assume that something is saved when in fact it is not.
+- We removed the functionality that returned data regardless of the setting of the save-functionality if Elasticsearch is not running on the system. If Elasticseach is not running, the user gets a warning upon importing inca, but subsequently needs to make sure that `save=False` is used. The reason is that it is preferable to have an error than to have the user wrongly assume that something is saved when in fact it is not.
 
 

@@ -73,7 +73,7 @@ class Scraper(Document):
 
         logger.info("Started scraping")
         if save == True:
-            for doc in self.get(*args, **kwargs):
+            for doc in self.get(save, *args, **kwargs):
                 if type(doc)==dict:
                     doc = self._add_metadata(doc)
                     self._save_document(doc)
@@ -81,7 +81,7 @@ class Scraper(Document):
                     doc = self._add_metadata(doc)
                     self._save_documents(doc)
         else:
-            return [self._add_metadata(doc) for doc in self.get(*args, **kwargs)]
+            return [self._add_metadata(doc) for doc in self.get(save, *args, **kwargs)]
 
         logger.info('Done scraping')
 

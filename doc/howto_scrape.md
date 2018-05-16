@@ -60,7 +60,7 @@ Below, we explain how you can write a scraper with the example of the ad scraper
 5.    self.doctype = "ad (www)"
 6.    self.rss_url='http://www.ad.nl/rss.xml'
 7.    self.version = ".1"
-8.    self.date = datetime.datetime(year=2016, month=8, day=2) 
+8.    self.date = datetime.datetime(year=2018, month=5, day=16) 
 ```
 
 **line 1**
@@ -82,7 +82,7 @@ Consequently, we have to define the following:
 `self.doctype = "ad (www)` --> fill in the name of your scraper.
 `self.rss_url='http://www.ad.nl/rss.xml'` --> fill in the address of the rss-feed of your scraper.
 `self.version = ".1"` --> give the version of the scraper (in case you have adjusted the scraper, you can change this here.
-`self.date    = datetime.datetime(year=2016, month=8, day=2)` --> provide the date you last adjusted the scraper. 
+`self.date    = datetime.datetime(year=2018, month=5, day=16)` --> provide the date you last adjusted the scraper. 
 
 ```python
 10.   def parsehtml(self,htmlsource):
@@ -176,7 +176,7 @@ For example, never write a method using:
 ```
  def run(self,<whatever>):
  ```
-When you write a scrape for an RSS-based website, just inherit the functionalities that are already defined by the class rss. In addition, we can write our own methods.
+When you write a scraper for an RSS-based website, just inherit the functionalities that are already defined by the class rss. In addition, we can write our own methods.
 
 In fact, `(rss)` refers to a class defined in the core of inca: `class rss(Scraper)`. 
 
@@ -192,12 +192,12 @@ Hence, be prepared to recieve the following warnings:]
 _WARNING:INCAcore.database:No database functionality available. This means you will not be able to SAVE the results of any scraper or processor!_
 _WARNING:processing.basic_text_processing:Pattern is NOT python 3 compatible...skipping_
 
-When creating running a scraper, please give the argument `save = False`, as you just want to work with test data.
+When running a scraper, please give the argument `save = False`, as you just want to work with test data.
 
 ```python
 import inca
 myinca = inca.Inca()
-data = myinca.rssscraperss.nu(save=False)
+data = myinca.rssscrapers.nu(save=False)
 ```
 
 Now, you can start playing around with the data (`r`).
