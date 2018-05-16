@@ -9,13 +9,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class jungefreiheit(rss):
-    """Scrapes jungefreiheit.de"""
+class jungleworld(rss):
+    """Scrapes jungle.world.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "jungefreiheit (www)"
-        self.rss_url='https://jungefreiheit.de/feed/'
+        self.doctype = "jungleworld (www)"
+        self.rss_url=['https://jungle.world/rss.xml']
+        
         self.version = ".1"
         self.date    = datetime.datetime(year=2018, month=5, day=16)
 
@@ -32,41 +33,46 @@ class jungefreiheit(rss):
             tree = fromstring(htmlsource)
         except:
             logger.warning("HTML tree cannot be parsed")
- #category
+# category
         try:
-            category = tree.xpath('//*[@itemprop="name"]//span/text()')[0]
+            category = tree.xpath('//*[@class="breadcrumb"]//li/a/text()')[-1]
         except:
             category = ""
- #title1
-        try:
-            title1 = ' '.join(tree.xpath('//*[@class="entry-header"]/div/a/text()')).strip()
-        except:
-            title1 = ""
-#title2
-        try:
-            title2 = ' '.join(tree.xpath('//*[@class="entry-title"]//text()')).strip()
-        except:
-            title2 = ""
-            
-        title = title1 + ': ' + title2
-        
- #author:
-        try:
-            author = tree.xpath('//*[@class="entry-author-name"]/a/text()')
-        except:
-            author = ""
-            
-#teaser:no teaser on article page; rss_teaser as alternative.
+# title
 
         try:
-            text = " ".join(tree.xpath('//*[@itemprop="text"]/p/text()|//*[@itemprop="text"]/p/a/text()|//*[@itemprop="text"]/p/strong/text()|//*[@itemprop="text"]/p/em/text()'))
+            title1 = ''.join(tree.xpath('//*[@class="field field-name-field-dachzeile"]//text()')).replace('\n','').replace("\t", "").strip()
+        except:
+            title1 = ""
+        try:
+            title2 = tree.xpath('//*[@class="page-title"]//text()')[0].replace('\n','').replace('\t', '').strip()
+        except:
+            title2 =""
+        title = title1 + ": " + title2
+# teaser
+        try:
+            teaser = "".join(tree.xpath('//*[@class="lead"]//text()')).replace('\n','').strip()
+        except:
+            teaser =""
+            
+# text
+        try:
+            text = " ".join(tree.xpath('//*[@class="ft"]/p/text()')).replace('\xad', '')
         except:
             text =""
- 
-        extractedinfo={"category":category,
-                       "byline":author,
-                       "text":text,
-                       "title": title
-                       }
+            
+# author
+        try:
+            author = tree.xpath('//*[@class="autor"]/a/text()')[0]
+        except:
+            author =""
+
+
+        extractedinfo = {"category":category,
+                         "teaser":teaser.strip(),
+                         "byline":author,
+                         "title":title.strip(),
+                         "text":text
+                        }
 
         return extractedinfo

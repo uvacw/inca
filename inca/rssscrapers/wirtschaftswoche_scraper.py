@@ -9,15 +9,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class freitag(rss):
-    """Scrapes freitag.de"""
+class wirtschaftswoche(rss):
+    """Scrapes wiwo.de"""
 
     def __init__(self,database=True):
         self.database=database
-        self.doctype = "freitag (www)"
-        self.rss_url='https://www.freitag.de/@@RSS'
+        self.doctype = "wiwo (www)"
+        self.rss_url='http://www.wiwo.de/contentexport/feed/rss/schlagzeilen'
         self.version = ".1"
-        self.date    = datetime.datetime(year=2018, month=5, day=16)
+        self.date    = datetime.datetime(year=2018, month=5, day=2)
 
     def parsehtml(self,htmlsource):
         '''
@@ -32,38 +32,44 @@ class freitag(rss):
             tree = fromstring(htmlsource)
         except:
             logger.warning("HTML tree cannot be parsed")
-
 #teaser
         try:
-            teaser = " ".join(tree.xpath('//*[@class="abstract column"]/text()')).replace('\n','').strip()
+            teaser = tree.xpath('//*[@class="c-leadtext u-font-semibold u-margin-xl"]/text()')[0]
         except:
             teaser = ""
-#title
+
+
+#text:
         try:
-            title = ''.join(tree.xpath('//*[@class="title column"]/text()').replace('\n','')).strip()
-        except:
-            title = ""
-#text
-        try:
-            text = " ".join(tree.xpath('//*[@class="column s-article-text x-article-text js-dynamic-advertorial js-external-links"]/p/text()|//*[@class="column s-article-text x-article-text js-dynamic advertorial js-external-links"]/p/em/text()|//*[@class="column s-article-text x-article-text js-dynamic advertorial js-external-links"]/h2/text()')).replace('\n','')
+            text = " ".join(tree.xpath('//*[@class="u-richtext ajaxify"]/p/a/text()|//*[@class="u-richtext ajaxify"]/p/text()'))
         except:
             text = ""
-#category
-        try:
-            category = " ".join(tree.xpath('//*[@class="abstract column"]/strong/text()')).replace('\n','').strip()
-        except:
-            category = ""
+
 #author
         try:
-            author = ''.join(tree.xpath('//*[@class="author"]/a/text()')).replace('\n','').strip()
+            author = " ".join(tree.xpath('//*[@class="c-metadata u-margin-xl "]/div/a/text()|//*[@class="c-metadata u-margin-xl "]/div/a/span/text()')).replace("\n", "")
         except:
-            author = ""
+            author =""
+
+#title
+
+        try:
+            title = "".join(tree.xpath('//*[@class="c-headline c-headline--article u-margin-m"]/span/text()|//*[@class="c-headline c-headline--article u-margin-m"]/text()')).replace("\n", "")
+        except:
+            title = ""
+#source
+        try:
+            source="".join(tree.xpath('//*[@class="c-metadata__source"]/a/text()'))
+        except:
+            source = ""
+
+
 
         extractedinfo={"title":title,
                        "text":text,
-                       "byline":author,
                        "teaser":teaser,
-                       "category":category
+                       "byline":author,
+                       "byline_source":source
                        }
-        
+
         return extractedinfo
