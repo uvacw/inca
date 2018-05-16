@@ -221,7 +221,7 @@ For this, make sure you have iPython (or Python) running. `import inca` and run 
 ```Python
 from lxml.html import fromstring
 
-tree = fromstring(r[0]['htmlsource']) # this graps the htmlsource of the first item you just scraped (r[0]). Of course, you can also select the second(r[1])... etc. 
+tree = fromstring(r[0]['htmlsource']) # this grasps the htmlsource of the first item you just scraped (r[0]). Of course, you can also select the second(r[1])... etc. 
 ```
 now, you can just start testing your xpaths in the following manner:
 

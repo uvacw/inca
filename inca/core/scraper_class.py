@@ -40,8 +40,8 @@ class Scraper(Document):
     functiontype = 'scraper'
     #language = ''
 
-    def __init__(self,database=True):
-        Document.__init__(self,database)
+    def __init__(self):
+        Document.__init__(self)
 
     def get(self):
         ''' This docstring should explain how documents are retrieved

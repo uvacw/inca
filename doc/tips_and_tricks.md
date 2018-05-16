@@ -6,7 +6,7 @@ In this document, you can find some useful tips and tricks for when you just sta
 
 To start INCA, go to your INCA folder and import INCA in python
 ```
-cd /home/lisa/INCA/inca
+cd /home/lisa/inca
 ipython3
 import inca
 ```

@@ -47,9 +47,9 @@ YOU@HOME> git pull # get the most recent version of the code
 YOU@HOME> git checkout development #switch to the development branches
 #make a new branch based on the development branch for your additions
 YOU@HOME> git checkout -b financial_times
-YOU@HOME> emacs scrapers/financial_times.py # start coding!
+YOU@HOME> emacs inca/scrapers/financial_times.py # start coding!
 ...
-YOU@HOME> git add scrapers/financial_times.py # add your added files
+YOU@HOME> git add inca/scrapers/financial_times.py # add your added files
 # Be clear in your commit messages!
 YOU@HOME> git commit -m "I added a financial times scraper, tested locally"
 YOU@HOME> git push # push your branch to the central repository
@@ -141,7 +141,7 @@ Documentation is used to describe the purpose of a class, functionality of a fun
 
   ```python
   class MyScraper(Scraper):
-    """ Scrapers mywebsite.nl """
+    """ Scrapes mywebsite.nl """
 
     def get(self):
       """ Retrieves posts backward in time from the index page """
