@@ -22,8 +22,7 @@ def polish(textstring):
 class grifols(rss):
     """Scrapes Grifols"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "grifols (corp)"
         self.rss_url ='https://www.grifols.com/en/web/international/press-center/press-releases/-/grifolsrss/all'
         self.version = ".1"

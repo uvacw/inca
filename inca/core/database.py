@@ -45,7 +45,7 @@ try:
     except Exception as e:
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
 except:
-    logger.warning("No database functionality available")
+    logger.warning("No database functionality available. This means you will not be able to SAVE the results of any scraper or processor!")
     DATABASE_AVAILABLE = False
 
 def get_document(doc_id):

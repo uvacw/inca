@@ -42,14 +42,14 @@ by making a new branch. You might, for example, want to pick up the
 issue "scraper for financial times". You would do the following:
 
 ```bash
-YOU@HOME> cd /path/to/INCA # go to inca directory
+YOU@HOME> cd /path/to/inca # go to inca directory
 YOU@HOME> git pull # get the most recent version of the code
 YOU@HOME> git checkout development #switch to the development branches
 #make a new branch based on the development branch for your additions
 YOU@HOME> git checkout -b financial_times
-YOU@HOME> vim scrapers/financial_times.py # start coding!
+YOU@HOME> emacs inca/scrapers/financial_times.py # start coding!
 ...
-YOU@HOME> git add scrapers/financial_times.py # add your added files
+YOU@HOME> git add inca/scrapers/financial_times.py # add your added files
 # Be clear in your commit messages!
 YOU@HOME> git commit -m "I added a financial times scraper, tested locally"
 YOU@HOME> git push # push your branch to the central repository
@@ -141,7 +141,7 @@ Documentation is used to describe the purpose of a class, functionality of a fun
 
   ```python
   class MyScraper(Scraper):
-    """ Scrapers mywebsite.nl """
+    """ Scrapes mywebsite.nl """
 
     def get(self):
       """ Retrieves posts backward in time from the index page """

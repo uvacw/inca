@@ -17,9 +17,8 @@ logger = logging.getLogger(__name__)
 class taz(rss):
     """Scrapes http://www.taz.de"""
 
-    def __init__(self,database=True):
-        self.database = database
-        self.doctype = "die tageszeitung"
+    def __init__(self):
+        self.doctype = "die tageszeitung (www)"
         self.rss_url='http://www.taz.de/!p4608;rss/'
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=12, day=25)

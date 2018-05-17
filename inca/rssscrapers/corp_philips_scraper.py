@@ -22,8 +22,7 @@ def polish(textstring):
 class philips(rss):
     """Scrapes Philips """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "philips (corp)"
         self.rss_url ='http://www.lighting.philips.com/main/company/newsroom/n13-newscenter-archive-browser.feeds.xml'
         self.version = ".1"

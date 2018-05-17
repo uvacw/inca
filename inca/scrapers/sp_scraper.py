@@ -16,19 +16,16 @@ logger = logging.getLogger(__name__)
 class sp(Scraper):
     """Scrapes SP"""
 
-    def __init__(self,database=True, maxpages = 2):
-        '''
-        maxpages = number of pages to scrape
-        '''
+    def __init__(self):
         
-        self.database = database
         self.START_URL = "http://www.sp.nl/nu/"
         self.BASE_URL = "http://www.sp.nl"
-        self.MAXPAGES = maxpages
 
-    def get(self):
+    def get(self, save, maxpages, startpage, *args, **kwargs):
         '''                                                                     
         Fetches articles from SP
+        maxpages = number of pages to scrape
+        startpage: number of starting page for scraper
         '''
         self.doctype = "SP (pol)"
         self.version = ".1"
@@ -36,14 +33,14 @@ class sp(Scraper):
 
 
         releases = []
-        page=0
+        page=startpage
         current_url = self.START_URL+'js?page='+str(page)
         overview_page = requests.get(current_url, timeout = 10)
         while True:
             tree = json.loads(overview_page.text)
             if tree['has_pager'] is False:
                 break
-            if page > self.MAXPAGES:
+            if page > maxpages:
                 break
             elif page ==1:
                 first_page_text=overview_page.text

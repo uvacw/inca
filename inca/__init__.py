@@ -1,1 +1,1 @@
-from inca.main import Inca
+from .__main__ import Inca

@@ -22,8 +22,7 @@ def polish(textstring):
 class dailystar(rss):
     """Scrapes dailystar.co.uk"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "dailystar (www)"
         self.rss_url = "http://feeds.feedburner.com/daily-star-Latest-News"
         self.version = ".1"

@@ -22,8 +22,7 @@ def polish(textstring):
 class telefonica(rss):
     """Scrapes Telefonica"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "telefonica (corp)"
         self.rss_url ='https://www.telefonica.com/web/sala-de-prensa/rss/-/asset_publisher/RBb25zTLKrHp/rss'
         self.version = ".1"

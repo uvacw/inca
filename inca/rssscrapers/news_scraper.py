@@ -21,8 +21,7 @@ def polish(textstring):
 class ad(rss):
     """Scrapes ad.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "ad (www)"
         self.rss_url='http://www.ad.nl/rss.xml'
         self.version = ".1"
@@ -142,8 +141,7 @@ class ad(rss):
 class nu(rss):
     """Scrapes nu.nl """
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "nu"
         self.rss_url='http://www.nu.nl/rss'
         self.version = ".1"
@@ -244,8 +242,7 @@ class nu(rss):
 
 class nos(rss):
     """Scrapes nos.nl """
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "nos (www)"
         self.rss_url='http://feeds.nos.nl/nosnieuwsalgemeen'
         self.version = ".1"
@@ -349,8 +346,7 @@ class nos(rss):
 class volkskrant(rss):
     """Scrapes volkskrant.nl """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "volkskrant (www)"
         self.rss_url='http://www.volkskrant.nl/nieuws/rss.xml'
         self.version = ".1"
@@ -510,8 +506,7 @@ class volkskrant(rss):
 
 class nrc(rss):
     """Scrapes nrc.nl """
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "nrc (www)"
         self.rss_url='http://www.nrc.nl/rss.php?n=np'
         self.version = ".1"
@@ -631,8 +626,7 @@ class nrc(rss):
 
 class parool(rss):
     """Scrapes parool.nl """
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "parool (www)"
         self.rss_url='http://www.parool.nl/rss.xml'
         self.version = ".1"
@@ -756,8 +750,7 @@ class parool(rss):
 
 class trouw(rss):
     """Scrapes trouw.nl """
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "trouw (www)"
         self.rss_url='http://www.trouw.nl/rss.xml'
         self.version = ".1"
@@ -889,8 +882,7 @@ class trouw(rss):
 
 class telegraaf(rss):
     """Scrapes telegraaf.nl """
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "telegraaf (www)"
         self.rss_url='http://www.telegraaf.nl/rss'
         self.version = ".1"
@@ -989,8 +981,7 @@ class telegraaf(rss):
 class metro(rss):
     """Scrapes metronieuws.nl """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "metro (www)"
         self.rss_url='http://www.metronieuws.nl/rss.xml'
         self.version = ".1"
@@ -1097,8 +1088,7 @@ class metro(rss):
 class geenstijl(rss):
     """Scrapes geenstijl.nl """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "geenstijl"
         self.rss_url='https://www.geenstijl.nl/feeds/recent.atom'
         self.version = ".1"
@@ -1182,8 +1172,7 @@ class geenstijl(rss):
 class fok(rss):
     """Scrapes fok.nl """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "fok"
         self.rss_url='http://rss.fok.nl/feeds/nieuws'
         self.version = ".1"
@@ -1295,8 +1284,7 @@ if __name__=="__main__":
 class destentor(rss):
     """Scrapes destentor.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "destentor (www)"
         self.rss_url="http://www.destentor.nl/home/rss.xml"
         self.version = ".1"
@@ -1423,8 +1411,7 @@ class destentor(rss):
 class bd(rss):
     """Scrapes bd.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "bd (www)"
         self.rss_url="http://www.bd.nl/home/rss.xml"
         self.version = ".1"
@@ -1548,8 +1535,7 @@ class bd(rss):
 class gelderlander(rss):
     """Scrapes gelderlander.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "gelderlander (www)"
         self.rss_url="http://www.gelderlander.nl/home/rss.xml"
         self.version = ".1"
@@ -1670,8 +1656,7 @@ class gelderlander(rss):
 class ed(rss):
     """Scrapes ed.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "ed (www)"
         self.rss_url="http://www.ed.nl/home/rss.xml"
         self.version = ".1"
@@ -1800,8 +1785,7 @@ class ed(rss):
 class bndestem(rss):
     """Scrapes bndestem.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "bndestem (www)"
         self.rss_url="http://www.bndestem.nl/home/rss.xml"
         self.version = ".1"
@@ -1939,8 +1923,7 @@ class bndestem(rss):
 class pzc(rss):
     """Scrapes pzc.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "pzc (www)"
         self.rss_url="http://www.pzc.nl/home/rss.xml"
         self.version = ".1"
@@ -2077,8 +2060,7 @@ class pzc(rss):
 class tubantia(rss):
     """Scrapes tubantia.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "tubantia (www)"
         self.rss_url="http://www.tubantia.nl/home/rss.xml"
         self.version = ".1"
@@ -2215,8 +2197,7 @@ class tubantia(rss):
 class limburger(rss):
     """Scrapes limburger.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "limburger (www)"
         self.rss_url="http://feeds.feedburner.com/Limburgernl-nieuws?format=xml"
         self.version = ".1"
@@ -2348,8 +2329,7 @@ class limburger(rss):
 class frieschdagblad(rss):
     """Scrapes frieschdagblad.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "frieschdagblad (www)"
         self.rss_url="http://www.frieschdagblad.nl/nieuws.asp"
         self.version = ".1"
@@ -2440,8 +2420,7 @@ class frieschdagblad(rss):
 class zwartewaterkrant(rss):
     """Scrapes zwartewaterkrant.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "zwartewaterkrant (www)"
         self.rss_url="http://www.zwartewaterkrant.nl/rss.php"
         self.version = ".1"

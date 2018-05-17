@@ -22,8 +22,7 @@ def polish(textstring):
 class btgroup (rss):
     """Scrapes BTGroup"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "btgroup (corp)"
         self.rss_url ='http://bt.mynewsdesk.com/rss/source/56578/pressrelease'
         self.version = ".1"

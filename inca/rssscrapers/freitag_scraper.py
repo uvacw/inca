@@ -13,7 +13,7 @@ class freitag(rss):
     """Scrapes freitag.de"""
 
     def __init__(self):
-        self.doctype = "freitag (www)"
+        self.doctype = "der freitag (www)"
         self.rss_url='https://www.freitag.de/@@RSS'
         self.version = ".1"
         self.date    = datetime.datetime(year=2018, month=5, day=16)

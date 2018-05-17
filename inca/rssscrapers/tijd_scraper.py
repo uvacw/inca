@@ -21,8 +21,7 @@ def polish(textstring):
 class detijd(rss):
     """Scrapes tijd.nl"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "detijd (www)"
         self.rss_url=['http://www.tijd.be/rss/ondernemen.xml','http://www.tijd.be/rss/politiek.xml','http://www.tijd.be/rss/markten_live.xml','http://www.tijd.be/rss/opinie.xml','http://www.tijd.be/rss/cultuur.xml','http://www.tijd.be/rss/netto.xml','http://www.tijd.be/rss/sabato.xml']
         self.version = ".1"

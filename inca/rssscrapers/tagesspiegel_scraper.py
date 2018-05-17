@@ -9,11 +9,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class tagesspiegel(rss):
-    """Scrapes tagesspiegel.de"""
+class dertagesspiegel(rss):
+    """Scrapes http://www.handelsblatt.com/ """
 
     def __init__(self):
-        self.doctype = "ad (www)"
+        self.doctype = "der tagesspiegel (www)"
         self.rss_url=['http://www.tagesspiegel.de/contentexport/feed/home','http://www.tagesspiegel.de/contentexport/feed/politik','http://www.tagesspiegel.de/contentexport/feed/politik','http://www.tagesspiegel.de/contentexport/feed/queerspiegel','http://www.tagesspiegel.de/contentexport/feed/wirtschaft','http://www.tagesspiegel.de/contentexport/feed/sport','http://www.tagesspiegel.de/contentexport/feed/kultur','http://www.tagesspiegel.de/contentexport/feed/weltspiegel','http://www.tagesspiegel.de/contentexport/feed/meinung','http://www.tagesspiegel.de/contentexport/feed/medien','http://www.tagesspiegel.de/contentexport/feed/wissen']
         self.version = ".1"
         self.date    = datetime.datetime(year=2018, month=5, day=16)

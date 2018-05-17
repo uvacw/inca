@@ -22,8 +22,7 @@ def polish(textstring):
 class gemalto (rss):
     """Scrapes Gemalto"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "gemalto (corp)"
         self.rss_url ='http://www.gemalto.com/_layouts/15/feed.aspx?xsl=1&web=/press/rss&page=ccdbcfc3-cf39-419e-ad30-ff414b97b068&wp=9cc71aca-9378-474a-98a2-99673b290d2b'
         self.version = ".1"

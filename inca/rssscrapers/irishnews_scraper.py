@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 class bbcni(rss):
     """Scrapes imt.ie"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "bbc northern ireland (www)"
         self.rss_url= "http://feeds.bbci.co.uk/news/northern_ireland/rss.xml?edition=uk#"
         self.version = ".1"
@@ -76,8 +75,7 @@ class bbcni(rss):
 class herald(rss):
     """Scrapes herald.ie"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "herald (www)"
         self.rss_url= "http://www.herald.ie/rss/"
         self.version = ".1"
@@ -138,8 +136,7 @@ class herald(rss):
 class independent_irl(rss):
     """Scrapes independent.ie"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "independent-irl (www)"
         self.rss_url= "http://www.independent.ie/breaking-news/rss/"
         self.version = ".1"
@@ -199,8 +196,7 @@ class independent_irl(rss):
 class irishexaminer(rss):
     """Scrapes irishexaminer.com"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "irishexaminer (www)"
         self.rss_url= "http://feeds.examiner.ie/ietopstories"
         self.version = ".1"
@@ -261,8 +257,7 @@ class irishexaminer(rss):
 class irishtimes(rss):
     """Scrapes irishtimes.com"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "irishtimes (www)"
         self.rss_url= "http://www.irishtimes.com/cmlink/news-1.1319192"
         self.version = ".1"
@@ -336,8 +331,7 @@ class irishtimes(rss):
 class rte(rss):
     """Scrapes rte.ie"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "rte (www)"
         self.rss_url = "https://www.rte.ie/news/rss/news-headlines.xml"
         self.version = ".1"
@@ -384,8 +378,7 @@ class rte(rss):
 class thejournal(rss):
     """Scrapes thejournal.ie"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "thejournal (www)"
         self.rss_url= "http://www.thejournal.ie/feed/"
         self.version = ".1"

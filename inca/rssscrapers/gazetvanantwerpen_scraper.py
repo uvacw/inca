@@ -21,8 +21,7 @@ def polish(textstring):
 class gazetvanantwerpen(rss):
     """Scrapes gva.be """
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "gazetvanantwerpen (www)"
         self.rss_url= "http://www.gva.be/rss/section/ca750cdf-3d1e-4621-90ef-a3260118e21c"
         self.version = ".1"

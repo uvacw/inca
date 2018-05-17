@@ -22,8 +22,7 @@ def polish(textstring):
 class prudential(rss):
     """Scrapes Prudential"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "prudential (corp)"
         self.rss_url ='http://news.prudential.com/rss.xml'
         # note: this url does not work. this one does: http://www.investor.prudential.com/corporate.rss?c=129695&Rule=Cat=news~subcat=ALL

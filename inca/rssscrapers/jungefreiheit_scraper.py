@@ -13,7 +13,7 @@ class jungefreiheit(rss):
     """Scrapes jungefreiheit.de"""
 
     def __init__(self):
-        self.doctype = "jungefreiheit (www)"
+        self.doctype = "junge freiheit (www)"
         self.rss_url='https://jungefreiheit.de/feed/'
         self.version = ".1"
         self.date    = datetime.datetime(year=2018, month=5, day=16)

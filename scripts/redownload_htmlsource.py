@@ -6,6 +6,19 @@ from time import sleep
 import datetime
 import urllib.error
 
+
+
+
+
+
+
+print('THIS SCRIPT DOES NOT WORK ANY MORE. PLEASE SEE THE breaking changes DOC IN THE DOC FOLDER')
+
+
+
+
+
+
 print(datetime.datetime.now())
 
 

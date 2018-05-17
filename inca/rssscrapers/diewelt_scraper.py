@@ -13,8 +13,8 @@ class diewelt(rss):
     """Scrapes welt.de"""
 
     def __init__(self):
-        self.doctype = "diewelt (www)"
-        self.rss_url='https://www.welt.de/feeds/topnews.rss'
+        self.doctype = "die welt (www)"
+        self.rss_url='http://www.welt.de/?service=Rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2018, month=5, day=16)
 

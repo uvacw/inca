@@ -22,8 +22,7 @@ def polish(textstring):
 class exxonmobil(rss):
     """Scrapes ExxonMobil"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "exxonmobil (corp)"
         self.rss_url ='http://exxonmobil.newshq.businesswire.com/feeds/press_release/all/rss.xml'
         self.version = ".1"

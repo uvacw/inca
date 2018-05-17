@@ -23,8 +23,7 @@ def polish(textstring):
 class popular(rss):
     """Scrapes Banco Popular"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "banco popular (corp)"
         self.rss_url ='https://www.comunicacionbancopopular.es/feed/?post_type=nota'
         self.version = ".1"

@@ -15,8 +15,7 @@ MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 
 class gsk(Scraper):
     """Scrapes GlaxoSmithKline"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "http://www.gsk.com/en-gb/media/press-releases/"
         self.BASE_URL = "http://www.gsk.com/"
         self.doctype = "GSK (corp)"

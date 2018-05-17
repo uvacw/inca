@@ -15,33 +15,30 @@ logger = logging.getLogger(__name__)
 class cda(Scraper):
     """Scrapes CDA"""
 
-    def __init__(self,database=True, maxpages = 2):
-        '''
-        maxpages = number of pages to scrape
-        '''
-        self.database = database
+    def __init__(self):
         self.START_URL = "https://www.cda.nl/actueel/nieuws"
         self.BASE_URL = "https://www.cda.nl"
-        self.MAXPAGES = maxpages
 
-    def get(self):
+    def get(self, save, maxpages, startpage, *args, **kwargs):
         '''                                                                     
         Fetches articles from CDA
+        maxpages: number of pages to scrape
+        startpage: number of starting page for scraper
         '''
         self.doctype = "CDA (pol)"
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=11, day=10)
-        
 
+        logger.info('Scraping a maximum of {} pages'.format(maxpages))
         releases = []
 
-        page = 0
+        page = startpage
         current_url = self.START_URL
         overview_page = requests.get(current_url)
         first_page_text = ""
         while overview_page.text!=first_page_text:
             logger.debug("How fetching overview page {}".format(page))
-            if page > self.MAXPAGES:
+            if page > maxpages:
                 break
             elif page ==1:
                 first_page_text=overview_page.text

@@ -22,8 +22,7 @@ def polish(textstring):
 class bbva(rss):
     """scrapes bbva.com"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "bbva (corp)"
         self.rss_url ='https://www.bbva.com/en/rss/press-releases'
         self.version = ".1"

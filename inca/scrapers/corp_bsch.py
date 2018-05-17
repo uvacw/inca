@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 class bsch(Scraper):
     """Scrapes Banco Santander Central Hispano"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "http://www.santander.com/csgs/Satellite?appID=santander.wc.CFWCSancomQP01&c=GSInformacion&canal=CSCORP&cid=1278687978582&empr=CFWCSancomQP01&leng=en_GB&pagename=CFWCSancomQP01%2FGSInformacion%2FCFQP01_GSInformacionDetalleSimple_PT08"
         self.BASE_URL = "http://www.santander.com"
         self.doctype = "BSCH (corp)"
