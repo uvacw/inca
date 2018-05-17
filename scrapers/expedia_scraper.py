@@ -48,15 +48,16 @@ class expedia(Scraper):
         hotelsonly.click()
         sleep(2)
         destination = driver.find_element_by_id("hotel-destination-hp-hotel")
-        destination.send_keys('Amsterdam')#(self.CITYNAME) 
+        destination.send_keys(self.CITYNAME) 
         destination.send_keys(Keys.RETURN)
-        logger.debug('Scraping the hotels in {}.'.format('Amsterdam')) #self.CITYNAME))
+        logger.debug('Scraping the hotels in {}.'.format(self.CITYNAME))
         sleep(10)
 
         # Check how many hotels there are to find the last overview page:
         page_indicator = driver.find_elements_by_class_name("showing-results")[0].text
         amount_hotels_total = [int(s) for s in page_indicator.split() if s.isdigit()][-1]
         last_page = math.ceil(amount_hotels_total/50)
+        logger.debug('The last page is {}.'.format(last_page))
         if self.MAXPAGES >= last_page:
             logger.debug('Scraping {} pages of hotels'.format(last_page))
         else:
@@ -71,6 +72,23 @@ class expedia(Scraper):
         onlastpage = 0
         window_overviewpage = driver.window_handles[0]
         while onlastpage == 0:
+            # Locate the page that we're going to scrape:
+            if number_overviewpage < self.STARTPAGE:
+                logger.debug("This is the page we want to scrape: {}, however, we're on page {}".format(self.STARTPAGE,number_overviewpage))
+                try:
+                    results_section = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "resultsContainer")))
+                    logger.debug('Results section found')
+                    next_page = driver.find_element_by_class_name('pagination-next')
+                    next_page.click()
+                    logger.debug('Going to the next page')
+                    sleep(3)
+                    number_overviewpage += 1
+                    continue
+                except TimeoutException as ex:
+                    logger.error('ERROR: results section not found for overview page {}, with '.format(number_overviewpage))
+                    logger.error('Exception:'+str(ex))
+            else:
+                logger.debug('This is the page we want to scrape.')
             # Check whether this page is the last page:
             if number_overviewpage == last_page:
                 logger.debug('On the last overview page ({})'.format(number_overviewpage))
@@ -80,23 +98,10 @@ class expedia(Scraper):
                 onlastpage = 1
             else:
                 logger.debug('On overview page {}/{}'.format(number_overviewpage,last_page))
-
-            # Locate the page that we're going to scrape:
-            if number_overviewpage < self.STARTPAGE:
-                logger.debug("This is the page we want to scrape: {}, however, we're on page {}".format(self.STARTPAGE,number_overviewpage))
-                next_page = driver.find_element_by_class_name('pagination-next')
-                next_page.click()
-                logger.debug('Going to the next page')
-                sleep(3)
-                number_overviewpage += 1
-                continue
-            #elif lastpage < self.STARTPAGE:
-            #    break
-            else:
-                logger.debug('This is the page we want to scrape.')
             try:
                 results_section = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "resultsContainer")))
                 logger.debug('Results section found')
+                sleep(10)
                 # Find all article elements:
                 hotels = driver.find_elements_by_css_selector('section article')
                 # Find all sponsored article elements:
