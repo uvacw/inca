@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 class jungefreiheit(rss):
     """Scrapes jungefreiheit.de"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "jungefreiheit (www)"
         self.rss_url='https://jungefreiheit.de/feed/'
         self.version = ".1"

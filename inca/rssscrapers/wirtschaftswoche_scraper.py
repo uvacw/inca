@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 class wirtschaftswoche(rss):
     """Scrapes wiwo.de"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "wiwo (www)"
         self.rss_url='http://www.wiwo.de/contentexport/feed/rss/schlagzeilen'
         self.version = ".1"

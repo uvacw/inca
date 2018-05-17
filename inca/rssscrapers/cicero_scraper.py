@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 class cicero(rss):
     """Scrapes cicero.de"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "cicero (www)"
         self.rss_url=['http://cicero.de/rss.xml']
         

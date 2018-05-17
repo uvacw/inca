@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 class focus(rss):
     """Scrapes focus.de"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "focus (www)"
         self.rss_url='http://rss.focus.de/fol/XML/rss_folnews.xml'
         self.version = ".1"

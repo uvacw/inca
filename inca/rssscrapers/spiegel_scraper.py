@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 class spiegel(rss):
     """Scrapes http://www.spiegel.de"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "spiegel (www)"
         self.rss_url=['http://www.spiegel.de/schlagzeilen/index.rss']
         
