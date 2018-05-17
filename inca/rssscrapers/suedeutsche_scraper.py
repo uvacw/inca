@@ -9,12 +9,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class zeit(rss):
-    """Scrapes zeit.de"""
+class sueddeutsche(rss):
+    """Scrapes sueddeutsche.de"""
 
     def __init__(self):
-        self.doctype = "zeit (www)"
-        self.rss_url='http://newsfeed.zeit.de/all'
+        self.doctype = "sueddeutsche (www)"
+        self.rss_url='http://rss.sueddeutsche.de/app/service/rss/alles/index.rss?output=rss'
         self.version = ".1"
         self.date    = datetime.datetime(year=2018, month=5, day=16)
 
@@ -31,46 +31,44 @@ class zeit(rss):
             tree = fromstring(htmlsource)
         except:
             logger.warning("HTML tree cannot be parsed")
+#teaser:
+        try:
+            teaser =" ".join(tree.xpath('//*[@class="body"]/ul/li/text()')).replace("\n",'').strip()
+        except:
+            teaser = ""
 #title
         try:
-            title = ''.join(tree.xpath('//*[@class="article-header"]//h1/span/text()'))
+            title = "".join(tree.xpath('//*[@class="header"]/h2/text()|//*[@class="header"]/h2/strong/text()')).replace("\n        ",' ').strip()
         except:
             title =""
-#category
+#text
         try:
-            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()')
+            text = tree.xpath('//*[@id="article-body"]/p/text()|//*[@id="article-body"]/p/a/text()')
+            if text[0].startswith('\n') == True:
+                teaser = text[0].replace("\n", "").strip()
+                text = " ".join(text[1:]).replace("\xa0", "")
+            else:
+                text = " ".join(text).replace("\xa0", "")
         except:
-            category =""
+            text =""
 #author
         try:
-            author = tree.xpath('//*[@itemprop="author"]/a/span/text()')
+            author = ''.join(tree.xpath('//*[@class="authorProfileContainer"]/span/strong/span/text()|//*[@class="authorProfileContainer"]/span/strong/text()')).strip()
+            author = author.replace("Von ", "").replace("Kommentar von ", "").replace("Interview von ", "")
         except:
             author =""
 #source
         try:
-            source = tree.xpath('//*[@class="metadata"]//span/text()')[0].replace("Quelle:","").strip()
-
+            source = ''.join(tree.xpath('//*[@class="endofarticle__copyright"]//text()')[0].split('/')[1:])
         except:
             source =""
-#teaser
-        try:
-            teaser = ''.join(tree.xpath('//*[@class="summary"]//text()')).replace('\n','').strip()
-        except:
-            teaser =""
-#text
-        try:
-            text = "".join(tree.xpath('//*[@class="paragraph article__item"]//text()')).strip().replace("\n","")
-
-        except:
-            text  =""
-        
-
+            
+            
         extractedinfo={"title":title,
-                       "category":category,
-                       "teaser":teaser,
                        "byline":author,
                        "byline_source":source,
+                       "teaser":teaser,
                        "text":text
                        }
-
+        
         return extractedinfo
