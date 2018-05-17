@@ -21,8 +21,7 @@ def polish(textstring):
 class hetlaatstenieuws(rss):
     """Scrapes hln.be"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "hetlaatstenieuws (www)"
         self.rss_url= "http://www.hln.be/rss.xml"
         self.version = ".1"

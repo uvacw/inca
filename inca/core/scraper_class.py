@@ -40,8 +40,8 @@ class Scraper(Document):
     functiontype = 'scraper'
     #language = ''
 
-    def __init__(self,database=True):
-        Document.__init__(self,database)
+    def __init__(self):
+        Document.__init__(self)
 
     def get(self):
         ''' This docstring should explain how documents are retrieved
@@ -62,16 +62,18 @@ class Scraper(Document):
         self._verify(doc)
         self._save_document(doc)
 
-    def run(self, *args, **kwargs):
+    def run(self, save=True, *args, **kwargs):
+        
         '''
         DO NOT OVERWRITE THIS METHOD
 
         This is an internal function that calls the 'get' method and saves the
         resulting documents.
         '''
+
         logger.info("Started scraping")
-        if DATABASE_AVAILABLE == True and self.database==True:
-            for doc in self.get(*args, **kwargs):
+        if save == True:
+            for doc in self.get(save, *args, **kwargs):
                 if type(doc)==dict:
                     doc = self._add_metadata(doc)
                     self._save_document(doc)
@@ -79,7 +81,7 @@ class Scraper(Document):
                     doc = self._add_metadata(doc)
                     self._save_documents(doc)
         else:
-            return [self._add_metadata(doc) for doc in self.get(*args, **kwargs)]
+            return [self._add_metadata(doc) for doc in self.get(save, *args, **kwargs)]
 
         logger.info('Done scraping')
 

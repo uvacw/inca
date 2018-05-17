@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 class merlin(Scraper):
     """Scrapes Merlin Porperties Socimi SA"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.START_URL = "http://www.merlinproperties.com/en/press-release/"
         self.BASE_URL = "http://www.merlinproperties.com/"
 

@@ -22,8 +22,7 @@ def polish(textstring):
 class boskalispress (rss):
     """Scrapes Boskalis Westminster Press Releases"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "boskalispress (corp)"
         self.rss_url ='https://boskalis.com/syndication/press-releases/feed.rss'
         self.version = ".1"
@@ -75,8 +74,7 @@ class boskalispress (rss):
 class boskalisnews (rss):
     """Scrapes Boskalis Westminster News Releases"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "boskalisnews (corp)"
         self.rss_url ='https://boskalis.com/syndication/news-releases/feed.rss'
         self.version = ".1"

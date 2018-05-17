@@ -17,8 +17,7 @@ logger = logging.getLogger(__name__)
 class neuesdeutschland(rss):
     """Scrapes http://www.handelsblatt.com/ """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "neues deutschland (www)"
         self.rss_url='https://www.neues-deutschland.de/rss/aktuell.php'
         self.version = ".1"

@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 class handelsblatt(rss):
     """Scrapes http://www.handelsblatt.com/ """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "handelsblatt (www)"
         self.rss_url='http://www.handelsblatt.com/contentexport/feed/schlagzeilen'
         self.version = ".1"

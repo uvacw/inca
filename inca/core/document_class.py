@@ -42,11 +42,11 @@ class Document(Task):
             return self.delay(*args, **kwargs)
 
 
-    def __init__(self, database=True):
+    def __init__(self):
         '''
         intializes the document as either a document to be handled by the database or not
         '''
-        self.database=database
+        pass
 
     def _save_document(self, document, forced=False):
         '''

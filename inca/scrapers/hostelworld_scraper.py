@@ -10,21 +10,17 @@ logger = logging.getLogger(__name__)
 class hostelworld(Scraper):
     """Scrapes Hostelworld reviews"""
     
-    def __init__(self,database=True,maxpages = 2, maxreviewpages = 5, starturl = "http://www.hostelworld.com/hostels/Amsterdam"):
+    def __init__(self):
+        self.BASE_URL = "http://www.hostelworld.com/"
+
+    
+    def get(self, maxpages, maxreviewpages, starturl, *args, **kwargs):
         '''
+        Fetches reviews from hostelworld.com
         maxpage: number of pages with hostels to scrape
         maxreviewpages: number of pages with reviews *per hostel* to scrape
         starturl: URL to first page with hostel results
         '''
-        self.database=database
-        self.START_URL = starturl
-        self.BASE_URL = "http://www.hostelworld.com/"
-        self.MAXPAGES = maxpages
-        self.MAXREVIEWPAGES = maxreviewpages
-
-    
-    def get(self):
-        '''Fetches reviews from hostelworld.com'''
         self.doctype = "Hostelworld reviews"
         self.version = ".1"
         self.date    = datetime.datetime(year=2017, month=6, day=10)
@@ -32,12 +28,12 @@ class hostelworld(Scraper):
         hostels = []
 
         page=1
-        current_url = self.START_URL+'?page='+str(page)
+        current_url = starturl+'?page='+str(page)
         overview_page = requests.get(current_url)
         first_page_text=""
         while overview_page.text!=first_page_text:
             logger.debug("How fetching overview page {}".format(page))
-            if page > self.MAXPAGES:
+            if page > maxpages:
                 break
             elif page ==1:
                 first_page_text=overview_page.text
@@ -63,7 +59,7 @@ class hostelworld(Scraper):
                 hostels.append(thishostel)
                 
             page+=1
-            current_url = self.START_URL+'?page='+str(page)
+            current_url = starturl+'?page='+str(page)
             overview_page = requests.get(current_url)
 
         logger.debug('We hebben net alle overzichtspagina\'s opgehaald. Er zijn {} hostels'.format(len(hostels)))
@@ -104,7 +100,7 @@ class hostelworld(Scraper):
         base_url = link.rstrip('#propname') + '?showOlderReviews=1&page='
         page = 1
         reviews = []
-        while page < self.MAXREVIEWPAGES:   
+        while page < maxreviewpages:   
             url = base_url+str(page)+'#reviewFilters'
             logger.debug('Processing {}'.format(url))
             tree = fromstring(requests.get(url).text) 

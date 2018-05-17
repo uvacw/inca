@@ -11,8 +11,6 @@ class testdocs(Scraper):
     version = "0.1"
     functiontype = "testcase_generator"
 
-    def __init__(self,database=True):
-        self.database=database
 
     def get(self, number=10, bulk=False, **kwargs):
         '''randomly generated document, title and text based on loremipsum module,

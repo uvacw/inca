@@ -22,8 +22,7 @@ def polish(textstring):
 class walmart(rss):
     """Scrapes Walmart """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "walmart (corp)"
         self.rss_url ='http://corporate.walmart.com/rss?feedName=allnews'
         self.version = ".1"

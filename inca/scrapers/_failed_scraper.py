@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 class _failed(rss):
     """Retrieves RSS feed from hbvl.be, but returns None as parsed content. FOR TESTING AND DEBUGGING ONLY"""
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "belangvanlimburg (www)"
         self.rss_url='http://www.hbvl.be/rss/section/0DB351D4-B23C-47E4-AEEB-09CF7DD521F9'
         

@@ -1,5 +1,5 @@
-import core.scraper_class
-import core.processor_class
-import core.import_export_classes
-import core.celerybeat_schedule
-import core.assets
+__import__('core.scraper_class')
+__import__('core.processor_class')
+__import__('core.import_export_classes')
+__import__('core.celerybeat_schedule')
+__import__('core.assets')

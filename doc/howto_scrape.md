@@ -56,12 +56,11 @@ Below, we explain how you can write a scraper with the example of the ad scraper
 1.class ad(rss):
 2.    """Scrapes ad.nl"""
 3.
-4.def __init__(self,database=True):
-5.    self.database = database
-6.    self.doctype = "ad (www)"
-7.    self.rss_url='http://www.ad.nl/rss.xml'
-8.    self.version = ".1"
-9.    self.date = datetime.datetime(year=2016, month=8, day=2) 
+4.def __init__(self):
+5.    self.doctype = "ad (www)"
+6.    self.rss_url='http://www.ad.nl/rss.xml'
+7.    self.version = ".1"
+8.    self.date = datetime.datetime(year=2018, month=5, day=16) 
 ```
 
 **line 1**
@@ -75,16 +74,15 @@ denote with double ` """` what the class does: in this case, it scrapes ad.nl. T
 **lines 4 - 9**
 
 When creating a new scraper, we need to initialise it. More specifically, we need specify what kind of scraper we are writing. This happens is lines 4 - 9. 
-The `__init__(self, database=True)):`  method is a special kind of method that is called whenever an instance of a class is created. 
+The `__init__(self):`  method is a special kind of method that is called whenever an instance of a class is created. 
 the `self` variable represents the instance of the object (Think of referring to 'self' as to referring to the specific instance that we have created, not to the abstract class). 
 As we can have multiple instances (nothing prevents someone from running the scraper multiple times), referring to `self` allows us to do something with the specific instance rather than with all ad-scrapers.
 
 Consequently, we have to define the following:
-`self.database = database` --> this is always the same. When we instantiate the scraper, we can optionally say whether it should save the result to the database or return it; we basically store this choice as an attribute of the instance.
 `self.doctype = "ad (www)` --> fill in the name of your scraper.
 `self.rss_url='http://www.ad.nl/rss.xml'` --> fill in the address of the rss-feed of your scraper.
 `self.version = ".1"` --> give the version of the scraper (in case you have adjusted the scraper, you can change this here.
-`self.date    = datetime.datetime(year=2016, month=8, day=2)` --> provide the date you last adjusted the scraper. 
+`self.date    = datetime.datetime(year=2018, month=5, day=16)` --> provide the date you last adjusted the scraper. 
 
 ```python
 10.   def parsehtml(self,htmlsource):
@@ -174,11 +172,11 @@ It does not really matter how you arrive at xpath you are including, as long as 
 If you define a method with a name that already exists within INCA, you run the risk of overwriting
 existing methods. We don't want that. Please do not overwrite the following methods: run(), _test_function(),  
 
-For example, never compile a method using:
+For example, never write a method using:
 ```
  def run(self,<whatever>):
  ```
-When you write a scrape for an RSS-based website, just inherit the functionalities that are already defined by the class rss. In addition, we can write our own methods.
+When you write a scraper for an RSS-based website, just inherit the functionalities that are already defined by the class rss. In addition, we can write our own methods.
 
 In fact, `(rss)` refers to a class defined in the core of inca: `class rss(Scraper)`. 
 
@@ -191,21 +189,18 @@ You can test your scraper on your own system before pushing it. Start Python3 in
 and import inca. Please note: you do not have to activate Elastic Search for this (as you are just testing the materials).
 Hence, be prepared to recieve the following warnings:]
 
-_WARNING:INCAcore.database:No database functionality available_
+_WARNING:INCAcore.database:No database functionality available. This means you will not be able to SAVE the results of any scraper or processor!_
 _WARNING:processing.basic_text_processing:Pattern is NOT python 3 compatible...skipping_
 
-When creating an instance of the scraper, please give the argument `database = False`, as you just want to work with test data.
+When running a scraper, please give the argument `save = False`, as you just want to work with test data.
 
 ```python
 import inca
-myscraper = inca.scrapers.news_scraper.nu(database=False)  # We do not pass any argument to the __init__ method
-r = myscraper.run()
+myinca = inca.Inca()
+data = myinca.rssscrapers.nu(save=False)
 ```
 
-In this example, we have created an instance of the class `inca.scrapers.news_scraper.nu` and called it `myscraper`. 
-We can now pay around with the methods of the class `inca.scrapers.news_scraper.nu`. For example, we can run the scraper to get some actual data to play around with. 
-
-now, you can start playing around with the data (`r`) returned by the `.run()` method of the `myscraper`, which is an instance of `news_scraper.nu`. 
+Now, you can start playing around with the data (`r`).
 
 Please note that you have tab completion (this will show you all the methods inside myscraper)!
 
@@ -226,7 +221,7 @@ For this, make sure you have iPython (or Python) running. `import inca` and run 
 ```Python
 from lxml.html import fromstring
 
-tree = fromstring(r[0]['htmlsource']) # this graps the htmlsource of the first item you just scraped (r[0]). Of course, you can also select the second(r[1])... etc. 
+tree = fromstring(r[0]['htmlsource']) # this grasps the htmlsource of the first item you just scraped (r[0]). Of course, you can also select the second(r[1])... etc. 
 ```
 now, you can just start testing your xpaths in the following manner:
 
@@ -253,11 +248,9 @@ logger.debug("Here is some message")
 By default, only messages that are 'warning' or more important are shown. But you can change this. For instance, if you want to see all messages that are of level debug or higher, just do:
 
 ```python
-import inca
-import logging
-inca.scrapers.news_scraper.logger.setLevel(logging.DEBUG)
-myscraper = inca.scrapers.news_scraper.nu(database=False)
-data = myscraper.run()
+myinca = inca.Inca(verbose=True)
+# or even:
+myinca = inca.Inca(debug=True)
 ```
 
 A good way of using logging when writing scrapers can be:

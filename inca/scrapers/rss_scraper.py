@@ -44,13 +44,13 @@ class rss(Scraper):
         By overwriting the getlink function, modifications to the link can be made, e.g. to bypass cookie walls
     '''
 
-    def __init__(self,database=True):
-        Scraper.__init__(self,database)
+    def __init__(self):
+        Scraper.__init__(self)
         self.doctype = "rss"
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
-    def get(self,**kwargs):
+    def get(self,save,**kwargs):
         '''Document collected via {} feed reader'''.format(self.doctype)
 
         # This RSS-scraper is a generic fallback option in case we do not have
@@ -78,7 +78,14 @@ class rss(Scraper):
 
                 link=re.sub("/$","",self.getlink(post.link))
 
-                if self.database==False or check_exists(_id)[0]==False:
+                # By now, we have retrieved the RSS feed. We now have to determine for the item that
+                # we are currently processing (post in d.entries), whether we want to follow its
+                # link and actually get the full text and process it. If we already have it,
+                # we do not need to (therefore check_exists). But also, if we do not want to
+                # work with the database backend (as indicated by save=False), we probably also
+                # do not want to look something up in the database. We therefore also retrieve it in
+                # that case.
+                if save==False or check_exists(_id)[0]==False:
                     try:
                         req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
                         htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")

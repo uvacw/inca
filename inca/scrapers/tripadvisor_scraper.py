@@ -14,7 +14,7 @@ logger.setLevel(logging.DEBUG)
 class tripadvisor(Scraper):
     """Scrapes Tripadvisor reviews"""
     
-    def __init__(self, database=True, startpage = 1, maxpages = 2, maxreviewpages = 5, maxurls = 50, starturl = "https://www.tripadvisor.com/Hotels-g188590-Amsterdam_North_Holland_Province-Hotels.html"):
+    def __init__(self, startpage = 1, maxpages = 2, maxreviewpages = 5, maxurls = 50, starturl = "https://www.tripadvisor.com/Hotels-g188590-Amsterdam_North_Holland_Province-Hotels.html"):
         '''
         startpage: the overviewpage where to start scraping
         maxpages: number of overviewpages with hotels to scrape at one time
@@ -22,7 +22,7 @@ class tripadvisor(Scraper):
         starturl: URL to first overviewpage (the startpage of a city)
         maxurl: number of overview pages that are made of the starturl (always set larger than maxpages)
         '''
-        self.database       = database
+
         self.START_URL      = starturl
         self.BASE_URL       = "http://www.tripadvisor.com"          
         self.MAXPAGES       = maxpages

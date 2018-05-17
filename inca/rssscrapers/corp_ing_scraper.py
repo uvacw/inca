@@ -21,8 +21,7 @@ def polish(textstring):
 class ing(rss):
     """Scrapes ing - Nederland """
 
-    def __init__(self,database=True):
-        self.database=database
+    def __init__(self):
         self.doctype = "ing (corp)"
         self.rss_url='https://www.ing.nl/nieuws/nieuws_en_persberichten/news.xml?format=rss'
         self.version = ".1"

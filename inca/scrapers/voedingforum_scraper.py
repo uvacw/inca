@@ -15,21 +15,20 @@ logger.setLevel('DEBUG')
 
 # Multipage non-rss scraper. When a non-existing URL is requested we get an error messages. The loop stops when the error message is encountered.
 class voedingsforum(Scraper):
-    """Scrapes Voedingsforum"""
 
-    def __init__(self,database=True, maxfora = 2, maxpages=2, maxthreads=2, forumid = None):
+    def __init__(self):
    
-        self.database = database
         self.START_URL = "http://www.voedingsforum.nl/"
         self.BASE_URL = "http://www.voedingsforum.nl/"
-        self.MAXPAGES = maxpages
-        self.MAXTHREADS = maxthreads
-        self.MAXFORA = maxfora
-        self.FORUMID = forumid
+
         
-    def get(self):
+    def get(self, maxfora, forumid, maxthreads, maxpages, *args, **kwargs):
         '''                                                                     
         Fetches articles from Voedingsforum
+        maxfora = maximum number of forums to scrape
+        forumid = ID of forum 
+        maxthreads = maximum number of threads in each forum to scrape
+        maxpages = maximum number of pages in each thread to scrape
         '''
         self.doctype = "voedingsforum (health)"
         self.version = ".1"
@@ -46,9 +45,9 @@ class voedingsforum(Scraper):
         tree = fromstring(overview_page.text)
         linkobjects = tree.xpath('//table//b/a')
         links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
-        links = links[0:self.MAXFORA]
+        links = links[0:maxfora]
 
-        if self.FORUMID:
+        if forumid:
             links = ["http://www.voedingsforum.nl/forum.asp?FORUM_ID={}".format(self.FORUMID)]
         
         logger.debug("There are {} subforums in total in the Voedingsforum, and they are:".format(len(links)))
@@ -132,7 +131,7 @@ class voedingsforum(Scraper):
 
 
                         pagesub+=1
-                        if pagesub > self.MAXTHREADS:
+                        if pagesub > maxthreads:
                             break
                         next_url = sublink+'&whichpage='+str(pagesub)
                         sleep(randrange(5,10))
@@ -148,7 +147,7 @@ class voedingsforum(Scraper):
                     currentforum['threads'].append(currentthread)
                     tt+=1
                 page+=1
-                if page > self.MAXPAGES:
+                if page > maxpages:
                     break
                 current_page = link+'&sortfield=lastpost&sortorder=desc&whichpage='+str(page)
                 sleep(randrange(5,10))

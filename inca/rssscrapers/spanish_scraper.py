@@ -22,8 +22,7 @@ def polish(textstring):
 class abc(rss):
     """Scrapes abc """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "abc (www)"
         self.rss_url ='http://www.abc.es/rss/feeds/abcPortada.xml'
         self.version = ".1"
@@ -93,8 +92,7 @@ class abc(rss):
 class elpais(rss):
     """Scrapes elpais"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "elpais (www)"
         self.rss_url ='http://ep00.epimg.net/rss/elpais/portada.xml'
         self.version = ".1"
@@ -147,8 +145,7 @@ class elpais(rss):
 class elmundo(rss):
     """Scrapes elmundo"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "elmundo (www)"
         self.rss_url ='http://estaticos.elmundo.es/elmundo/rss/portada.xml'
         self.version = ".1"

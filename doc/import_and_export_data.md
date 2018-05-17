@@ -43,6 +43,9 @@ Type `elasticdump --help` for more options.
 
 
 ## INCA import/export functions
+
+# Please note: The functions described below are deprecated, thus the instructions do not work anymore! The new export/import functions can be found under myinca.importers_exporters, detailed instructions to come.
+
 INCA also has a couple of built-in functions to export to often-used generic formats, especially JSON and CSV.
 
 ### doctype_export and import_documents
@@ -57,6 +60,7 @@ inca.core.database.import_documents('/home/damian/myjsonfiles')
 ```
 
 ### Customized exports
+
 Maybe you want to do more customized exports, for instance all documents from a specific time range. To do so, you can use the Elastic Search query syntax. A Google search will tell you more, but this is the general way it works:
 ```
 q1 = inca.core.database.scroll_query({'query':{'match':{'doctype':'nu'}}})

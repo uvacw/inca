@@ -256,7 +256,9 @@ class Inca():
                     return endpoint
 
                 endpoint = makefunc(method)
-                if function == 'scrapers' or function =='rssscrapers':
+                if function == 'scrapers':
+                    docstring = self._taskmaster.tasks[k].get.__doc__
+                elif function == 'rssscrapers':
                     docstring = self._taskmaster.tasks[k].get.__doc__
                 elif function == "processing":
                     docstring = self._taskmaster.tasks[k].process.__doc__

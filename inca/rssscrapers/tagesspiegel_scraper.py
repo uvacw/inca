@@ -17,8 +17,7 @@ logger = logging.getLogger(__name__)
 class dertagesspiegel(rss):
     """Scrapes http://www.handelsblatt.com/ """
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "der tagesspiegel (www)"
         self.rss_url='http://www.tagesspiegel.de/contentexport/feed/home'
         self.version = ".1"

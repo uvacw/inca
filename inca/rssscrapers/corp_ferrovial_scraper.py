@@ -22,8 +22,7 @@ def polish(textstring):
 class ferrovial(rss):
     """Scrapes Ferrovial"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "ferrovial (corp)"
         self.rss_url ='http://www.ferrovial.com/es/feed/?post_type%5B0%5D=notas_prensa&post_type%5B1%5D=hechos_relevantes&post_type%5B2%5D=noticias&post_type%5B3%5D=eventos'
         self.version = ".1"

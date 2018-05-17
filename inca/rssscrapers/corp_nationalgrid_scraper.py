@@ -22,8 +22,7 @@ def polish(textstring):
 class nationalgrid(rss):
     """Scrapes National Grid"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "nationalgrid (corp)"
         self.rss_url ='http://media.nationalgrid.com/rss/'
         self.version = ".1"

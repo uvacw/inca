@@ -23,8 +23,7 @@ def polish(textstring):
 class ree(rss):
     """Scrapes Red Electrica Corp"""
 
-    def __init__(self,database=True):
-        self.database = database
+    def __init__(self):
         self.doctype = "red electrica corp (corp)"
         self.rss_url ='http://www.ree.es/en/feed/press_release/all'
         self.version = ".1"
