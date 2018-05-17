@@ -19,10 +19,11 @@ class pvda(Scraper):
         self.START_URL = "https://www.pvda.nl/nieuws/"
         self.BASE_URL = "https://www.pvda.nl"
 
-    def get(self, maxpages = 1):
+    def get(self, save, maxpages, startpage, *args, **kwargs):
         '''                                                                     
         Fetches articles from PvdA
         maxpages = number of pages to scrape
+        startpage: number of starting page for scraper
         '''
         self.doctype = "PvdA (pol)"
         self.version = ".1"
@@ -30,12 +31,12 @@ class pvda(Scraper):
 
         releases = []
 
-        page = 1
-        current_url = self.START_URL
+        page = startpage
+        current_url = self.START_URL+"page/"+str(page)
         overview_page = requests.get(current_url)
         first_page_text=""
         while overview_page.text!=first_page_text:
-            logger.debug("How fetching overview page {}".format(page))
+            logger.debug("Now fetching overview page {}".format(page))
             if page > maxpages:
                 break
             elif page ==1:

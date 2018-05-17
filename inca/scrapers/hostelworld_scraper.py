@@ -14,7 +14,7 @@ class hostelworld(Scraper):
         self.BASE_URL = "http://www.hostelworld.com/"
 
     
-    def get(self, maxpages = 1, maxreviewpages = 1, starturl = "URL"):
+    def get(self, maxpages, maxreviewpages, starturl, *args, **kwargs):
         '''
         Fetches reviews from hostelworld.com
         maxpage: number of pages with hostels to scrape

@@ -26,7 +26,7 @@ class facebook(Scraper):
         self.START_URL = "https://graph.facebook.com/v2.6/"
 
 	
-    def get(self, pagename = "pagename", app_id = "APP_ID", app_secret = "APP_SECRET", maxpages = 1):
+    def get(self, pagename, app_id, app_secret, maxpages):
         '''                                                                     
         Fetches posts from facebook page
         maxpages = number of pages to scrape

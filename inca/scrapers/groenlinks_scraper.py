@@ -21,17 +21,18 @@ class groenlinks(Scraper):
         self.START_URL = "https://www.groenlinks.nl/nieuws"
         self.BASE_URL = "https://www.groenlinks.nl"
 
-    def get(self, maxpages = 1):
+    def get(self, save, maxpages, startpage, *args, **kwargs):
         '''                                                                     
         Fetches articles from Groenlinks
-        maxpage: number of pages to scrape
+        maxpages: number of pages to scrape
+        startpage: number of starting page for scraper
         '''
         self.doctype = "Groenlinks (pol)"
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=11, day=10)
         releases = []
 
-        page = self.STARTPAGE
+        page = startpage
         current_url = self.START_URL+"?page="+str(page)
         overview_page = requests.get(current_url, timeout = 10)
         first_page_text=""

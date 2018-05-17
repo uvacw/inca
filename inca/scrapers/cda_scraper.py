@@ -19,9 +19,11 @@ class cda(Scraper):
         self.START_URL = "https://www.cda.nl/actueel/nieuws"
         self.BASE_URL = "https://www.cda.nl"
 
-    def get(self, maxpages=1):
+    def get(self, save, maxpages, startpage, *args, **kwargs):
         '''                                                                     
         Fetches articles from CDA
+        maxpages: number of pages to scrape
+        startpage: number of starting page for scraper
         '''
         self.doctype = "CDA (pol)"
         self.version = ".1"
@@ -30,7 +32,7 @@ class cda(Scraper):
         logger.info('Scraping a maximum of {} pages'.format(maxpages))
         releases = []
 
-        page = 0
+        page = startpage
         current_url = self.START_URL
         overview_page = requests.get(current_url)
         first_page_text = ""

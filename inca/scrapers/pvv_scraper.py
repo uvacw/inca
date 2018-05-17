@@ -17,10 +17,11 @@ class pvv(Scraper):
         self.START_URL = "https://www.pvv.nl/in-de-media/persberichten.html"
         self.BASE_URL = "https://www.pvv.nl"
 
-    def get(self, maxpages = 1):
+    def get(self, save, maxpages, startpage, *args, **kwargs):
         '''                                                                     
         Fetches articles from PVV
         maxpage = number of pages to scrape
+        startpage: number of starting page for scraper (careful: must be divisable by 5)
         '''
         self.doctype = "PVV (pol)"
         self.version = ".1"
@@ -28,7 +29,7 @@ class pvv(Scraper):
 
         releases = []
 
-        page = 0
+        page = startpage
         current_url = self.START_URL
         overview_page = requests.get(current_url, timeout = 10)
         first_page_text=""
