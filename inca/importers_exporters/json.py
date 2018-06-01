@@ -83,7 +83,7 @@ class export_json_file(Exporter):
             What compression to use when writing output file
         """
         self.extension = "json"
-        self.fileobj = self._makefile(destination, mode="w", compression=compression)
+        self.fileobj = self._makefile(destination, mode="a", compression=compression)
         for document in batch_of_documents:
             try:
                 doc_dump = json.dumps(document)
