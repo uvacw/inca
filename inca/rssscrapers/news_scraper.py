@@ -383,7 +383,7 @@ class volkskrant(rss):
         else:
             paywall_na = False
         try:
-            title = tree.xpath('//*/h1[@class="artstyle__header-title artstyle__header-title--white artstyle__header-title--light"]//text() | //*/h1[@class="artstyle__header-title"]//text() | //*/h1[@class="artstyle__header-title artstyle__header-title--white"]//text()')[0]
+            title = tree.xpath('//*/h1[@class="artstyle__header-title artstyle__header-title--white artstyle__header-title--light"]//text() | //*/h1[@class="artstyle__header-title"]//text() | //*/h1[@class="artstyle__header-title artstyle__header-title--white"]//text() | //*[@class="artstyle__header-title artstyle__header-title--hero-bleed artstyle__header-title--light"]/text()')[0]
         except:
             title=""
             logger.warning("Could not parse article title")
