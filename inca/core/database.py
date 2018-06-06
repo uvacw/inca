@@ -20,7 +20,7 @@ import requests
 from celery import Task
 import os
 
-from core.filenames import id2filename
+from .filenames import id2filename
 
 config = configparser.ConfigParser()
 config.read('settings.cfg')

@@ -6,7 +6,7 @@ Mapping : for storing pools in elasticsearch
 
 '''
 
-from core.database import client
+from ..core.database import client
 import datetime
 import logging
 from elasticsearch import NotFoundError, ConnectionTimeout

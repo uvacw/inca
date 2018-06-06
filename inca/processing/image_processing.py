@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from core.processor_class import Processer
-from core.database import config
+from ..core.processor_class import Processer
+from ..core.database import config
 # from core.basic_utils import dotkeys
 import logging
 import requests

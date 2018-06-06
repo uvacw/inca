@@ -1,6 +1,6 @@
-from core.client_class import Client, elasticsearch_required
-from core.basic_utils  import dotkeys
-from core.search_utils import doctype_first
+from ..core.client_class import Client, elasticsearch_required
+from ..core.basic_utils  import dotkeys
+from ..core.search_utils import doctype_first
 
 import logging
 import json

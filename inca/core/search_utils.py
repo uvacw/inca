@@ -1,13 +1,13 @@
 '''
 This file provides basic search functionality for the INCA database.
 '''
-from core.database import client as _client
-from core.database import scroll_query as _scroll_query
-from core.database import elastic_index as _elastic_index
-from core.database import DATABASE_AVAILABLE as _DATABASE_AVAILABLE
-from core.database import delete_doctype, delete_document, check_mapping
+from .database import client as _client
+from .database import scroll_query as _scroll_query
+from .database import elastic_index as _elastic_index
+from .database import DATABASE_AVAILABLE as _DATABASE_AVAILABLE
+from .database import delete_doctype, delete_document, check_mapping
 import logging as _logging
-from core.basic_utils import dotkeys as _dotkeys
+from .basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
 import json as _json
 

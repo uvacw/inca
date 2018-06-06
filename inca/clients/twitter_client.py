@@ -2,15 +2,15 @@
 This file contains the twitter API retrieval classes
 '''
 
-from core.client_class import Client, elasticsearch_required
-from core.basic_utils import dotkeys
+from ..core.client_class import Client, elasticsearch_required
+from ..core.basic_utils import dotkeys
 from twython import Twython, TwythonRateLimitError
-from core.database import client as database_client
+from ..core.database import client as database_client
 import json
 import logging
 import sys
 import time
-from core.search_utils import doctype_first, doctype_last
+from ..core.search_utils import doctype_first, doctype_last
 
 logger = logging.getLogger("INCA.%s" %__name__)
 

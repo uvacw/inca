@@ -2,7 +2,7 @@
 Provides ALpino parsing functionality based on the XTAS implementation.
 '''
 
-from core.processor_class import Processer
+from ..core.processor_class import Processer
 from cytoolz import identity, pipe
 import subprocess
 import os
@@ -15,7 +15,7 @@ import string
 import shlex
 import json
 import pandas
-from core.database import config
+from ..core.database import config
 
 logger = logging.getLogger(__name__)
 

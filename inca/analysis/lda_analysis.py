@@ -9,9 +9,9 @@ import configparser
 from nltk.corpus import stopwords
 from gensim.utils import tokenize
 from gensim.models.ldamodel import LdaModel
-from core.analysis_base_class import Analysis
+from ..core.analysis_base_class import Analysis
 from gensim.corpora.dictionary import Dictionary
-from helpers.text_preprocessing import *
+from ..helpers.text_preprocessing import *
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
 

@@ -21,8 +21,8 @@ language  : If you can safely assume the language of specified documents, please
 
 '''
 import logging
-from core.document_class import Document
-from core.database import check_exists, DATABASE_AVAILABLE
+from .document_class import Document
+from .database import check_exists, DATABASE_AVAILABLE
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import logging
 from os import environ
-from core.analysis_base_class import Analysis
-from analysis import timeline_analysis as ta
+from ..core.analysis_base_class import Analysis
+from . import timeline_analysis as ta
 from statsmodels.tsa.api import VAR as var 
 from statsmodels.tsa.stattools import adfuller,kpss
 from statsmodels.tsa.tsatools import detrend

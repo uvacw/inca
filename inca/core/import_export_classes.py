@@ -2,10 +2,10 @@ import tqdm
 import logging
 import os
 import time
-from core.document_class import Document
+from .document_class import Document
 from collections import Counter
-from core.search_utils import document_generator
-from core.filenames import id2filename
+from .search_utils import document_generator
+from .filenames import id2filename
 import zipfile
 import gzip
 import tarfile
@@ -27,7 +27,7 @@ class BaseImportExport(Document):
         self.raise_on_fail = raise_on_fail
         self.verbose   = verbose
 
-    from core.basic_utils import dotkeys
+    from .basic_utils import dotkeys
 
     def _detect_zip(self,path):
         filename = os.path.basename(path)

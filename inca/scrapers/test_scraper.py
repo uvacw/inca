@@ -2,7 +2,7 @@
 '''
 
 import loremipsum
-from core.scraper_class import Scraper
+from ..core.scraper_class import Scraper
 from random import randint
 
 class testdocs(Scraper):
