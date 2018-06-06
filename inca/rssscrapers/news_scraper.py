@@ -383,12 +383,12 @@ class volkskrant(rss):
         else:
             paywall_na = False
         try:
-            title = tree.xpath('//*/h1[@class="article__title"]//text()')[0]
+            title = tree.xpath('//*/h1[@class="artstyle__header-title artstyle__header-title--white artstyle__header-title--light"]//text() | //*/h1[@class="artstyle__header-title"]//text() | //*/h1[@class="artstyle__header-title artstyle__header-title--white"]//text() | //*[@class="artstyle__header-title artstyle__header-title--hero-bleed artstyle__header-title--light"]/text()')[0]
         except:
             title=""
             logger.warning("Could not parse article title")
         try:
-            category=tree.xpath('//*[@class="action-bar__primary"]/div/a/text()')[0]
+            category=tree.xpath('//*/span[@class="artstyle__labels__section"]//text()')[0]
         except:
             category=""
         if category=="":
@@ -398,7 +398,7 @@ class volkskrant(rss):
                 category=""
                 logger.debug("Could not parse article category")
         try:
-            teaser=tree.xpath('//*[@class="article__intro--v2"]/p//text() | //*[@class="article__intro--v2"]/p/a//text()')[0]
+            teaser=tree.xpath('//*/p[@class="artstyle__intro artstyle__intro--center"]//text() | //*/p[@class="artstyle__intro artstyle__intro--center"]/span//text() | //*/p[@class="artstyle__intro artstyle__intro--center"]/a//text() | //*/p[@class="artstyle__intro"]//text() | //*/p[@class="artstyle__intro"]//text()')[0]
         except:
             logger.debug("Could not parse article teaser")
             teaser=""
@@ -410,25 +410,15 @@ class volkskrant(rss):
             #5. path: old design regular text
             #6. path: old design second heading
             #7. path:old design text with link
-            textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]//text() | //*[@class="article__body__container"]/p[*]//text() | //*[@class="article__body__container"]/h3//text() | //*[@class="article__body__container"]/p/a//text() | //*[@id="art_box2"]/p//text() | //*[@id="art_box2"]/p/strong//text() | /*[@id="art_box2"]/p//text() | //*[@id="art_box2"]/p/a//text() | //*/p[@class="article__body__paragraph first"]//text() | //*/div[@class="article__body"]/h2//text() | //*/p[@class="article__body__paragraph first"]/a//text() | //*/p[@class="article__body__paragraph"]//text() | //*/h3[@class="article__body__container-title"]//text() | //*/p[@itemprop="description"]//text()')
+            textrest=tree.xpath('//*/p[@class="artstyle__text artstyle__text--drop-cap"]//text() | //*/p[@class="artstyle__text"]//text() | //*/h3[@class="artstyle__title"]//text()')
         except:
             logger.warning("Could not parse article text")
             textrest=""
         text = "\n".join(textrest)
         try:
-            author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text() |//*/span[@class="article__author"]/span/text() | //*[@class=" article__author"]//text' )).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
-            # geeft het eerste veld: "Bewerkt \ door: Redactie"
-            if author_door=="edactie":
-                author_door = "redactie"
+            author_door=tree.xpath('//*/a[@class="artstyle__byline__author"]/text()')[0]
         except:
             author_door=""
-        if author_door=="":
-            try:
-                author_door=tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
-                if author_door=="edactie":
-                    author_door = "redactie"
-            except:
-                author_door=""
         if author_door=="":
             try:
                 author_door=" ".join(tree.xpath('//*[@class="article__meta--v2"]/span/span[2]/text()')).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:")
