@@ -14,6 +14,7 @@ import logging
 from .document_class import Document
 from .database import get_document, update_document, check_exists, config, check_mapping
 # from . import *
+from inca import core
 
 logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')
