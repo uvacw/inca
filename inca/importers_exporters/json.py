@@ -7,7 +7,7 @@ JSON a nice and easy format for data exchange.
 
 """
 
-from core.import_export_classes import Importer, Exporter, id2filename
+from ..core.import_export_classes import Importer, Exporter, id2filename
 import os
 import json
 import re

@@ -1,9 +1,9 @@
 #import requests
 import datetime
 from lxml.html import fromstring
-from core.scraper_class import Scraper
-from core.scraper_class import UnparsableException
-from core.database import check_exists
+from ..core.scraper_class import Scraper
+from ..core.scraper_class import UnparsableException
+from ..core.database import check_exists
 import logging
 import feedparser
 import re

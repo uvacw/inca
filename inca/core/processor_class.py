@@ -11,9 +11,9 @@ yields a key:value pair per document, but does not need to return the old docume
 '''
 
 import logging
-from core.document_class import Document
-from core.database import get_document, update_document, check_exists, config, check_mapping
-import core
+from .document_class import Document
+from .database import get_document, update_document, check_exists, config, check_mapping
+# from . import *
 
 logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')

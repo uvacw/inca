@@ -6,11 +6,11 @@ requires a functioning elasticsearch instance.
 
 
 '''
-from core.scraper_class import Scraper
-from clients._general_utils import *
-from core.database import DATABASE_AVAILABLE
+from .scraper_class import Scraper
+from ..clients._general_utils import *
+from .database import DATABASE_AVAILABLE
 if DATABASE_AVAILABLE:
-    from core.database import client
+    from .database import client
     from elasticsearch.exceptions import ConnectionError, ConnectionTimeout, NotFoundError, RequestError
 import time
 import datetime

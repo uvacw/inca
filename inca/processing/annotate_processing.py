@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from core.processor_class import Processer
+from ..core.processor_class import Processer
 import logging
 import re
 from colorama import init

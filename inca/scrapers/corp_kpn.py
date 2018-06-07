@@ -7,9 +7,9 @@
 import requests
 import datetime
 from lxml.html import fromstring
-from core.scraper_class import Scraper
-from scrapers.rss_scraper import rss
-from core.database import check_exists
+from ..core.scraper_class import Scraper
+from .rss_scraper import rss
+from ..core.database import check_exists
 import feedparser
 import re
 import logging

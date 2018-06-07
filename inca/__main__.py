@@ -54,23 +54,23 @@ for s in defaultconfig.sections():
 
 
 from celery import Celery, group, chain, chord
-import core
+from . import core
 import configparser
-import core.search_utils
-import core.taskmanager
+from .core import search_utils
+from .core import taskmanager
 import datetime
 
-import processing # helps celery recognize the processing tasks
-import scrapers   # helps celery recognize the scraping tasks
-import rssscrapers
-import clients    # helps celery recognize client tasks
-import analysis   # helps celery recognize analysis tasks
-import importers_exporters # helps celery recognize import/export tasks
+from . import processing # helps celery recognize the processing tasks
+from . import scrapers   # helps celery recognize the scraping tasks
+from . import  rssscrapers
+from . import clients    # helps celery recognize client tasks
+from . import analysis   # helps celery recognize analysis tasks
+from . import importers_exporters # helps celery recognize import/export tasks
 
 from optparse import OptionParser
 
-from core.database import config
-from interface import make_interface
+from .core.database import config
+from .interface import make_interface
 
 os.chdir(currentdir)
 
@@ -173,8 +173,8 @@ class Inca():
         target_functions = ['fit','predict','plot','interpretation','quality']
 
         for k,v in self._taskmaster.tasks.items():
-            functiontype = k.split('.',1)[0]
-            taskname     = k.rsplit('.',1)[1]
+            functiontype = k.split('.')[1]
+            taskname     = k.rsplit('.')[-1]
             if functiontype == "analysis":
 
                 analysis_class = self._taskmaster.tasks[k]
@@ -226,8 +226,10 @@ class Inca():
 
         """
         for k,v in self._taskmaster.tasks.items():
-            functiontype = k.split('.',1)[0]
-            taskname     = k.rsplit('.',1)[1]
+            #print(k)
+            functiontype = k.split('.')[1]
+            taskname     = k.rsplit('.')[-1]
+            # print(functiontype,taskname)
             if functiontype == function:
                 target_task = self._taskmaster.tasks[k]
                 target_task.prompt = self._prompt

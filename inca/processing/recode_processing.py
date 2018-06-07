@@ -3,8 +3,8 @@ This file contains some recoding options, such as string-to-date,
 field-to-field etcetera.
 '''
 
-from core.processor_class import Processer
-from core.database import update_document, get_document, check_exists
+from ..core.processor_class import Processer
+from ..core.database import update_document, get_document, check_exists
 from dateutil import parser
 import datetime
 import logging
