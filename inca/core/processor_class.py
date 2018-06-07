@@ -16,6 +16,8 @@ from .database import get_document, update_document, check_exists, config, check
 # from . import *
 from inca import core
 
+from collections import OrderedDict
+
 logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')
 
@@ -107,6 +109,8 @@ class Processer(Document):
             indicates whether the document should replace (true) or only
             expand existing documents (false). Note that partial updates
             are not supported when forcing.
+        extra_fields: list
+            (optional) list of fields that should be passed to the processor
         '''
 
         # 1. check if document or id --> return do
@@ -138,7 +142,13 @@ class Processer(Document):
                 document = document['_source']
             return document
         # 4. process document
-        document['_source'][new_key] = self.process(document['_source'][field], *args, **kwargs)
+        if 'extra_fields' in kwargs:
+            extra_fields = OrderedDict()
+            for fieldname in kwargs.pop('extra_fields'):
+                extra_fields[fieldname] = document['_source'][fieldname]
+            document['_source'][new_key] = self.process(document['_source'][field], *args, extra_fields = extra_fields, **kwargs)
+        else:
+            document['_source'][new_key] = self.process(document['_source'][field], *args, **kwargs)
         # 3. add metadata
         # document['_source'] = self._add_metadata(document['_source'])
         # 4. check metadata
