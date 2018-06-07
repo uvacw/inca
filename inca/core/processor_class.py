@@ -142,6 +142,7 @@ class Processer(Document):
                 document = document['_source']
             return document
         # 4. process document
+        # if extra_fields were supplied, then replace the list of field names with a dict containing their values
         if 'extra_fields' in kwargs:
             extra_fields = OrderedDict()
             for fieldname in kwargs.pop('extra_fields'):
