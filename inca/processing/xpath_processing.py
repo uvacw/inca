@@ -1,6 +1,6 @@
 from lxml.html import fromstring as parser
-from core.processor_class import Processer
-from core.basic_utils import dotkeys
+from ..core.processor_class import Processer
+from ..core.basic_utils import dotkeys
 import logging
 
 logger = logging.getLogger(__name__)

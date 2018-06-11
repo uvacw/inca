@@ -1,7 +1,7 @@
 import requests
 import datetime
 from lxml.html import fromstring
-from core.scraper_class import Scraper
+from ..core.scraper_class import Scraper
 import logging
 import re
 

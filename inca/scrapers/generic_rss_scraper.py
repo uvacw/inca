@@ -1,7 +1,7 @@
 import requests
 import feedparser
-from core.scraper_class import Scraper
-from core.database import check_exists
+from ..core.scraper_class import Scraper
+from ..core.database import check_exists
 import logging
 import datetime
 

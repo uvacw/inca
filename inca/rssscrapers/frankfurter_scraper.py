@@ -1,8 +1,8 @@
 from lxml import html
 from urllib import request
 from lxml.html import fromstring
-from scrapers.rss_scraper import rss
-from core.scraper_class import Scraper
+from inca.scrapers.rss_scraper import rss
+from inca.core.scraper_class import Scraper
 import re
 import feedparser
 import logging

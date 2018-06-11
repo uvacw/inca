@@ -5,7 +5,7 @@ This file contains the basics to generate timelines
 
 import pandas
 import numpy
-from core.database import client, elastic_index
+from ..core.database import client, elastic_index
 import logging
 
 logger = logging.getLogger(__name__)

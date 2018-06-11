@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from core.processor_class import Processer
+from ..core.processor_class import Processer
 import logging
 import re
 from colorama import init
@@ -45,8 +45,12 @@ def _annotate(text, key, question, highlight_regexp, window=150, display=True):
 class annotate(Processer):
     '''Adds human annotations'''
 
-    def process(self, document_field, highlight_regexp = None, questions = {'relevance':'Is this relevant?'}, extra_filterquestion = False, window=150):
+    def process(self, document_field, highlight_regexp = None, questions = {'relevance':'Is this relevant?'}, extra_filterquestion = False, window=150, **kwargs):
         '''human annotations'''
+
+        if 'extra_fields' in kwargs:
+            for k,v in kwargs['extra_fields'].items():
+                print("{}:\t{}".format(k,v))
 
         while True:
             annotations = {}

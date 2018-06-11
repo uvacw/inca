@@ -4,8 +4,8 @@ This file contains the input/output functionality for Lexis Nexis files
 
 """
 
-from core.import_export_classes import Importer, Exporter
-from core.basic_utils import dotkeys
+from ..core.import_export_classes import Importer, Exporter
+from ..core.basic_utils import dotkeys
 import csv
 import chardet
 import logging

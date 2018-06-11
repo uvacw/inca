@@ -1,4 +1,4 @@
-from core.processor_class import Processer
+from ..core.processor_class import Processer
 import logging
 import random
 

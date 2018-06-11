@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from core.processor_class import Processer
-from core.basic_utils import dotkeys
+from ..core.processor_class import Processer
+from ..core.basic_utils import dotkeys
 import logging
 import re
 import sys

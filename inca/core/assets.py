@@ -4,10 +4,10 @@ This file provides the assets management.
 assets are lists of dicts, usually understood as imported tables
 '''
 
-from core.database import client
+from .database import client
 import logging
 import datetime
-from core.basic_utils import dotkeys
+from .basic_utils import dotkeys
 
 logger = logging.getLogger(__name__)
 

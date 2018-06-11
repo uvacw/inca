@@ -4,8 +4,8 @@ for instance to re-parse the raw html source and/or to re-download
 the HTML source
 '''
 
-from core.processor_class import Processer
-from core.database import update_document, get_document, check_exists
+from ..core.processor_class import Processer
+from ..core.database import update_document, get_document, check_exists
 from dateutil import parser
 import datetime
 import logging

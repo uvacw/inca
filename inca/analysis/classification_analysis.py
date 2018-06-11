@@ -1,7 +1,7 @@
 import sys
 import pandas as pd
-import core.search_utils
-import core.database
+#from ..core import search_utils
+#from ..core import database
 import logging
 import numpy as np
 import string
@@ -9,7 +9,7 @@ import sklearn
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import train_test_split
 
-from core.analysis_base_class import Analysis
+from ..core.analysis_base_class import Analysis
 from scipy.sparse import csr_matrix
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score
