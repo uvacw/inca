@@ -6,7 +6,7 @@ In this document, you can find some useful tips and tricks for when you just sta
 
 To start INCA, go to your INCA folder and import INCA in python
 ```
-cd /home/lisa/INCA/inca
+cd /home/lisa/inca
 ipython3
 import inca
 ```
@@ -15,7 +15,7 @@ import inca
 
 Go to the directory where your file is located, and open it with emacs
 ```
-cd /home/lisa/INCA/inca/scrapers
+cd /home/lisa/inca/inca/rssscrapers
 emacs vlaanderen_scraper.py
 ```
 
@@ -24,7 +24,7 @@ emacs vlaanderen_scraper.py
 - cd = change directory
    The cd command is used to move into a directory
 ```
-cd /home/lisa/INCA	# move into directory
+cd /home/lisa/inca	# move into directory
 cd ..			# move back one directory
 cd ~ 			# move back to the home directory
 ```
@@ -39,7 +39,7 @@ rm vlaanderen_scraper.py	# delete file
    The mv command is used to move or rename files
 ```
 mv vlaanderen_scraper.py newname_scraper.py			# rename file
-mv vlaanderen_scraper.py /home/lisa/INCA/inca/scrapers		# move source to destination
+mv vlaanderen_scraper.py /home/lisa/inca/inca/scrapers		# move source to destination
 ```
 
 - cp = copy
@@ -58,10 +58,9 @@ ls
 
 ## Testing a scraper
 
-To test a scraper, it has to be instantiated (so that you get an object); then, you can run the .run() method on this object.
+To test a scraper, use the save=False option
 ```
-s = inca.scrapers.vlaanderen_scraper.vlaanderen(database=False)
-data = s.run()
+data = myinca.rssscrapers.vlaanderen_scraper.vlaanderen(save=False)
 ```
 Tip: if you don't know the path to your scraper by heart, use the tab (during a word) to let python finish your typing or (after a .) to show you the files in the folder
 
@@ -100,7 +99,7 @@ tree = fromstring(htmlsource)
 ## Pushing to Github
 When your scraper is done and tested, the file can be pushed to Github.
 ```
-git add /home/lisa/INCA/inca/scrapers/vlaanderen_scraper.py
+git add /home/lisa/inca/inca/scrapers/vlaanderen_scraper.py
 git commit -m 'added category'					# use commit to explain what you did/added
 git push
 ```
