@@ -25,12 +25,13 @@ class hype_cluster(Analysis):
 
           #make model
           print("Making model")
-          X = vectorizer.fit_transform(texts)
+          self.X1 = vectorizer.fit(texts)
+          X2 = self.X1.transform(texts)
 
           #clustering
           k = 10 #set number of clusters
           self.km = KMeans(n_clusters=k, init='k-means++', max_iter=100, n_init=1)
-          self.km.fit(X)
+          self.km.fit(X2)
           print('done')
 
           #Top clusters  
@@ -45,36 +46,62 @@ class hype_cluster(Analysis):
 
           #def distance between clusters?
 
-     def plot(self): #needs fixing
-          print('Plotting clusters')
+     def plot(self): 
+          print('Plotting cluster centroids')
 
-          #centers = km.cluster_centers_
+          #centers = self.km.cluster_centers_
           
           plt.plot()
           plt.title('k means centroids')
-          plt.scatter(order_centeroids[:,0], order_centeroids[:,1], marker="x", color='r') #centers could also be plotted instead 
+          plt.scatter(self.order_centroids[:,0], self.order_centroids[:,1], marker="x") #centers could also be plotted instead
           plt.show()
 
-     def predict(self, documents): #needs fixing
+     def predict(self, documents):
           #Tells in which cluster a new text is placed
+
           print("Predict for new texts")
+          prediction = []
+          texts2= []
           for doc in documents:
-               Y = (vectorizer.transform([doc]))
-               prediction = self.km.predict(Y)
-               print(prediction)
+               try:
+                    texts2.append(d['_source']['text'])
+               except:
+                    texts2.append('no text')
+                    
+          Y = self.X1.transform(texts2)
+          
+          prediction = self.km.predict(Y)
+          print(prediction)
           #example result for 5 new texts and 3 clusters: [1, 2, 2, 1, 3]
 
           
 class hype_tfidf(Analysis):
 
-     def fit(self, documents): #needs fixing
-          #prints a list of articles(publication date) and the tfidf score for the specified word or words
+     def fit(self, documents, searchterms):
+          #creates dataframe with articles(by publication date) and the tfidf score for the specified word or words (searchterms)
+
+          self.searchterms = searchterms
           mycollection = nltk.TextCollection([documents])
 
-          df1 = pd.DataFrame(columns=['Type', 'Publication Date', 'Tf-idf'])
+#          for e in documents:
+#               try:
+#                    s = mycollection.tf_idf('word', e['_source']['text'])
+#                    print (e['_type'], e['_source']['publication_date'], s)
+#               except:
+#                    print (e['_type'], e['_source']['publication_date'], 'no text')
+
+          self.df1 = pd.DataFrame(columns=['Type', 'Publication Date', 'Tf-idf'])
           for e in documents:
                try:
-                    s = mycollection.tf_idf('hij', e['_source']['text'])
-                    df1 = df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':s}, index=[0]), ignore_index=True)
+                    s = mycollection.tf_idf(self.searchterms, e['_source']['text'])
+                    self.df1 = self.df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':s}, index=[0]), ignore_index=True)
                except:
-                    df1 = df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':'no text'}, index=[0]), ignore_index=True)
+                    self.df1 = self.df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':'no text'}, index=[0]), ignore_index=True)
+          return self.df1 
+
+     def plot(self):
+          plt.title('Tf-idf scores of %s' % self.searchterms)
+          plt.scatter(self.df1['Publication Date'], self.df1['Tf-idf'])
+          plt.show()
+          
+     
