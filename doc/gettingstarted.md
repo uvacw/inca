@@ -226,9 +226,6 @@ go to your inca folder
 cd <pathtoyourincafolder> 
 python3 -c 'import inca'
 ```
-When running this comment, you should ONLY get this warming:
-
-_WARNING:processing.basic_text_processing:Pattern is NOT python 3 compatible...skipping_
 
 Troubleshooting:
 If you receive errors, you might have forgotten to install relevant packages (are working with Anaconda?). You did not run Elastic Search if you get the following warning: _WARNING:INCAcore.database:No database functionality available_ 
@@ -237,14 +234,12 @@ If you receive errors, you might have forgotten to install relevant packages (ar
 Want to put some test data in your own ElasticSearch database? This is how to do it after starting ```ipython3``` (note that you have tab-completion!):
 
 ```
-import inca
-mijnscraper = inca.scrapers.news_scraper.nu()   # make an instance of a nu.nl scraper
-mijnscraper.run() # run the scraper. It takes the last articles from nu.nl and puts them into ELastic Search
-inca.core.document_class.doctype_first('nu')  # retrieve one article from elasticsearch
-mijntekst = inca.core.document_class.doctype_first('nu')  # play around
-type(mintekst)
-mijntekst[0]['_source'].keys()
-print(mijntekst[0]['_source']['text'])
+from inca import Inca
+myinca = Inca()
+myinca.rssscrapers.nu()   # run a scraper and put results in Elasticsearch
+data = myinca.database.doctype_first('nu')  # retrieve one article from elasticsearch
+print(data[0]['_source'].keys())
+print(data[0]['_source']['text'])
 ```
 
 ## And now?
