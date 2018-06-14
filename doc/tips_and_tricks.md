@@ -2,6 +2,14 @@
 
 In this document, you can find some useful tips and tricks for when you just started the scraping for INCA. Please add anything you find useful to this doc.
 
+## Creating a new branch in Github
+Replace fixdocs with the name of your new branch. 
+```
+git pull			# Update your files to the latest version in the development branch
+git checkout -b fixdocs		# Create a new branch called fixdocs 
+```
+
+
 ## How to start INCA
 
 To start INCA, go to your INCA folder and import INCA in python
@@ -9,6 +17,12 @@ To start INCA, go to your INCA folder and import INCA in python
 cd /home/lisa/inca
 ipython3
 import inca
+```
+You forgot to run Elastic Search if you receive the follwing warning: _WARNING:INCAcore.database:No databse functionality available_. Start Elastic Search and try again. 
+```
+sudo service elasticsearch status	# Check whether elasticsearch is running
+sudo -i service elasticsearch start	# Start elasticsearch
+sudo -i service elastic search stop	# Stop elasticsearch
 ```
 
 ## Opening a file with emacs
@@ -99,10 +113,17 @@ tree = fromstring(htmlsource)
 ## Pushing to Github
 When your scraper is done and tested, the file can be pushed to Github.
 ```
+git status							# check which changes have been made
 git add /home/lisa/inca/inca/scrapers/vlaanderen_scraper.py
-git commit -m 'added category'					# use commit to explain what you did/added
-git push
+git commit -m 'explanation'					# replace explanation with an explanation of what you did/added
+git push      							# push it to the development branch
 ```
+
+When you get the error: _fatal: The current branch fixdocs  has no upstream branch._, run the following command (replace fixdocs with your branch name):
+```
+git push -set-upstream origin fixdocs
+```
+
 
 ## Emacs commands
 Still has to be done

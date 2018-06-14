@@ -127,7 +127,7 @@ If you want to install packages, you should use the command: ``` conda install <
 -	Install Java first:
 
 ```
-suo apt-get update
+sudo apt-get update
 sudo apt-get install default-jre
 sudo apt-get install default-jdk
 ```
@@ -244,9 +244,9 @@ print(data[0]['_source']['text'])
 
 ## And now?
 
-Please check the [Contributing Code Guide](https://github.com/uvacw/inca/blob/development/doc/Contributing%20Code%20Guide.md) for the next steps!
+Please check the [Contributing Code Guide](https://github.com/uvacw/inca/blob/development/doc/contributing_code_guide.md) for the next steps!
 
-
+Check out [Tips and tricks](https://github.com/uvacw/inca/blob/development/doc/tips_and_tricks.md) for more helpful commands.
 
 ## [OPTIONAL] Make INCA available as a module that can be imported from everywhere
 If you are a USER of INCA (i.e., not a DEVELOPER; you do not really want to work on INCA an contribute, but just use it), you can now install Inca as a module that is available from anywhere on your system:
