@@ -228,7 +228,7 @@ python3 -c 'import inca'
 ```
 
 Troubleshooting:
-If you receive errors, you might have forgotten to install relevant packages (are working with Anaconda?). You did not run Elastic Search if you get the following warning: _WARNING:INCAcore.database:No database functionality available_ 
+If you receive errors, you might have forgotten to install relevant packages (are working with Anaconda?). You did not run Elastic Search if you get the following warning: _WARNING:INCAcore.database:No database functionality available_. The _FutureWarning_ concerning re.datetools can be ignored.
 
 
 Want to put some test data in your own ElasticSearch database? This is how to do it after starting ```ipython3``` (note that you have tab-completion!):

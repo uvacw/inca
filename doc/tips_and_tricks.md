@@ -3,15 +3,13 @@
 In this document, you can find some useful tips and tricks for when you just started the scraping for INCA. Please add anything you find useful to this doc.
 
 ## Creating a new branch in Github
-First, create a new branch. Changes or additions are made in a seperate branch (a copy of the development branch). Later the changes or additions are merged with the development branch (after it has been reviewed). 
-Replace fixdocs with the name of your new branch. 
+Before getting to work, create a new branch. Changes or additions should be made in a seperate branch (a copy of the development branch). Later the changes or additions are merged with the development branch through a pull request (after it has been reviewed). Replace fixdocs with the name of your new branch. 
 ```
-cd /home/lisa/inca/inca		# Go the the inca directory
+cd /home/lisa/inca/inca		# Go the inca directory
 git checkout development	# Make sure you are on the development branch (as a basis)
-git pull			# Update your files to the latest version in the development branch
+git pull			# Update your files to the latest version of the development branch
 git checkout -b fixdocs		# Create a new branch called fixdocs 
 ```
-
 
 ## How to start INCA
 
@@ -19,7 +17,7 @@ To start INCA, go to your INCA folder and import INCA in python
 ```
 cd /home/lisa/inca
 ipython3
-import inca
+from inca import Inca
 ```
 You forgot to run Elastic Search if you receive the follwing warning: _WARNING:INCAcore.database:No databse functionality available_. Start Elastic Search and try again. 
 ```
@@ -44,6 +42,12 @@ emacs vlaanderen_scraper.py
 cd /home/lisa/inca	# move into directory
 cd ..			# move back one directory
 cd ~ 			# move back to the home directory
+```
+
+- pwd = print working directory
+   The pwd command is used to check which directory you are currently in. 
+```
+pwd
 ```
 
 - rm = remove
@@ -72,6 +76,17 @@ cp vlaanderen_scraper.py mycopy_scraper.py	# copy file into different name
 ls
 ```
 * The scrapers have to end with _scraper.py
+
+- man = manual
+  The man command is used to learn more about a certain command. 
+```
+man pwd   # replace pwd with any command
+```
+
+* Press CLTR-C to cancel a command.
+* Use the up arrow key to show previous commands. 
+
+
 
 ## Testing a scraper
 
