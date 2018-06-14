@@ -3,8 +3,11 @@
 In this document, you can find some useful tips and tricks for when you just started the scraping for INCA. Please add anything you find useful to this doc.
 
 ## Creating a new branch in Github
+First, create a new branch. Changes or additions are made in a seperate branch (a copy of the development branch). Later the changes or additions are merged with the development branch (after it has been reviewed). 
 Replace fixdocs with the name of your new branch. 
 ```
+cd /home/lisa/inca/inca		# Go the the inca directory
+git checkout development	# Make sure you are on the development branch (as a basis)
 git pull			# Update your files to the latest version in the development branch
 git checkout -b fixdocs		# Create a new branch called fixdocs 
 ```
