@@ -6,7 +6,7 @@ import nltk.corpus
 from nltk.text import TextCollection
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-vectorizer = TfidfVectorizer(stop_words='english') #no dutch
+vectorizer = TfidfVectorizer(stop_words='english')
 
 from sklearn.cluster import KMeans
 
@@ -15,7 +15,7 @@ import pandas as pd
 
 class hype_cluster(Analysis):
 
-     def fit(self, documents):
+     def fit(self, documents, N_clusters): #N_clusters = number of clusters
           texts= []
           for d in documents:
                try:
@@ -29,8 +29,7 @@ class hype_cluster(Analysis):
           X2 = self.X1.transform(texts)
 
           #clustering
-          k = 10 #set number of clusters
-          self.km = KMeans(n_clusters=k, init='k-means++', max_iter=100, n_init=1)
+          self.km = KMeans(n_clusters=N_clusters, init='k-means++', max_iter=100, n_init=1)
           self.km.fit(X2)
           print('done')
 
@@ -38,15 +37,14 @@ class hype_cluster(Analysis):
           print("Top terms per cluster:")
           self.order_centroids = self.km.cluster_centers_.argsort()[:, ::-1]
           terms = vectorizer.get_feature_names()
-          for i in range(k):
+          for i in range(N_clusters):
                print("Cluster %d:" % i, end='')
                for ind in self.order_centroids[i, :10]:
                     print(' %s' % terms[ind], end='')
                print()
 
-          #def distance between clusters?
-
-     def plot(self): 
+     def plot(self):
+          #Plots the 
           print('Plotting cluster centroids')
 
           #centers = self.km.cluster_centers_
@@ -57,14 +55,14 @@ class hype_cluster(Analysis):
           plt.show()
 
      def predict(self, documents):
-          #Tells in which cluster a new text is placed
+          #Predicts in which cluster a new text is placed
 
           print("Predict for new texts")
           prediction = []
           texts2= []
           for doc in documents:
                try:
-                    texts2.append(d['_source']['text'])
+                    texts2.append(doc['_source']['text'])
                except:
                     texts2.append('no text')
                     
@@ -83,20 +81,13 @@ class hype_tfidf(Analysis):
           self.searchterms = searchterms
           mycollection = nltk.TextCollection([documents])
 
-#          for e in documents:
-#               try:
-#                    s = mycollection.tf_idf('word', e['_source']['text'])
-#                    print (e['_type'], e['_source']['publication_date'], s)
-#               except:
-#                    print (e['_type'], e['_source']['publication_date'], 'no text')
-
           self.df1 = pd.DataFrame(columns=['Type', 'Publication Date', 'Tf-idf'])
           for e in documents:
                try:
                     s = mycollection.tf_idf(self.searchterms, e['_source']['text'])
                     self.df1 = self.df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':s}, index=[0]), ignore_index=True)
                except:
-                    self.df1 = self.df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':'no text'}, index=[0]), ignore_index=True)
+                    self.df1 = self.df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':99}, index=[0]), ignore_index=True)
           return self.df1 
 
      def plot(self):
