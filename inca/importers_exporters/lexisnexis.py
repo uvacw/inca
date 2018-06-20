@@ -102,6 +102,11 @@ class lnimporter(Importer):
                 if isfile(join(path, f)) and splitext(f)[1].lower() == ".txt" and not f.startswith('.'):
                     alleinputbestanden.append(join(path, f))
 
+        try:
+            assert len(alleinputbestanden)> 0
+        except AssertionError:
+            logger.error('There are no files to be process. Please use a valid, non-empty directory')
+            return
         artikel = 0
         logger.debug(alleinputbestanden)
         for bestand in alleinputbestanden:
@@ -125,6 +130,7 @@ class lnimporter(Importer):
                     matchObj3 = re.match(r"\s+(January|February|March|April|May|June|July|August|September|October|November|December) (\d{1,2}),? (\d{4})", line)
                     matchObj4 = re.match(r"\s+(\d{1,2}) (January|February|March|April|May|June|July|August|September|October|November|December) (\d{4}) (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)", line)
                     matchObj4a = re.match(r"\s+(\d{1,2}) (January|February|March|April|May|June|July|August|September|October|November|December) (\d{4}).*", line)
+                    
                     if matchObj:
                         # new article starts
                         if artikel > 0:
@@ -144,6 +150,9 @@ class lnimporter(Importer):
                                 art["category"] = section.lower()
                             if len(byline)>0:
                                 art["byline"] = byline
+
+                            # print(art)
+                            
                             yield art
 
                         artikel += 1
