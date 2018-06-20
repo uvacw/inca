@@ -96,26 +96,26 @@ class lnimporter(Importer):
         self.pathwithlnfiles = path
 
 
-        alleinputbestanden = []
+        allinputfiles = []
         for path, subFolders, files in walk(self.pathwithlnfiles):
             for f in files:
                 if isfile(join(path, f)) and splitext(f)[1].lower() == ".txt" and not f.startswith('.'):
-                    alleinputbestanden.append(join(path, f))
+                    allinputfiles.append(join(path, f))
 
         try:
-            assert len(alleinputbestanden)> 0
+            assert len(allinputfiles)> 0
         except AssertionError:
             logger.error('There are no files to be process. Please use a valid, non-empty directory')
             return
-        artikel = 0
-        logger.debug(alleinputbestanden)
-        for bestand in alleinputbestanden:
-            logger.info("Now processing {}".format(bestand))
+        article = 0
+        logger.debug(allinputfiles)
+        for document in allinputfiles:
+            logger.info("Now processing {}".format(document))
             encoding = kwargs.pop('encoding',False)
             if not encoding:
-                encoding = _detect_encoding(bestand)
-            with open(bestand, "r", encoding=encoding, errors="replace") as f:
-                if _detect_has_header(bestand, encoding):
+                encoding = _detect_encoding(document)
+            with open(document, "r", encoding=encoding, errors="replace") as f:
+                if _detect_has_header(document, encoding):
                     for skiplines in range(22):
                         next(f)
                 i = 0
@@ -124,7 +124,8 @@ class lnimporter(Importer):
                     line = line.replace("\r", " ")
                     if line == "\n":
                         continue
-                    matchObj = re.match(r"\s+(\d+) of (\d+) DOCUMENTS", line)
+                    matchObj = re.match(r"\s+(\d+) of (\d+) DOCUMENTS", line) # beginning of a new article
+                    # dealing with different date notations
                     matchObj2 = re.match(r"\s+(\d{1,2}) (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december) (\d{4}) (maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag)", line)
                     matchObj2a = re.match(r"\s+(\d{1,2}) ([jJ]anuari|[fF]ebruari|[mM]aart|[aA]pril|[mM]ei|[jJ]uni|[jJ]uli|[aA]ugustus|[sS]eptember|[Oo]ktober|[nN]ovember|[dD]ecember) (\d{4}).*", line)
                     matchObj3 = re.match(r"\s+(January|February|March|April|May|June|July|August|September|October|November|December) (\d{1,2}),? (\d{4})", line)
@@ -133,7 +134,7 @@ class lnimporter(Importer):
                     
                     if matchObj:
                         # new article starts
-                        if artikel > 0:
+                        if article > 0:
                             # yield article, but not before we processed the first one
                             formattedsource = "{} (print)".format(journal2.lower())
                             formattedsource = self.SOURCENAMEMAP.get(formattedsource, formattedsource) # rename source if necessary
@@ -155,8 +156,8 @@ class lnimporter(Importer):
                             
                             yield art
 
-                        artikel += 1
-                        logger.info('Now processing article {}'.format(artikel))
+                        article += 1
+                        logger.info('Now processing article {}'.format(article))
 
                         istitle=True #to make sure that text before mentioning of SECTION is regarded as title, not as body
                         firstdate=True # flag to make sure that only the first time a date is mentioned it is regarded as _the_ date
