@@ -109,13 +109,13 @@ class lnimporter(Importer):
             return
         article = 0
         logger.debug(allinputfiles)
-        for document in allinputfiles:
-            logger.info("Now processing {}".format(document))
+        for articlesfile in allinputfiles:
+            logger.info("Now processing {}".format(articlesfile))
             encoding = kwargs.pop('encoding',False)
             if not encoding:
-                encoding = _detect_encoding(document)
-            with open(document, "r", encoding=encoding, errors="replace") as f:
-                if _detect_has_header(document, encoding):
+                encoding = _detect_encoding(articlesfile)
+            with open(articlesfile, "r", encoding=encoding, errors="replace") as f:
+                if _detect_has_header(articlesfile, encoding):
                     for skiplines in range(22):
                         next(f)
                 i = 0
