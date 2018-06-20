@@ -36,7 +36,10 @@ try:
     )   # should be updated to reflect config
     elastic_index  = config.get("elasticsearch","document_index")
     DATABASE_AVAILABLE = True
-
+    check = int(client.info()['version']['number'][0])
+    if check < 6:
+        logger.warning("Your version of ElasticSearch is not compatible with inca, version 6 or higher is required. More information can be found here: ... Continuing without database. This means you will not be able to SAVE the results of any scraper or processor!")
+        DATABASE_AVAILABLE = False
     # initialize mappings if index does not yet exist
     try:
         #if not elastic_index in client.indices.get_aliases().keys():
@@ -158,14 +161,6 @@ def delete_document(document_id):
 
 def delete_doctype(doctype):
     '''Delete all documents of a given type'''
-    #if check_mapping(doctype) == "mixed_mapping": 
-    #    field = "doctype.keyword"
-    #elif check_mapping(doctype) == "new_mapping": 
-    #    field = "doctype"
-    #elif check_mapping(doctype) == None: 
-    #     logger.warning("Could not find mapping of doctype, please check whether you are using the correct doctype")
-    #     return []
-    
     for doc in scroll_query(
         {
         "query":
@@ -189,25 +184,29 @@ def insert_document(document, custom_identifier=''):
     ''' Insert a new document into the default index '''
     document = _remove_dots(document)
     
-    # Determine document type for Elasticsearch
-    # document_type = document.get('_source',{}).get("doctype",False)
-    # print(document_type)
-    #if not document_type:
-        #document_type = document.get("_type",False)
-    # if no document type was found, emit warning and process as "unknown"
-    # if not document_type:
-    #    logger.warning("Document without type supplied for indexing in ES!")
-    #    document_type = "unknown"
+    #Determine document type for Elasticsearch
+    #if no document type was found, emit warning and process as "unknown"
+    try:
+        document_type = document.get('_source',{}).get("doctype",False)
+    except KeyError:
+        logger.warning("Document without type supplied for indexing in ES!")
+        document_type = "unknown"
+        document['_source']['doctype'] = document_type
     if not custom_identifier:
         try:
             doc = client.index(index=elastic_index, doc_type='_doc', body=document.get('_source',document))
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
-        try:
-            doc = client.index(index=elastic_index, doc_type='_doc', body=document.get('_source',document), id=custom_identifier)
-        except ConnectionTimeout:
-            doc= {'_id':insert_document(document['_source'], custom_identifier)}
+        test = check_exists(custom_identifier)
+        if test[0] == True:
+            logger.warning("Custom Identifier already exists in database, document is not inserted. Please choose a different identifier.")
+            return {}
+        else:
+            try:
+                doc = client.index(index=elastic_index, doc_type='_doc', body=document.get('_source',document), id=custom_identifier)
+            except ConnectionTimeout:
+                doc= {'_id':insert_document(document['_source'], custom_identifier)}
     logger.debug('added new document, content: {document}'.format(**locals()))
     return doc["_id"]
 
@@ -242,15 +241,30 @@ def insert_documents(documents, identifiers='id'):
             )
             raise Exception("Unable to process document batch")
         for doc, identifier in zip(documents, identifiers):
-            doc['_id']    = identifier
+            test = check_exists(identifier)
+            if test[0] == True:
+                logger.warning("Identifier %s already exists in database, document is not inserted. Please choose a different identifier."% identifier)
+                identifier = {}
+                doc['_id']    = identifier
+            else:
+                doc['_id']    = identifier
 
     if type(identifiers) == str:
         logger.debug("Processing identifiers as key")
         for doc in documents:
             id_value = doc.get(identifiers,"")
             if id_value:
-                doc['_id'] = id_value
-
+                test = check_exists(id_value)
+                if test[0] == True:
+                    logger.warning("Identifier %s already exists in database, document is not inserted. Please choose a different identifier."% id_value)
+                    id_value = {}
+                    doc['_id'] = id_value
+                else:
+                    doc['_id'] = id_value
+            else:
+                logger.warning("Key for identifier not found, reverting to ES generated.")
+                
+    documents = [doc for doc in documents if doc['_id'] != {}]
     for doc in documents:
         doc['_index'] = elastic_index
         doc['_type']  = '_doc'
@@ -500,50 +514,3 @@ def restore_backup(name):
     if name in [item['snapshot'] for item in list_backups()['snapshots']]:
         client.indices.close('inca')
         client.snapshot.restore(repository='inca_backup', snapshot=name)
-        
-    
-def export_doctype(doctype):
-    logger.warning('Deprecation warning: this legacy import/export function will be removed')
-    logger.warning('Use the new Inca.importers_exporters class instead')
-    if not 'exports' in os.listdir('.'):
-        os.mkdir('exports')
-    for doc in scroll_query({'query':{'filter':{'term':{'doctype':doctype}}}}):
-        outpath = os.path.join('exports',quote_plus(doctype))
-        if quote_plus(doctype) not in os.listdir('exports'):
-            os.mkdir(outpath)
-        with open(os.path.join('exports', quote_plus(doctype), '%s.json' %id2filename(doc['_id'])),'w') as f:
-            f.write(json.dumps(doc))
-
-def export_csv(query, keys = ['doctype','publication_date','title','byline','text']):
-    '''
-    Takes a dict with an elasticsearch query as input and exports the given keys to a csv file
-
-    input:
-    ---
-
-    query: dict
-        An ElasticSearch query, e.g. query = {'query':{'match':{'doctype':'nu'}}}
-    keys: list
-        A list of keys to be mapped to columns in the csv file. Often used keys include ['doctype', 'publication_date', 'text', 'feedurl', 'teaser', 'title', 'htmlsource', 'byline', 'url']
-    '''
-    logger.warning('Deprecation warning: this legacy import/export function will be removed')
-    logger.warning('Use the new Inca.importers_exporters class instead')
-
-    if not 'exports' in os.listdir('.'):
-        os.mkdir('exports')
-    with open(os.path.join('exports',"{}.csv".format(datetime.now().strftime("%Y%m%d_%H%M%S"))),'w') as f:
-        writer=csv.writer(f)
-        headerrow = keys
-        writer.writerow(headerrow)
-        for doc in scroll_query(query):
-            row = [doc['_source'][k] for k in keys]
-            writer.writerow(row)
-
-def import_documents(source_folder, force=False, use_url = False):
-    '''use_url: if set to True it is additionally checked whether the url already exists. In case either only URL or only id exists the document is not inserted'''
-    logger.warning('Deprecation warning: this legacy import/export function will be removed')
-    logger.warning('Use the new Inca.importers_exporters class instead')
-
-    for input_file in os.listdir(source_folder):
-        doc = json.load(open(os.path.join(source_folder, input_file)))
-        update_or_insert_document(doc, force=force, use_url = use_url)

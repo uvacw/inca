@@ -114,8 +114,6 @@ class Processer(Document):
         '''
 
         # 1. check if document or id --> return do
-        #print(document)
-        #print(type(document))
         logger.debug("trying to process: ",document)
         masked = False # expect a document to be processed as-is (assumes ES origin)
         if not (type(document)==dict):
@@ -197,12 +195,6 @@ def _doctype_query_or_list(doctype_query_or_list, force=False, field=None, task=
     elif type(doctype_query_or_list)==str:
         if doctype_query_or_list in core.database.client.indices.get_mapping()[config.get('elasticsearch','document_index')]['mappings'].keys():
             logger.info("assuming documents of given type should be processed")
-            #if check_mapping(doctype_query_or_list) == "mixed_mapping": 
-            #    doctypefield = "doctype.keyword"
-            #elif check_mapping(doctype_query_or_list) == "new_mapping": 
-            #    doctypefield = "doctype"
-            #elif check_mapping(doctype_query_or_list) == None: 
-            #    raise()
             if force or not field:
                 documents = core.database.scroll_query({'query':{'term':{"doctype":"%s"%doctype_query_or_list}}})
             elif not force and field:

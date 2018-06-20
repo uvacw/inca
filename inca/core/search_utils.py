@@ -5,7 +5,7 @@ from .database import client as _client
 from .database import scroll_query as _scroll_query
 from .database import elastic_index as _elastic_index
 from .database import DATABASE_AVAILABLE as _DATABASE_AVAILABLE
-from .database import delete_doctype, delete_document, insert_document
+from .database import delete_doctype, delete_document, insert_document, insert_documents
 import logging as _logging
 from .basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
@@ -89,18 +89,6 @@ def doctype_first(doctype, num=1, by_field="META.ADDED",query=None):
         _logger.warning("Could not get first document: No database instance available")
         return []
 
-    exotic_by_field = by_field.replace('.','.properties.')
-    _logger.debug("looking for {exotic_by_field}".format(exotic_by_field=exotic_by_field))
-    mapping = _client.indices.get_mapping()
-    _logger.debug("Got mapping {mapping}".format(**locals()))
-    #target_key = "{_elastic_index}.mappings.{doctype}.properties.{exotic_by_field}".format(_elastic_index=_elastic_index,**locals())
-    #_logger.debug("Target key: {target_key}".format(**locals()))
-    #found_mapping = _dotkeys(mapping,target_key )
-    #_logger.debug("found mapping: {found_mapping}".format(**locals()))
-    #if not found_mapping:
-    #    _logger.debug("Mapping not seen yet")
-    #    return []
-  
     body = {
         "sort": [
             {by_field : {"order":"asc"}}
@@ -151,18 +139,6 @@ def doctype_last(doctype,num=1, by_field="META.ADDED", query=None):
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not get last documents: No database instance available")
         return []
-
-    exotic_by_field = by_field.replace('.','.properties.')
-    _logger.debug("looking for {exotic_by_field}".format(exotic_by_field=exotic_by_field))
-    mapping = _client.indices.get_mapping()
-    _logger.debug("Got mapping {mapping}".format(**locals()))
-    #target_key = "{_elastic_index}.mappings.{doctype}.properties.{exotic_by_field}".format(_elastic_index=_elastic_index,**locals())
-    #_logger.debug("Target key: {target_key}".format(**locals()))
-    #found_mapping = _dotkeys(mapping,target_key )
-    #_logger.debug("found mapping: {found_mapping}".format(**locals()))
-    #if not found_mapping:
-    #    _logger.debug("Mapping not seen yet")
-    #    return []
     
     body = {
         "sort": [
