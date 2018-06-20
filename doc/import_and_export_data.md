@@ -36,8 +36,29 @@ inca.core.database.import_documents('/home/damian/myjsonfiles')
 
 ## Specific importers and exporters
 
+### LEXIS NEXIS
+News articles can be downloaded from the Lexis Nexis website as txt files containing a maximum of 200 articles each. Moreover, not all articles contain the same information or have the same layout. This importer takes each txt file, extracts the information in each article, and yields one dict per article.
+
+The importer always extracts the following information:
+- title
+- doctype (journal)
+- text
+- publication date
+- suspicious (a check whether the text of an article is actually a text)
+If present, the importer also extracts:
+- category
+- byline (author)
+
+The importer is used as follows, where path is the path to your folder containing the Lexis Nexis txt file(s):
+```
+from inca import Inca
+myinca = Inca()
+
+myinca.importers_exporters.lnimporter(path="/home/marieke/mylexisnexisfiles")
+```
+
+
 **TO BE ADDED:**
-- Lexis Nexis
 - Timelines
 
 
