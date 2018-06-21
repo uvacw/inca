@@ -140,13 +140,16 @@ class lnimporter(Importer):
                             formattedsource = "{} (print)".format(journal2.lower())
                             formattedsource = self.SOURCENAMEMAP.get(formattedsource, formattedsource) # rename source if necessary
                             # minimal fields to be returned. These really need to be present
-                            art = {
+                            try:
+                                art = {
                                 "title":title.strip(),
                                 "doctype": formattedsource,
                                 "text":text,
                                 "publication_date":datetime.datetime(int(pubdate_year),int(pubdate_month),int(pubdate_day)),
                                 "suspicious":check_suspicious(text)
                                 }
+                            except Exception as e:
+                                logger.error('Error processing article number {}. Yielding an empty article'.format(article))
                             # add fields where it is okay if they are absent
                             if len(section)>0:
                                 art["category"] = section.lower()
