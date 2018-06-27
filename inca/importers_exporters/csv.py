@@ -95,8 +95,6 @@ class export_csv(Exporter):
         args/kwargs are passed to csv.DictWriter.
         In particular, you might be interested in using the follwing arguments:
 
-        dialect='excel'
-            Ensures compatibility with Microsoft Excel
         delimiter=';'
             Use a semicolon instead of a comma. This is what Microsoft Excel
             expects in many locales (e.g., Dutch and German)
