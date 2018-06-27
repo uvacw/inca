@@ -24,12 +24,21 @@ The query can take any form of a query string as outlined in the [ElasticSearch 
 
 
 
-Vice versa, you can import a folder with such JSON-files into inca with
+Similarly, you can export it as CSV: 
+```
+myinca.importers_exporters.export_csv(query = 'doctype:"daily telegraph"')
+```
+You can specify a `delimiter`, such as  `","` or `";"`. Make sure to use ; for compatability with a European locale of Microsoft Excel. Check out the helpfile for more options with `help(myinca.importers_exporters.export_csv)`
+
+
+
+Vice versa, you can import a folder with JSON-files into inca with
 ```
 inca.core.database.import_documents('/home/damian/myjsonfiles')
 ```
 
 **CURRENTLY, IMPORTING DOES NOT WORK. THIS IS A KNOWN BUG AND WILL BE FIXED**
+
 
 
 
