@@ -110,7 +110,8 @@ class lnimporter(Importer):
         article = 0
         logger.debug(allinputfiles)
         for articlesfile in allinputfiles:
-            logger.info("Now processing {}".format(articlesfile))
+            logger.info("Now processing file {}".format(articlesfile))
+            logger.info('{} articles processed so far'.format(article))
             encoding = kwargs.pop('encoding',False)
             if not encoding:
                 encoding = _detect_encoding(articlesfile)
@@ -139,13 +140,16 @@ class lnimporter(Importer):
                             formattedsource = "{} (print)".format(journal2.lower())
                             formattedsource = self.SOURCENAMEMAP.get(formattedsource, formattedsource) # rename source if necessary
                             # minimal fields to be returned. These really need to be present
-                            art = {
+                            try:
+                                art = {
                                 "title":title.strip(),
                                 "doctype": formattedsource,
                                 "text":text,
                                 "publication_date":datetime.datetime(int(pubdate_year),int(pubdate_month),int(pubdate_day)),
                                 "suspicious":check_suspicious(text)
                                 }
+                            except Exception as e:
+                                logger.error('Error processing article number {}. Yielding an empty article'.format(article))
                             # add fields where it is okay if they are absent
                             if len(section)>0:
                                 art["category"] = section.lower()
@@ -157,7 +161,7 @@ class lnimporter(Importer):
                             yield art
 
                         article += 1
-                        logger.info('Now processing article {}'.format(article))
+                        # logger.info('Now processing article {}'.format(article))
 
                         istitle=True #to make sure that text before mentioning of SECTION is regarded as title, not as body
                         firstdate=True # flag to make sure that only the first time a date is mentioned it is regarded as _the_ date
