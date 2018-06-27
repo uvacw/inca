@@ -20,7 +20,7 @@ myinca = Inca()
 myinca.importers_exporters.export_json_file(query = 'doctype:"daily telegraph"')
 ```
 
-The query can take any form of a query string as outlined in the [ElasticSearch documentation] (https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-query-string-query.html#query-string-syntax). Optionally, you can specify a `destination`, otherwise, a folder called `exports` will be created in the current working directory. Alternatively, you can also supply a query in the form of a dict, such as `query = {'query':{'range':{'publication_date':{'gte':2014,'lt':2016}}}}`
+The query can take any form of a query string as outlined in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-query-string-query.html#query-string-syntax). Optionally, you can specify a `destination`, otherwise, a folder called `exports` will be created in the current working directory. Alternatively, you can also supply a query in the form of a dict, such as `query = {'query':{'range':{'publication_date':{'gte':2014,'lt':2016}}}}`
 
 
 
