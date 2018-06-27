@@ -130,7 +130,7 @@ tree = fromstring(htmlsource)
 ```
 
 ## Help with methods
-If you are lost or are looking for more options, you can always check out the help file of a method, like so:
+If you want to find out what a method does or are looking for more options, you can always check out the help file of a method, like so:
 ```
 help(myinca.importers_exporters.export_csv)
 ```
