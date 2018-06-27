@@ -17,10 +17,10 @@ The way how this works is very straightforward:
 from inca import Inca
 myinca = Inca()
 
-myinca.importers_exporters.export_json_files(query = 'doctype:"daily telegraph"')
+myinca.importers_exporters.export_json_file(query = 'doctype:"daily telegraph"')
 ```
 
-The query can take any form of a query string as outlined in the [https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-query-string-query.html#query-string-syntax](ElastiSearch documentation). Optionally, you can specify a `destination`, otherwise, a folder called `exports` will be created in the current working directory. Alternatively, you can also supply a query in the form of a dict, such as `query = {'query':{'range':{'publication_date':{'gte':2014,'lt':2016}}}}`
+The query can take any form of a query string as outlined in the [ElasticSearch documentation] (https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-query-string-query.html#query-string-syntax). Optionally, you can specify a `destination`, otherwise, a folder called `exports` will be created in the current working directory. Alternatively, you can also supply a query in the form of a dict, such as `query = {'query':{'range':{'publication_date':{'gte':2014,'lt':2016}}}}`
 
 
 
@@ -37,20 +37,20 @@ inca.core.database.import_documents('/home/damian/myjsonfiles')
 ## Specific importers and exporters
 
 #### LEXIS NEXIS
-News articles can be downloaded from the Lexis Nexis website as a txt file including a maximum of 200 articles. Moreover, not all articles contain the same information or have the same layout. This importer takes each txt file, extracts the information in each article, and yields one dict per article.
+News articles can be downloaded from the Lexis Nexis website as a txt file including a maximum of 200 articles. Not all articles contain the same information or have the same layout. This importer takes each txt file, extracts the information in each article, and yields one dict per article.
 
 The importer always extracts the following information:
 - title
-- doctype (journal)
+- doctype
 - text
 - publication date
-- suspicious (a check whether the text of an article is actually a text)
+- suspicious (a check whether the article actually contains text)
 
 If present, the importer also extracts:
 - category
-- byline (author)
+- byline
 
-The importer is used as follows. The path should be replaced by the path to your folder containing the Lexis Nexis txt file(s).
+The importer is used as follows. The path should be replaced by the path to your folder containing the Lexis Nexis txt file(s):
 ```
 from inca import Inca
 myinca = Inca()
