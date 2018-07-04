@@ -52,17 +52,6 @@ class lnimporter(Importer):
 
     version = 0.2
 
-    def run(self, path, *args, **kwargs):
-        """uses the documents from the load method in batches """
-
-        # this method is overwritten because in contrast to
-        # other importers, we do not have a single doctype.
-        # Each document can have a different one.
-        for doc in self.load(path, *args,**kwargs):
-            self._ingest(iterable=doc, doctype=doc['doctype'])
-            self.processed += 1
-
-
     def load(self, path, *args, **kwargs):
         """Loads a txt files from Lexis Nexis into INCA
 

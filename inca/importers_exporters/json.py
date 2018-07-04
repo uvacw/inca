@@ -57,7 +57,6 @@ class import_json(Importer):
                             line = line.decode()
                         doc = json.loads(line)
                         if doc:
-                            print(doc)
                             yield doc.get('_source',doc)
             if is_path:
                 matcher = re.compile(matches)

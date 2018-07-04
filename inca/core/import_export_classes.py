@@ -203,13 +203,13 @@ class Importer(BaseImportExport):
         raise NotImplementedError
         yield document
 
-    def run(self, doctype, mapping={}, *args, **kwargs):
+    def run(self, mapping={}, *args, **kwargs):
         """uses the documents from the load method in batches """
         for batch in self._process_by_batch(self.load(*args,**kwargs)):
             batch = list(map(lambda doc: self._apply_mapping(doc,mapping), batch))
-            batch = list(map(lambda x: self._add_metadata(document=x,mapping=mapping), batch))
-            self._ingest(iterable=batch, doctype=doctype)
-            self.processed += len(batch)
+            for doc in batch[0]:
+                self._ingest(iterable=doc, doctype=doc['doctype'])
+                self.processed += 1
 
 class Exporter(BaseImportExport):
     """Base class for exporting"""
