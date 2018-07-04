@@ -11,17 +11,17 @@ myinca = Inca()
 ```
 
 ## Creating an app for Twitter
-App needs to be created once. If no name used, info will be stored in the default app.
+App needs to be created once. Just follow the instructions. If no name used, info will be stored in the default app, and you do not have to specify the appname.
 ```
-myinca.clients.twittercreateapp()
-myinca.clients.twittercreatecredentials()
+myinca.clients.twitter_create_app()
+myinca.clients.twitter_create_credentials(appname="YOURAPPNAME")
 ```
 
 ## Collecting Twitter data
 
 ### By username (timelines)
 ```
-myinca.clients.twitter_timeline(app='default', screenname='SCREENNAME')
+myinca.clients.twitter_timeline(app='default', screen_name='SCREENNAME')
 ```
 
 ### User information
@@ -30,5 +30,5 @@ myinca.clients.twitter_users_lookup(app='default', screen_names=['SNAME1', 'SNAM
 ```
 ### Followers
 ```
-myinca.clients. twitter_followers(app='default', screenname='SCREENAME')
+myinca.clients.twitter_followers(app='default', screen_name='SCREENAME')
 ```
