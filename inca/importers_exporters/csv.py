@@ -122,8 +122,7 @@ class export_csv(Exporter):
             new = True
 
         writer = csv.DictWriter(outputfile, self.fields, extrasaction='ignore',*args, **kwargs)
-        if new:
-            writer.writeheader()
+        writer.writeheader()
         for doc in flat_batch:
             if remove_linebreaks:
                 doc = {k: v.replace('\n\r',' ').replace('\n',' ').replace('\'r',' ') for k,v in doc.items()}
