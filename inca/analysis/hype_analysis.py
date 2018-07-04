@@ -1,10 +1,11 @@
 from ..core.analysis_base_class import Analysis
 
-import nltk.corpus
-from nltk.text import TextCollection
+# import nltk.corpus
+# from nltk.text import Text, TextCollection
+# from nltk.tokenize import word_tokenize
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-vectorizer = TfidfVectorizer(stop_words='english')
+vectorizer = TfidfVectorizer()
 
 from sklearn.cluster import KMeans
 
@@ -82,6 +83,7 @@ class hype_cluster(Analysis):
           plt.title('k means centroids')
           plt.scatter(self.order_centroids[:,0], self.order_centroids[:,1], marker="x") #centers could also be plotted instead
           plt.show()
+
           
      def predict(self, documents):
           '''
@@ -95,24 +97,18 @@ class hype_cluster(Analysis):
           
           Yields
           ----
-          The number of the predicted cluster for each text
+          A tuple (document, cluster id) 
           '''
-          
-          print("Predict for new texts")
-          prediction = []
-          texts2= []
+
           for doc in documents:
                try:
-                    texts2.append(doc['_source'][self.textkey])
+                    Y = self.X1.transform([doc['_source'][self.textkey]])
+                    predictions = self.km.predict(Y)
+                    yield doc, predictions[0]
                except:
                     pass 
                     
-          Y = self.X1.transform(texts2)
           
-          prediction = self.km.predict(Y)
-          print(prediction)
-          #example result for 5 new texts and 3 clusters: [1, 2, 2, 1, 3]
-
           
 class hype_tfidf(Analysis):
 
@@ -128,7 +124,7 @@ class hype_tfidf(Analysis):
           News articles stored as dicts in the Inca database
           
           searchterm: string
-          Word or words (phrase) used to calculate the tf-idf score (eg. 'fake news')
+          Word or words (phrase) used to calculate the tf-idf score (eg. 'fake news'). Will automatically be lowercased.
 
           textkey: string
           The key where the texts can be found (eg 'title' or 'text')
@@ -139,17 +135,17 @@ class hype_tfidf(Analysis):
           The dataframe includes the source and publication date of the article and the tfidf score for the specified searchterm
           '''
 
-          self.searchterm = searchterm
+          self.searchterm = searchterm.lower()
           self.textkey = textkey
-          mycollection = nltk.TextCollection([documents])
-
+          textsonly = (e['_source'].get(self.textkey,"") for e in documents)
+          vectorizer.fit(textsonly)
+               
           self.df1 = pd.DataFrame(columns=['Type', 'Publication Date', 'Tf-idf'])
           for e in documents:
-               try:
-                    s = mycollection.tf_idf(self.searchterm, e['_source'][self.textkey])
-                    self.df1 = self.df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':s}, index=[0]), ignore_index=True)
-               except:
-                    self.df1 = self.df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':None}, index=[0]), ignore_index=True)
+               X = vectorizer.transform([e['_source'].get(self.textkey,'')])
+               tfidfscore = X[0, vectorizer.vocabulary_[self.searchterm]]
+               #print(self.searchterm, tfidfscore)
+               self.df1 = self.df1.append(pd.DataFrame({'Type':e['_type'], 'Publication Date':e['_source']['publication_date'], 'Tf-idf':tfidfscore}, index=[0]), ignore_index=True)
           return self.df1 
 
      def plot(self):
