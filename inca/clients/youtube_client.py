@@ -29,7 +29,7 @@ class youtube(Client):
         return item
 
     @elasticsearch_required
-    def add_application(self, app='default', response=None):
+    def add_application(self, appname='default', response=None):
         """add a youtube app to generate credentials"""
         if not response:
 
@@ -60,7 +60,7 @@ class youtube(Client):
                     "input_type": "text",
                     "minimum": 4,
                     "maximum": 15,
-                    "default":app
+                    "default":appname
 
                     },
                     {
@@ -107,16 +107,16 @@ class youtube(Client):
             }
 
             response = self.prompt(app_prompt)
-            return self.add_application(app=app, response=response)
+            return self.add_application(appname=appname, response=response)
 
         elif response:
             credentials = {'client_id': response['Application Client Id'],'client_secret':response["Application Client Secret"]}
-            return self.store_application(appname=app, app_credentials=credentials)
+            return self.store_application(appname=response['Application name'], app_credentials=credentials)
 
     @elasticsearch_required
-    def add_credentials(self, app='default'):
+    def add_credentials(self, appname='default'):
         """Add credentials for an app"""
-        retrieved_app = self.load_application(app=app)
+        retrieved_app = self.load_application(app=appname)
         saved_app = retrieved_app['_source']['credentials']
         flow    =  oauth2client.client.OAuth2WebServerFlow(
                 client_id = saved_app['client_id'],
@@ -125,8 +125,8 @@ class youtube(Client):
                 redirect_uri = "urn:ietf:wg:oauth:2.0:oob")
         app_url = flow.step1_get_authorize_url()
         credentials_prompt = {
-            "header" : "add credentials to app {app}".format(**locals()),
-            "description" : "Go to the below URL, select the account you want to add to this app [{app}] and click 'Allow'\n\nUrl: {app_url}".format(**locals()),
+            "header" : "add credentials to app {appname}".format(**locals()),
+            "description" : "Go to the below URL, select the account you want to add to this app [{appname}] and click 'Allow'\n\nUrl: {app_url}".format(**locals()),
             "inputs" : [
                 {
                 "label" : "Credentials ID",
@@ -150,7 +150,7 @@ class youtube(Client):
         response = self.prompt(credentials_prompt)
         credentials = flow.step2_exchange(response['Authentication code'])
 
-        return self.store_credentials(app=app, credentials=credentials.to_json(), id=response['Credentials ID'])
+        return self.store_credentials(app=appname, credentials=credentials.to_json(), id=response['Credentials ID'])
 
     def _get(self, url, params=None, data=None, retries=3, timeout=20, oauth=True, ignore_errors=False):
         '''
