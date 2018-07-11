@@ -4,6 +4,79 @@ When running INCA, next to scraping data, processing data, and analyzing data, y
 
 In this document, we explain some common ways to do so.
 
+
+
+
+## General INCA import/export functions
+
+INCA also has a couple of built-in functions to export to often-used generic formats, especially JSON and CSV.
+
+The way how this works is very straightforward:
+
+```
+from inca import Inca
+myinca = Inca()
+
+myinca.importers_exporters.export_json_file(query = 'doctype:"daily telegraph"')
+```
+
+The query can take any form of a query string as outlined in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-query-string-query.html#query-string-syntax). Optionally, you can specify a `destination`, otherwise, a folder called `exports` will be created in the current working directory. Alternatively, you can also supply a query in the form of a dict, such as `query = {'query':{'range':{'publication_date':{'gte':2014,'lt':2016}}}}`
+
+
+
+Similarly, you can export it as CSV: 
+```
+myinca.importers_exporters.export_csv(query = 'doctype:"daily telegraph"')
+```
+You can specify a `delimiter`, such as  `","` or `";"`. Make sure to use ; for compatability with a European locale of Microsoft Excel. Check out the helpfile for more options with `help(myinca.importers_exporters.export_csv)`
+
+
+
+Vice versa, you can import a folder with JSON-files into inca with
+```
+inca.core.database.import_documents('/home/damian/myjsonfiles')
+```
+
+**CURRENTLY, IMPORTING DOES NOT WORK. THIS IS A KNOWN BUG AND WILL BE FIXED**
+
+
+
+
+
+## Specific importers and exporters
+
+#### LEXIS NEXIS
+News articles can be downloaded from the Lexis Nexis website as a txt file including a maximum of 200 articles. Not all articles contain the same information or have the same layout. This importer takes each txt file, extracts the information in each article, and yields one dict per article.
+
+The importer always extracts the following information:
+- title
+- doctype
+- text
+- publication date
+- suspicious (a check whether the article actually contains text)
+
+If present, the importer also extracts:
+- category
+- byline
+
+The importer is used as follows. The path should be replaced by the path to your folder containing the Lexis Nexis txt file(s):
+```
+from inca import Inca
+myinca = Inca()
+
+myinca.importers_exporters.lnimporter(path="/home/marieke/mylexisnexisfiles")
+```
+
+
+**TO BE ADDED:**
+- Timelines
+
+
+
+# Backing up the whole INCA database
+
+
+
 ## INCA backup
 INCA has a built-in interface to the backup-and-restore functionality of Elasticsearch:
 ```
@@ -41,77 +114,3 @@ elasticdump  --input=incathinkpad.json --output=http://localhost:9200/inca
 
 Type `elasticdump --help` for more options.
 
-
-## INCA import/export functions
-
-# Please note: The functions described below are deprecated, thus the instructions do not work anymore! The new export/import functions can be found under myinca.importers_exporters, detailed instructions to come.
-
-INCA also has a couple of built-in functions to export to often-used generic formats, especially JSON and CSV.
-
-### doctype_export and import_documents
-`inca.core.database.export_doctype` exports all items from a specific doctype (e.g., all articles from a specific source) to a series of seperate JSON files. It creates a subdirectory `exports` in which it stores all the articles.
-Example:
-```
-inca.core.database.export_doctype('nu')
-```
-Vice versa, you can import a folder with such JSON-files into inca with
-```
-inca.core.database.import_documents('/home/damian/myjsonfiles')
-```
-
-### Customized exports
-
-Maybe you want to do more customized exports, for instance all documents from a specific time range. To do so, you can use the Elastic Search query syntax. A Google search will tell you more, but this is the general way it works:
-```
-q1 = inca.core.database.scroll_query({'query':{'match':{'doctype':'nu'}}})
-q2 = inca.core.database.scroll_query({'query':{'range':{'publication_date':{'gte':2014,'lt':2016}}}})
-```
-The first query gives you all articles from nu.nl, the second one all articles from 2015. These are so-called *generators*: you can loop over them just as you would with a list, but the items are only generated once they are needed. Or you can use `next(q1)` to simply get the next item.
-
-The following example illustrates how we can use this to export all documents matching a specific query as json files.
-
-Note that we encode their ID and use it as file name - basically, if there is a slash or a similar character that cannot be used in a file name, we replace it.
-
-```
-import inca
-import json
-from urllib.parse import quote_plus
-
-for doc in inca.core.database.scroll_query({'query':{'range':{'publication_date':{'gte':2015,'lt':2016}}}}):
-     with open('/path/to/where/to/store/it/{}.json'.format(quote_plus(doc['_id'])), mode='w') as fo:
-        fo.write(json.dumps(doc))        
-```
-
-
-Let's finish with a more sophisticated example. It uses the so-called 'filter'-context, that requires exact matches, and exports all articles from one source in a given timeframe:
-
-```
-import inca
-import json
-from urllib.parse import quote_plus
-
-q = inca.core.database.scroll_query(
-{
-  "query": {
-    "bool": {
-      "filter": [
-        { "match": { "_type": "nrc (print)" }},
-        { "range": { "publication_date": { "gte": "2007-01-01", "lt":"2014-01-01" }}}
-      ]
-    }
-  }
-}
-)
-for doc in q:
-     with open('/path/to/store/data/{}.json'.format(quote_plus(doc['_id'])), mode='w') as fo:
-        fo.write(json.dumps(doc)) 
-```
-
-More info on the query and filter syntax can be found in the [official documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html)
-
-### export_csv
-`inca.core.database.export_csv()` creates a subdirectory `exports`  in which it stores a CSV table with all items that match a specific ElasticSearch query. You can specify which keys to include as columns in the CSV table. If no keys are given, doctype, publication_date, title, byline, and text are stored.
-Example:
-```
-inca.core.database.export_csv(query = {'query':{'match':{'doctype':'nu'}}}, keys=['publication_date', 'title', 'teaser_rss'])
-```
