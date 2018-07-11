@@ -40,22 +40,23 @@ class youtube(Client):
                 "from the YouTube service. You can create it by following these steps: \n"
                 "\n"
                 "1.  Go to https://console.developers.google.com/ \n"
-                "2.  Click on the 'YouTube Data API' in the lower right corner \n"
-                "3.  Agree with the Terms of service \n"
+                "2.  Click on 'view all' and search for 'YouTube Data API v3' \n"
+                "3.  If necessary, agree with the Terms of service \n"
                 "4.  Create a project with an arbitrary name (if you do not already have one) \n"
-                "5.  Click on 'Enable', which is on a blue button next to 'YouTube Data API vX' \n"
+                "5.  Click on 'Enable' \n"
                 "6.  Click on 'Create Credentials', the blue button on the rigth side of the screen \n"
                 "7.  For 'Which API are you using, keep the 'YouTube API v3 option' \n"
                 "    For 'Where will you be calling the API from?' pick 'Other UI (e.g. Windows, CLI tool)' \n"
                 "    For 'Which data will you be accessing', you can should pick 'User data' \n"
                 "8.  Click 'What credentials do I need?' \n"
-                "9.  Click 'Done', the blue button at the bottom \n"
-                "10. Click on your application under the 'OAuth 2.0 client IDs'",
+                "9.  Create an arbitrary name for your OAuth 2.0 client ID \n"
+                "10. Click 'Done'. (You do not have to download the credentials yet.) \n"
+                "11. Click on 'Create credentials', and choose 'API key'.",
 
                 "inputs" : [
                     {
                     "label" : "Application name",
-                    "description" : "An internal identifier for your app ",
+                    "description" : "An internal identifier for your app. You can give your app any name ",
                     "help" : "The application name does not have to match that of the YouTube app",
                     "input_type": "text",
                     "minimum": 4,
@@ -65,8 +66,8 @@ class youtube(Client):
                     },
                     {
                     "label" : "Application API key",
-                    "description" : "\nPlease copy the API key shown under 'Get your credentials' ",
-                    "help" : "The credentials should look something like '708587097539-gbpoflpng1ola0hbh4fcob3ugL1Dcy60.apps.googleusercontent.com'",
+                    "description" : "\nPlease copy the API key in the tab Credentials ",
+                    "help" : "The API key should look something like 'AIzaSyCTeyFOP6iNQ_d5ceG9sXbbheLmccz5ETk'",
                     "input_type": "text",
                     "minimum": 8,
                     "maximum": 100
@@ -74,7 +75,7 @@ class youtube(Client):
                     },
                     {
                     "label" : "Application Client Id",
-                    "description" : "\nPlease copy the API key shown under 'Get your credentials' ",
+                    "description" : "\nPlease copy the Client ID shown under 'OAuth 2.0 client IDs' in the tab Credentials ",
                     "help" : "The credentials should look something like '708587097539-gbpoflpng1ola0hbh4fcob3ugL1Dcy60.apps.googleusercontent.com'",
                     "input_type": "text",
                     "minimum": 8,
@@ -83,7 +84,7 @@ class youtube(Client):
                     },
                     {
                     "label" : "Application Client Secret",
-                    "description" : "\nPlease copy the API key shown under 'Get your credentials' ",
+                    "description" : "\nPlease copy the Client secret shown under 'OAuth 2.0 client Ids' in the tab Credentials. Make sure you do not copy the space behind the code ",
                     "help" : "The credentials should look something like 'AIzaWyBcVB4AB9zMF9LQbghB3yF5z13Tp'",
                     "input_type": "text",
                     "minimum": 8,
@@ -92,9 +93,7 @@ class youtube(Client):
                     },
                     {
                     "label" : "Now activate credential additions for your application",
-                    "description" : "In the 'credentials' tab of the Google API overview click on 'OAuth consent screen'. \n"
-                    "Here, you should fill in an email address and appname to be shown to users when adding credentials. \n"
-                    "Once you have entered this information, click 'Done'",
+                    "description" : "In the 'credentials' tab of the Google API overview click on 'OAuth consent screen'. Here, you should fill in an email address and appname to be shown to users when adding credentials. Once you have entered this information, click 'Save' \nNow press enter to finish creating your app",
                     "help" : "only the email and product name are required",
                     "input_type": "bool",
                     "default" : "True"
@@ -130,7 +129,7 @@ class youtube(Client):
             "inputs" : [
                 {
                 "label" : "Credentials ID",
-                "description" : "An internal identifier for these credentials, such as the email address associated with them",
+                "description" : "This is an internal identifier for these credentials. You can give them any name. ",
                 "help" : "",
                 "input_type" : "text",
                 "minimum" : 3,
@@ -138,7 +137,7 @@ class youtube(Client):
                 },
                 {
                 "label" : "Authentication code",
-                "description" : "Please enter the authentication code:",
+                "description" : "Please enter the authentication code from the webpage:",
                 "help" : "",
                 "input_type" : "text",
                 "minimum" : 10
