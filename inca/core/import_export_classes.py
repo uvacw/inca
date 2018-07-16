@@ -182,12 +182,10 @@ class Importer(BaseImportExport):
     def load(self):
         """ To be implemented in subclasses
 
-        normall called through the 'run' method. Please add to your documentation:
+        normally called through the 'run' method. Please add to your documentation:
 
         Parameters
         ---
-        doctype : string
-            The doctype to be used when indexing results in elasticsearch
         mapping : dict
             A dictionary that specifies the from_key :=> to_key relation
             between loaded documents and documents as they should be indexed
@@ -205,11 +203,13 @@ class Importer(BaseImportExport):
 
     def run(self, mapping={}, *args, **kwargs):
         """uses the documents from the load method in batches """
+        self.processed = 0
         for batch in self._process_by_batch(self.load(*args,**kwargs)):
             batch = list(map(lambda doc: self._apply_mapping(doc,mapping), batch))
-            for doc in batch[0]:
+            for doc in batch:
                 self._ingest(iterable=doc, doctype=doc['doctype'])
                 self.processed += 1
+        logger.info("Added {} documents to the database.".format(self.processed))
 
 class Exporter(BaseImportExport):
     """Base class for exporting"""

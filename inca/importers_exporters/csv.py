@@ -9,6 +9,8 @@ from ..core.basic_utils import dotkeys
 import csv
 import chardet
 import logging
+import os
+from glob import glob
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +43,7 @@ class import_csv(Importer):
             If 'None', takes the header of the file and uses these fieldnames
             to upload documents
         path : string
-            The file to load
+            Either directory of files or file to load.
         fieldnames : list or None
             If None, the first row is assumed to contain headers, else
             it should be a list that specifies, in order, columnnames.
@@ -58,12 +60,36 @@ class import_csv(Importer):
             One dict per row of data in the excel file
 
         """
-        encoding = kwargs.pop('encoding','utf-8')
-        if encoding:
-            with open(path, encoding=encoding) as fileobj:
-                csv_content = csv.DictReader(fileobj, *args, **kwargs)
-                for row in csv_content:
-                    yield row
+        exists  = os.path.exists(path)
+        if not exists:
+            logger.warning("Unable to open {path} : DOES NOT EXIST".format(path=path))
+        else:
+            is_dir = os.path.isdir(path)
+            if not is_dir:
+                list_of_files = glob(path)
+            else:
+                list_of_files = glob(path + "*.csv")
+            for item in list_of_files:
+                encoding = kwargs.pop('encoding','utf-8')
+                if encoding:
+                    with open(item, encoding=encoding) as fileobj:
+                        csv_content = csv.DictReader(fileobj, *args, **kwargs)
+                        for row in csv_content:
+                            for k in list(row):
+                                if k.startswith("_source."):
+                                    row[k[8:]] = row.pop(k)
+                                elif k in ['_type', '_index']:
+                                    row.pop(k)
+                                else:
+                                    pass
+                            try:
+                                row['doctype'] = row['_source.doctype']
+                            except:
+                                if 'doctype' in row:
+                                    yield row
+                                else:
+                                    logger.warning("You need a key named 'doctype' to insert the document in the database")
+                            yield row
 
 
 class export_csv(Exporter):

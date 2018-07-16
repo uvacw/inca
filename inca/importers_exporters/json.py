@@ -12,6 +12,7 @@ import os
 import json
 import re
 import logging
+from glob import glob
 
 logger = logging.getLogger("INCA."+__name__)
 
@@ -25,8 +26,6 @@ class import_json(Importer):
 
         Parameters
         ---
-        doctype : string
-            The doctype to be used when indexing results in elasticsearch
         mapping : dict (default=None)
             A dictionary that specifies the from_key :=> to_key relation
             between loaded documents and documents as they should be indexed
@@ -46,9 +45,13 @@ class import_json(Importer):
         if not exists:
             logger.warning("Unable to open {path} : DOES NOT EXIST".format(path=path))
         else:
-            is_path = os.path.isdir(path)
-            if not is_path :
-                with self.open_file(path, mode="r", compression=compression) as f:
+            is_dir = os.path.isdir(path)
+            if not is_dir:
+                list_of_files = glob(path)
+            else:
+                list_of_files = glob(path + "*.json")
+            for item in list_of_files:
+                with self.open_file(item, mode="r", compression=compression) as f:
                     line = "start"
                     while line:
                         line = f.readline()
@@ -58,11 +61,6 @@ class import_json(Importer):
                         doc = json.loads(line)
                         if doc:
                             yield doc.get('_source',doc)
-            if is_path:
-                matcher = re.compile(matches)
-                for filename in os.listdir(path):
-                    if not matcher.search(filename): continue
-                    yield self.load(os.path.join(path,filename), mapping=mapping, compression=compression)
 
 class export_json_file(Exporter):
     """Dump documents to JSON file"""
