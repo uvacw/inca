@@ -134,7 +134,7 @@ class export_json_files(Exporter):
         for document in batch_of_documents:
             filename = id2filename(document.get('_id'))
             location = os.path.join(destination,filename)
-            fileobj = self._makefile(location, mode='w', compression=compression)
+            fileobj = self._makefile(location, mode='wt', compression=compression)
             if include_meta==False:
                 if '_source' in document.keys():
                     document = document['_source']
