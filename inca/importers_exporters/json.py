@@ -87,15 +87,20 @@ class export_json_file(Exporter):
             and META will be excluded.
         """
         self.extension = "json"
-        self.fileobj = self._makefile(destination, mode="a", compression=compression)
+        self.fileobj = self._makefile(destination, mode="at", compression=compression)
         for document in batch_of_documents:
             if include_meta==False:
                 if '_source' in document.keys():
                     document = document['_source']
                 document = {k:v for k, v in document.items() if not k=='META'}
             try:
+                #doc_dump = json.dumps(document)+'\n'
+                #if compression is None:
+                #    self.fileobj.write(doc_dump.encode())
+                #else:
+                #    self.fileobj.write(doc_dump)
                 doc_dump = json.dumps(document)
-                self.fileobj.write(doc_dump+"\n")
+                self.fileobj.write(doc_dump+'\n')
             except:
                 raise "hell"
                 self.failed += 1
