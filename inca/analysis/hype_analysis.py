@@ -161,3 +161,41 @@ class hype_tfidf(Analysis):
           plt.show()
           
      
+class hype_tfidf_perday(Analysis):
+
+     def fit(self, documents, textkey) 
+          '''
+          Concatenates documents per day and then calculates Tf-idf score for each day document and creates a dataframe
+
+          Note: does not work with documents obtained through a generator (generators have no len)
+
+          Parameters
+          ----
+          documents:
+          News articles stored as dicts in the Inca database
+          
+          textkey: string
+          The key where the texts can be found (eg 'title' or 'text')
+
+          Yields
+          ----
+          Creates dataframe with tf-idf scores of most important words per day
+          '''
+
+          self.textkey = textkey
+
+          for e in docments:
+               # merge documents per day, creating a datarame with date in column 1 and all texts of that day in one single loooooong string in column 2
+               # could also be a dict instead with dates as key
+               print('TO BE DONE ;-)')
+
+          # then calculate tf idf scores (similar to approah in hype_tfidf class above) based on the day-documents
+
+          # finally, return the three most important words per day
+               
+               
+          return 
+
+
+          
+     
