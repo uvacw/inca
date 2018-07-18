@@ -95,8 +95,6 @@ class export_csv(Exporter):
         args/kwargs are passed to csv.DictWriter.
         In particular, you might be interested in using the follwing arguments:
 
-        dialect='excel'
-            Ensures compatibility with Microsoft Excel
         delimiter=';'
             Use a semicolon instead of a comma. This is what Microsoft Excel
             expects in many locales (e.g., Dutch and German)
@@ -108,7 +106,7 @@ class export_csv(Exporter):
         flat_batch = list(map(lambda doc: self._flatten_doc(doc, include_meta), documents))
         if len(self.fields)==0:
             keys = set.union(*[set(d.keys()) for d in flat_batch])
-            [self.fields.append(k) for k in keys if k not in self.fields]
+            [self.fields.append(k) for k in keys if k not in self.fields if k != "_source.htmlsource"]
 
         logger.info('Exporting these fields: {}'.format(self.fields))
         
@@ -124,8 +122,7 @@ class export_csv(Exporter):
             new = True
 
         writer = csv.DictWriter(outputfile, self.fields, extrasaction='ignore',*args, **kwargs)
-        if new:
-            writer.writeheader()
+        writer.writeheader()
         for doc in flat_batch:
             if remove_linebreaks:
                 doc = {k: v.replace('\n\r',' ').replace('\n',' ').replace('\'r',' ') for k,v in doc.items()}

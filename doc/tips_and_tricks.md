@@ -2,13 +2,28 @@
 
 In this document, you can find some useful tips and tricks for when you just started the scraping for INCA. Please add anything you find useful to this doc.
 
+## Creating a new branch in Github
+Before getting to work, create a new branch. Changes or additions should be made in a separate branch (a copy of the development branch). Later the changes or additions are merged with the development branch through a pull request (after it has been reviewed). Replace fixdocs with the name of your new branch. 
+```
+cd /home/lisa/inca/inca		# Go the inca directory
+git checkout development	# Make sure you are on the development branch (as a basis)
+git pull			# Update your files to the latest version of the development branch
+git checkout -b fixdocs		# Create a new branch called fixdocs 
+```
+
 ## How to start INCA
 
 To start INCA, go to your INCA folder and import INCA in python
 ```
 cd /home/lisa/inca
 ipython3
-import inca
+from inca import Inca
+```
+You forgot to run Elastic Search if you receive the follwing warning: _WARNING:INCAcore.database:No databse functionality available_. Start Elastic Search and try again. 
+```
+sudo service elasticsearch status	# Check whether elasticsearch is running
+sudo -i service elasticsearch start	# Start elasticsearch
+sudo -i service elastic search stop	# Stop elasticsearch
 ```
 
 ## Opening a file with emacs
@@ -27,6 +42,12 @@ emacs vlaanderen_scraper.py
 cd /home/lisa/inca	# move into directory
 cd ..			# move back one directory
 cd ~ 			# move back to the home directory
+```
+
+- pwd = print working directory
+   The pwd command is used to check which directory you are currently in. 
+```
+pwd
 ```
 
 - rm = remove
@@ -54,7 +75,18 @@ cp vlaanderen_scraper.py mycopy_scraper.py	# copy file into different name
 ```
 ls
 ```
-* The scrapers have to end with _scraper.py
+The scrapers have to end with _scraper.py
+
+- man = manual
+  The man command is used to learn more about a certain command. 
+```
+man pwd   # replace pwd with any command
+```
+Other useful tips:
+* Press CLTR-C to cancel a command.
+* Use the up arrow key to show previous commands. 
+
+
 
 ## Testing a scraper
 
@@ -96,13 +128,30 @@ from lxml.html import fromstring
 htmlsource = open('/home/lisa/Downloads/test.html').read()
 tree = fromstring(htmlsource)
 ```
+
+## Help with methods
+If you want to find out what a method does or are looking for more options, you can always check out the help file of a method, like so:
+```
+help(myinca.importers_exporters.export_csv)
+```
+You can exit the screen by pressing q.
+
+
+
 ## Pushing to Github
 When your scraper is done and tested, the file can be pushed to Github.
 ```
+git status							# check which changes have been made
 git add /home/lisa/inca/inca/scrapers/vlaanderen_scraper.py
-git commit -m 'added category'					# use commit to explain what you did/added
-git push
+git commit -m 'explanation'					# replace explanation with an explanation of what you did/added
+git push      							# push it to the development branch
 ```
+
+When you get the error: _fatal: The current branch fixdocs  has no upstream branch._, run the following command (replace fixdocs with your branch name):
+```
+git push -set-upstream origin fixdocs
+```
+
 
 ## Emacs commands
 Still has to be done

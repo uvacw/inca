@@ -70,7 +70,7 @@ class export_json_file(Exporter):
 
     version = 0.1
 
-    def save(self, batch_of_documents, destination, compression=None):
+    def save(self, batch_of_documents, destination, compression=None, include_meta=False):
         """Save JSON objects to single file
 
         Parameters
@@ -81,10 +81,18 @@ class export_json_file(Exporter):
             The file in which to store the output
         compression : string (default=None)
             What compression to use when writing output file
+        include_meta : Boolean (default=False)
+            Whether to include META information. If set to False,
+            Only the keys within the '_source' key will be saved
+            and META will be excluded.
         """
         self.extension = "json"
         self.fileobj = self._makefile(destination, mode="a", compression=compression)
         for document in batch_of_documents:
+            if include_meta==False:
+                if '_source' in document.keys():
+                    document = document['_source']
+                document = {k:v for k, v in document.items() if not k=='META'}
             try:
                 doc_dump = json.dumps(document)
                 self.fileobj.write(doc_dump+"\n")
@@ -101,7 +109,7 @@ class export_json_files(Exporter):
 
     version = 0.1
 
-    def save(self, batch_of_documents, destination, compression=None):
+    def save(self, batch_of_documents, destination, compression=None, include_meta=False):
         """Save JSON objects to multiple files
 
         Parameters
@@ -112,12 +120,21 @@ class export_json_files(Exporter):
             The directory in which to store the output files
         compression : string (default=None)
             What compression to use when writing output files
+        include_meta : Boolean (default=False)
+            Whether to include META information. If set to False,
+            Only the keys within the '_source' key will be saved
+            and META will be excluded.
         """
         self.extension = "json"
         for document in batch_of_documents:
             filename = id2filename(document.get('_id'))
             location = os.path.join(destination,filename)
             fileobj = self._makefile(location, mode='w', compression=compression)
+            if include_meta==False:
+                if '_source' in document.keys():
+                    document = document['_source']
+                document = {k:v for k, v in document.items() if not k=='META'}
+
             try:
                 json.dump(document, fileobj)
             except:
