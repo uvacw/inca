@@ -128,6 +128,16 @@ from lxml.html import fromstring
 htmlsource = open('/home/lisa/Downloads/test.html').read()
 tree = fromstring(htmlsource)
 ```
+
+## Help with methods
+If you want to find out what a method does or are looking for more options, you can always check out the help file of a method, like so:
+```
+help(myinca.importers_exporters.export_csv)
+```
+You can exit the screen by pressing q.
+
+
+
 ## Pushing to Github
 When your scraper is done and tested, the file can be pushed to Github.
 ```
