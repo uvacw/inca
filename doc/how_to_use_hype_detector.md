@@ -39,6 +39,6 @@ Example:
 from inca import Inca
 myinca = Inca()
 docs = list(myinca.database.doctype_generator('nu'))
-results = myinca.analysis.hype_cluster.hype_tfidf(docs, searchterm = 'trump', textkey='text')
+results = myinca.analysis.hype_tfidf.fit(docs, searchterm = 'trump', textkey='text')
 
 ```
