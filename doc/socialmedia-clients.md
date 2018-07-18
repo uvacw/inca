@@ -47,22 +47,30 @@ myinca.clients.youtube_create_credentials(appname="YOURAPPNAME")
 Note: When you did not name your app, you do not have to specify the appname. Default will be used instead.
 
 #### Videos
-The term(s) you want to search for are specified in the `q`, which can take the form of a string or dict. __NOTE: WHAT KIND OF DICT? HOW TO SPECIFY MULTIPLE SEARCH TERMS?__
+The term(s) you want to search for are specified in the `q` parameter. The request can also uses '|', ',' and/or '-'.
 
-For other specifications, check out the helpfile with `help(myinca.clients.youtube_videos_search)`
+- 'term1|term2' matches anything containing either term1 or term2.
+- 'term1 -term2' matches anything containing term1 but not term2.
+- 'term1,term2' matches anything containing both term1 and term2.
+
+For other parameters, check out the helpfile with `help(myinca.clients.youtube_videos_search)`
+
 ```
 myinca.clients.youtube_videos_search(app='YOURAPPNAME', q='SEARCHTERMS')
 ```
 
 #### Comments on videos and/or channels
-Using `parent_id` you can speficy the YouTube ID for which to retrieve comments. You can find the ID in the URL, e.g. for a video: https://<i></i>www.youtube.com/watch?v=__S_VcUXDCXQw__. You can also find this ID in the information you YouTube data you collected using `youtube_videos_search` under 'id'.
-
-Alternatively, you can collect comments on a channel. By using the ID in the URL: https://<i></i>www.youtube.com/channel/__UCdH_8mNJ9vzpHwMNwlz88Zw__, or in the collected YouTube data under 'channelId'.
-__NOTE: DOES THIS WORK?__
-
-Other specifications can be found in the helpfile.
+Using `parent_id` you can specify the YouTube ID for which to retrieve comments. You can find the ID in the URL, e.g. for a video: https&#58;//www.youtube.com/watch?v=__S_VcUXDCXQw__. You can also find this ID in the information you YouTube data you collected using `youtube_videos_search` under 'id'.
 
 ```
 myinca.clients.youtube_comments(app='YOURAPPNAME', parent_id='VIDEO_OR_CHANNEL_ID')
 ```
+
+Alternatively, you can collect comments on a channel. By using the ID in the URL: https&#58;//www.youtube.com/channel/__UCdH_8mNJ9vzpHwMNwlz88Zw__, or in the collected YouTube data under 'channelId'. When downloading comments from channels, make sure to specify `for_type`. This can be either 'channel' to retrieve comments about the specified channel (i.e. will not include comments left on videos that the channel uploaded) or 'channel+videos' to retrieve all comments associated with the specified channel (i.e. can include comments about the channel or about the channel's videos).
+
+```
+myinca.clients.youtube_comments(app='YOURAPPNAME', parent_id='VIDEO_OR_CHANNEL_ID', for_type='channel')
+```
+
+Other parameters can be found in the helpfile.
 

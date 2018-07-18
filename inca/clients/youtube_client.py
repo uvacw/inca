@@ -469,7 +469,7 @@ class youtube_comments(youtube):
         elif for_type=='channel+videos':
             data.update({'allThreadsRelatedToChannelId':rid})
         else:
-            raise Exception("for_type should be 'video', 'channel' or 'channel+video'!")
+            raise Exception("for_type should be 'video', 'channel' or 'channel+videos'!")
 
 
         res  = self._get(url, params=data)
