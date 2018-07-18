@@ -94,15 +94,9 @@ class export_json_file(Exporter):
                     document = document['_source']
                 document = {k:v for k, v in document.items() if not k=='META'}
             try:
-                #doc_dump = json.dumps(document)+'\n'
-                #if compression is None:
-                #    self.fileobj.write(doc_dump.encode())
-                #else:
-                #    self.fileobj.write(doc_dump)
                 doc_dump = json.dumps(document)
                 self.fileobj.write(doc_dump+'\n')
             except:
-                raise "hell"
                 self.failed += 1
                 self.failed_ids.append(document['_id'])
         if self.failed:
@@ -146,3 +140,6 @@ class export_json_files(Exporter):
                 self.failed +=1
                 self.failed_ids.append(document['_id'])
             fileobj.close()
+        if self.failed:
+            logger.warning("Failed to export {num} documents".format(num=self.failed))
+            logger.info("Failed ids: {ids}".format(ids=', '.join(self.failed_ids)))

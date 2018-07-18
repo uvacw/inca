@@ -44,34 +44,12 @@ class BaseImportExport(Document):
             compression = self._detect_zip(filename)
         if not compression:
             return open(filename, mode=mode)
-
         else:
             filename += "." + compression
 
-        #if mode == 'r':
-        #    mode = 'rb'
-        #elif mode == 'a':
-        #    mode = 'ab'
-
-        #def cb(fileobj):
-        #    """monkey-patch fileobject write method to encode"""
-        #    original_write = fileobj.write
-        #    def write(input_string):
-        #        """write with encoding"""
-        #        bytes_string = input_string.encode()
-        #        original_write(bytes_string)
-        #    fileobj.write = write
-        #    return fileobj
-
-        # compressed formats requiring bytes-styleo pening below here
-
-        #if mode == 'w':
-        #    mode = 'wb'
         if compression == "gz":
-            #return cb(gzip.open(filename, mode=mode))
             return gzip.open(filename, mode=mode)
         if compression == "bz2":
-            #return cb(bz2.open(filename, mode=mode))
             return bz2.open(filename, mode=mode)
         return fileobj
 
