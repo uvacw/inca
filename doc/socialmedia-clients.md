@@ -36,7 +36,7 @@ myinca.clients.twitter_followers(app='YOURAPPNAME', screen_name='SCREENAME')
 ## YouTube
 
 ### Creating an app for YouTube
-The process to create a YouTube app is similar to Twitter. Run the command below and follow the instructions. If you decide not to name your app, info will be stored in the default app and you do not have to specicy the appname when creating credentials or collecting data.
+The process to create a YouTube app is similar to Twitter. Run the command below and follow the instructions. If you decide not to name your app, info will be stored in the default app and you do not have to specify the appname when creating credentials or collecting data.
 ```
 myinca.clients.youtube_create_app()
 myinca.clients.youtube_create_credentials(appname="YOURAPPNAME")
@@ -60,7 +60,7 @@ myinca.clients.youtube_videos_search(app='YOURAPPNAME', q='SEARCHTERMS')
 ```
 
 #### Comments on videos and/or channels
-Using `parent_id` you can specify the YouTube ID for which to retrieve comments. You can find the ID in the URL, e.g. for a video: https<span></span>://www<span></span>.youtube.com/watch?v=__S_VcUXDCXQw__. You can also find this ID in the information you YouTube data you collected using `youtube_videos_search` under 'id'.
+Using `parent_id` you can specify the YouTube ID for which to retrieve comments. You can find the ID in the URL, e.g. for a video: https<span></span>://www<span></span>.youtube.com/watch?v=__S_VcUXDCXQw__. You can also find this ID in the information YouTube data you collected using `youtube_videos_search` under 'id'.
 
 ```
 myinca.clients.youtube_comments(app='YOURAPPNAME', parent_id='VIDEO_OR_CHANNEL_ID')
