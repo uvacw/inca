@@ -11,6 +11,7 @@ import chardet
 import logging
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class import_csv(Importer):
     """Read csv files"""
@@ -107,6 +108,7 @@ class export_csv(Exporter):
         if len(self.fields)==0:
             keys = set.union(*[set(d.keys()) for d in flat_batch])
             [self.fields.append(k) for k in keys if k not in self.fields if k != "_source.htmlsource"]
+            
 
         logger.info('Exporting these fields: {}'.format(self.fields))
         
