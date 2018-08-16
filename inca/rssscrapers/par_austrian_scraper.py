@@ -44,7 +44,7 @@ class austrianparliament(rss):
             title=re.sub("[\(].*?[\)]", "", t)
             logger.info(title)
         except:
-            print("no title")
+            logger.warning("no title")
             title = ""
         try:
             d = tree.xpath('//*[@id="content"]/div[3]/div[2]/table/tbody/tr[1]/td[1]//text()')[0].strip()
@@ -57,12 +57,12 @@ class austrianparliament(rss):
         except Exception as e:
             try:
                 d = tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/ul/li/a/text()')[0].strip()
-                print(d)
+                #print(d)
                 jaar = int(d[1:2])
                 maand = int(d[4:5])
                 dag = int(d[7:10])
                 datum = datetime.datetime(jaar,maand,dag)
-                print(datum)
+                #print(datum)
             except Exception as e:    
                 print('could not parse date')
                 print(e)
@@ -95,7 +95,7 @@ class austrianparliament(rss):
             try:
                 text=" ".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/p[2]//text()')).strip()
                 text = re.sub(r'\s+',' ',text)
-                print(text)
+                #print(text)
             except:
                 logger.info("oops - no text?")
                 text = ""
@@ -126,6 +126,6 @@ class austrianparliament(rss):
                   'questioners_party':questioners_party,
                   'date':datum,
                   })
-        print(release)
+        #print(release)
         return release
 
