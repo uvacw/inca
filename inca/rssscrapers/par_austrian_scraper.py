@@ -1,8 +1,8 @@
 import requests
 import datetime
-from lxml.html import fromstring, document_fromstring
-from core.scraper_class import Scraper
-from scrapers.rss_scraper import rss
+from lxml.html import fromstring
+from inca.core.scraper_class import Scraper
+from inca.scrapers.rss_scraper import rss
 import feedparser
 import re
 import logging
