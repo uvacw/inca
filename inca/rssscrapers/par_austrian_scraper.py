@@ -56,65 +56,74 @@ class austrianparliament(rss):
             datum = datetime.datetime(jaar,maand,dag)
             print(datum)
         except Exception as e:
-            print('could not parse date')
-            print(e)
-            datum = None
+            try:
+                d = tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/ul/li/a/text()')[0].strip()
+                print(d)
+                jaar = int(d[1:2])
+                maand = int(d[4:5])
+                dag = int(d[7:10])
+                datum = datetime.datetime(jaar,maand,dag)
+                print(datum)
+            except Exception as e:    
+                print('could not parse date')
+                print(e)
+                datum = None
         try:    
-            # try to get the member...
-            m="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/p[4]/a//text()')).strip()
+            # try to get the questioners...
+            q="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/p[4]/a//text()')).strip()
             # ... but if it does not contain 'eingebracht', then we grabbed the wrong thing and try sth alternative:
-            if m.find('eingebracht') == -1:
-                m="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/p[2]/a//text()')).strip()
-            members=re.sub("[\(].*?[\)]", "", m)
-            print(members)
+            if q.find('eingebracht') == -1:
+                q="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/p[2]/a//text()')).strip()
+            questioners=re.sub("[\(].*?[\)]", "", q)
+            print(questioners)
         except:
-            members=""
-            members_clean = " ".join(members.split())
+            try:
+                q="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/p[3]/a//text()')).strip()
+            except Exception as e:
+                questioners=""
+                questioners_clean = " ".join(members.split())
         try:
-            party = re.findall(r'\((.*)\)',m)[0]
-            #p ="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]//text()')).strip()
-            #party = re.findall(r'\((.*)\)',p)[0]
-            print(party)
+            questioners_party = re.findall(r'\((.*)\)',q)[0]
+            print(questioners_party)
         except:
-            party= ""
-            party_clean = " ".join(party.split())
+            questioners_party= ""
+            questioners_party_clean = " ".join(questioners_party.split())
         try:
             text=" ".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/p[1]//text()')).strip()
             text = re.sub(r'\s+',' ',text)
             print(text)
-        except:
-            logger.info("oops - geen textrest?")
-            text = ""
+        except Exception as e:
+            try:
+                text=" ".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/p[2]//text()')).strip()
+                text = re.sub(r'\s+',' ',text)
+                print(text)
+            except:
+                logger.info("oops - geen textrest?")
+                text = ""
+        releases = {}
         try:
-            pdf_url="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/div/ul/li[2]/a[1]/@href')).strip()
-            self.create_pdf(pdf_url)    
+            html_url="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/div/ul/li[2]/a[2]/@href')).strip()
+            self.create_html(html_url)
+            r = requests.get(self.BASE_URL + url[1:], allow_redirects=True)
+            html_question=r.content
+            releases.update({'html_question':html_question})
         except Exception as e:
             try:
                 pdf_url="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/div/ul/li/a/@href')).strip()
-                self.create_pdf(pdf_url)
+                self.create_html(pdf_url)
+                r = requests.get(self.BASE_URL + url[1:], allow_redirects=True)
+                releases.update({'pdf_url':pdf_url})
             except Exception as e:
-                pdf_url= ""
-                pdf_url_clean = " ".join(pdf_url.split())
+                html_url= ""
+                html_url_clean = " ".join(html_url.split())
         text = "".join(text)
-        releases={'title':title.strip(),
+        releases.update({'title':title.strip(),
                   'text':text.strip(),
-                  'members':members.strip(),
-                  'party':party,
+                  'questioners':questioners.strip(),
+                  'questioners_party':questioners_party,
                   'date':datum,
-                  'pdf_url':pdf_url,
-                  }
+                  'html_url':html_url,
+                  })
 
         return releases
 
-    def create_pdf(self, url):
-        try:
-            print(self.BASE_URL + url[1:])
-            r = requests.get(self.BASE_URL + url[1:], allow_redirects=True)
-
-            with open('/Users/tamara/Downloads/'+ url.split('/')[-1], 'wb') as f:
-                f.write(r.content)
-        except Exception as e:
-            print(e)
-
-# change 'member' + 'party' name
-# remove 'party' from 'member'
