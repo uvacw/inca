@@ -163,7 +163,7 @@ class hype_tfidf(Analysis):
      
 class hype_tfidf_perday(Analysis):
 
-     def fit(self, documents, textkey) 
+     def fit(self, documents, textkey):
           '''
           Concatenates documents per day and then calculates Tf-idf score for each day document and creates a dataframe
 
