@@ -1,9 +1,8 @@
 import requests
 import datetime
-from lxml.html import fromstring
+from lxml.html import fromstring, document_fromstring
 from core.scraper_class import Scraper
 from scrapers.rss_scraper import rss
-from core.database import check_exists
 import feedparser
 import re
 import logging
@@ -43,7 +42,7 @@ class austrianparliament(rss):
         try:
             t="".join(tree.xpath('//*/h1[@id="inhalt"][1]//text()')).strip()
             title=re.sub("[\(].*?[\)]", "", t)
-            print(title)
+            logger.info(title)
         except:
             print("no title")
             title = ""
@@ -54,7 +53,7 @@ class austrianparliament(rss):
             maand = int(d[-7:-5])
             dag = int(d[-10:-8])
             datum = datetime.datetime(jaar,maand,dag)
-            print(datum)
+            logger.info(datum)
         except Exception as e:
             try:
                 d = tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/ul/li/a/text()')[0].strip()
@@ -98,32 +97,34 @@ class austrianparliament(rss):
                 text = re.sub(r'\s+',' ',text)
                 print(text)
             except:
-                logger.info("oops - geen textrest?")
+                logger.info("oops - no text?")
                 text = ""
-        releases = {}
+        release = {}
+        # we first check whether there is a HTML version of the question
         try:
             html_url="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/div/ul/li[2]/a[2]/@href')).strip()
-            self.create_html(html_url)
-            r = requests.get(self.BASE_URL + url[1:], allow_redirects=True)
+            r = requests.get(self.BASE_URL + html_url, allow_redirects=True)
             html_question=r.content
-            releases.update({'html_question':html_question})
+            text_question = document_fromstring(html_question).text_content()
+            release.update({'html_url':html_url, 'html_question':html_question, 'text_question':text_question})
+        # if not, we grab the PDF-URL instead
         except Exception as e:
+            print(e)
             try:
-                pdf_url="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/div/ul/li/a/@href')).strip()
-                self.create_html(pdf_url)
-                r = requests.get(self.BASE_URL + url[1:], allow_redirects=True)
-                releases.update({'pdf_url':pdf_url})
+                pdf_url="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/div/ul/li/a/@href')).strip()    
+                r = requests.get(self.BASE_URL + pdf_url, allow_redirects=True)
+                release.update({'pdf_url':pdf_url})
             except Exception as e:
-                html_url= ""
-                html_url_clean = " ".join(html_url.split())
+                print(e)
+                logger.warning('no question found, neither as HTMl nor as PDF')
+
         text = "".join(text)
-        releases.update({'title':title.strip(),
+        release.update({'title':title.strip(),
                   'text':text.strip(),
                   'questioners':questioners.strip(),
                   'questioners_party':questioners_party,
                   'date':datum,
-                  'html_url':html_url,
                   })
-
-        return releases
+        print(release)
+        return release
 
