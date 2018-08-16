@@ -1,4 +1,6 @@
 from ..core.analysis_base_class import Analysis
+import logging
+logger = logging.getLogger(__name__)
 
 # import nltk.corpus
 # from nltk.text import Text, TextCollection
@@ -9,7 +11,17 @@ vectorizer = TfidfVectorizer()
 
 from sklearn.cluster import KMeans
 
-import matplotlib.pyplot as plt
+from os import environ
+
+if 'DISPLAY' in environ:
+    from matplotlib import pyplot as plt
+else:
+    logger.warning('$DISPLAY environment variable is not set, trying a different approach. You probably are running INCA on a text console, right?')
+    import matplotlib
+    matplotlib.use('Agg')
+    from matplotlib import pyplot as plt
+
+
 import pandas as pd
 
 class hype_cluster(Analysis):
