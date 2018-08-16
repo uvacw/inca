@@ -58,7 +58,7 @@ def get_document(doc_id):
 
 def check_exists(document_id):
     if not DATABASE_AVAILABLE: return False, {}
-    if not document_id is None:
+    if document_id is None or document_id.strip()=='':
         logger.warning('You did not provide a document_id, returning False')
         return False, {}
     index = elastic_index
