@@ -75,6 +75,8 @@ class rss(Scraper):
                     _id=post.id
                 except:
                     _id=post.link
+                if _id == None:
+                    _id=post.link
 
                 link=re.sub("/$","",self.getlink(post.link))
 

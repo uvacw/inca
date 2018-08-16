@@ -58,6 +58,9 @@ def get_document(doc_id):
 
 def check_exists(document_id):
     if not DATABASE_AVAILABLE: return False, {}
+    if not document_id is None:
+        logger.warning('You did not provide a document_id, returning False')
+        return False, {}
     index = elastic_index
     try:
         retrieved = client.get(elastic_index,doc_type='_all', id=document_id)
