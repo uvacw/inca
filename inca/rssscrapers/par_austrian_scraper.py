@@ -105,7 +105,8 @@ class austrianparliament(rss):
             html_url="".join(tree.xpath('//*[@id="content"]/div[3]/div[2]/div[2]/div/ul/li[2]/a[2]/@href')).strip()
             r = requests.get(self.BASE_URL + html_url, allow_redirects=True)
             html_question=r.content
-            text_question = document_fromstring(html_question).text_content()
+            tree2 = fromstring(html_question)
+            text_question = "".join(tree2.xpath('//*[@class="WordSection1"]//text()')).strip()
             release.update({'html_url':html_url, 'html_question':html_question, 'text_question':text_question})
         # if not, we grab the PDF-URL instead
         except Exception as e:
