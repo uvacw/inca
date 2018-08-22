@@ -79,7 +79,7 @@ Note that the tf-idf scores are based on texts including stopwords. To exclude s
 ```python
 from inca import Inca
 myinca = Inca()
-[e for e in myinca.preprocessing.remove_stopwords('nu', 'text', save=True)]
+p = [e for e in myinca.preprocessing.remove_stopwords('nu', 'text', stopwords='dutch', save=True)]
 docs = list(myinca.database.doctype_generator('nu'))
 results = myinca.analysis.hype_tfidf_perday.fit(docs, textkey='text_remove_stopwords')
 
