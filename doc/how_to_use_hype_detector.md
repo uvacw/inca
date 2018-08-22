@@ -2,7 +2,7 @@
 
 ## What is it?
 
-The hype detector aims to be a tool to identify sudden changes in words/phrases and to identify events in sets of documents. There are two ways to do this, each with separate methods: clustering method or Td-idf method.
+The hype detector aims to be a tool to identify sudden changes in words/phrases and to identify events in sets of documents. There are two ways to do this, each with separate methods: clustering method or Td-idf method. INCA has two tf-idf functionalities. The first calculates the tf-idf scores for specified search terms, and the second calculates the most important words based on their tf-idf scores per day.
 
 ### 1) Hype_cluster class
 
@@ -54,4 +54,33 @@ And then we can use pandas methods to analyze the dataframe:
 ```
 perday.describe()
 perday.plot()
+```
+
+### 3) Hype_tfidf_perday class
+The fit method concatenates documents per day and finds the most important words per day based on their tf-idf scores. Like the hype_tfidf class, it receives texts from the Inca database, where news articles are stored in a dict. The method takes the text from the location that is specified as textkey (e.g. 'title', 'text', 'text_remove_stopwords'). It concatenates the articles per day and calculates the tf-idf scores. Then, the most important words and their corresponding tf-idf scores are saved in a pandas dataframe together with the publication date.
+
+Example:
+```python
+from inca import Inca
+myinca = Inca()
+docs = list(myinca.database.doctype_generator('nu'))
+results = myinca.analysis.hype_tfidf_perday.fit(docs, textkey='text')
+
+```
+
+By default, the number of most important words to retrieve per day is set to 5. You can change this number by specifying the top_n parameter:
+```python
+results = myinca.analysis.hype_tfidf_perday.fit(docs, textkey='text', top_n=10)
+
+```
+
+Note that the tf-idf scores are based on texts including stopwords. To exclude stopwords, first use the stopword removal functionality, and then specify the textkey as 'text_remove_stopwords'.
+
+```python
+from inca import Inca
+myinca = Inca()
+[e for e in myinca.preprocessing.remove_stopwords('nu', 'text', save=True)]
+docs = list(myinca.database.doctype_generator('nu'))
+results = myinca.analysis.hype_tfidf_perday.fit(docs, textkey='text_remove_stopwords')
+
 ```
