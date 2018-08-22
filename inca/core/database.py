@@ -19,13 +19,14 @@ import configparser
 import requests
 from celery import Task
 import os
+from tqdm import tqdm
 
 from .filenames import id2filename
 
 config = configparser.ConfigParser()
 config.read('settings.cfg')
 
-logger = logging.getLogger("INCA"+__name__)
+logger = logging.getLogger("INCA")
 logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
 try:
@@ -389,10 +390,7 @@ def scroll_query(query,scroll_time='30m', log_interval=None):
         else:
             update_step = min((total/1000), 100)
 
-    for n, doc in enumerate(helpers.scan(client, query=query, scroll=scroll_time)):
-        if not (n+1 ) % update_step:
-            perc = ((n+1)/total) / 100
-            logger.info("At item {n:10d} of {total} items | {perc:06.2f}".format(n=n+1, total=total, perc=perc))
+    for doc in tqdm(helpers.scan(client, query=query, scroll=scroll_time), total = total):
         yield doc
 
 
