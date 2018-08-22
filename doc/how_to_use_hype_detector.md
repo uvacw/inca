@@ -42,3 +42,16 @@ docs = list(myinca.database.doctype_generator('nu'))
 results = myinca.analysis.hype_tfidf.fit(docs, searchterm = 'trump', textkey='text')
 
 ```
+
+Aggregate the results per day:
+```
+import pandas as pd
+results.index = pd.DatetimeIndex(results['Publication Date'].map(pd.to_datetime))
+perday = results['Tf-idf'].groupby(results.index.date).sum()
+```
+
+And then we can use pandas methods to analyze the dataframe:
+```
+perday.describe()
+perday.plot()
+```
