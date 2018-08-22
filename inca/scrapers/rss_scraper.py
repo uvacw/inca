@@ -8,7 +8,7 @@ import logging
 import feedparser
 import re
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 
 

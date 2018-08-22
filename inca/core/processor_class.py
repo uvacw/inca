@@ -18,7 +18,7 @@ from inca import core
 
 from collections import OrderedDict
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 logger.setLevel('DEBUG')
 
 class Processer(Document):

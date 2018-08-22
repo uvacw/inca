@@ -24,7 +24,7 @@ import logging
 from .document_class import Document
 from .database import check_exists, DATABASE_AVAILABLE
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class Scraper(Document):
     '''

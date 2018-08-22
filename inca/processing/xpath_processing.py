@@ -3,7 +3,7 @@ from ..core.processor_class import Processer
 from ..core.basic_utils import dotkeys
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class xpath(Processer):
     '''Extract Xpath fields from html or xml documentsxs    '''

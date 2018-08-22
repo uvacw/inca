@@ -17,7 +17,7 @@ import json
 import pandas
 from ..core.database import config
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 if sys.version_info.major==2:
     logger.info("Detected python2 environment, using subprocess32 for timeout support")

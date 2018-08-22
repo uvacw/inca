@@ -8,7 +8,7 @@ import re
 import logging
 import urllib
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
     
 class austrianparliament(rss):
     """Scrapes Austrian Parliament"""

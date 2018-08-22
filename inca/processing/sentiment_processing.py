@@ -7,7 +7,7 @@ import sys
 from nltk.sentiment import vader
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 try:
     from pattern.nl import parse

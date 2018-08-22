@@ -10,7 +10,7 @@ import csv
 import chardet
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class import_csv(Importer):
     """Read csv files"""

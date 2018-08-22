@@ -8,7 +8,7 @@ import re
 import logging
 import requests
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 def polish(textstring):
     #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.

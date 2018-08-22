@@ -11,7 +11,7 @@ import logging
 import datetime
 from celery import Task
 from .search_utils import doctype_last, doctype_first
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 from .database import insert_document, insert_documents, update_document, check_exists
 

@@ -18,7 +18,7 @@ from nltk.stem.snowball import SnowballStemmer
 import pandas as pd
 import numpy as np
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 tbl = dict.fromkeys(i for i in range(maxunicode) if unicodedata.category(chr(i)).startswith('P'))
 
 class cosine_similarity(Analysis):

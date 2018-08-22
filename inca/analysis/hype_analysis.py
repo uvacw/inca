@@ -1,6 +1,6 @@
 from ..core.analysis_base_class import Analysis
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 # import nltk.corpus
 # from nltk.text import Text, TextCollection

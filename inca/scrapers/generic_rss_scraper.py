@@ -5,7 +5,7 @@ from ..core.database import check_exists
 import logging
 import datetime
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 
 class generic_rss(Scraper):
