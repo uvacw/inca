@@ -4,7 +4,7 @@ import urllib
 import os
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 DEPENDENCIES_FOLDER = "dependencies"
 

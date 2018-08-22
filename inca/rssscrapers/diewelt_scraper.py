@@ -7,7 +7,7 @@ import feedparser
 import re
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class diewelt(rss):
     """Scrapes welt.de"""
