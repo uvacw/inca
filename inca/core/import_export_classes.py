@@ -266,7 +266,7 @@ class Exporter(BaseImportExport):
         # handle cases when a path instead of a filename is provided
         if os.path.isdir(filename):
             now = time.localtime()
-            newname = "INCA_export_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}.{extension}".format(now=now, extension=self.extension)
+            newname = "INCA_export_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.{extension}".format(now=now, extension=self.extension)
             filename = os.path.join(filename,newname)
         if self.extension not in filename:
             filename = "{filename}.{extension}".format(filename=filename, extension=self.extension)
