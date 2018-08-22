@@ -12,6 +12,10 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import pandas as pd
 
+#testing
+import numpy as np
+
+
 class hype_cluster(Analysis):
 
      def fit(self, documents, textkey,  N_clusters):
@@ -131,7 +135,7 @@ class hype_tfidf(Analysis):
 
           Yields
           ----
-          Creates dataframe with news articles from Inca databse. 
+          Creates dataframe with news articles from Inca database. 
           The dataframe includes the source and publication date of the article and the tfidf score for the specified searchterm
           '''
 
@@ -162,8 +166,8 @@ class hype_tfidf(Analysis):
           
      
 class hype_tfidf_perday(Analysis):
-
-     def fit(self, documents, textkey) 
+     
+     def fit(self, documents, textkey, top_n = 5): 
           '''
           Concatenates documents per day and then calculates Tf-idf score for each day document and creates a dataframe
 
@@ -175,26 +179,46 @@ class hype_tfidf_perday(Analysis):
           News articles stored as dicts in the Inca database
           
           textkey: string
-          The key where the texts can be found (eg 'title' or 'text')
+          The key where the texts can be found (e.g. 'title', 'text' or 'text_remove_stopwords')
 
+          top_n: int (default=5)
+          The number of number of most important words per day to retrieve.
+          
           Yields
           ----
-          Creates dataframe with tf-idf scores of most important words per day
+          Creates dataframe with tf-idf scores of the most important words per day.
+          The dataframe includes the publication date, and the top_n most important words and their tf-idf scores as a tuple.
+
           '''
 
           self.textkey = textkey
 
-          for e in docments:
-               # merge documents per day, creating a datarame with date in column 1 and all texts of that day in one single loooooong string in column 2
-               # could also be a dict instead with dates as key
-               print('TO BE DONE ;-)')
+          df2 = pd.DataFrame(columns=['Publication Date', 'Text'])
+          for e in documents:
+               df2 = df2.append({'Publication Date':e['_source']['publication_date'][:-9], 'Text':e['_source'].get(self.textkey,"")}, ignore_index=True)
 
-          # then calculate tf idf scores (similar to approah in hype_tfidf class above) based on the day-documents
+          df3 = df2.groupby('Publication Date')['Text'].apply(' '.join).reset_index()
 
-          # finally, return the three most important words per day
-               
-               
-          return 
+          
+          column_list = ['top{}'.format(i) for i in range(1, top_n+1)]
+
+          tfidf_matrix = vectorizer.fit_transform(df3["Text"])
+
+          tfidf_df = pd.DataFrame(tfidf_matrix.toarray())
+          tfidf_df.columns = vectorizer.get_feature_names()
+
+          order =  np.argsort(-tfidf_df.values, axis = 1)[:, :top_n]
+          result = pd.DataFrame(tfidf_df.columns[order], columns = column_list, index = tfidf_df.index)
+
+          results2 = result.copy()
+
+          for idx, row in result.iterrows():
+               for col in column_list:
+                    results2.iloc[idx][col] = (row[col], tfidf_df.iloc[idx][row[col]])
+
+          self.df4 = pd.concat([df3['Publication Date'], results2], axis=1)
+          
+          return self.df4
 
 
           
