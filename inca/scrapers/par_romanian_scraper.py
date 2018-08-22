@@ -36,10 +36,8 @@ class romanianparliament(Scraper):
                 page = requests.get(self.BASE_URL + 'interpelari.lista?tip=&dat=' + str(year) + '&idl=2')
 
                 if page.text.find('Question no.') == -1:
-                    print(str(year) + ' niet gevonden')
+                    logger.info(str(year) + ' niet gevonden')
                     break
-
-                print(year)
 
                 tree = fromstring(page.text)
                 linkobjects = tree.xpath('//*[@id="pageContent"]//tr/td/b/a')
@@ -51,32 +49,27 @@ class romanianparliament(Scraper):
                     tree = fromstring(current_page.text)
                     try:
                         title="".join(tree.xpath('//*[@id="pageContent"]/p[1]/span//text()')).strip()
-                        print(title)
                     except:
-                        print("no title")
+                        logger.info("no title")
                         title = ""
                     try:
                         d = tree.xpath('//*[@id="pageContent"]/dd/table/tr[3]/td[2]/b//text()')[0].strip()
-                        print(d)
                         jaar = int(d[-4:])
                         maand = int(d[-7:-5])
                         dag = int(d[-10:-8])
                         datum = datetime.datetime(jaar,maand,dag)
-                        print(datum)
                     except Exception as e:
-                        print('could not parse date')
-                        print(e)
+                        logger.info('could not parse date')
+                        logger.info(e)
                         datum = None          
                     try:
                         questioners="".join(tree.xpath('//*[@id="pageContent"]/dd/table/tr[*]/td[2]/b/a//text()')).strip()
-                        print(questioners)
                     except Exception as e:
-                        print(e)
+                        logger.info(e)
                         questioners= ""
                         questioners_clean = " ".join(members.split())
                     try:
                         questioners_party="".join(tree.xpath('//*[@id="pageContent"]/dd/table/tr[*]/td[2]/a//text()')).strip()
-                        print(questioners_party)
                     except:
                         questioners_party= ""
                         questioners_party_clean = " ".join(questioners_party.split())
@@ -101,7 +94,7 @@ class romanianparliament(Scraper):
         
             except Exception as e:
         
-                print(e)
+                logger.info(e)
                 break
 
         return releases
