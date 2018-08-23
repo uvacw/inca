@@ -18,7 +18,7 @@ class danishparliament(Scraper):
 
     def __init__(self,database=True):
         self.database = database
-        self.START_URL = "http://www.ft.dk/da/dokumenter/dokumentlister/alle_spoergsmaal?startDate=20180101&endDate=20180701&pageNumber="
+        self.START_URL = "http://www.ft.dk/da/dokumenter/dokumentlister/alle_spoergsmaal?startDate=20050101&endDate=20180701&pageNumber="
         self.BASE_URL = "http://www.ft.dk/"
         self.doctype = "danishparliament (par)"
         self.version = ".1"
@@ -51,13 +51,13 @@ class danishparliament(Scraper):
                         self.process_version1(tree, releases, link, 'lovforslag')
                     elif '/spoergsmaal/' in link: 
                         self.process_version2(tree, releases, link, 'spoergsmaal')
+                    elif '/aktstykke/' in link: 
+                        self.process_version2(tree, releases, link, 'aktstykke')    
                     elif '/almdel/' in link:
                         self.process_version1(tree, releases, link, 'almdel')
                     else:
-                        print('Unknown version')
-                    print(link + '\n')   
+                        logger.info('Unknown version') 
 
-            break
             page+=1
             current_url = self.START_URL+str(page)
             overview_page = requests.get(current_url)
@@ -65,70 +65,54 @@ class danishparliament(Scraper):
         return releases
 
     def process_version1(self, tree, releases, link, category):
-        print('Version 1')
-        print(category)
+        logger.info('Version 1')
+        logger.info(category)
         try:
             title="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[6]/div/div/div/div/table/tr/td[2]/p//text()')).strip()
             title = re.sub(r"Spm.[ ,.]*", "", title).title()
-            print(title)
-        except:
-            print("no title")
-            title = ""
+        except Exception as e:
+            try:
+                title="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[8]/div/div/div/div/table/tr/td[2]/p//text()')).strip()
+                title = re.sub(r"Spm.[ ,.]*", "", title).title()
+            except Exception as e:
+                logger.info("no title")
+                title = ""
         try:
-            d = tree.xpath('//*[@class="case-document"]/div[@class="tingdok-normal"][3]/span//text()')[0].strip()
+            d = tree.xpath('//span[contains(.,"Dato:")]/text()')[0].strip()
+            #d = tree.xpath('//*[@class="case-document"]/div[@class="tingdok-normal"][3]/span//text()')[0].strip()
             jaar = int(d[-4:])
             maand = int(d[-7:-5])
             dag = int(d[-10:-8])
             datum = datetime.datetime(jaar,maand,dag)
-            print(datum)
         except Exception as e:
-            try:
-                d = tree.xpath('//*[@id="ContentArea"]/div[5]/div[6]/div/div/div/div/table/tr/td[1]/dl/dd//text()')[0].strip()
-                print(d)
-                jaar = int(d[-4:])
-                maand = int(d[-7:-5])
-                dag = int(d[-10:-8])
-                datum = datetime.datetime(jaar,maand,dag)
-                print(datum)
-            except Exception as e:
-                print('could not parse date')
-                print(e)
-                datum = None
-        #try:
-        #    members="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[1]/div/div[4]/a//text()')).strip()
-        #    print(members)
-        #except Exception as e:
-        #    try:
-        #        members="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[1]/div/div[4]/span[2]//text()')).strip()
-        #        print(members)
-        #    except Exception as e:
-        #        try:
-        #            members="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[1]/div/div[3]/a//text()')).strip()
-        #            print(members)
-        #        except:
-        #            members= ""
-        #            members_clean = " ".join(members.split())
-
-# http://www.ft.dk//samling/20171/lovforslag/L148/spm/2/index.htm
-# //*[@id="ContentArea"]                                     /div/div//a
-# //*[@id="accordion-805234ff-576e-4be7-93da-0e7ffb087a5d-1"]/div/div//a
+            logger.info('could not parse date')
+            logger.info(e)
+            datum = None
+            #try:
+            #    d = tree.xpath('//*[@id="ContentArea"]/div[5]/div[6]/div/div/div/div/table/tr/td[1]/dl/dd//text()')[0].strip()
+            #    jaar = int(d[-4:])
+            #    maand = int(d[-7:-5])
+            #    dag = int(d[-10:-8])
+            #    datum = datetime.datetime(jaar,maand,dag)
+            #    logger.info(datum)
+            #except Exception as e:
+            #    logger.info('could not parse date')
+            #    logger.info(e)
+            #    datum = None
         try:
             q="".join([x.xpath('following-sibling::a//text()') for x in tree.xpath('//*/div/div//*[contains(text(), "Af:")]')][-1]).strip()
             questioners=re.sub("[\(].*?[\)]", "", q)
-            print(questioners)
         except Exception as e:
             questioners= ""
             questioners_clean = " ".join(questioners.split())
         try:
             qp="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[1]/div/div[4]/a//text()')).strip()
             questioners_party = re.findall(r'\((.*)\)',qp)[0]
-            print(questioners_party)
         except:
             questioners_party= ""
             questioners_party_clean = " ".join(questioners_party.split())
         try:
             text=" ".join(tree.xpath('//*[@class="case-document"]/div[@class="tingdok-normal"][1]/span//text()')).strip()
-            print(text)
         except:
             logger.info("oops - geen textrest?")
             text = ""
@@ -149,38 +133,43 @@ class danishparliament(Scraper):
                          'url':link.strip()})
 
     def process_version2(self, tree, releases, link, category):
-        print('Version 2')
-        print(category)
+        logger.info('Version 2')
+        logger.info(category)
         try:
             title="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[1]/div/div[1]/span//text()')).strip()
             title = title[title.index('Om'):]
-            print(title)
         except:
-            print("no title")
-            title = ""
+            try:
+                title="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[7]/div/div/div/div/table/tr/td[2]//p//text()')).strip()
+            except:
+                logger.info("no title")
+                title = ""
         try:
             d = tree.xpath('//*[@id="ContentArea"]/div[5]/div[1]/div/div[4]/span[2]//text()')[0].strip()
-            print(d)
             jaar = int(d[-4:])
             maand = int(d[-7:-5])
             dag = int(d[-10:-8])
             datum = datetime.datetime(jaar,maand,dag)
-            print(datum)
         except Exception as e:
-            print('could not parse date')
-            print(e)
-            datum = None          
+                try:
+                    d = tree.xpath('//*[@class="panel-group case-info-configurable-spot"]/div/div/div/div[5]/span[1]//text()')[0].strip()
+                    jaar = int(d[-4:])
+                    maand = int(d[-7:-5])
+                    dag = int(d[-10:-8])
+                    datum = datetime.datetime(jaar,maand,dag)
+                except:
+                    logger.info('could not parse date')
+                    logger.info(e)
+                    datum = None          
         try:
             q="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[1]/div/div[2]/a//text()')).strip()
             questioners=re.sub("[\(].*?[\)]", "", q)
-            print(questioners)
         except:
             questioners= ""
             questioners_clean = " ".join(questioners.split())
         try:
             qp="".join(tree.xpath('//*[@id="ContentArea"]/div[5]/div[1]/div/div[2]/a//text()')).strip()
             questioners_party = re.findall(r'\((.*)\)',qp)[0]
-            print(questioners_party)
         except:
             questioners_party= ""
             questioners_party_clean = " ".join(questioners_party.split())
@@ -194,7 +183,6 @@ class danishparliament(Scraper):
                     svar_found = True
                 elif svar_found:
                     text = row_text
-                    print(row_text)
                     break
         except:
             logger.info("oops - geen textrest?")
@@ -215,12 +203,12 @@ class danishparliament(Scraper):
                          'pdf_url':pdf_url,
                          'url':link.strip()})
 
-    def create_pdf(self, url):
-        try:
-            print(self.BASE_URL + url[1:])
-            r = requests.get(self.BASE_URL + url[1:], allow_redirects=True)
-
-            with open('/Users/tamara/Downloads/'+ url.split('/')[-1], 'wb') as f:
-                f.write(r.content)
-        except Exception as e:
-            print(e)
+    #def create_pdf(self, url):
+    #    try:
+    #        print(self.BASE_URL + url[1:])
+    #        r = requests.get(self.BASE_URL + url[1:], allow_redirects=True)
+#
+    #        with open('/Users/tamara/Downloads/'+ url.split('/')[-1], 'wb') as f:
+    #            f.write(r.content)
+    #    except Exception as e:
+    #        print(e)
