@@ -241,7 +241,7 @@ class Exporter(BaseImportExport):
         """
         raise NotImplementedError
 
-    def _flatten_doc(self, document, include_meta=False):
+    def _flatten_doc(self, document, include_meta=False, include_html=False):
         """Utility to convert elasticsearch documents to a flat representation
 
         Parameters
@@ -259,6 +259,7 @@ class Exporter(BaseImportExport):
         flat_dict={}
         for k,v in document.items():
             if k=='META' and not include_meta: continue
+            if k=='htmlsource' and not include_html: continue
             if type(v) == str:
                 flat_dict[k]=v
             elif type(v) == list:

@@ -908,7 +908,7 @@ class telegraaf(rss):
         else:
             paywall_na = False
         try:
-            title = tree.xpath('//*/h1[@class="article-title playfair-bold-l no-top-margin no-bottom-margin gray1"]/text() | //*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()') [0]
+            title = tree.xpath('//*/h1[@class="article-title playfair-bold-l no-top-margin no-bottom-margin gray1"]/text()|//*/h1[@class="article-title playfair-bold-l playfair-bold-xl--m playfair-bold-g--l no-top-margin no-bottom-margin gray1"]/text()|//*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()|//*/h2[@class="no-top-margin bottom-margin-3 bottom-margin-4--l roboto-black-l roboto-black-xl--l gray2"]/text()') [0] 
         except:
             title=""
             logger.warning("Could not parse article title")

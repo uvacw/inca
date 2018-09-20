@@ -84,12 +84,13 @@ class import_csv(Importer):
                                     pass
                             try:
                                 row['doctype'] = row['_source.doctype']
+                                yield row
                             except:
                                 if 'doctype' in row:
                                     yield row
                                 else:
                                     logger.warning("You need a key named 'doctype' to insert the document in the database")
-                            yield row
+                            
 
 
 class export_csv(Exporter):
@@ -97,7 +98,7 @@ class export_csv(Exporter):
 
     batchsize = 1000
 
-    def save(self, documents, destination, fields=None, include_meta=False, remove_linebreaks=True, *args, **kwargs):
+    def save(self, documents, destination, fields=None, include_meta=False, include_html=False, remove_linebreaks=True, *args, **kwargs):
         """
 
         Parameters
@@ -131,27 +132,23 @@ class export_csv(Exporter):
         if fields is None: fields=[]
         self.fields = ['_source.{}'.format(f) for f in fields]
 
-        flat_batch = list(map(lambda doc: self._flatten_doc(doc, include_meta), documents))
+        flat_batch = list(map(lambda doc: self._flatten_doc(doc, include_meta, include_html), documents))
         if len(self.fields)==0:
             keys = set.union(*[set(d.keys()) for d in flat_batch])
-            [self.fields.append(k) for k in keys if k not in self.fields]
+            [self.fields.append(k) for k in keys if k not in self.fields and k != '_source.images']
 
         logger.info('Exporting these fields: {}'.format(self.fields))
         
         self.extension = "csv"
         if  self.fileobj and not self.fileobj.closed:
             outputfile = self.fileobj
-            new = False
         elif self.fileobj:
             outputfile = self._makefile(destination, mode='a')
-            new = False
         else:
             outputfile = self._makefile(destination)
-            new = True
 
         writer = csv.DictWriter(outputfile, self.fields, extrasaction='ignore',*args, **kwargs)
-        if new:
-            writer.writeheader()
+        writer.writeheader()
         for doc in flat_batch:
             if remove_linebreaks:
                 doc = {k: v.replace('\n\r',' ').replace('\n',' ').replace('\'r',' ') for k,v in doc.items()}
