@@ -9,6 +9,7 @@ The basic functionality is adding meta-data
 
 import logging
 import datetime
+import types
 from celery import Task
 from .search_utils import doctype_last, doctype_first
 logger = logging.getLogger("INCA")
@@ -117,13 +118,13 @@ class Document(Task):
         about the script in question.
 
         '''
-        if type(document)==list:
+        if type(document)==list or isinstance(document, types.GeneratorType):
             return [self._add_metadata(doc) for doc in document]
         try:    docstring = self.get.__doc__
         except:
             try: docstring = self.process.__doc__
             except: docstring = self.run.__doc__
-
+            
         document['doctype'] = self.doctype
 
         meta = dict(
