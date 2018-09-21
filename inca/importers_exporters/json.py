@@ -84,7 +84,7 @@ class export_json_file(Exporter):
             and META will be excluded.
         """
         self.extension = "json"
-        self.fileobj = self._makefile(destination, mode="a", compression=compression)
+        self.fileobj = self._makefile(destination, mode="at", compression=compression)
         for document in batch_of_documents:
             if include_meta==False:
                 if '_source' in document.keys():
@@ -92,9 +92,8 @@ class export_json_file(Exporter):
                 document = {k:v for k, v in document.items() if not k=='META'}
             try:
                 doc_dump = json.dumps(document)
-                self.fileobj.write(doc_dump+"\n")
+                self.fileobj.write(doc_dump+'\n')
             except:
-                raise "hell"
                 self.failed += 1
                 self.failed_ids.append(document['_id'])
         if self.failed:
@@ -126,7 +125,7 @@ class export_json_files(Exporter):
         for document in batch_of_documents:
             filename = id2filename(document.get('_id'))
             location = os.path.join(destination,filename)
-            fileobj = self._makefile(location, mode='w', compression=compression)
+            fileobj = self._makefile(location, mode='wt', compression=compression)
             if include_meta==False:
                 if '_source' in document.keys():
                     document = document['_source']
@@ -138,3 +137,6 @@ class export_json_files(Exporter):
                 self.failed +=1
                 self.failed_ids.append(document['_id'])
             fileobj.close()
+        if self.failed:
+            logger.warning("Failed to export {num} documents".format(num=self.failed))
+            logger.info("Failed ids: {ids}".format(ids=', '.join(self.failed_ids)))

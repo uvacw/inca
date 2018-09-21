@@ -11,7 +11,7 @@ from .basic_utils import dotkeys as _dotkeys
 import _datetime as _datetime
 import json as _json
 
-_logger = _logging.getLogger("INCA.%s" %__name__)
+_logger = _logging.getLogger("INCA")
 
 def list_doctypes():
     if not _DATABASE_AVAILABLE:
@@ -32,13 +32,13 @@ def doctype_generator(doctype):
          _logger.warning("Could not find mapping of doctype, please check whether you are using the correct doctype")
          return []
         
+    if not _DATABASE_AVAILABLE:
+        _logger.warning("Could not get documents: No database instance available")
+        return
     
-    query = {'query':{'term':{field:doctype}}}
-    for num, doc in enumerate(_scroll_query(query)):
-        if not _DATABASE_AVAILABLE:
-            _logger.warning("Could not get documents: No database instance available")
-            break
-        if not num%100: _logger.info("returning {num}".format(**locals()))
+    query = {'query':{'term':{field:doctype}}} 
+
+    for doc in _scroll_query(query):
         yield doc
 
 def document_generator(query="*"):
@@ -70,9 +70,8 @@ def document_generator(query="*"):
             _logger.warning("Unknown input")
             es_query = False
         if es_query:
-            total = _client.search(_elastic_index, body=es_query, size=0)['hits']['total']
-            for num, doc in enumerate(_scroll_query(es_query)):
-                if not num%100: _logger.info("returning {num} of {total}".format(num=num, total=total))
+            # total = _client.search(_elastic_index, body=es_query, size=0)['hits']['total']
+            for doc in _scroll_query(es_query):
                 yield doc
 
 

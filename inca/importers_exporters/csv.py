@@ -12,7 +12,7 @@ import logging
 import os
 from glob import glob
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class import_csv(Importer):
     """Read csv files"""
@@ -116,14 +116,14 @@ class export_csv(Exporter):
             are used.
         include_meta : bool (default=False)
             Whether to include META fields.
+        include_html : bool (default=False)
+            Whether to include HTML source.
         remove_linebreaks : bool (default=True)
             Replace line breaks within cells by a space
 
         args/kwargs are passed to csv.DictWriter.
         In particular, you might be interested in using the follwing arguments:
 
-        dialect='excel'
-            Ensures compatibility with Microsoft Excel
         delimiter=';'
             Use a semicolon instead of a comma. This is what Microsoft Excel
             expects in many locales (e.g., Dutch and German)
@@ -137,8 +137,7 @@ class export_csv(Exporter):
             keys = set.union(*[set(d.keys()) for d in flat_batch])
             [self.fields.append(k) for k in keys if k not in self.fields and k != '_source.images']
 
-        logger.info('Exporting these fields: {}'.format(self.fields))
-        
+        logger.info('Exporting these fields: {}'.format(self.fields))        
         self.extension = "csv"
         if  self.fileobj and not self.fileobj.closed:
             outputfile = self.fileobj

@@ -18,7 +18,7 @@ from inca import core
 
 from collections import OrderedDict
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 logger.setLevel('DEBUG')
 
 class Processer(Document):
@@ -146,7 +146,7 @@ class Processer(Document):
         if 'extra_fields' in kwargs:
             extra_fields = OrderedDict()
             for fieldname in kwargs.pop('extra_fields'):
-                extra_fields[fieldname] = document['_source'][fieldname]
+                extra_fields[fieldname] = document['_source'].get(fieldname)
             document['_source'][new_key] = self.process(document['_source'][field], *args, extra_fields = extra_fields, **kwargs)
         else:
             document['_source'][new_key] = self.process(document['_source'][field], *args, **kwargs)

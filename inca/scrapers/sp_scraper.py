@@ -11,7 +11,7 @@ from time import sleep
 from random import randrange
 import json
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class sp(Scraper):
     """Scrapes SP"""

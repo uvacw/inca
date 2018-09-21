@@ -8,7 +8,7 @@ from time import sleep
 from random import randrange
 import urllib.request as urllib2
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 logger.setLevel(logging.DEBUG)
 
 class tripadvisor(Scraper):

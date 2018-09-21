@@ -38,37 +38,19 @@ class BaseImportExport(Document):
 
 
     def open_file(self, filename, mode='r', force=False, compression="autodetect"):
-        if mode not in ["w","wb","a","ab"] and not os.path.exists(filename):
+        if mode not in ["w","wb","wt","a","ab","at"] and not os.path.exists(filename):
             logger.warning("File not found at {filename}".format(filename=filename))
         if compression == "autodetect":
             compression = self._detect_zip(filename)
         if not compression:
             return open(filename, mode=mode)
-
         else:
             filename += "." + compression
 
-        if mode == 'r':
-            mode = 'rb'
-
-        def cb(fileobj):
-            """monkey-patch fileobject write method to encode"""
-            original_write = fileobj.write
-            def write(input_string):
-                """write with encoding"""
-                bytes_string = input_string.encode()
-                original_write(bytes_string)
-            fileobj.write = write
-            return fileobj
-
-        # compressed formats requiring bytes-styleo pening below here
-
-        if mode == 'w':
-            mode = 'wb'
         if compression == "gz":
-            return cb(gzip.open(filename, mode=mode))
+            return gzip.open(filename, mode=mode)
         if compression == "bz2":
-            return cb(bz2.open(filename, mode=mode))
+            return bz2.open(filename, mode=mode)
         return fileobj
 
     def open_dir(self, path,  mode='r', match=".*", force=False, compression="autodetect"):
@@ -279,13 +261,13 @@ class Exporter(BaseImportExport):
             self.processed += 1
             yield doc
 
-    def _makefile(self, filename, mode='w', force=False, compression=False):
+    def _makefile(self, filename, mode='wt', force=False, compression=False):
         filepath = os.path.dirname(filename)
         os.makedirs(filepath, exist_ok=True)
         # handle cases when a path instead of a filename is provided
         if os.path.isdir(filename):
             now = time.localtime()
-            newname = "INCA_export_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}.{extension}".format(now=now, extension=self.extension)
+            newname = "INCA_export_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.{extension}".format(now=now, extension=self.extension)
             filename = os.path.join(filename,newname)
         if self.extension not in filename:
             filename = "{filename}.{extension}".format(filename=filename, extension=self.extension)

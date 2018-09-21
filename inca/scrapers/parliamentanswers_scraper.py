@@ -4,7 +4,7 @@ from lxml.html import fromstring
 from ..core.scraper_class import Scraper
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 START_URL = "https://zoek.officielebekendmakingen.nl/kamervragen_aanhangsel/actueel/30"
 BASE_URL  = "https://zoek.officielebekendmakingen.nl/"

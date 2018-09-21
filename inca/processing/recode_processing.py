@@ -9,7 +9,7 @@ from dateutil import parser
 import datetime
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class datetime_string_to_date(Processer):
     '''
