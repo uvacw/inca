@@ -116,7 +116,7 @@ class softcosine_similarity(Analysis):
                 ids_final.append(ids_new)
 
             source_dates = [doc['_source'][sourcedate] for doc in source_query]
-        
+            source_ids = [a['_id'] for a in source_query]
             #Make corpus IDs and texts
             texts_split = []
             for text in corpus_final:
@@ -124,20 +124,18 @@ class softcosine_similarity(Analysis):
                 texts_split.append(texts)
             #Make a similarity matrix and index out of the texts in the corpus (what the source articles will be compared to)
             index_lists = []
-            for text in texts_split:
-                dictionary = Dictionary(text)
+            source_texts = [n['_source'][sourcetext].split())] for n in source_query]
+            source_index = zip(texts_split, source_texts)
+            for item in source_index:
+                dictionary = Dictionary(item[0])
                 tfidf = TfidfModel(dictionary=dictionary)
                 similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)
-                index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in text]],similarity_matrix)
-                index_lists.append(index)
-            #Retrieve source IDs and make generator to compute similarities between each source and the index
-            source_ids = [a['_id'] for a in source_query]
-            query_generator = [tfidf[dictionary.doc2bow(n['_source'][sourcetext].split())] for n in source_query]
-            source_index = list(zip(query_generator, index_lists))
-            #Retrieve similarities and make dataframe
-            for i in source_index:
-                print(i[1][i[0]])
-            sims_list = [item[1][item[0]] for item in source_index]
+                index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in item[0]]],similarity_matrix)
+                #Retrieve source IDs and make generator to compute similarities between each source and the index
+                query_generator = [tfidf[dictionary.doc2bow(n)] for n in item[1]]
+                #Retrieve similarities and make dataframe
+                sims_list = [item[1][item[0]][10] for item in source_index]
+            print(sims_list)
             #df = pd.DataFrame(sims_list, columns=target_ids, index = source_ids)
             #df2 = df.stack()
 
