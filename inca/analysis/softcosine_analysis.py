@@ -24,6 +24,7 @@ from gensim.models import Word2Vec
 from gensim.similarities import SoftCosineSimilarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle
+import time
 
 logger = logging.getLogger("INCA")
 
@@ -44,7 +45,7 @@ class softcosine_similarity(Analysis):
                 difference = (first-second).days
             return([first, second, difference])
         
-    def fit(self, path_to_model, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = None, days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False):
+    def fit(self, path_to_model, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = None, days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='exports/'):
         '''
         Model = Supply a pre-trained word2vec model. Information on how to train such a model can be found here:https://rare-technologies.com/word2vec-tutorial/ Alternatively, you can also use the pre-trained model at:...
         Source = doctype of source, Sourcetext = field of sourcetext (e.g. 'text'), 
@@ -88,12 +89,14 @@ class softcosine_similarity(Analysis):
         query_generator = [tfidf[dictionary.doc2bow(n['_source'][sourcetext].split())] for n in source_query]
         query_generator = (item for item in query_generator)
         sims_list = [index[doc] for doc in query_generator]
-
-            
-
-        
+        df = pd.DataFrame(sims_list, columns=query_ids, index = ids)
+        df2 = df.stack()
+        if to_csv == True:
+            now = time.localtime()
+            df2.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
         
         #Retrieve documents and process them
+        #keyerror text
         
         
     
