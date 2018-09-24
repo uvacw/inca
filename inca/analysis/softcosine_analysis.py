@@ -43,11 +43,13 @@ class softcosine_similarity(Analysis):
         
     def fit(self, path_to_model, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = None, days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='exports/'):
         '''
-        Model = Supply a pre-trained word2vec model. Information on how to train such a model can be found here:https://rare-technologies.com/word2vec-tutorial/ Alternatively, you can also use the pre-trained model at:...
-        Source = doctype of source, Sourcetext = field of sourcetext (e.g. 'text'), 
-        Sourcedate = field of sourcedate (e.g. 'publication_date'); (repeat for target); 
-        Days_before = days target is before source (e.g. -2); Days_after = days target is after source (e.g. 2)
-        threshold = threshold to determine at which point similarity is sufficient
+        path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model 
+        can be found here: https://rare-technologies.com/word2vec-tutorial/ Alternatively, you can also use the pre-trained model at:...
+
+        source = doctype of source, Sourcetext = field of sourcetext (e.g. 'text'), 
+        sourcedate = field of sourcedate (e.g. 'publication_date'); (repeat for target); 
+        days_before = days target is before source (e.g. -2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied
+        threshold = threshold to determine at which point similarity is sufficient; if supplied only the rows who pass it are included in the dataset
         from_time, to_time = optional: specifying a date range to filter source and target articles
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
         destination = optional: where should the resulting datasets be saved? Defaults to 'export' folder
@@ -78,10 +80,15 @@ class softcosine_similarity(Analysis):
         source_query = scroll_query(source_query)
         target_query = scroll_query(target_query)
 
-        #Make generators into lists
+        #Make generators into lists and filter out those who do not have the specified keys (preventing KeyError)
         corpus = [a for a in target_query if targettext in a['_source'].keys() and targetdate in a['_source'].keys()]
         source_query = [a for a in source_query if sourcetext in a['_source'].keys() and sourcedate in a['_source'].keys()]
 
+        #extract information from sources (date and id)
+        source_dates = [doc['_source'][sourcedate] for doc in source_query]
+        source_ids = [a['_id'] for a in source_query]
+        source_dict = dict(zip(source_ids, source_dates))
+        
         #If specified, calculate day difference
         source_tuple = []
         target_tuple = []
@@ -91,7 +98,8 @@ class softcosine_similarity(Analysis):
             for doc in corpus:
                 target_tuple.append((doc['_source'][targettext], doc['_source'][targetdate], doc['_id']))
                     
-            #Make a dict that stores as key how many days apart two documents are and their texts as tuple
+            #Calculate day difference and make a separate corpus (basis for the index the source is compared to)
+            #for every source, only including target documents within the specified range; also extracting dates and ids
             corpus_final = []
             dates_final = []
             ids_final = []                
@@ -111,49 +119,58 @@ class softcosine_similarity(Analysis):
                 dates_final.append(dates_new)
                 ids_final.append(ids_new)
 
-            source_dates = [doc['_source'][sourcedate] for doc in source_query]
-            source_ids = [a['_id'] for a in source_query]
-
-            #Make corpus IDs and texts
+            #Make corpus for every source (splitting the texts)
             texts_split = []
             for text in corpus_final:
                 texts = [a.split() for a in text]
                 texts_split.append(texts)
 
-            #Make a similarity matrix and index out of the texts in the corpus (what the source articles will be compared to)
+            #Make a similarity matrix and index out of the texts in the corpus (what the source articles will be compared to, one for every source)
             source_texts = [n['_source'][sourcetext].split() for n in source_query]
             source_index = list(zip(texts_split, source_texts))
             sims_list = []
+            
             for item in source_index:
                 dictionary = Dictionary(item[0])
                 tfidf = TfidfModel(dictionary=dictionary)
                 similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)
                 index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in item[0]]],similarity_matrix)
+                
+                #Process the sources so that they can be compared to the indices
+                query = tfidf[dictionary.doc2bow(item[1])]
 
-                #Retrieve source IDs and make generator to compute similarities between each source and the index
-                query_generator = tfidf[dictionary.doc2bow(item[1])]
-
-                #Retrieve similarities and make dataframe
-                sims = index[query_generator]
+                #Retrieve similarities and make dataframe (including both ids, dates, doctypes and similarity)
+                sims = index[query]
                 sims_list.append(sims)
+                
             target_df = pd.DataFrame(ids_final).transpose().melt().drop('variable', axis = 1)
             target_df.columns = ['target']
+            target_dates = pd.DataFrame(dates_final).transpose().melt().drop('variable', axis = 1)
+            target_dates.columns = ['target_date']
             source_df = pd.DataFrame(sims_list, index = source_ids).transpose().melt()
             source_df.columns = ['source', 'similarity']
-            df = pd.concat([source_df, target_df], axis = 1)
+            source_df["source_date"] = source_df["source"].map(source_dict)
+            df = pd.concat([source_df, target_df, target_dates], axis = 1)
+            df['source_doctype'] = source
+            df['target_doctype'] = target
+            if threshold:
+                df = df.loc[df['similarity'] >= threshold]
 
             #Optional: save as csv file
             if to_csv == True:
                 now = time.localtime()
                 df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
 
+            #Otherwise: save as pandas (pickle)
             else:
                 now = time.localtime()
                 df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
         
-      
+        #Same procedure as above, but without specifying a limited difference between source and target date (thus: comparing all sources to the same index)
         else:
             target_ids = [a['_id'] for a in corpus]
+            target_dates = [a['_source'][targetdate] for a in corpus]
+            target_dict = dict(zip(target_ids, target_dates))
             texts = [a['_source'][targettext].split() for a in corpus]
 
             #Make a similarity matrix and index out of the texts in the corpus (what the source articles will be compared to)
@@ -164,29 +181,41 @@ class softcosine_similarity(Analysis):
 
             #Retrieve source IDs and make generator to compute similarities between each source and the index
             source_ids = [a['_id'] for a in source_query]
-            query_generator = [tfidf[dictionary.doc2bow(n['_source'][sourcetext].split())] for n in source_query]
-            query_generator = (item for item in query_generator)
+            query = [tfidf[dictionary.doc2bow(n['_source'][sourcetext].split())] for n in source_query]
+            query_generator = (item for item in query)
 
             #Retrieve similarities and make dataframe
             sims_list = [index[doc] for doc in query_generator]
-            df = pd.DataFrame(sims_list, columns=target_ids, index = source_ids)
-            df2 = df.stack().reset_index()
-            df2.columns = ['source', 'target', 'similarity']
+            df = pd.DataFrame(sims_list, columns=target_ids, index = source_ids).stack().reset_index()
+            df.columns = ['source', 'target', 'similarity']
+            df["source_date"] = df["source"].map(source_dict)
+            df["target_date"] = df["target"].map(target_dict)
+            df['source_doctype'] = source
+            df['target_doctype'] = target
+            if threshold:
+                df = df.loc[df['similarity'] >= threshold]
 
             #Optional: save as csv file
             if to_csv == True:
                 now = time.localtime()
-                df2.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
+                df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
 
             else:
                 now = time.localtime()
-                df2.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
+                df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
         
+               
+    def predict(self, *args, **kwargs):
+        pass
+
+    def quality(self, *args, **kwargs):
+        pass
+
+    def interpretation(self, *args, **kwargs):
+        pass
 
  #----------------------------------------------------------------------------------------------------------------------------------------------- 
  #TODO
-        #add to dataset: dates of both articles + daydiff + doctype + threshold?
-        #solve issue with only supplying either before or after day
         #have one 'example' model stored somewhere for people to use?
 
 
