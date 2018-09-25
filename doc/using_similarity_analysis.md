@@ -5,18 +5,18 @@
 Calculating the pairwise similarity between two documents either using cosine similarity or softcosine similarity. 
 This analysis functionality built into INCA takes two types of documents (called **source** and **target**) and calculates the similarity between each source and target. For this sake, each document is represented in terms of the Vector Space Model (VSM) as a vector of term weights, and the similarity between two documents is estimated by taking the cosine of the angle between the vectors.
 
-When the angle between two document vectors is small, they are pointing roughly the same direction because they share many tokens in common. This procedure is especially helpful when looking for copy-pasted content as for this analysis the VSM features are considered to be independent -- thus two words are seen as entirely different.
+When the angle between two document vectors is small, they are pointing roughly the same direction because they share many tokens in common. This procedure is especially helpful when looking for copy-pasted content as for this analysis the VSM features are considered to be independent &mdash; thus two words are seen as entirely different.
 
-The other option -- soft cosine similarity -- can however do some more refined similarity analyses. In case of the cosine similarity Sidorov (2014) notes: "For example, words 'play' and 'game' are of course different words and thus should be mapped to different dimensions in SVM; yet it is obvious that they are related" (p.492). Thus, he introduced a new measure, termed "soft cosine measure" (p.491) which can be used to calculate the soft similarity between documents. By including a measure of similarity of word vectors derived from a larger training corpus into the original cosine similarity formula, the equivalency of words can more accurately be detected, leading to
+The other option &mdash; soft cosine similarity &mdash; can however do some more refined similarity analyses. In case of the cosine similarity [Sidorov (2014)](http://www.cys.cic.ipn.mx/ojs/index.php/CyS/article/view/2043) notes: "For example, words 'play' and 'game' are of course different words and thus should be mapped to different dimensions in SVM; yet it is obvious that they are related" (p.492). Thus, he introduced a new measure, termed "soft cosine measure" (p.491) which can be used to calculate the soft similarity between documents. By including a measure of similarity of word vectors derived from a larger training corpus into the original cosine similarity formula, the equivalency of words can more accurately be detected, leading to
 
 ![alt text](images/softcosine_formula.png "Softcosine Formula")
 
-As the soft cosine similarity uses a sparse matrix for similarity queries, it is considerably faster than other approaches in this domain (e.g. Word Movers Distance, developed by Kusner, 2015) while showing almost no loss in precision [^1] 
+As the soft cosine similarity uses a sparse matrix for similarity queries, it is considerably faster than other approaches in this domain (e.g. Word Movers Distance, developed by [Kusner, 2015](http://proceedings.mlr.press/v37/kusnerb15.pdf)) while showing almost [no loss in precision](https://github.com/witiko/gensim/blob/softcossim/docs/notebooks/soft\_cosine\_tutorial.ipynb). 
 
 Thus, with these two analysis functions you can decide whether you want to have the similarity of documents based on their exact words or also based on similar meanings (detecing that "The president greets the press in Chicago" and "Trump speaks to the media in Illinois" essentially mean the same thing). 
 
 **When running the cosine similarity analysis, the following steps are executed:**
-- After retrieving all source and target articles...
+- After retrieving all source and target articles, the documents are transformed to vectors and then the dot product of each two document-vectors that should be compared is calculated (dot product: multiply a vector by another vector). From the resulting matrix the cosine similarity can be extracted. More info on cosine similarity can for example be found [here](https://masongallo.github.io/machine/learning,/python/2016/07/29/cosine-similarity.html)
 
 **When running the soft cosine similarity analysis, the following steps are executed:**
 
@@ -41,7 +41,7 @@ Only for the soft cosine analysis:
 In addition, you also have different options to customize: 
 - You can add a threshold (for example 0.6). In this case, only source-target pairs whose similarity passes this threshold are saved in the resulting document. 
 - You can add a date range. Then only documents within this date range are processed (you can supply either one or both)
-- You can specifiy 'days_before' and 'days_after'. In this case, only target documents within this range around the source are compared to it -- this is for example important if you assume that documents too far apart (e.g. a year) should not be compared for similarity (i.e. because influences between source and target are believed to be more short-term). As an important side-effect, you have far less comparisons in this case as you do not calculate similarities between documents where it does not make sense. In this case, each source gets its own index it is compared to -- however, your resulting document will have the same information as before. 
+- You can specifiy 'days_before' and 'days_after'. In this case, only target documents within this range around the source are compared to it &mdash; this is for example important if you assume that documents too far apart (e.g. a year) should not be compared for similarity (i.e. because influences between source and target are believed to be more short-term). As an important side-effect, you have far less comparisons in this case as you do not calculate similarities between documents where it does not make sense. In this case, each source gets its own index it is compared to &mdash; however, your resulting document will have the same information as before. 
 - You can choose whether you want a csv file or a pandas dataframe (saved as pkl) as a result and can also specify the destination where it should be saved. 
 - For the cosine analysis you can also decide whether you want to calculate the cosine similarity, the levenshtein distance (number of deletions, insertions, or substitutions required to transform the source text into the target text) or both.
 
@@ -52,11 +52,11 @@ For this example, we assume that you have a running instance of ElasticSearch.
 
 ### Collect some documents
 
-First of all, we need some documents. For instance, we could scrape them. More information on how to do this can be found in the document *howto_scrape*. So you can scrape one source doctype (i.e. 'nu') and one target doctype (i.e. 'ad (www)').
+First of all, we need some documents. For instance, we could scrape them. More information on how to do this can be found in the document [howto_scrape](https://github.com/uvacw/inca/blob/similarities/doc/howto_scrape.md). So you can scrape one source doctype (i.e. 'nu') and one target doctype (i.e. 'ad (www)').
 
 ### Process the documents
 
-As mentioned above, it is crucial to first do some processing steps with the data. More information on how to do this can be found in the document *howto_process*. Useful steps to consider are for example stopwords and punctuation removal or stemming.
+As mentioned above, it is crucial to first do some processing steps with the data. More information on how to do this can be found in the document [howto_process](https://github.com/uvacw/inca/blob/similarities/doc/howto_process.md). Useful steps to consider are for example stopwords and punctuation removal or stemming.
 
 ### Calculate similarities
 
@@ -65,7 +65,3 @@ Now you just need to fill in all the different parameters to run the function. A
 ```python
 myinca.analysis.softcosine_similarity().fit('/home/mymodel','nu', 'text_processed', 'publication_date', 'ad (www)', 'text_processed', 'publication_date', days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, threshold = 0.6, 'destination' = '/home/exports/')
 ```
-
-
-<sup>1</sup>:
-A jupyter notebook showcasing differences between the approaches can be found here: https://github.com/witiko/gensim/blob/softcossim/docs/notebooks/soft\_cosine\_tutorial.ipynb}.
