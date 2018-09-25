@@ -76,8 +76,8 @@ class cosine_similarity(Analysis):
         allsource = 0
         alltarget = 0
 
-        source_query = {'query':{'bool':{'filter':[{'term':{'_type':source}}]}}}
-        target_query = {'query':{'bool':{'filter':[{'term':{'_type':target}}]}}}
+        source_query = {'query':{'bool':{'filter':[{'term':{'doctype':source}}]}}}
+        target_query = {'query':{'bool':{'filter':[{'term':{'doctype':target}}]}}}
 
         #Change query if date range was specified
         

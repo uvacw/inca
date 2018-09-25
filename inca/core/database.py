@@ -57,7 +57,7 @@ def get_document(doc_id):
         logger.debug("No document found with id {doc_id}".format(**locals()))
         return {}
     else:
-        document = client.get(elastic_index, doc_type='_doc', id = doc_id)
+        document = client.get(elastic_index, doc_type='doc', id = doc_id)
     return document
 
 def check_exists(document_id):
@@ -67,7 +67,7 @@ def check_exists(document_id):
         return False, {}
     index = elastic_index
     try:
-        retrieved = client.get(elastic_index,doc_type='_doc', id=document_id)
+        retrieved = client.get(elastic_index,doc_type='doc', id=document_id)
         logger.debug('elastic_index {index} - document [{document_id}] found, return document'.format(**locals()))
         return True, retrieved
     except NotFoundError:
@@ -106,20 +106,20 @@ def update_document(document, force=False, retry=0, max_retries=10):
         document['_source'].update(old_document['_source'])
         document = _remove_dots(document)
         client.update(index=elastic_index,
-                      doc_type='_doc',
+                      doc_type='doc',
                       id=document['_id'],
                       body={'doc':document['_source']}
         )
     elif exists and force:
         client.delete(index=elastic_index,
-                      doc_type='_doc',
+                      doc_type='doc',
                       id=old_document['_id'])
         
         logging.info('FORCED UPDATE of {old_document[_id]}'.format(**locals()))
         document = _remove_dots(document)
         try:
             client.index(index=elastic_index,
-                         doc_type='_doc',
+                         doc_type='doc',
                          id=old_document['_id'],
                          body=document['_source']
             )
@@ -160,7 +160,7 @@ def delete_document(document_id):
     if not found:
         logger.debug('{document_id} does not exist'.format(**locals()))
         return False
-    response = client.delete(index=elastic_index, id=document['_id'], doc_type='_doc')
+    response = client.delete(index=elastic_index, id=document['_id'], doc_type='doc')
     return True
 
 def delete_doctype(doctype):
@@ -198,7 +198,7 @@ def insert_document(document, custom_identifier=''):
         document['_source']['doctype'] = document_type
     if not custom_identifier:
         try:
-            doc = client.index(index=elastic_index, doc_type='_doc', body=document.get('_source',document))
+            doc = client.index(index=elastic_index, doc_type='doc', body=document.get('_source',document))
         except ConnectionTimeout:
             doc = {'_id':insert_document(document, custom_identifier)}
     else:
@@ -271,7 +271,7 @@ def insert_documents(documents, identifiers='id'):
     documents = [doc for doc in documents if doc['_id'] != {}]
     for doc in documents:
         doc['_index'] = elastic_index
-        doc['_type']  = '_doc'
+        doc['_type']  = 'doc'
     # Insert documents
     logger.debug(helpers.bulk(client, documents))
     return [doc.get('_id','random') for doc in documents]
