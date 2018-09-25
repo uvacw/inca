@@ -5,28 +5,28 @@
         "_doc": {
 	    "properties" :{
 		"doctype": {
-		    "type":"keyword",
+		    "type":"keyword"
 		},
 		"functiontype" : {
-		    "type":"keyword",
+		    "type":"keyword"
 		},
 		"url" : {
-		    "type":"keyword",
+		    "type":"keyword"
 		},
 		"source" : {
-		    "type":"keyword",
+		    "type":"keyword"
 		},
     "id" : {
-      "type" : "keyword",
+      "type" : "keyword"
     }
 	    },
 
             "dynamic_templates": [
               { "id": {
                 "match" : "id" ,
-                "match_mapping_type" : "string",
+                  "match_mapping_type" : "string",
                 "mapping":{
-                  "type" :  "keyword",
+                  "type" :  "keyword"
 
                 }
               }
@@ -55,7 +55,7 @@
                       "match":              "*_raw",
                       "match_mapping_type": "string",
                       "mapping": {
-                          "type":           "text",
+                          "type":           "text"
                       }
                 }},
 		{ "en": {
