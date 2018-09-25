@@ -120,7 +120,7 @@ If you want to install packages, you should use the command: ``` conda install <
 
 ## STEP 3: Installing Elastic Search
 
-**NB: The current version of Elasticsearch is 6. At this moment, INCA only works with ES 5. Make sure you install a past release, such as 5.4.2**
+**NB: INCA only works on Elasticsearch 6 or higher, please make sure you have the right version installed**
 
 ### Install Elastic Search on Ubuntu
 
@@ -137,7 +137,7 @@ sudo apt-get install default-jdk
 ```
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 sudo apt-get install apt-transport-https
-echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-5.x.list
+echo "deb https://artifacts.elastic.co/packages/6.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-6.x.list
 sudo apt-get update && sudo apt-get install elasticsearch
 ```
 
@@ -157,7 +157,7 @@ sudo service elasticsearch status
 -	Install JAVA. You need the JDK (find it here: http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) 
 -	Get Elasticsearch: https://www.elastic.co/downloads/elasticsearch
 choose the ZIP file and download it. Unzip and copy-paste the folder to a convenient folder on your computer (preferably not in "Downloads" as you will start Elasticsearch from this folder in the future).
--	Locate the downloaded files in your terminal. You can do this using cd. For example: ```cd /Users/admin/surfdrive/Werk/ACA/elasticsearch-5.3.0```
+-	Locate the downloaded files in your terminal. You can do this using cd. For example: ```cd /Users/admin/surfdrive/Werk/ACA/elasticsearch-6.3.0```
 -	run, in a new command line: ```bin/elasticsearch```. This will launch Elasticsearch (you can just keep it running in the background. Everytime you restart your computer or terminal, you need to relaunch Elastic Search if you want to work with inca). 
 
 NOTE: To exit Elasticsearch, use CTRL C
