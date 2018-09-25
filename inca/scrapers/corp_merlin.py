@@ -8,7 +8,7 @@ import feedparser
 import re
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class merlin(Scraper):
     """Scrapes Merlin Porperties Socimi SA"""

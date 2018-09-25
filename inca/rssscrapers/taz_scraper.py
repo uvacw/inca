@@ -11,7 +11,7 @@ import locale
 import requests
 from lxml import etree
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 
 class taz(rss):

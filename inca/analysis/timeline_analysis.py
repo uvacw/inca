@@ -8,7 +8,7 @@ import numpy
 from ..core.database import client, elastic_index
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class timeline_generator():
     '''Generates timelines from elasticsearch string queries'''

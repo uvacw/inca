@@ -2,7 +2,7 @@ from ..core.processor_class import Processer
 import logging
 import random
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 
 class randomfield(Processer):

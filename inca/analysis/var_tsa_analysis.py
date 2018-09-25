@@ -13,7 +13,7 @@ from statsmodels.stats.diagnostic import acorr_ljungbox
 from statsmodels.tsa.stattools import grangercausalitytests
 from sklearn.metrics import r2_score
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 if 'DISPLAY' in environ:
     from matplotlib import pyplot

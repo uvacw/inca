@@ -18,7 +18,7 @@ from datetime import datetime
 
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class classification(Analysis):
 

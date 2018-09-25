@@ -11,7 +11,7 @@ import datetime
 import logging
 from elasticsearch import NotFoundError, ConnectionTimeout
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 
 def put_credentials(service_name,  credentials, id, pool_name='default',force=False):

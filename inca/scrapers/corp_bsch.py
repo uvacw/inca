@@ -8,7 +8,7 @@ import feedparser
 import re
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class bsch(Scraper):
     """Scrapes Banco Santander Central Hispano"""

@@ -15,7 +15,7 @@ import json
 
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class facebook(Scraper):
     """Scrapes facebook pages"""

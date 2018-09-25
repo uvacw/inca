@@ -10,7 +10,7 @@ from dateutil import parser
 import datetime
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 logger.setLevel('DEBUG')
 
 class reparse(Processer):
