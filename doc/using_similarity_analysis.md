@@ -9,42 +9,15 @@ When the angle between two document vectors is small, they are pointing roughly 
 
 The other option -- soft cosine similarity -- can however do some more refined similarity analyses. In case of the cosine similarity Sidorov (2014) notes: "For example, words 'play' and 'game' are of course different words and thus should be mapped to different dimensions in SVM; yet it is obvious that they are related" (p.492). Thus, he introduced a new measure, termed "soft cosine measure" (p.491) which can be used to calculate the soft similarity between documents. By including a measure of similarity of word vectors derived from a larger training corpus into the original cosine similarity formula, the equivalency of words can more accurately be detected, leading to
 
-![softcosine formula](/images/softcosine_formula.png "Softcosine Formula")
-
-As the soft cosine similarity uses a sparse matrix for similarity queries, it is considerably faster than other approaches in this domain (e.g. Word Movers Distance, developed by Kusner, 2015) while showing almost no loss in precision [^1] 
-
-Thus, with these two analysis functions you can decide whether you want to have the similarity of documents based on their exact words or also based on similar meanings (detecing that "The president greets the press in Chicago" and "Trump speaks to the media in Illinois" essentially mean the same thing). 
-
-When running the soft cosine similarity analysis, the following steps are executed:
-
-- From all the target articles (the articles the sources will be compared to) a dictionary is made (creating word - id mappings). This dictionary is then transformed into a TF-IDF matrix (Term Frequency - Inverse Document Frequency). Those two components save as input for creating a similarity matrix, until finally an index is created. This index is the representation of your target documents that you need to compare your source documents to. 
-
-- Each source document is also transformed (using doc2bow, dictionariy and tfidf) and put into a generator
-
-- Now, for each source document in the generator the similarity to all documents in the index is computed 
-
-- All the similarities are put into a dataframe, each row showing: The ID of the source and target document that were compared, their similarity, their dates (to see how far they were apart) and their doctypes. 
-
-You have to supply a few parameters:
-- For the softcosine similarity you need to have a pre-trained model with word embeddings. Help on how to train such a model yourself can be found here: # INCA Analysis functionality: Similarity between documents
-
-## What it is
-
-Calculating the pairwise similarity between two documents either using cosine similarity or softcosine similarity. 
-This analysis functionality built into INCA takes two types of documents (called **source** and **target**) and calculates the similarity between each source and target. For this sake, each document is represented in terms of the Vector Space Model (VSM) as a vector of term weights, and the similarity between two documents is estimated by taking the cosine of the angle between the vectors.
-
-When the angle between two document vectors is small, they are pointing roughly the same direction because they share many tokens in common. This procedure is especially helpful when looking for copy-pasted content as for this analysis the VSM features are considered to be independent -- thus two words are seen as entirely different.
-
-The other option -- soft cosine similarity -- can however do some more refined similarity analyses. In case of the cosine similarity Sidorov (2014) notes: "For example, words 'play' and 'game' are of course different words and thus should be mapped to different dimensions in SVM; yet it is obvious that they are related" (p.492). Thus, he introduced a new measure, termed "soft cosine measure" (p.491) which can be used to calculate the soft similarity between documents. By including a measure of similarity of word vectors derived from a larger training corpus into the original cosine similarity formula, the equivalency of words can more accurately be detected, leading to
-
-![alt text](/images/softcosine_formula.png "Softcosine Formula")
+![alt text](images/softcosine_formula.png "Softcosine Formula")
 
 As the soft cosine similarity uses a sparse matrix for similarity queries, it is considerably faster than other approaches in this domain (e.g. Word Movers Distance, developed by Kusner, 2015) while showing almost no loss in precision [^1] 
 
 Thus, with these two analysis functions you can decide whether you want to have the similarity of documents based on their exact words or also based on similar meanings (detecing that "The president greets the press in Chicago" and "Trump speaks to the media in Illinois" essentially mean the same thing). 
 
 **When running the cosine similarity analysis, the following steps are executed:**
-- After retrieving all source and target articles
+- After retrieving all source and target articles...
+
 **When running the soft cosine similarity analysis, the following steps are executed:**
 
 - From all the target articles (the articles the sources will be compared to) a dictionary is made (creating word - id mappings). This dictionary is then transformed into a TF-IDF matrix (Term Frequency - Inverse Document Frequency). Those two components save as input for creating a similarity matrix, until finally an index is created. This index is the representation of your target documents that you need to compare your source documents to. 
@@ -58,7 +31,7 @@ Thus, with these two analysis functions you can decide whether you want to have 
 You have to supply a few parameters:
 - What doctypes you want to compare (source, target)
 - What the textfield of the two doctypes is you want to compare (sourcetext, targettext)
-    ⋅⋅* Warning: You should not use these analyses with unprocessed text (i.e. including stopwords etc.) as you then get inflated similarity coefficients. Thus, it is advised to first use some of the basic text processing steps, save the results in a document field, and supply this field to the analyses. 
+    - **Warning:** You should not use these analyses with unprocessed text (i.e. including stopwords etc.) as you then get inflated similarity coefficients. Thus, it is advised to first use some of the basic text processing steps, save the results in a document field, and supply this field to the analyses. 
 - What the datefields of the two doctypes are (sourcedate, targetdate)
 
 Only for the soft cosine analysis: 
@@ -66,11 +39,11 @@ Only for the soft cosine analysis:
 
 
 In addition, you also have different options to customize: 
-    - You can add a threshold (for example 0.6). In this case, only source-target pairs whose similarity passes this threshold are saved in the resulting document. 
-    - You can add a date range. Then only documents within this date range are processed (you can supply either one or both)
-    - You can specifiy 'days_before' and 'days_after'. In this case, only target documents within this range around the source are compared to it -- this is for example important if you assume that documents too far apart (e.g. a year) should not be compared for similarity (i.e. because influences between source and target are believed to be more short-term). As an important side-effect, you have far less comparisons in this case as you do not calculate similarities between documents where it does not make sense. In this case, each source gets its own index it is compared to -- however, your resulting document will have the same information as before. 
-    - You can choose whether you want a csv file or a pandas dataframe (saved as pkl) as a result and can also specify the destination where it should be saved. 
-    - For the cosine analysis you can also decide whether you want to calculate the cosine similarity, the levenshtein distance (number of deletions, insertions, or substitutions required to transform the source text into the target text) or both.
+- You can add a threshold (for example 0.6). In this case, only source-target pairs whose similarity passes this threshold are saved in the resulting document. 
+- You can add a date range. Then only documents within this date range are processed (you can supply either one or both)
+- You can specifiy 'days_before' and 'days_after'. In this case, only target documents within this range around the source are compared to it -- this is for example important if you assume that documents too far apart (e.g. a year) should not be compared for similarity (i.e. because influences between source and target are believed to be more short-term). As an important side-effect, you have far less comparisons in this case as you do not calculate similarities between documents where it does not make sense. In this case, each source gets its own index it is compared to -- however, your resulting document will have the same information as before. 
+- You can choose whether you want a csv file or a pandas dataframe (saved as pkl) as a result and can also specify the destination where it should be saved. 
+- For the cosine analysis you can also decide whether you want to calculate the cosine similarity, the levenshtein distance (number of deletions, insertions, or substitutions required to transform the source text into the target text) or both.
 
 
 ## Example
@@ -94,5 +67,5 @@ myinca.analysis.softcosine_similarity().fit('/home/mymodel','nu', 'text_processe
 ```
 
 
-[^1]:
+<sup>1</sup>:
 A jupyter notebook showcasing differences between the approaches can be found here: https://github.com/witiko/gensim/blob/softcossim/docs/notebooks/soft\_cosine\_tutorial.ipynb}.
