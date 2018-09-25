@@ -5,7 +5,7 @@ from ..core.scraper_class import Scraper
 import logging
 import re
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class hostelworld(Scraper):
     """Scrapes Hostelworld reviews"""

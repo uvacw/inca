@@ -8,7 +8,7 @@ from colorama import Style
 
 init()
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 
 

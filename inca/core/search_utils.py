@@ -12,7 +12,7 @@ import _datetime as _datetime
 import json as _json
 from collections import defaultdict
 
-_logger = _logging.getLogger("INCA.%s" %__name__)
+_logger = _logging.getLogger("INCA")
 
 def list_doctypes():
     if not _DATABASE_AVAILABLE:
@@ -24,6 +24,7 @@ def list_doctypes():
     for item in existing_doctypes:
         overview[item['key']] = item['doc_count']
     return overview
+
 
 def doctype_generator(doctype):  
     query = {'query':{'term':{'doctype':doctype}}}
@@ -63,9 +64,8 @@ def document_generator(query="*"):
             _logger.warning("Unknown input")
             es_query = False
         if es_query:
-            total = _client.search(_elastic_index, body=es_query, size=0)['hits']['total']
-            for num, doc in enumerate(_scroll_query(es_query)):
-                if not num%100: _logger.info("returning {num} of {total}".format(num=num, total=total))
+            # total = _client.search(_elastic_index, body=es_query, size=0)['hits']['total']
+            for doc in _scroll_query(es_query):
                 yield doc
 
 

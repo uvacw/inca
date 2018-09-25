@@ -8,7 +8,7 @@ from time import sleep
 from random import randrange
 import re
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 logger.setLevel('DEBUG')
 

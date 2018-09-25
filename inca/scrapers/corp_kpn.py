@@ -16,7 +16,7 @@ import logging
 from selenium import webdriver
 import time
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 class kpn(Scraper):
     """Scrapes KPN"""

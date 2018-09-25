@@ -12,6 +12,7 @@ import os
 import json
 import re
 import logging
+from glob import glob
 
 logger = logging.getLogger("INCA."+__name__)
 
@@ -25,8 +26,6 @@ class import_json(Importer):
 
         Parameters
         ---
-        doctype : string
-            The doctype to be used when indexing results in elasticsearch
         mapping : dict (default=None)
             A dictionary that specifies the from_key :=> to_key relation
             between loaded documents and documents as they should be indexed
@@ -46,9 +45,13 @@ class import_json(Importer):
         if not exists:
             logger.warning("Unable to open {path} : DOES NOT EXIST".format(path=path))
         else:
-            is_path = os.path.isdir(path)
-            if not is_path :
-                with self.open_file(path, mode="r", compression=compression) as f:
+            is_dir = os.path.isdir(path)
+            if not is_dir:
+                list_of_files = glob(path)
+            else:
+                list_of_files = glob(path + "*.json")
+            for item in list_of_files:
+                with self.open_file(item, mode="r", compression=compression) as f:
                     line = "start"
                     while line:
                         line = f.readline()
@@ -57,20 +60,14 @@ class import_json(Importer):
                             line = line.decode()
                         doc = json.loads(line)
                         if doc:
-                            print(doc)
                             yield doc.get('_source',doc)
-            if is_path:
-                matcher = re.compile(matches)
-                for filename in os.listdir(path):
-                    if not matcher.search(filename): continue
-                    yield self.load(os.path.join(path,filename), mapping=mapping, compression=compression)
 
 class export_json_file(Exporter):
     """Dump documents to JSON file"""
 
     version = 0.1
 
-    def save(self, batch_of_documents, destination, compression=None):
+    def save(self, batch_of_documents, destination, compression=None, include_meta=False):
         """Save JSON objects to single file
 
         Parameters
@@ -81,15 +78,22 @@ class export_json_file(Exporter):
             The file in which to store the output
         compression : string (default=None)
             What compression to use when writing output file
+        include_meta : Boolean (default=False)
+            Whether to include META information. If set to False,
+            Only the keys within the '_source' key will be saved
+            and META will be excluded.
         """
         self.extension = "json"
-        self.fileobj = self._makefile(destination, mode="a", compression=compression)
+        self.fileobj = self._makefile(destination, mode="at", compression=compression)
         for document in batch_of_documents:
+            if include_meta==False:
+                if '_source' in document.keys():
+                    document = document['_source']
+                document = {k:v for k, v in document.items() if not k=='META'}
             try:
                 doc_dump = json.dumps(document)
-                self.fileobj.write(doc_dump+"\n")
+                self.fileobj.write(doc_dump+'\n')
             except:
-                raise "hell"
                 self.failed += 1
                 self.failed_ids.append(document['_id'])
         if self.failed:
@@ -101,7 +105,7 @@ class export_json_files(Exporter):
 
     version = 0.1
 
-    def save(self, batch_of_documents, destination, compression=None):
+    def save(self, batch_of_documents, destination, compression=None, include_meta=False):
         """Save JSON objects to multiple files
 
         Parameters
@@ -112,15 +116,27 @@ class export_json_files(Exporter):
             The directory in which to store the output files
         compression : string (default=None)
             What compression to use when writing output files
+        include_meta : Boolean (default=False)
+            Whether to include META information. If set to False,
+            Only the keys within the '_source' key will be saved
+            and META will be excluded.
         """
         self.extension = "json"
         for document in batch_of_documents:
             filename = id2filename(document.get('_id'))
             location = os.path.join(destination,filename)
-            fileobj = self._makefile(location, mode='w', compression=compression)
+            fileobj = self._makefile(location, mode='wt', compression=compression)
+            if include_meta==False:
+                if '_source' in document.keys():
+                    document = document['_source']
+                document = {k:v for k, v in document.items() if not k=='META'}
+
             try:
                 json.dump(document, fileobj)
             except:
                 self.failed +=1
                 self.failed_ids.append(document['_id'])
             fileobj.close()
+        if self.failed:
+            logger.warning("Failed to export {num} documents".format(num=self.failed))
+            logger.info("Failed ids: {ids}".format(ids=', '.join(self.failed_ids)))

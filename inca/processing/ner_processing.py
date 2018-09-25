@@ -11,7 +11,7 @@ import nl_core_news_sm
 nlp = nl_core_news_sm.load()
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 
 

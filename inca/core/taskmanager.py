@@ -11,7 +11,7 @@ import celery
 import os
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 config = configparser.ConfigParser()
 config.read('settings.cfg')

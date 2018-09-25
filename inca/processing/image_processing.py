@@ -11,7 +11,7 @@ import sys
 
 IS_PYTHON3 = sys.version_info[0]==3 and sys.version_info[1]>=2
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 
 IMAGEPATH = config.get('imagestore','imagepath')

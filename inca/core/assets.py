@@ -9,7 +9,7 @@ import logging
 import datetime
 from .basic_utils import dotkeys
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("INCA")
 
 def put_asset( user, name, project, LOD):
     asset = {
