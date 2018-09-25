@@ -2,7 +2,7 @@
   "settings":{
     "mapping.total_fields.limit": 20000 },
     "mappings": {
-        "_doc": {
+        "doc": {
 	    "properties" :{
 		"doctype": {
 		    "type":"keyword"

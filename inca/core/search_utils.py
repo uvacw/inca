@@ -215,7 +215,7 @@ def doctype_fields(doctype):
         return []
 
     doc_num   = _client.search(index=_elastic_index, body={'query':{"term":{"doctype":doctype}}})['hits']['total']
-    mappings = _client.indices.get_mapping(_elastic_index).get(_elastic_index,{}).get('mappings',{}).get('_doc',{}).get('properties', {})
+    mappings = _client.indices.get_mapping(_elastic_index).get(_elastic_index,{}).get('mappings',{}).get('doc',{}).get('properties', {})
     coverage = {key:_client.search(_elastic_index,body={'query': {'bool':{'filter':[{'exists':{'field':key}},{'term':{"doctype":doctype}}]}}}).get('hits',{}).get('total',0) for key in mappings.keys() if key!="META"}
     summary = {k:{'coverage':coverage.get(k,'unknown')/float(doc_num),'type':mappings[k].get('type','unknown')} for
                k in mappings.keys() if k!="META" and coverage.get(k, 'unknown') != 0}
