@@ -1,5 +1,5 @@
 '''
-This file contains the basics to determine the overlap based on cosine similarity
+This file contains the basics to determine the overlap based on softcosine similarity
 '''
 
 from ..core.analysis_base_class import Analysis
@@ -50,7 +50,7 @@ class softcosine_similarity(Analysis):
         sourcedate = field of sourcedate (e.g. 'publication_date'); (repeat for target); 
         days_before = days target is before source (e.g. -2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied
         threshold = threshold to determine at which point similarity is sufficient; if supplied only the rows who pass it are included in the dataset
-        from_time, to_time = optional: specifying a date range to filter source and target articles
+        from_time, to_time = optional: specifying a date range to filter source and target articles. Supply the date in the yyyy-MM-dd format.
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
         destination = optional: where should the resulting datasets be saved? Defaults to 'export' folder
         '''
@@ -156,6 +156,10 @@ class softcosine_similarity(Analysis):
             if threshold:
                 df = df.loc[df['similarity'] >= threshold]
 
+            #Make exports folder if it does not exist yet
+            if not 'exports' in os.listdir('.'):
+                os.mkdir('exports')
+                
             #Optional: save as csv file
             if to_csv == True:
                 now = time.localtime()
@@ -195,23 +199,17 @@ class softcosine_similarity(Analysis):
             if threshold:
                 df = df.loc[df['similarity'] >= threshold]
 
-
-            #Make exports file if not exists
-            #if destination == 'exports':
-                #if not 'exports' in os.listdir('.'):
-                    #os.mkdir('exports')
+            #Make exports folder if it does not exist yet
+            if not 'exports' in os.listdir('.'):
+                os.mkdir('exports')
                 
             #Optional: save as csv file
             if to_csv == True:
                 now = time.localtime()
-                #if not 'exports' in os.listdir('.'):
-                    #os.mkdir('exports')
                 df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
 
             else:
                 now = time.localtime()
-                #if not 'exports' in os.listdir('.'):
-                    #os.mkdir('exports')
                 df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
         
                
