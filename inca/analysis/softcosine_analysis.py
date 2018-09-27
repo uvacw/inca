@@ -41,7 +41,7 @@ class softcosine_similarity(Analysis):
                 difference = (first-second).days
             return([first, second, difference])
         
-    def fit(self, path_to_model, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = None, days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='exports/'):
+    def fit(self, path_to_model, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = None, days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='exports'):
         '''
         path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model 
         can be found here: https://rare-technologies.com/word2vec-tutorial/ Alternatively, you can also use the pre-trained model at:...
@@ -195,13 +195,23 @@ class softcosine_similarity(Analysis):
             if threshold:
                 df = df.loc[df['similarity'] >= threshold]
 
+
+            #Make exports file if not exists
+            #if destination == 'exports':
+                #if not 'exports' in os.listdir('.'):
+                    #os.mkdir('exports')
+                
             #Optional: save as csv file
             if to_csv == True:
                 now = time.localtime()
+                #if not 'exports' in os.listdir('.'):
+                    #os.mkdir('exports')
                 df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
 
             else:
                 now = time.localtime()
+                #if not 'exports' in os.listdir('.'):
+                    #os.mkdir('exports')
                 df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
         
                
