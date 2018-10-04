@@ -2,37 +2,31 @@
   "settings":{
     "mapping.total_fields.limit": 20000 },
     "mappings": {
-        "_default_": {
+        "doc": {
 	    "properties" :{
 		"doctype": {
-		    "type":"keyword",
-		    "index" : "not_analyzed"
+		    "type":"keyword"
 		},
 		"functiontype" : {
-		    "type":"keyword",
-		    "index" : "not_analyzed"
+		    "type":"keyword"
 		},
 		"url" : {
-		    "type":"keyword",
-		    "index" : "not_analyzed"
+		    "type":"keyword"
 		},
 		"source" : {
-		    "type":"keyword",
-		    "index" : "not_analyzed"
+		    "type":"keyword"
 		},
     "id" : {
-      "type" : "keyword",
-      "index" : "not_analyzed"
+      "type" : "keyword"
     }
 	    },
 
             "dynamic_templates": [
               { "id": {
                 "match" : "id" ,
-                "match_mapping_type" : "keyword",
+                  "match_mapping_type" : "string",
                 "mapping":{
-                  "type" :  "keyword",
-                  "index" : "not_analyzed"
+                  "type" :  "keyword"
 
                 }
               }
@@ -42,7 +36,7 @@
             },
     { "es": {
                       "match":              "*_es",
-                      "match_mapping_type": "text",
+                      "match_mapping_type": "string",
                       "mapping": {
                           "type":           "text",
                           "analyzer":       "spanish"
@@ -51,7 +45,7 @@
 
 		{ "nl": {
                       "match":              "*_nl",
-                      "match_mapping_type": "text",
+                      "match_mapping_type": "string",
                       "mapping": {
                           "type":           "text",
                           "analyzer":       "dutch"
@@ -59,15 +53,14 @@
                 }},
 		{ "raw": {
                       "match":              "*_raw",
-                      "match_mapping_type": "text",
+                      "match_mapping_type": "string",
                       "mapping": {
-                          "type":           "text",
-                          "index" :         "not_analyzed"
+                          "type":           "text"
                       }
                 }},
 		{ "en": {
                       "match":              "*_en",
-                      "match_mapping_type": "text",
+                      "match_mapping_type": "string",
                       "mapping": {
                           "type":           "text",
                           "analyzer" :      "english"
@@ -76,7 +69,7 @@
 
                 { "default": {
                       "match":              "*",
-                      "match_mapping_type": "text",
+                      "match_mapping_type": "string",
                       "mapping": {
                           "type":           "text",
 			  "filter"  : [ "stop" ],
