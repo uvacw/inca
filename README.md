@@ -15,6 +15,10 @@ INCA is currently under heavy development. We cannot guarantee that it works as 
 Please have a look at the documentation in the `inca/doc/` folder.
 
 ... and/or use the following to quickly install inca:
+
+- Install Elasticsearch 6.
+- Make sure you have the python3-dev package installed (`sudo apt-get install python3-dev`) as well as a c compiler (`sudo apt-get install g++`).
+- Then:
 ```
 pip install git+https://github.com/uvacw/inca.git
 pip install https://github.com/explosion/spacy-models/releases/download/nl_core_news_sm-2.0.0/nl_core_news_sm-2.0.0.tar.gz
