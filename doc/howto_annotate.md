@@ -1,4 +1,4 @@
-# How to annotate (code) in INCA
+# How to annotate in INCA
 
 This document explains how to use INCA to annotate (code) texts, for example for later machine learning. It is aimed at people without familarity with Python.
 
@@ -6,8 +6,10 @@ This document explains how to use INCA to annotate (code) texts, for example for
 
 ### Make a new notebook
 
-Go to https://inca.followthenews-uva.surf-hosted.nl:8000/user/lotte/tree?redirects=1 
+Open your browser and go to the URL of your INCA server that you have been provided with.
+
 Here, you can make a new notebook by clicking on new, Python 3.
+
 A new notebook has been created.
 Give the new notebook a title where it says "untitled". You will also see a line with 
 `In [ ]: <blank space>`. 
@@ -17,23 +19,6 @@ You can also change the line in a `markdown`.
 These are just notes for yourself in your notebook. 
 You can for example explain to yourself what the different codes do.
 
-
-### Measured variables in different columns in a data-file
-```
-import pandas as pd
-def unpack(df, column, fillna=None):
-    ret = None
-    if fillna is None:
-        ret = pd.concat([df, pd.DataFrame((d for idx, d in df[column].iteritems()))], axis=1)
-        del ret[column]
-    else:
-        ret = pd.concat([df, pd.DataFrame((d for idx, d in df[column].iteritems())).fillna(fillna)], axis=1)
-        del ret[column]
-    return ret
-```
-
-This code splits the data that you will generate into different columns in Excel. 
-If you don’t do this, the data that you are generating will appear in one column in Excel. With this code, the different variables that you are measuring will appear in different columns when you download your data as an excel-file.
 
 ### A search string
 ```
@@ -91,7 +76,28 @@ annotated = [e['_source'] for e in generator_annotated]
 This code will show you how many articles you have annotated (you can change this wording to your liking) until now. 
 
 
-### Data frame
+
+
+
+### Put your data in a Data frame
+First of all, you need to create a function that allows you to put your measured variables in different columns.
+```
+import pandas as pd
+def unpack(df, column, fillna=None):
+    ret = None
+    if fillna is None:
+        ret = pd.concat([df, pd.DataFrame((d for idx, d in df[column].iteritems()))], axis=1)
+        del ret[column]
+    else:
+        ret = pd.concat([df, pd.DataFrame((d for idx, d in df[column].iteritems())).fillna(fillna)], axis=1)
+        del ret[column]
+    return ret
+```
+The code above splits the data that you will generate into different columns in Excel. 
+If you don’t do this, the data that you are generating will appear in one column in Excel. With this code, the different variables that you are measuring will appear in different columns when you download your data as an excel-file later on.
+
+
+
 ```
 df = pd.DataFrame(annotated)
 df = unpack(df,'myproject_test')
