@@ -3,7 +3,7 @@ This file contains the basics to determine the overlap based on softcosine simil
 '''
 
 from ..core.analysis_base_class import Analysis
-import datetime 
+import datetime
 from collections import defaultdict
 import scipy as sp
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -26,7 +26,7 @@ logger = logging.getLogger("INCA")
 
 class softcosine_similarity(Analysis):
     '''Compares documents from source and target, showing their softcosine distance'''
-    
+
     def date_comparison(self, first_date, second_date):
         if first_date is None or second_date is None:
             return("No date")
@@ -40,28 +40,35 @@ class softcosine_similarity(Analysis):
                 second = datetime.date(second[0], second[1], second[2])
                 difference = (first-second).days
             return([first, second, difference])
-        
-    def fit(self, path_to_model, source, sourcetext, sourcedate, target, targettext, targetdate, days_before = None, days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='exports'):
-        '''
-        path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model 
-        can be found here: https://rare-technologies.com/word2vec-tutorial/ Alternatively, you can also use the pre-trained model at:...
 
-        source = doctype of source, Sourcetext = field of sourcetext (e.g. 'text'), 
-        sourcedate = field of sourcedate (e.g. 'publication_date'); (repeat for target); 
+    def fit(self, path_to_model, source, target, sourcetext = 'text', sourcedate = 'publication_date',
+        targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, days_before = None,
+        days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons'):
+        '''
+        path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
+        can be found here: https://rare-technologies.com/word2vec-tutorial/ Alternatively, you can also use the pre-trained model at:...
+        source/target = doctype of source/target
+
+        sourcetext/targettext = field where text of target/source can be found (defaults to 'text')
+        sourcdate/targetedate = field where date of source/target can be found (defaults to 'publication_date')
+        keyword_source/_target = specify keywords that need to be present in the textfield; list or string, in case of a list all words need to be present in the textfield (lowercase)
         days_before = days target is before source (e.g. -2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied
         threshold = threshold to determine at which point similarity is sufficient; if supplied only the rows who pass it are included in the dataset
         from_time, to_time = optional: specifying a date range to filter source and target articles. Supply the date in the yyyy-MM-dd format.
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
-        destination = optional: where should the resulting datasets be saved? Defaults to 'export' folder
+        destination = optional: where should the resulting datasets be saved? (defaults to 'comparisons' folder)
         '''
         logger.info("The results of the similarity analysis could be inflated when not using the recommended text processing steps (stopword removal, punctuation removal, stemming) beforehand")
 
-        #Load the pretrained model
-        softcosine_model = gensim.models.Word2Vec.load(path_to_model)
+        #Load the pretrained model (different ways depending on how the model was saved)
+        try:
+            softcosine_model = gensim.models.Word2Vec.load(path_to_model)
+        except:
+            softcosine_model = gensim.models.keyedvectors.KeyedVectors.load_word2vec_format(path_to_model, binary = True)
 
         #Construct query for elasticsearch
-        source_query = {'query':{'bool':{'filter':[{'term':{'_type':source}}]}}}
-        target_query = {'query':{'bool':{'filter':[{'term':{'_type':target}}]}}}
+        source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
+        target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
 
         #Change query if date range was specified
         source_range = {'range':{sourcedate:{}}}
@@ -73,9 +80,20 @@ class softcosine_similarity(Analysis):
             source_range['range'][sourcedate].update({ 'lte' : to_time   })
             target_range['range'][targetdate].update({ 'lte' : to_time   })
         if from_time or to_time:
-            source_query['query']['bool']['filter'].append(source_range)
-            target_query['query']['bool']['filter'].append(target_range)
+            source_query['query']['bool']['filter']['bool']['must'].append(source_range)
+            target_query['query']['bool']['filter']['bool']['must'].append(target_range)
 
+        #Change query if keywords were specified
+        if isinstance(keyword_source, str) == True:
+            source_query['query']['bool']['filter']['bool']['must'].append({'term':{sourcetext:keyword_source}})
+        elif isinstance(keyword_source, list) == True:
+            for item in keyword_source:
+                source_query['query']['bool']['filter']['bool']['must'].append({'term':{sourcetext:item}})
+        if isinstance(keyword_target, str) == True:
+            target_query['query']['bool']['filter']['bool']['must'].append({'term':{targettext:keyword_target}})
+        elif isinstance(keyword_target, list) == True:
+            for item in keyword_target:
+                target_query['query']['bool']['filter']['bool']['must'].append({'term':{targettext:item}})
         #Retrieve source and target articles as generators
         source_query = scroll_query(source_query)
         target_query = scroll_query(target_query)
@@ -88,7 +106,7 @@ class softcosine_similarity(Analysis):
         source_dates = [doc['_source'][sourcedate] for doc in source_query]
         source_ids = [a['_id'] for a in source_query]
         source_dict = dict(zip(source_ids, source_dates))
-        
+
         #If specified, calculate day difference
         source_tuple = []
         target_tuple = []
@@ -97,12 +115,12 @@ class softcosine_similarity(Analysis):
                 source_tuple.append((doc['_source'][sourcetext], doc['_source'][sourcedate], doc['_id']))
             for doc in corpus:
                 target_tuple.append((doc['_source'][targettext], doc['_source'][targetdate], doc['_id']))
-                    
+
             #Calculate day difference and make a separate corpus (basis for the index the source is compared to)
             #for every source, only including target documents within the specified range; also extracting dates and ids
             corpus_final = []
             dates_final = []
-            ids_final = []                
+            ids_final = []
             for sourcetd in source_tuple:
                 corpus_new = []
                 dates_new = []
@@ -129,20 +147,20 @@ class softcosine_similarity(Analysis):
             source_texts = [n['_source'][sourcetext].split() for n in source_query]
             source_index = list(zip(texts_split, source_texts))
             sims_list = []
-            
+
             for item in source_index:
                 dictionary = Dictionary(item[0])
                 tfidf = TfidfModel(dictionary=dictionary)
                 similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)
                 index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in item[0]]],similarity_matrix)
-                
+
                 #Process the sources so that they can be compared to the indices
                 query = tfidf[dictionary.doc2bow(item[1])]
 
                 #Retrieve similarities and make dataframe (including both ids, dates, doctypes and similarity)
                 sims = index[query]
                 sims_list.append(sims)
-                
+
             target_df = pd.DataFrame(ids_final).transpose().melt().drop('variable', axis = 1)
             target_df.columns = ['target']
             target_dates = pd.DataFrame(dates_final).transpose().melt().drop('variable', axis = 1)
@@ -157,9 +175,9 @@ class softcosine_similarity(Analysis):
                 df = df.loc[df['similarity'] >= threshold]
 
             #Make exports folder if it does not exist yet
-            if not 'exports' in os.listdir('.'):
-                os.mkdir('exports')
-                
+            if not 'comparisons' in os.listdir('.'):
+                os.mkdir('comparisons')
+
             #Optional: save as csv file
             if to_csv == True:
                 now = time.localtime()
@@ -169,7 +187,7 @@ class softcosine_similarity(Analysis):
             else:
                 now = time.localtime()
                 df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
-        
+
         #Same procedure as above, but without specifying a limited difference between source and target date (thus: comparing all sources to the same index)
         else:
             target_ids = [a['_id'] for a in corpus]
@@ -200,9 +218,9 @@ class softcosine_similarity(Analysis):
                 df = df.loc[df['similarity'] >= threshold]
 
             #Make exports folder if it does not exist yet
-            if not 'exports' in os.listdir('.'):
-                os.mkdir('exports')
-                
+            if not 'comparisons' in os.listdir('.'):
+                os.mkdir('comparisons')
+
             #Optional: save as csv file
             if to_csv == True:
                 now = time.localtime()
@@ -211,8 +229,8 @@ class softcosine_similarity(Analysis):
             else:
                 now = time.localtime()
                 df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
-        
-               
+
+
     def predict(self, *args, **kwargs):
         pass
 
@@ -222,8 +240,6 @@ class softcosine_similarity(Analysis):
     def interpretation(self, *args, **kwargs):
         pass
 
- #----------------------------------------------------------------------------------------------------------------------------------------------- 
+ #-----------------------------------------------------------------------------------------------------------------------------------------------
  #TODO
         #have one 'example' model stored somewhere for people to use?
-
-
