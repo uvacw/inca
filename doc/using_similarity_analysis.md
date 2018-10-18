@@ -74,5 +74,5 @@ myinca.analysis.cosine_similarity().fit('nu', 'text_processed', 'publication_dat
 
 #### Softcosine similarity
 ```python
-myinca.analysis.softcosine_similarity().fit('/home/mymodel','nu', 'ad (www)', 'text_processed', days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, threshold = 0.6, destination = '/home/exports/')
+myinca.analysis.softcosine_similarity().fit('/home/mymodel', 'nu', 'ad (www)', days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, threshold = 0.6, destination = '/home/exports/')
 ```
