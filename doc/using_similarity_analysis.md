@@ -30,9 +30,9 @@ Thus, with these two analysis functions you can decide whether you want to have 
 
 You have to supply a few parameters:
 - What doctypes you want to compare (source, target)
-- What the textfield of the two doctypes is you want to compare (sourcetext, targettext)
+- What the textfield of the two doctypes is you want to compare (sourcetext, targettext). For the softcosine analysis, both are set to 'text' by default. 
     - **Warning:** You should not use these analyses with unprocessed text (i.e. including stopwords etc.) as you then get inflated similarity coefficients. Thus, it is advised to first use some of the basic text processing steps, save the results in a document field, and supply this field to the analyses.
-- What the datefields of the two doctypes are (sourcedate, targetdate)
+- What the datefields of the two doctypes are (sourcedate, targetdate). For the softcosine analysis, both are set to 'publication_date' by default.
 
 Only for the soft cosine analysis:
 - For the soft cosine analysis you also have to supply a path to a pre-trained word2vec model. Help on how to do this can be found here: https://rare-technologies.com/word2vec-tutorial/. However, you can also download an existing model from here: ... (path_to_model)
@@ -74,5 +74,5 @@ myinca.analysis.cosine_similarity().fit('nu', 'text_processed', 'publication_dat
 
 #### Softcosine similarity
 ```python
-myinca.analysis.softcosine_similarity().fit('/home/mymodel','nu', 'text_processed', 'publication_date', 'ad (www)', 'text_processed', 'publication_date', days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, threshold = 0.6, destination = '/home/exports/')
+myinca.analysis.softcosine_similarity().fit('/home/mymodel','nu', 'ad (www)', 'text_processed', days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, threshold = 0.6, destination = '/home/exports/')
 ```
