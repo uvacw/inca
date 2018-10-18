@@ -23,7 +23,13 @@ for result in p:
 
 Result will contain the original document, with an additional key that contains the processed field.
 
-Other parameters you can use are `save=True` for storing the results to the database and `force=True` for forcing overwriting the content even if it already exists.
+Other parameters you can use are `save=True` for storing the results to the database and `force=True` for forcing overwriting the content even if it already exists. Additionally, you need to loop over the results to save them:
+
+```python3
+p = myinca.processing.lowercase('nu','text',save=True)
+for result in p:
+    pass
+```
 
 Instead of supplying a doctype to apply the processor on, you can also use a generator here (for instance, from the myinca.database.* collection):
 
