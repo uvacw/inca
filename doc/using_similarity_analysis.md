@@ -67,7 +67,7 @@ As mentioned above, it is crucial to first do some processing steps with the dat
 
 ### Calculate similarities
 
-Now you just need to fill in all the different parameters to run the function. After this, you will have a CSV file or pkl file either in your specified destination (or the 'exports' folder) for the softcosine analysis, or in the 'comparisons' folder for cosine analysis.
+Now you just need to fill in all the different parameters to run the function. After this, you will have a CSV file or pkl file either in your specified destination or in the 'comparisons' folder.
 
 #### Cosine similarity
 ```python
