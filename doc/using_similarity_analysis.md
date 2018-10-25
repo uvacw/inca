@@ -43,7 +43,9 @@ In addition, you also have different options to customize:
 - You can add a date range. Then only documents within this date range are processed (you can supply either one or both). A date format is yyyy-MM-dd (from_time, to_time).
 - You can add keywords that need to be present in the textfield of the source or target. You can either supply a string (e.g. 'groenlinks') or a list of words (e.g. ['groenlinks', 'cda']). In the second case both words need to be present in the text. This option allows you to select more specific texts to compare. 
 - You can specifiy 'days_before' and 'days_after'. In this case, only target documents within this range around the source are compared to it &mdash; this is for example important if you assume that documents too far apart (e.g. a year) should not be compared for similarity (i.e. because influences between source and target are believed to be more short-term). As an important side-effect, you have far less comparisons in this case as you do not calculate similarities between documents where it does not make sense. In this case, each source gets its own index it is compared to &mdash; however, your resulting document will have the same information as before (days_before, days_after).
-- You can choose whether you want a csv file or a pandas dataframe (saved as pkl) as a result and can also specify the destination where it should be saved (destination).
+- You can choose whether you want a csv file or a pandas dataframe (saved as pkl) as a result (to_csv).
+- You can also specify the destination where it should be saved. By default it is saved in a folder called 'comparisons' (destination).
+- For the softcosine similarity, you can choose to export the results (target, source and similarity score) as a pajek file, in addition to a csv or pickle file. By default, this option is set to False (to_pajek).
 - For the cosine analysis you can also decide whether you want to calculate the cosine similarity, the levenshtein distance (number of deletions, insertions, or substitutions required to transform the source text into the target text) or both (method).
 
 
@@ -74,5 +76,5 @@ myinca.analysis.cosine_similarity().fit('nu', 'text_processed', 'publication_dat
 
 #### Softcosine similarity
 ```python
-myinca.analysis.softcosine_similarity().fit('/home/mymodel', 'nu', 'ad (www)', days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, threshold = 0.6, destination = '/home/exports/')
+myinca.analysis.softcosine_similarity().fit('/home/mymodel', 'nu', 'ad (www)', days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, to_pajek = False, threshold = 0.6, destination = '/home/exports/')
 ```

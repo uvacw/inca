@@ -21,6 +21,7 @@ from gensim.similarities import SoftCosineSimilarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle
 import time
+import networkx as nx
 
 logger = logging.getLogger("INCA")
 
@@ -43,7 +44,7 @@ class softcosine_similarity(Analysis):
 
     def fit(self, path_to_model, source, target, sourcetext = 'text', sourcedate = 'publication_date',
         targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, days_before = None,
-        days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons'):
+            days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False):
         '''
         path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
         can be found here: https://rare-technologies.com/word2vec-tutorial/ Alternatively, you can also use the pre-trained model at:...
@@ -57,6 +58,7 @@ class softcosine_similarity(Analysis):
         from_time, to_time = optional: specifying a date range to filter source and target articles. Supply the date in the yyyy-MM-dd format.
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
         destination = optional: where should the resulting datasets be saved? (defaults to 'comparisons' folder)
+        to_pajek = if True save - in addition to csv/pickle - the result (source, target and similarity score) as pajek file to be used in the Infomap method (defaults to False)
         '''
         logger.info("The results of the similarity analysis could be inflated when not using the recommended text processing steps (stopword removal, punctuation removal, stemming) beforehand")
 
@@ -183,11 +185,28 @@ class softcosine_similarity(Analysis):
                 now = time.localtime()
                 df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
 
-            #Otherwise: save as pandas (pickle)
+            #Otherwise: save as pickle file
             else:
                 now = time.localtime()
                 df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
+            
+            #Optional: additionally save as pajek file
+            if to_pajek == True:
+                G = nx.Graph()
 
+                # change int to str (necessary for pajek format)
+                df['similarity'] = df['similarity'].apply(str)
+                df.head()
+
+                # notes and weights from dataframe
+                G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='similarity')
+                # write to pajek
+                now = time.localtime()
+                nx.write_pajek(G, os.path.join(destination, r"INCA_pajek_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
+
+
+
+                
         #Same procedure as above, but without specifying a limited difference between source and target date (thus: comparing all sources to the same index)
         else:
             target_ids = [a['_id'] for a in corpus]
@@ -225,12 +244,26 @@ class softcosine_similarity(Analysis):
             if to_csv == True:
                 now = time.localtime()
                 df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
-
+            #Otherwise: save as pickle file
             else:
                 now = time.localtime()
                 df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
 
+            #Optional: additionally save as pajek file
+            if to_pajek == True:
+                G = nx.Graph()
 
+                # change int to str (necessary for pajek format)
+                df['similarity'] = df['similarity'].apply(str)
+                df.head()
+
+                # notes and weights from dataframe
+                G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='similarity')
+                # write to pajek
+                now = time.localtime()
+                nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
+        
+        
     def predict(self, *args, **kwargs):
         pass
 
