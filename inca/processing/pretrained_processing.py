@@ -6,7 +6,7 @@ import re
 import sys
 
 from sklearn.externals import joblib
-
+from numpy import ndarray
 
 
 
@@ -20,7 +20,10 @@ class pretrained(Processer):
         except AttributeError:
             self.load_model(path_to_model)
             prediction = self.clf.predict([document_field])
-            
+
+        if type(prediction) is ndarray and len(prediction)==1:
+            prediction = prediction[0]
+
         return prediction
 
     def load_model(self, path_to_model):
