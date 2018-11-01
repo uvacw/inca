@@ -35,7 +35,7 @@ You have to supply a few parameters:
 - What the datefields of the two doctypes are (sourcedate, targetdate). For the softcosine analysis, both are set to 'publication_date' by default.
 
 Only for the soft cosine analysis:
-- For the soft cosine analysis you also have to supply a path to a pre-trained word2vec model. Help on how to do this can be found here: https://rare-technologies.com/word2vec-tutorial/. However, you can also download an existing model from here: ... (path_to_model)
+- For the soft cosine analysis you also have to supply a path to a pre-trained word2vec model. Help on how to do this can be found here: https://rare-technologies.com/word2vec-tutorial/ (path_to_model)
 
 
 In addition, you also have different options to customize:

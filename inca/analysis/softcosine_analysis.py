@@ -47,7 +47,7 @@ class softcosine_similarity(Analysis):
             days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False):
         '''
         path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
-        can be found here: https://rare-technologies.com/word2vec-tutorial/ Alternatively, you can also use the pre-trained model at:...
+        can be found here: https://rare-technologies.com/word2vec-tutorial/
         source/target = doctype of source/target
 
         sourcetext/targettext = field where text of target/source can be found (defaults to 'text')
@@ -273,6 +273,3 @@ class softcosine_similarity(Analysis):
     def interpretation(self, *args, **kwargs):
         pass
 
- #-----------------------------------------------------------------------------------------------------------------------------------------------
- #TODO
-        #have one 'example' model stored somewhere for people to use?
