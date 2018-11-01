@@ -59,7 +59,7 @@ ImageHash==3.7
 lxml
 selenium
 matplotlib
-gensim
+gensim>3.4
 # Pattern is now optional as it is not stable for Python3 yet
 # uncomment to install it
 # if the next one fails, run sudo apt-get install libmysqlclient-dev

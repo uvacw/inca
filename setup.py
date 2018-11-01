@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 requirements = ['celery','colorama','spacy','tqdm','elasticsearch>=6',
                 'feedparser', 'httplib2','imagehash', 'loremipsum',
                 'lxml','requests','statsmodels','pandas',
-                'pillow==5.0','gensim','oauth2client','matplotlib',
+                'pillow==5.0','gensim>3.4','oauth2client','matplotlib',
                 'networkx',
                 'scikit-learn','scipy','selenium','twython','nltk','tqdm']
 
