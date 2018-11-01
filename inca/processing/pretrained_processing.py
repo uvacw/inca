@@ -6,7 +6,7 @@ import re
 import sys
 
 from sklearn.externals import joblib
-from numpy import ndarray
+from numpy import ndarray, int64
 
 
 
@@ -23,7 +23,8 @@ class pretrained(Processer):
 
         if type(prediction) is ndarray and len(prediction)==1:
             prediction = prediction[0]
-
+        if type(prediction) is int64:
+            prediction = int(prediction)
         return prediction
 
     def load_model(self, path_to_model):
