@@ -21,7 +21,7 @@ class pretrained(Processer):
             self.load_model(path_to_model)
             prediction = self.clf.predict([document_field])
             
-        return prediction[0]  
+        return prediction
 
     def load_model(self, path_to_model):
         self.clf = joblib.load(path_to_model)
