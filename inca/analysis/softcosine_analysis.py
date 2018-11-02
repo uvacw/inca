@@ -23,6 +23,8 @@ import pickle
 import time
 import networkx as nx
 
+
+
 logger = logging.getLogger("INCA")
 
 class softcosine_similarity(Analysis):
@@ -48,7 +50,7 @@ class softcosine_similarity(Analysis):
         '''
         path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
         can be found here: https://rare-technologies.com/word2vec-tutorial/
-        source/target = doctype of source/target
+        source/target = doctype of source/target (can also be a list of multiple doctypes)
 
         sourcetext/targettext = field where text of target/source can be found (defaults to 'text')
         sourcdate/targetedate = field where date of source/target can be found (defaults to 'publication_date')
@@ -69,8 +71,12 @@ class softcosine_similarity(Analysis):
             softcosine_model = gensim.models.keyedvectors.KeyedVectors.load_word2vec_format(path_to_model, binary = True)
 
         #Construct query for elasticsearch
-        source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
-        target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
+        if isinstance(source, list) or isinstance(target, list): # if multiple doctypes are specified
+            source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':source}}]}}}}}
+            target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':target}}]}}}}}
+        else:
+            source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
+            target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
 
         #Change query if date range was specified
         source_range = {'range':{sourcedate:{}}}
@@ -102,31 +108,37 @@ class softcosine_similarity(Analysis):
 
         #Make generators into lists and filter out those who do not have the specified keys (preventing KeyError)
         corpus = [a for a in target_query if targettext in a['_source'].keys() and targetdate in a['_source'].keys()]
+        #print(corpus[0])
         source_query = [a for a in source_query if sourcetext in a['_source'].keys() and sourcedate in a['_source'].keys()]
 
         #extract information from sources (date and id)
         source_dates = [doc['_source'][sourcedate] for doc in source_query]
         source_ids = [a['_id'] for a in source_query]
+        source_doctype = [a['_source']['doctype'] for a in source_query]
+        #print(len(source_ids))
         source_dict = dict(zip(source_ids, source_dates))
+        source_dict2 = dict(zip(source_ids, source_doctype))
 
         #If specified, calculate day difference
         source_tuple = []
         target_tuple = []
         if days_before != None or days_after != None:
             for doc in source_query:
-                source_tuple.append((doc['_source'][sourcetext], doc['_source'][sourcedate], doc['_id']))
+                source_tuple.append((doc['_source'][sourcetext], doc['_source'][sourcedate], doc['_id'], doc['_source']['doctype']))
             for doc in corpus:
-                target_tuple.append((doc['_source'][targettext], doc['_source'][targetdate], doc['_id']))
+                target_tuple.append((doc['_source'][targettext], doc['_source'][targetdate], doc['_id'], doc['_source']['doctype']))
 
             #Calculate day difference and make a separate corpus (basis for the index the source is compared to)
             #for every source, only including target documents within the specified range; also extracting dates and ids
             corpus_final = []
             dates_final = []
             ids_final = []
+            doctype_final=[]
             for sourcetd in source_tuple:
                 corpus_new = []
                 dates_new = []
                 ids_new = []
+                doctype_new = []
                 for targettd in target_tuple:
                     day_diff = self.date_comparison(sourcetd[1], targettd[1])
                     if day_diff == "No date" or days_after <= day_diff[2] <= days_before:
@@ -135,11 +147,13 @@ class softcosine_similarity(Analysis):
                         corpus_new.append(targettd[0])
                         dates_new.append(targettd[1])
                         ids_new.append(targettd[2])
+                        doctype_new.append(targettd[3])
                 corpus_final.append(corpus_new)
                 dates_final.append(dates_new)
                 ids_final.append(ids_new)
-
-            #Make corpus for every source (splitting the texts)
+                doctype_final.append(doctype_new)
+            
+            #Make corpus for every target (splitting the texts)
             texts_split = []
             for text in corpus_final:
                 texts = [a.split() for a in text]
@@ -150,29 +164,33 @@ class softcosine_similarity(Analysis):
             source_index = list(zip(texts_split, source_texts))
             sims_list = []
 
+        
             for item in source_index:
                 dictionary = Dictionary(item[0])
                 tfidf = TfidfModel(dictionary=dictionary)
                 similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)
                 index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in item[0]]],similarity_matrix)
-
                 #Process the sources so that they can be compared to the indices
                 query = tfidf[dictionary.doc2bow(item[1])]
 
                 #Retrieve similarities and make dataframe (including both ids, dates, doctypes and similarity)
                 sims = index[query]
                 sims_list.append(sims)
-
+            
             target_df = pd.DataFrame(ids_final).transpose().melt().drop('variable', axis = 1)
             target_df.columns = ['target']
             target_dates = pd.DataFrame(dates_final).transpose().melt().drop('variable', axis = 1)
             target_dates.columns = ['target_date']
+            target_doctype = pd.DataFrame(doctype_final).transpose().melt().drop('variable', axis=1)
+            target_doctype.columns = ['target_doctype']
+
             source_df = pd.DataFrame(sims_list, index = source_ids).transpose().melt()
             source_df.columns = ['source', 'similarity']
             source_df["source_date"] = source_df["source"].map(source_dict)
+            source_df['source_doctype'] = source_df['source'].map(source_dict2)
+
             df = pd.concat([source_df, target_df, target_dates], axis = 1)
-            df['source_doctype'] = source
-            df['target_doctype'] = target
+
             if threshold:
                 df = df.loc[df['similarity'] >= threshold]
 
@@ -196,7 +214,6 @@ class softcosine_similarity(Analysis):
 
                 # change int to str (necessary for pajek format)
                 df['similarity'] = df['similarity'].apply(str)
-                df.head()
 
                 # notes and weights from dataframe
                 G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='similarity')
@@ -212,7 +229,10 @@ class softcosine_similarity(Analysis):
             target_ids = [a['_id'] for a in corpus]
             target_dates = [a['_source'][targetdate] for a in corpus]
             target_dict = dict(zip(target_ids, target_dates))
+            target_doctype=[a['_source']['doctype'] for a in corpus]
+            target_dict2 = dict(zip(target_ids, target_doctype))
             texts = [a['_source'][targettext].split() for a in corpus]
+            
 
             #Make a similarity matrix and index out of the texts in the corpus (what the source articles will be compared to)
             dictionary = Dictionary(texts)
@@ -231,8 +251,9 @@ class softcosine_similarity(Analysis):
             df.columns = ['source', 'target', 'similarity']
             df["source_date"] = df["source"].map(source_dict)
             df["target_date"] = df["target"].map(target_dict)
-            df['source_doctype'] = source
-            df['target_doctype'] = target
+            df['source_doctype'] = df['source'].map(source_dict2)
+            df['target_doctype'] = df['target'].map(target_dict2)
+            
             if threshold:
                 df = df.loc[df['similarity'] >= threshold]
 
@@ -255,7 +276,6 @@ class softcosine_similarity(Analysis):
 
                 # change int to str (necessary for pajek format)
                 df['similarity'] = df['similarity'].apply(str)
-                df.head()
 
                 # notes and weights from dataframe
                 G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='similarity')
