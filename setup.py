@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
-requirements = ['celery','colorama','spacy','tqdm','elasticsearch>=6',
+requirements = ['celery','colorama','tqdm','elasticsearch>=6',
                 'feedparser', 'httplib2','imagehash', 'loremipsum',
-                'lxml','requests','statsmodels','pandas',
+                'lxml','requests<3.0.0,>=2.13.0','statsmodels','pandas',
                 'pillow==5.0','gensim>3.4','oauth2client','matplotlib',
-                'networkx',
+                'networkx','spacy',
                 'scikit-learn','scipy','selenium','twython','nltk','tqdm']
 
 setup(name='inca',
