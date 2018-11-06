@@ -71,11 +71,14 @@ class softcosine_similarity(Analysis):
             softcosine_model = gensim.models.keyedvectors.KeyedVectors.load_word2vec_format(path_to_model, binary = True)
 
         #Construct query for elasticsearch
-        if isinstance(source, list) or isinstance(target, list): # if multiple doctypes are specified
-            source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':source}}]}}}}}
-            target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':target}}]}}}}}
+        if isinstance(source, list): # if multiple doctypes are specified
+            source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':source}}]}}}}} 
         else:
             source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
+
+        if isinstance(target, list): # if multiple doctypes are specified
+            target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':target}}]}}}}}
+        else:
             target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
 
         #Change query if date range was specified
@@ -108,14 +111,12 @@ class softcosine_similarity(Analysis):
 
         #Make generators into lists and filter out those who do not have the specified keys (preventing KeyError)
         corpus = [a for a in target_query if targettext in a['_source'].keys() and targetdate in a['_source'].keys()]
-        #print(corpus[0])
         source_query = [a for a in source_query if sourcetext in a['_source'].keys() and sourcedate in a['_source'].keys()]
 
         #extract information from sources (date and id)
         source_dates = [doc['_source'][sourcedate] for doc in source_query]
         source_ids = [a['_id'] for a in source_query]
         source_doctype = [a['_source']['doctype'] for a in source_query]
-        #print(len(source_ids))
         source_dict = dict(zip(source_ids, source_dates))
         source_dict2 = dict(zip(source_ids, source_doctype))
 
