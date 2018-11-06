@@ -115,6 +115,7 @@ class softcosine_similarity(Analysis):
 
         #extract information from sources (date and id)
         source_dates = [doc['_source'][sourcedate] for doc in source_query]
+        print(source_dates)
         source_ids = [a['_id'] for a in source_query]
         source_doctype = [a['_source']['doctype'] for a in source_query]
         source_dict = dict(zip(source_ids, source_dates))
@@ -165,8 +166,13 @@ class softcosine_similarity(Analysis):
             source_index = list(zip(texts_split, source_texts))
             sims_list = []
 
-        
+            time_start = datetime.datetime.now()
+            print(time_start)
+            
+            i = 0
             for item in source_index:
+                i+=1
+                print(i, 'out of', len(source_index))
                 dictionary = Dictionary(item[0])
                 tfidf = TfidfModel(dictionary=dictionary)
                 similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)
@@ -177,6 +183,9 @@ class softcosine_similarity(Analysis):
                 #Retrieve similarities and make dataframe (including both ids, dates, doctypes and similarity)
                 sims = index[query]
                 sims_list.append(sims)
+
+            time_end = datetime.datetime.now()
+            print(time_end)
             
             target_df = pd.DataFrame(ids_final).transpose().melt().drop('variable', axis = 1)
             target_df.columns = ['target']
@@ -233,8 +242,10 @@ class softcosine_similarity(Analysis):
             target_doctype=[a['_source']['doctype'] for a in corpus]
             target_dict2 = dict(zip(target_ids, target_doctype))
             texts = [a['_source'][targettext].split() for a in corpus]
-            
 
+            time_start = datetime.datetime.now()
+            print(time_start)
+            
             #Make a similarity matrix and index out of the texts in the corpus (what the source articles will be compared to)
             dictionary = Dictionary(texts)
             tfidf = TfidfModel(dictionary=dictionary)
@@ -248,6 +259,10 @@ class softcosine_similarity(Analysis):
 
             #Retrieve similarities and make dataframe
             sims_list = [index[doc] for doc in query_generator]
+
+            time_end = datetime.datetime.now()
+            print(time_end)
+            
             df = pd.DataFrame(sims_list, columns=target_ids, index = source_ids).stack().reset_index()
             df.columns = ['source', 'target', 'similarity']
             df["source_date"] = df["source"].map(source_dict)
