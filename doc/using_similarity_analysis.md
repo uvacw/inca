@@ -29,7 +29,7 @@ Thus, with these two analysis functions you can decide whether you want to have 
 - All the similarities are put into a dataframe, each row showing: The ID of the source and target document that were compared, their similarity, their dates (to see how far they were apart) and their doctypes.
 
 You have to supply a few parameters:
-- What doctypes you want to compare (source, target)
+- What doctypes you want to compare. Multiple doctypes can be supplied as a list (source, target)
 - What the textfield of the two doctypes is you want to compare (sourcetext, targettext). For the softcosine analysis, both are set to 'text' by default. 
     - **Warning:** You should not use these analyses with unprocessed text (i.e. including stopwords etc.) as you then get inflated similarity coefficients. Thus, it is advised to first use some of the basic text processing steps, save the results in a document field, and supply this field to the analyses.
 - What the datefields of the two doctypes are (sourcedate, targetdate). For the softcosine analysis, both are set to 'publication_date' by default.
