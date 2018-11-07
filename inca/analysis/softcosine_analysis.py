@@ -115,7 +115,7 @@ class softcosine_similarity(Analysis):
 
         #extract information from sources (date and id)
         source_dates = [doc['_source'][sourcedate] for doc in source_query]
-        print(source_dates)
+        #print(source_dates)
         source_ids = [a['_id'] for a in source_query]
         source_doctype = [a['_source']['doctype'] for a in source_query]
         source_dict = dict(zip(source_ids, source_dates))
@@ -125,6 +125,7 @@ class softcosine_similarity(Analysis):
         source_tuple = []
         target_tuple = []
         if days_before != None or days_after != None:
+            days_before=-days_before # convert days_before to negative number
             for doc in source_query:
                 source_tuple.append((doc['_source'][sourcetext], doc['_source'][sourcedate], doc['_id'], doc['_source']['doctype']))
             for doc in corpus:
@@ -143,13 +144,13 @@ class softcosine_similarity(Analysis):
                 doctype_new = []
                 for targettd in target_tuple:
                     day_diff = self.date_comparison(sourcetd[1], targettd[1])
-                    if day_diff == "No date" or days_after <= day_diff[2] <= days_before:
+                    if day_diff == "No date" or day_diff[2]<=days_before or day_diff[2]>=days_after:
                         pass
                     else:
                         corpus_new.append(targettd[0])
                         dates_new.append(targettd[1])
                         ids_new.append(targettd[2])
-                        doctype_new.append(targettd[3])
+                        doctype_new.append(targettd[3])  
                 corpus_final.append(corpus_new)
                 dates_final.append(dates_new)
                 ids_final.append(ids_new)
@@ -165,7 +166,7 @@ class softcosine_similarity(Analysis):
             source_texts = [n['_source'][sourcetext].split() for n in source_query]
             source_index = list(zip(texts_split, source_texts))
             sims_list = []
-
+            
             time_start = datetime.datetime.now()
             print(time_start)
             
@@ -183,7 +184,7 @@ class softcosine_similarity(Analysis):
                 #Retrieve similarities and make dataframe (including both ids, dates, doctypes and similarity)
                 sims = index[query]
                 sims_list.append(sims)
-
+                
             time_end = datetime.datetime.now()
             print(time_end)
             
