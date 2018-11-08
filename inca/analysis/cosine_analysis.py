@@ -55,7 +55,7 @@ class cosine_similarity(Analysis):
             targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = 0, days_after = 2,
         threshold = 0.6, from_time=None, to_time=None, to_csv = False, method = "cosine"):
         '''
-        Source = doctype of source, Sourcetext = field of sourcetext (e.g. 'text'),
+        Source = doctype of source (can also be a list of multiple doctypes), Sourcetext = field of sourcetext (e.g. 'text'),
         Sourcedate = field of sourcedate (e.g. 'publication_date'); (repeat for target);
         keyword_source/_target = optional: specify keywords that need to be present in the textfield; list or string, in case of a list all words need to be present in the textfield (lowercase)
         condition_source/_target = optional: supply the field and its value as a dict as a condition for analysis, e.g. {'topic':1} (defaults to None)
@@ -76,8 +76,15 @@ class cosine_similarity(Analysis):
         alltarget = 0
 
         #Construct query for elasticsearch
-        source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
-        target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
+        if isinstance(source, list): # if multiple doctypes are specified
+            source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':source}}]}}}}} 
+        else:
+            source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
+
+        if isinstance(target, list): # if multiple doctypes are specified
+            target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':target}}]}}}}}
+        else:
+            target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
 
         #Change query if date range was specified
         source_range = {'range':{sourcedate:{}}}
