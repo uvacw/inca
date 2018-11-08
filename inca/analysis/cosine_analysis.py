@@ -51,9 +51,7 @@ class cosine_similarity(Analysis):
             previous_row = current_row
             return previous_row[-1]
 
-    def fit(self, source, target, sourcetext = 'text', sourcedate = 'publication_date', targettext = 'text',
-            targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = 0, days_after = 2,
-        threshold = 0.6, from_time=None, to_time=None, to_csv = False, method = "cosine"):
+    def fit(self, source, target, sourcetext = 'text', sourcedate = 'publication_date', targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = 0, days_after = 2, threshold = 0.6, from_time=None, to_time=None, to_csv = False, method = "cosine"):
         '''
         Source = doctype of source (can also be a list of multiple doctypes), Sourcetext = field of sourcetext (e.g. 'text'),
         Sourcedate = field of sourcedate (e.g. 'publication_date'); (repeat for target);
@@ -78,14 +76,17 @@ class cosine_similarity(Analysis):
         #Construct query for elasticsearch
         if isinstance(source, list): # if multiple doctypes are specified
             source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':source}}]}}}}} 
-        else:
+        elif isinstance(source, str):
             source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
 
         if isinstance(target, list): # if multiple doctypes are specified
             target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':target}}]}}}}}
-        else:
+        elif isinstance(target, str):
             target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
 
+        #target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
+        #source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
+        
         #Change query if date range was specified
         source_range = {'range':{sourcedate:{}}}
         target_range = {'range':{targetdate:{}}}

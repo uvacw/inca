@@ -74,12 +74,12 @@ class softcosine_similarity(Analysis):
         #Construct query for elasticsearch
         if isinstance(source, list): # if multiple doctypes are specified
             source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':source}}]}}}}} 
-        else:
+        elif isinstance(source, str):
             source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
 
         if isinstance(target, list): # if multiple doctypes are specified
             target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':target}}]}}}}}
-        else:
+        elif isinstance(target, str):
             target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
 
         #Change query if date range was specified
