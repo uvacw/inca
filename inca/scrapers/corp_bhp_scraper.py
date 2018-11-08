@@ -19,7 +19,7 @@ class bhp(Scraper):
         self.START_URL = "http://www.bhp.com/media-and-insights/news-releases"
         self.BASE_URL = "http://www.bhp.com/"
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from BHP Billiton
         '''

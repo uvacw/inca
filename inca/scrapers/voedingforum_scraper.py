@@ -22,7 +22,7 @@ class voedingsforum(Scraper):
         self.BASE_URL = "http://www.voedingsforum.nl/"
 
         
-    def get(self, maxfora, forumid, maxthreads, maxpages, *args, **kwargs):
+    def get(self, save, maxfora, forumid, maxthreads, maxpages, *args, **kwargs):
         '''                                                                     
         Fetches articles from Voedingsforum
         maxfora = maximum number of forums to scrape

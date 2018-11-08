@@ -17,7 +17,7 @@ class merlin(Scraper):
         self.START_URL = "http://www.merlinproperties.com/en/press-release/"
         self.BASE_URL = "http://www.merlinproperties.com/"
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from Merlin Properties Socimi SA
         '''

@@ -14,7 +14,7 @@ class parliamentanswers_NL(Scraper):
     
 
     
-    def get(self):
+    def get(self, save):
         '''Document collected from officielebekendmakingen.nl by scraping 'bladeren' section  '''
 
         self.doctype = "parliamentary answers NL"

@@ -22,7 +22,7 @@ class mapfre(Scraper):
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=8, day=1)
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from Mapfre
         '''

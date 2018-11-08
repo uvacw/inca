@@ -13,7 +13,7 @@ class parliamentquestions_NL(Scraper):
     """Scrapes Dutch parlementary and senate proceedings """
 
     
-    def get(self):
+    def get(self, save):
         '''Document collected from officielebekendmakingen.nl by scraping 'bladeren' section  '''
 
         self.doctype = "parliamentary questions NL"

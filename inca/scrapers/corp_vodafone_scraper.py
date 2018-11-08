@@ -19,7 +19,7 @@ class vodafone(Scraper):
         self.START_URL = "http://www.vodafone.com/content/index/media/vodafone-group-releases.html"
         self.BASE_URL = "http://www.vodafone.com/"
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from Vodafone
         '''
