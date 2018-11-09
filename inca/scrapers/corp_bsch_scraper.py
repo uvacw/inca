@@ -65,7 +65,7 @@ class bsch(Scraper):
             except:
                 print("no connection:\n" + link)
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from Banco Santander Central Hispano
         '''

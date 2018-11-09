@@ -19,7 +19,7 @@ class bat(Scraper):
         self.START_URL = "http://www.bat.com/group/sites/UK__9D9KCY.nsf/vwPagesWebLive/DO6YLKYF"
         self.BASE_URL = "http://www.bat.com"
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from British American Tobacco
         '''

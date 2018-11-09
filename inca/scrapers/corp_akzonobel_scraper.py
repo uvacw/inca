@@ -19,7 +19,7 @@ class akzonobel(Scraper):
         self.START_URL = "https://www.akzonobel.com/media-releases-and-features"
         self.BASE_URL = "https://www.akzonobel.com/"
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from Akzo Nobel
         '''

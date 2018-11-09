@@ -22,7 +22,7 @@ class bp(Scraper):
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=24)
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from BP
         '''

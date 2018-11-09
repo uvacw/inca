@@ -70,7 +70,7 @@ class randstad(Scraper):
             except:
                 print("no connection:\n" + link)
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from Randstad
         '''
