@@ -23,15 +23,23 @@ for result in p:
 
 Result will contain the original document, with an additional key that contains the processed field.
 
-Other parameters you can use are `save=True` for storing the results to the database and `force=True` for forcing overwriting the content even if it already exists. Additionally, you need to loop over the results to save them:
+Other parameters you can use are `save=True` for storing the results to the database, `force=True` for forcing overwriting the content even if it already exists, and `new_key=your_own_key_name` to name the additional key containing the processed field. Additionally, you need to loop over the results to save them:
 
 ```python3
-p = myinca.processing.lowercase('nu','text',save=True)
+p = myinca.processing.lowercase('nu','text', new_key='text_lowercase', save=True)
 for result in p:
     pass
 ```
 
-Instead of supplying a doctype to apply the processor on, you can also use a generator here (for instance, from the myinca.database.* collection):
+It is also possible to supply an Elasticsearch query instead of a doctype, which is useful if you only want to process some specific documents. For instance, `_exists_:topic` will process all documents that contain the key 'topic', `text:vvd` will include all documents that include 'vvd' in the key 'text', or `doctype:"nu" AND publication_date:[2018-01-01 TO 2018-12-31]` will process all nu.nl articles published in 2018. More information on Elasticsearch 'Query String Queries' can be read in the [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-query-string-query.html#query-string-syntax).
+
+```python3
+p = myinca.processing.lowercase('doctype:"nu" AND publication_date:[2018-01-01 TO 2018-12-31]','text', save=True)
+for result in p:
+    pass
+```
+
+Finally, instead of supplying a doctype to apply the processor on, you can also use a generator here (for instance, from the myinca.database.* collection):
 
 ```python3
 p = myinca.processing.clean_whitespace(myinca.database.doctype_examples('nu'),'text',save=False)
