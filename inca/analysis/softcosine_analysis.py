@@ -257,14 +257,17 @@ class softcosine_similarity(Analysis):
             
             #Make a similarity matrix and index out of the texts in the corpus (what the source articles will be compared to)
             dictionary = Dictionary(texts)
+            #print(dictionary)
             tfidf = TfidfModel(dictionary=dictionary)
             similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)
+            #print(similarity_matrix)
             index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in texts]],similarity_matrix)
 
             #Retrieve source IDs and make generator to compute similarities between each source and the index
             source_ids = [a['_id'] for a in source_query]
             query = [tfidf[dictionary.doc2bow(n['_source'][sourcetext].split())] for n in source_query]
             query_generator = (item for item in query)
+                            
 
             #Retrieve similarities and make dataframe
             sims_list = [index[doc] for doc in query_generator]
