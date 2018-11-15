@@ -31,7 +31,9 @@ for result in p:
     pass
 ```
 
-Instead of supplying a doctype to apply the processor on, you can also use a generator here (for instance, from the myinca.database.* collection):
+It is also possible to supply a query instead of a doctype. For instance, `_exists_:topic`, will process all documents (which could belong to several doctypes) that contain the key 'topic'. This is useful when you only want to process some specific documents. More information on Elasticsearch queries can be read in the [Elasticsearch documentation] (https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-query-string-query.html#query-string-syntax).
+
+Finally, instead of supplying a doctype to apply the processor on, you can also use a generator here (for instance, from the myinca.database.* collection):
 
 ```python3
 p = myinca.processing.clean_whitespace(myinca.database.doctype_examples('nu'),'text',save=False)
