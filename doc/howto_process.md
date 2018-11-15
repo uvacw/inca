@@ -31,7 +31,7 @@ for result in p:
     pass
 ```
 
-It is also possible to supply an Elasticsearch query instead of a doctype, which is useful if you only want to process some specific documents. For instance, `_exists_:topic` will process all documents that contain the key 'topic', `text:vvd` will include all documents that include 'vvd' in the key 'text', or `doctype:"nu" AND publication_date:[2018-01-01 TO 2018-12-31]' will process all nu.nl articles published in 2018. More information on Elasticsearch 'Query String Queries' can be read in the [Elasticsearch documentation] (https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-query-string-query.html#query-string-syntax).
+It is also possible to supply an Elasticsearch query instead of a doctype, which is useful if you only want to process some specific documents. For instance, `_exists_:topic` will process all documents that contain the key 'topic', `text:vvd` will include all documents that include 'vvd' in the key 'text', or `doctype:"nu" AND publication_date:[2018-01-01 TO 2018-12-31]` will process all nu.nl articles published in 2018. More information on Elasticsearch 'Query String Queries' can be read in the [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-query-string-query.html#query-string-syntax).
 
 ```python3
 p = myinca.processing.lowercase('doctype:"nu" AND publication_date:[2018-01-01 TO 2018-12-31]','text', save=True)
