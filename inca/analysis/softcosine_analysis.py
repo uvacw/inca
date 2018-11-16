@@ -130,18 +130,10 @@ class softcosine_similarity(Analysis):
             source_text.append(doc['_source'][sourcetext].split())
         corpus = source_text + target_text
         
- 
         dictionary = Dictionary(corpus)
         tfidf = TfidfModel(dictionary=dictionary)
         similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)        
 
-        
-        #extract information from sources (date and id)
-        source_dates = [doc['_source'][sourcedate] for doc in source_query]
-        source_ids = [a['_id'] for a in source_query]
-        source_doctype = [a['_source']['doctype'] for a in source_query]
-        source_dict = dict(zip(source_ids, source_dates))
-        source_dict2 = dict(zip(source_ids, source_doctype))
         
         #If specified, calculate day difference
         source_tuple = []
@@ -152,69 +144,81 @@ class softcosine_similarity(Analysis):
                 source_tuple.append((doc['_source'][sourcetext], doc['_source'][sourcedate], doc['_id'], doc['_source']['doctype']))
             for doc in target_query:
                 target_tuple.append((doc['_source'][targettext], doc['_source'][targetdate], doc['_id'], doc['_source']['doctype']))
-
-
+                
             #Calculate day difference and make a separate corpus (basis for the index the source is compared to)
-            #for every source, only including target documents within the specified range; also extracting dates and ids
+            #for every source, only including target documents within the specified range
+            #also extracts additional information (dates, ids, doctypes) for both source and target for creating dataframe later on.
             texts_final = []
-            dates_final = []
-            ids_final = []
-            doctype_final=[]
+
+            source_dates_final = []
+            source_ids_final = []
+            source_doctype_final=[]
+            target_dates_final = []
+            target_ids_final = []
+            target_doctype_final=[]
             for sourcetd in source_tuple:
                 texts_new = []
-                dates_new = []
-                ids_new = []
-                doctype_new = []
+
+                source_dates_new = []
+                source_ids_new = []
+                source_doctype_new = []
+                target_dates_new = []
+                target_ids_new = []
+                target_doctype_new = []
                 for targettd in target_tuple:
                     day_diff = self.date_comparison(sourcetd[1], targettd[1])
                     if day_diff == "No date" or day_diff[2]<=days_before or day_diff[2]>=days_after:
                         pass
                     else:
                         texts_new.append(targettd[0])
-                        dates_new.append(targettd[1])
-                        ids_new.append(targettd[2])
-                        doctype_new.append(targettd[3])  
+
+                        source_dates_new.append(sourcetd[1])
+                        target_dates_new.append(targettd[1])
+                        source_ids_new.append(sourcetd[2])
+                        target_ids_new.append(targettd[2])
+                        source_doctype_new.append(sourcetd[3])
+                        target_doctype_new.append(targettd[3])
                 texts_final.append(texts_new)
-                dates_final.append(dates_new)
-                ids_final.append(ids_new)
-                doctype_final.append(doctype_new)
-            
+                
+                source_dates_final.extend(source_dates_new)
+                target_dates_final.extend(target_dates_new)
+                source_ids_final.extend(source_ids_new)
+                target_ids_final.extend(target_ids_new)
+                source_doctype_final.extend(source_doctype_new)
+                target_doctype_final.extend(target_doctype_new)
+                
             #Split the target texts
             targettext_split = []
             for text in texts_final:
                 texts = [a.split() for a in text]
                 targettext_split.append(texts)
 
-            #Make a similarity matrix and index out of the texts in the corpus (what the source articles will be compared to, one for every source)
+            #Combine the source texts with the relevant target articles in 'source_index' and calculate the softcosine similarity
             source_texts = [n['_source'][sourcetext].split() for n in source_query]
             source_index = list(zip(targettext_split, source_texts))
-            sims_list = []
-            
 
+            sims_list = [] 
             for item in source_index:
                 index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in item[0]]],similarity_matrix)
                 #Process the sources so that they can be compared to the indices
                 query = tfidf[dictionary.doc2bow(item[1])]
 
-                #Retrieve similarities and make dataframe (including both ids, dates, doctypes and similarity)
+                #Retrieve similarities
                 sims = index[query]
-                sims_list.append(sims)
-                
-            
-            target_df = pd.DataFrame(ids_final).transpose().melt().drop('variable', axis = 1)
-            target_df.columns = ['target']
-            target_dates = pd.DataFrame(dates_final).transpose().melt().drop('variable', axis = 1)
-            target_dates.columns = ['target_date']
-            target_doctype = pd.DataFrame(doctype_final).transpose().melt().drop('variable', axis=1)
-            target_doctype.columns = ['target_doctype']
+                sims_list.extend(sims)
 
-            source_df = pd.DataFrame(sims_list, index = source_ids).transpose().melt()
-            source_df.columns = ['source', 'similarity']
-            source_df["source_date"] = source_df["source"].map(source_dict)
-            source_df['source_doctype'] = source_df['source'].map(source_dict2)
+            #Create dataframe
+            source_ids_df = pd.DataFrame(source_ids_final).transpose().melt().drop('variable', axis=1)
+            target_ids_df = pd.DataFrame(target_ids_final).transpose().melt().drop('variable', axis=1)
+            source_date_df = pd.DataFrame(source_dates_final).transpose().melt().drop('variable', axis=1)
+            target_date_df = pd.DataFrame(target_dates_final).transpose().melt().drop('variable', axis=1)
+            source_doctype_df = pd.DataFrame(source_doctype_final).transpose().melt().drop('variable', axis=1)
+            target_doctype_df = pd.DataFrame(target_doctype_final).transpose().melt().drop('variable', axis=1)
+            sims_df = pd.DataFrame(sims_list)
+            df = pd.concat([source_ids_df, target_ids_df, source_date_df, target_date_df, source_doctype_df, target_doctype_df, sims_df], axis=1)
+            df.columns = ['source', 'target', 'source_date', 'target_date', 'source_doctype', 'target_doctype', 'similarity']
 
-            df = pd.concat([source_df, target_df, target_dates, target_doctype], axis = 1)
-
+            #Optional: if threshold is defined
             if threshold:
                 df = df.loc[df['similarity'] >= threshold]
 
@@ -250,10 +254,18 @@ class softcosine_similarity(Analysis):
                 
         #Same procedure as above, but without specifying a limited difference between source and target date (thus: comparing all sources to the same index)
         else:
-            target_ids = [a['_id'] for a in target_query]
-            target_dates = [a['_source'][targetdate] for a in target_query]
+            #extract information from sources
+            source_dates = [doc['_source'][sourcedate] for doc in source_query]
+            source_ids = [doc['_id'] for doc in source_query]
+            source_doctype = [doc['_source']['doctype'] for doc in source_query]
+            source_dict = dict(zip(source_ids, source_dates))
+            source_dict2 = dict(zip(source_ids, source_doctype))
+
+            #extract information from targets
+            target_ids = [doc['_id'] for doc in target_query]
+            target_dates = [doc['_source'][targetdate] for doc in target_query]
             target_dict = dict(zip(target_ids, target_dates))
-            target_doctype=[a['_source']['doctype'] for a in target_query]
+            target_doctype=[doc['_source']['doctype'] for doc in target_query]
             target_dict2 = dict(zip(target_ids, target_doctype))
             
             #Create index out of target texts
@@ -264,16 +276,18 @@ class softcosine_similarity(Analysis):
             query = tfidf[[dictionary.doc2bow(d) for d in source_text]]
             query_generator = (item for item in query)
                             
-            #Retrieve similarities and make dataframe
+            #Retrieve similarities
             sims_list = [index[doc] for doc in query_generator]
-            
+
+            #make dataframe
             df = pd.DataFrame(sims_list, columns=target_ids, index = source_ids).stack().reset_index()
             df.columns = ['source', 'target', 'similarity']
             df["source_date"] = df["source"].map(source_dict)
             df["target_date"] = df["target"].map(target_dict)
             df['source_doctype'] = df['source'].map(source_dict2)
             df['target_doctype'] = df['target'].map(target_dict2)
-            
+
+            #Optional: if threshold is specified
             if threshold:
                 df = df.loc[df['similarity'] >= threshold]
 
