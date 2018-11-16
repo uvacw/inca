@@ -20,7 +20,7 @@ Thus, with these two analysis functions you can decide whether you want to have 
 
 **When running the soft cosine similarity analysis, the following steps are executed:**
 
-- From all the target articles (the articles the sources will be compared to) a dictionary is made (creating word - id mappings). This dictionary is then transformed into a TF-IDF matrix (Term Frequency - Inverse Document Frequency). Those two components save as input for creating a similarity matrix, until finally an index is created. This index is the representation of your target documents that you need to compare your source documents to.
+- A dictionary (creating word - id mappings) out of the entire corpus (all source and target documents). This dictionary is then transformed into a TF-IDF matrix (Term Frequency - Inverse Document Frequency). Those two components save as input for creating a similarity matrix. Out of the target documents an index is created, using doc2bow, dictionary and tfidf. This index is the representation of your target documents that you need to compare your source documents to.
 
 - Each source document is also transformed (using doc2bow, dictionary and tfidf) and put into a generator
 
@@ -77,5 +77,5 @@ myinca.analysis.cosine_similarity().fit('nu', 'text_processed', 'publication_dat
 
 #### Softcosine similarity
 ```python
-myinca.analysis.softcosine_similarity().fit('/home/mymodel', 'nu', 'ad (www)', days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, to_pajek = False, threshold = 0.6, destination = '/home/exports/')
+myinca.analysis.softcosine_similarity().fit('/home/mymodel', 'nu', 'ad (www)', sourcetext= 'text_processed', keyword_source= 'vvd', condition_source = '{'topic':1}, days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, to_pajek = False, threshold = 0.6, destination = '/home/exports/')
 ```
