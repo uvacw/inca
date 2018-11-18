@@ -195,7 +195,7 @@ class softcosine_similarity(Analysis):
 
             #Combine the source texts with the relevant target articles in 'source_index' and calculate the softcosine similarity
             source_texts = [n['_source'][sourcetext].split() for n in source_query]
-            source_index = list(zip(targettext_split, source_texts))
+            source_index = zip(targettext_split, source_texts)
 
             sims_list = [] 
             for item in source_index:
