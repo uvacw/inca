@@ -207,17 +207,14 @@ class softcosine_similarity(Analysis):
                 sims = index[query]
                 sims_list.extend(sims)
 
-            #Create dataframe
-            source_ids_df = pd.DataFrame(source_ids_final).transpose().melt().drop('variable', axis=1)
-            target_ids_df = pd.DataFrame(target_ids_final).transpose().melt().drop('variable', axis=1)
-            source_date_df = pd.DataFrame(source_dates_final).transpose().melt().drop('variable', axis=1)
-            target_date_df = pd.DataFrame(target_dates_final).transpose().melt().drop('variable', axis=1)
-            source_doctype_df = pd.DataFrame(source_doctype_final).transpose().melt().drop('variable', axis=1)
-            target_doctype_df = pd.DataFrame(target_doctype_final).transpose().melt().drop('variable', axis=1)
-            sims_df = pd.DataFrame(sims_list)
-            df = pd.concat([source_ids_df, target_ids_df, source_date_df, target_date_df, source_doctype_df, target_doctype_df, sims_df], axis=1)
-            df.columns = ['source', 'target', 'source_date', 'target_date', 'source_doctype', 'target_doctype', 'similarity']
-
+            df = pd.DataFrame.from_dict({'source':source_ids_final,
+                                         'target':target_ids_final,
+                                         'source_date':source_dates_final,
+                                         'target_date':target_dates_final,
+                                         'source_doctype':source_doctype_final,
+                                         'target_doctype':target_doctype_final,
+                                         'similarity':sims_list})
+            
             #Optional: if threshold is defined
             if threshold:
                 df = df.loc[df['similarity'] >= threshold]
