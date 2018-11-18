@@ -1,13 +1,9 @@
 '''
 This file contains the basics to determine the overlap based on softcosine similarity
 '''
-
-from ..core.analysis_base_class import Analysis
 import datetime
-from collections import defaultdict
-import scipy as sp
 from sklearn.feature_extraction.text import TfidfVectorizer
-import csv
+from ..core.analysis_base_class import Analysis
 from ..core.database import client, elastic_index, scroll_query
 import os
 import logging
@@ -18,8 +14,6 @@ from gensim.corpora import Dictionary
 from gensim.models import TfidfModel
 from gensim.models import Word2Vec
 from gensim.similarities import SoftCosineSimilarity
-from sklearn.feature_extraction.text import TfidfVectorizer
-import pickle
 import time
 import networkx as nx
 
