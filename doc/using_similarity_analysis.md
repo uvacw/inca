@@ -20,7 +20,7 @@ Thus, with these two analysis functions you can decide whether you want to have 
 
 **When running the soft cosine similarity analysis, the following steps are executed:**
 
-- From all the target articles (the articles the sources will be compared to) a dictionary is made (creating word - id mappings). This dictionary is then transformed into a TF-IDF matrix (Term Frequency - Inverse Document Frequency). Those two components save as input for creating a similarity matrix, until finally an index is created. This index is the representation of your target documents that you need to compare your source documents to.
+- A dictionary (creating word - id mappings) out of the entire corpus (all source and target documents). This dictionary is then transformed into a TF-IDF matrix (Term Frequency - Inverse Document Frequency). Those two components save as input for creating a similarity matrix. Out of the target documents an index is created, using doc2bow, dictionary and tfidf. This index is the representation of your target documents that you need to compare your source documents to.
 
 - Each source document is also transformed (using doc2bow, dictionary and tfidf) and put into a generator
 
@@ -29,7 +29,7 @@ Thus, with these two analysis functions you can decide whether you want to have 
 - All the similarities are put into a dataframe, each row showing: The ID of the source and target document that were compared, their similarity, their dates (to see how far they were apart) and their doctypes.
 
 You have to supply a few parameters:
-- What doctypes you want to compare (source, target)
+- What doctypes you want to compare. Multiple doctypes can be supplied as a list (source, target)
 - What the textfield of the two doctypes is you want to compare (sourcetext, targettext). For the softcosine analysis, both are set to 'text' by default. 
     - **Warning:** You should not use these analyses with unprocessed text (i.e. including stopwords etc.) as you then get inflated similarity coefficients. Thus, it is advised to first use some of the basic text processing steps, save the results in a document field, and supply this field to the analyses.
 - What the datefields of the two doctypes are (sourcedate, targetdate). For the softcosine analysis, both are set to 'publication_date' by default.
@@ -41,7 +41,8 @@ Only for the soft cosine analysis:
 In addition, you also have different options to customize:
 - You can add a threshold (for example 0.6). In this case, only source-target pairs whose similarity passes this threshold are saved in the resulting document (threshold).
 - You can add a date range. Then only documents within this date range are processed (you can supply either one or both). A date format is yyyy-MM-dd (from_time, to_time).
-- You can add keywords that need to be present in the textfield of the source or target. You can either supply a string (e.g. 'groenlinks') or a list of words (e.g. ['groenlinks', 'cda']). In the second case both words need to be present in the text. This option allows you to select more specific texts to compare. 
+- You can add keywords that need to be present in the textfield of the source or target. You can either supply a string (e.g. 'groenlinks') or a list of words (e.g. ['groenlinks', 'cda']). In the second case both words need to be present in the text. This option allows you to select more specific texts to compare.
+- You can choose to run the analysis on specific groups of articles by adding a condition for the source and/or target. You need to supply a pre-existing field and its value in the form of a dict. For instance, to run the analysis only on articles with 1 in the field 'topic' add {'topic':1} (condition_target, condition_source).
 - You can specifiy 'days_before' and 'days_after'. In this case, only target documents within this range around the source are compared to it &mdash; this is for example important if you assume that documents too far apart (e.g. a year) should not be compared for similarity (i.e. because influences between source and target are believed to be more short-term). As an important side-effect, you have far less comparisons in this case as you do not calculate similarities between documents where it does not make sense. In this case, each source gets its own index it is compared to &mdash; however, your resulting document will have the same information as before (days_before, days_after).
 - You can choose whether you want a csv file or a pandas dataframe (saved as pkl) as a result (to_csv).
 - You can also specify the destination where it should be saved. By default it is saved in a folder called 'comparisons' (destination).
@@ -76,5 +77,5 @@ myinca.analysis.cosine_similarity().fit('nu', 'text_processed', 'publication_dat
 
 #### Softcosine similarity
 ```python
-myinca.analysis.softcosine_similarity().fit('/home/mymodel', 'nu', 'ad (www)', days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, to_pajek = False, threshold = 0.6, destination = '/home/exports/')
+myinca.analysis.softcosine_similarity().fit('/home/mymodel', 'nu', 'ad (www)', sourcetext= 'text_processed', keyword_source= 'vvd', condition_source = '{'topic':1}, days_before = 2, days_after = 2, from_time = '2013-09-01', to_time = '2013-09-02', to_csv = True, to_pajek = False, threshold = 0.6, destination = '/home/exports/')
 ```

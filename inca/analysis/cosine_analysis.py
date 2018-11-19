@@ -51,14 +51,13 @@ class cosine_similarity(Analysis):
             previous_row = current_row
             return previous_row[-1]
 
-    def fit(self, source, target, sourcetext = 'text', sourcedate = 'publication_date', targettext = 'text',
-        targetdate = 'publication_date', keyword_source = None, keyword_target = None, days_before = 0, days_after = 2,
-        threshold = 0.6, from_time=None, to_time=None, to_csv = False, method = "cosine"):
+    def fit(self, source, target, sourcetext = 'text', sourcedate = 'publication_date', targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = 0, days_after = 2, threshold = 0.6, from_time=None, to_time=None, to_csv = False, method = "cosine"):
         '''
-        Source = doctype of source, Sourcetext = field of sourcetext (e.g. 'text'),
+        Source = doctype of source (can also be a list of multiple doctypes), Sourcetext = field of sourcetext (e.g. 'text'),
         Sourcedate = field of sourcedate (e.g. 'publication_date'); (repeat for target);
-        keyword_source/_target = specify keywords that need to be present in the textfield; list or string, in case of a list all words need to be present in the textfield (lowercase)
-        Days_before = days target is before source (e.g. -2); Days_after = days target is after source (e.g. 2)
+        keyword_source/_target = optional: specify keywords that need to be present in the textfield; list or string, in case of a list all words need to be present in the textfield (lowercase)
+        condition_source/_target = optional: supply the field and its value as a dict as a condition for analysis, e.g. {'topic':1} (defaults to None)
+        days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2)
         threshold = threshold to determine at which point similarity is sufficient
         from_time, to_time = optional: specifying a date range to filter source and target articles
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
@@ -75,9 +74,19 @@ class cosine_similarity(Analysis):
         alltarget = 0
 
         #Construct query for elasticsearch
-        source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
-        target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
+        if isinstance(source, list): # if multiple doctypes are specified
+            source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':source}}]}}}}} 
+        elif isinstance(source, str):
+            source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
 
+        if isinstance(target, list): # if multiple doctypes are specified
+            target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':target}}]}}}}}
+        elif isinstance(target, str):
+            target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
+
+        #target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
+        #source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
+        
         #Change query if date range was specified
         source_range = {'range':{sourcedate:{}}}
         target_range = {'range':{targetdate:{}}}
@@ -102,6 +111,13 @@ class cosine_similarity(Analysis):
         elif isinstance(keyword_target, list) == True:
             for item in keyword_target:
                 target_query['query']['bool']['filter']['bool']['must'].append({'term':{targettext:item}})
+
+        #Change query if condition_target or condition_source is specified
+        if isinstance(condition_target, dict) == True:
+            target_query['query']['bool']['filter']['bool']['must'].append({'match':condition_target})
+        if isinstance(condition_source, dict) == True:
+            source_query['query']['bool']['filter']['bool']['must'].append({'match':condition_source})
+
         #Retrieve source and target articles as generators
         source_query = scroll_query(source_query)
         target_query = scroll_query(target_query)
