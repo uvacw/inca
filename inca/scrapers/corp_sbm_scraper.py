@@ -19,7 +19,7 @@ class sbm(Scraper):
         self.START_URL = "http://www.sbmoffshore.com/investor-relations-centre/press-releases/"
         self.BASE_URL = "http://www.sbmoffshore.com/"
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
         Fetches articles from SBM Offshore
         '''

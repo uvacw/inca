@@ -46,7 +46,7 @@ class Processer(Document):
         '''CHANGE THIS METHOD, should return the changed document'''
         return updated_field
 
-    def runwrap(self, docs_or_query,field,force=False, action='run' , *args, **kwargs):
+    def runwrap(self, docs_or_query,field,new_key=None,save=False, force=False, action='run' , *args, **kwargs):
         '''
         Run a processor by supplying a list of documents, a query or a doctype .
         Actions specify the way in which the task should be run.
@@ -62,7 +62,10 @@ class Processer(Document):
 
         if action == 'run':
             for doc in documents:
-                yield self.run(doc, field, *args, **kwargs)
+                if save==False:
+                    yield self.run(doc, field, new_key, save, force, *args, **kwargs)
+                elif save==True:     # do not yield documents if saving to database anyway
+                    _ = self.run(doc, field, new_key, save, force, *args, **kwargs)
 
         elif action == 'delay':
             for doc in documents:

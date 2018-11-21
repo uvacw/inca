@@ -10,48 +10,46 @@ import logging
 
 logger = logging.getLogger("INCA")
 
-MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 'July':7, 'August':8, 'September':9, 'October':10, 'November':11, 'December':12}
-
-class bhp(Scraper):
-    """Scrapes BHP Billiton"""
+class merlin(Scraper):
+    """Scrapes Merlin Porperties Socimi SA"""
 
     def __init__(self):
-        self.START_URL = "http://www.bhp.com/media-and-insights/news-releases"
-        self.BASE_URL = "http://www.bhp.com/"
+        self.START_URL = "http://www.merlinproperties.com/en/press-release/"
+        self.BASE_URL = "http://www.merlinproperties.com/"
 
-    def get(self):
+    def get(self, save):
         '''                                                                             
-        Fetches articles from BHP Billiton
+        Fetches articles from Merlin Properties Socimi SA
         '''
-        self.doctype = "BHP (corp)"
+        self.doctype = "Merlin (corp)"
         self.version = ".1"
-        self.date = datetime.datetime(year=2017, month=7, day=26)
+        self.date = datetime.datetime(year=2017, month=8, day=22)
 
         releases = []
 
-        page = 0
-        current_url = self.START_URL+'?q0='+str(page)
+        page = 1
+        current_url = self.START_URL+'page/'+str(page)+'/'
         overview_page = requests.get(current_url)
-        while overview_page.text.find('listing__item-wrap') != -1:
-            
+        while overview_page.text.find('page-navigation') != -1:
             tree = fromstring(overview_page.text)
-
-            linkobjects = tree.xpath('//*[@class="col-9"]/h2//a')
-            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
             
+            linkobjects = tree.xpath('//*/ul[@class="lst-news"]/li//a')
+            links = [self.BASE_URL+l.attrib['href'] for l in linkobjects if 'href' in l.attrib]
+
             for link in links:
                 logger.debug('ik ga nu {} ophalen'.format(link))
                 current_page = requests.get(link)
                 tree = fromstring(current_page.text)
                 try:
-                    title=" ".join(tree.xpath('//*[@class="col-9 col-r"]/h2/text()'))
+                    title=" ".join(tree.xpath('//*/h1[@class="h2"]/text()'))
                 except:
                     print("no title")
                     title = ""
                 try:
-                    d = tree.xpath('//*[@class="date"]//text()')[0].strip()
-                    jaar = int(d[-14:-10]) 
-                    maand = MAAND2INT[d[2:-14].strip()]
+                    d = tree.xpath('//*/h2[@class="h4"]//text()')[0].strip()
+                    print(d)
+                    jaar = int(d[-4:]) 
+                    maand = int(d[3:-5])
                     dag = int(d[:2])
                     datum = datetime.datetime(jaar,maand,dag)
                 except Exception as e:
@@ -59,18 +57,18 @@ class bhp(Scraper):
                     print(e)
                     datum = None
                 try:
-                    text=" ".join(tree.xpath('//*[@class="rte col-12"]//text()'))
+                    text=" ".join(tree.xpath('//*[@itemprop="description"]//text()'))
                 except:
                     logger.info("oops - geen textrest?")
                     text = ""
                 text = "".join(text)
                 releases.append({'text':text.strip(),
-                                 'title':title.strip(),
                                  'date':datum,
+                                 'title':title.strip(),
                                  'url':link.strip()})
 
             page+=1
-            current_url = self.START_URL+'?q0='+str(page)
+            current_url = self.START_URL+'page/'+str(page)+'/'
             overview_page = requests.get(current_url)
 
         return releases

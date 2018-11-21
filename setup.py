@@ -1,9 +1,10 @@
 from setuptools import setup, find_packages
 
-requirements = ['celery','colorama','spacy','tqdm','elasticsearch==5.4',
+requirements = ['celery','colorama','tqdm','elasticsearch>=6',
                 'feedparser', 'httplib2','imagehash', 'loremipsum',
-                'lxml','requests','statsmodels','pandas',
-                'pillow==5.0','gensim','oauth2client','matplotlib',
+                'lxml','requests<3.0.0,>=2.13.0','statsmodels','pandas',
+                'pillow==5.0','gensim>3.4','oauth2client','matplotlib',
+                'networkx','spacy',
                 'scikit-learn','scipy','selenium','twython','nltk','tqdm']
 
 setup(name='inca',
@@ -14,7 +15,7 @@ setup(name='inca',
       author_email='inca-cw-fmg@uva.nl',
       license='GNU Affero GPL',
       packages=find_packages(),
-      package_data={'':['*.cfg']},
+      package_data={'':['*.cfg', 'schema.json']},
       include_package_data=True,
       install_requires=requirements,
       zip_safe=False)
