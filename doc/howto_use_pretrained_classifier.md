@@ -11,4 +11,4 @@ p = myinca.processing.pretrained('nu', 'text', path_to_model='/path/to/pretraine
 next(p)
 ```
 
-A freely available pre-trained classifier trained on over 1 million new items by Susan Vermeer (2018) can be downloaded [here](https://figshare.com/articles/A_supervised_machine_learning_method_to_classify_Dutch-language_news_items/7314896/1). 
+A freely available pre-trained classifier trained on over 1 million new items by Susan Vermeer (2018) can be downloaded [here](https://figshare.com/articles/A_supervised_machine_learning_method_to_classify_Dutch-language_news_items/7314896/1). Keep in mind that for accurate results, you need to preprocess your text in the same way as was done for the classifier. In this case, either use the (1) the full text, (2) stopword removal, or (3) only use the lead of the text. 
