@@ -378,7 +378,7 @@ def scroll_query(query,scroll_time='30m', log_interval=None):
         total = 0
         update_step =  -1
     else:
-        total = client.search(body=query)['hits']['total']
+        total = client.search(index = elastic_index, body=query)['hits']['total']
         if type(log_interval)==int:
             update_step = log_interval
         elif type(log_interval)==float:
@@ -386,7 +386,7 @@ def scroll_query(query,scroll_time='30m', log_interval=None):
         else:
             update_step = min((total/1000), 100)
 
-    for doc in tqdm(helpers.scan(client, query=query, scroll=scroll_time), total = total):
+    for doc in tqdm(helpers.scan(client, index = elastic_index, query=query, scroll=scroll_time), total = total):
         yield doc
 
 
