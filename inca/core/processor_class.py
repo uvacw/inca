@@ -117,6 +117,8 @@ class Processer(Document):
         '''
 
         # 1. check if document or id --> return do
+        #total=0
+        not_found=0
         logger.debug("trying to process: ",document)
         masked = False # expect a document to be processed as-is (assumes ES origin)
         if not (type(document)==dict):
@@ -137,8 +139,9 @@ class Processer(Document):
         if not force and new_key in document['_source'].keys(): return document
         # 3. return None if key is missing
         if not field in document['_source'].keys():
-            print(document['_source'].keys())
-            logger.warning("Key not found in document")
+            #print(document['_source'].keys())
+            #logger.warning("Key not found in document")
+            not_found+=1
             if masked:
                 document = document['_source']
             return document
@@ -163,6 +166,9 @@ class Processer(Document):
         # 6. emit dotkey-field
         if masked:
             document = document['_source']
+        # 7. print number of documents not found
+        if not_found != 0:
+            logger.warning("Key not found in", not_found, "out of", total, "documents.")
         return document
 
 
