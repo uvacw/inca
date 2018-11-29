@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 from bs4 import BeautifulSoup
 from urllib import parse
 import datetime
@@ -17,16 +18,22 @@ class junknews_scraper(Scraper):
         self.version = ".1"
         self.datetime = datetime.datetime(year=2018, month=11, day=28)
 
-    def get(self, save, *args, **kwargs):
+    def get(self, save, hours, *args, **kwargs):
 
-        """Gets junk news articles from Oxford Internet Institute's Junk News Aggregator"""
+        """
+        Gets junk news articles from Oxford Internet Institute's Junk News Aggregator
+        hours = the number of previous hours to be scraped. Options include:
+        1,2,3,6,9,12,24,48,72,168 (1 week), 720 (1 month).
+        """
         
         """ Find publishers, websites and facebooksites  """
 
-        driver = webdriver.Firefox()
+        options = Options()
+        options.headless = True
+        driver = webdriver.Firefox(options = options)
         driver.get(self.START_URL)
         time.sleep(5)
-        driver.find_element_by_xpath('//*[@value="3"]').click() #3, can also be changed to 6
+        hours_xpath = '//*[@value="{}"]'.format(hours)
         time.sleep(5)
 
         x = driver.find_elements_by_xpath('//a[@class="link-website"]') # Websites
@@ -45,7 +52,8 @@ class junknews_scraper(Scraper):
         for i in fb: 
             facebooksites.append(str(i.get_attribute("href")))
 
-
+        driver.close()
+        
         """ Get newssources and htmltrees, combine lists into a dict """
    
 
@@ -58,7 +66,9 @@ class junknews_scraper(Scraper):
             return newssource
  
         def gettree_chicks(webpage):
-            driver = webdriver.Firefox()
+            options = Options()
+            options.headless = True
+            driver = webdriver.Firefox(options = options)
             driver.get(webpage)
             time.sleep(15)
             try:
@@ -158,14 +168,9 @@ class junknews_scraper(Scraper):
 
         def chicksonright(soup):
             title = soup.h1.text
-            tweets = soup.find_all('p', {'class': 'Tweet-text e-entry-title'})
             entrycontent = getarticle(soup, "div", "class", "td-post-content")
             entrycontent = entrycontent.replace('Email address','')
             return(title, entrycontent, "chicksonright")
- 
-        """ Chicksonright is the only function that does not retain twitter-
-            blockquotes (because HTML scraped with the help of selenium). So we
-            could try to fix "chicksonright" and keep the Twitter-content? """
     
         def cnsnews(soup):
             title = soup.h1.text
@@ -234,7 +239,6 @@ class junknews_scraper(Scraper):
             entrycontent = subtitle + soup.get_text()
             entrycontent = entrycontent.replace('Advertisement','')
             return(title, entrycontent, "lifezette")
-        """ Contains: "advertisement", "Related: " """
 
         def naturalnews(soup):
             title = soup.find("h1", {"class":  "entry-title"}).text
@@ -310,8 +314,11 @@ class junknews_scraper(Scraper):
 
         def thegatewaypundit(soup):
             title = soup.h2.text
-            #subtitle = soup.h3.text # Only sometimes present: needs an if-clause.
-            entrycontent = getarticle(soup, "div", "class", "clearfix")
+            try:
+                subtitle = soup.h3.text
+            except:
+                subtitle = ""
+            entrycontent = subtitle + '\n' + getarticle(soup, "div", "class", "clearfix")
             sep = "As a privately owned web site"
             entrycontent = entrycontent.split(sep, 1)[0]
             return(title, entrycontent, "thegatewaypundit")
@@ -350,9 +357,7 @@ class junknews_scraper(Scraper):
             if len(entrycontent) > 0:
                 return(title, entrycontent, "westernfreepress")
             else:
-                fallback(soup)
-        """ Important: does fallback automatically return its output, or does westernfreepress
-            have to take fallback's output, and return it? """
+                return fallback(soup)
 
         def wnd(soup):
             title = soup.h1.text
