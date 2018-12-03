@@ -34,6 +34,7 @@ class junknews_scraper(Scraper):
         driver.get(self.START_URL)
         time.sleep(5)
         hours_xpath = '//*[@value="{}"]'.format(hours)
+        driver.find_element_by_xpath(hours_xpath).click()
         time.sleep(5)
 
         x = driver.find_elements_by_xpath('//a[@class="link-website"]') # Websites
