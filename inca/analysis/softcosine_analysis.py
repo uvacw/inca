@@ -188,10 +188,8 @@ class softcosine_similarity(Analysis):
                         day_diff = self.date_comparison_6days(sourcetd[1], targettd[1])
                     else:
                         day_diff = self.date_comparison(sourcetd[1], targettd[1])
-                    
-                    if day_diff == "No date" or day_diff[2]<days_before or day_diff[2]>days_after:
-                        pass
-                    else:
+
+                    if days_before <= day_diff[2] <= days_after:
                         texts_new.append(targettd[0])
 
                         source_dates_new.append(sourcetd[1])
@@ -200,6 +198,11 @@ class softcosine_similarity(Analysis):
                         target_ids_new.append(targettd[2])
                         source_doctype_new.append(sourcetd[3])
                         target_doctype_new.append(targettd[3])
+                    elif day_diff == "No date":
+                        pass
+                    else:
+                        pass
+                    
                 texts_final.append(texts_new)
                 
                 source_dates_final.extend(source_dates_new)
