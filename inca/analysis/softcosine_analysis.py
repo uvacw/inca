@@ -17,6 +17,8 @@ from gensim.similarities import SoftCosineSimilarity
 import time
 import networkx as nx
 
+from pandas.tseries.offsets import CustomBusinessDay
+
 
 
 logger = logging.getLogger("INCA")
@@ -37,10 +39,32 @@ class softcosine_similarity(Analysis):
                 second = datetime.date(second[0], second[1], second[2])
                 difference = (first-second).days
             return([first, second, difference])
+        
+    def date_comparison_6days(self, first_date, second_date):
+        '''Returns the date difference when sunday is merged with monday'''
+        c_weekmask = 'Mon Tue Wed Thu Fri Sat'
+        cbday = CustomBusinessDay(0, weekmask=c_weekmask)
+        if first_date is None or second_date is None:
+            return("No date")
+        else:
+            try:    #assume datetime objects
+                first_date2 = first_date.days+cbday
+                second_date2 = second_date.days+cbday
+                difference = (first_date2 - second_date2)
+            except:  # handle strings
+                first = [int(i) for i in first_date[:10].split("-")]
+                first = datetime.date(first[0], first[1], first[2])
+                first2 = first+cbday
+                second = [int(i) for i in second_date[:10].split("-")]
+                second = datetime.date(second[0], second[1], second[2])
+                second2 = second+cbday
+                difference = (first2-second2).days
+            return([first, second, difference])
+            
 
     def fit(self, path_to_model, source, target, sourcetext = 'text', sourcedate = 'publication_date',
             targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = None,
-            days_after = None, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False):
+            days_after = None, merge_weekend = False, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False):
         '''
         path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
         can be found here: https://rare-technologies.com/word2vec-tutorial/
@@ -50,7 +74,7 @@ class softcosine_similarity(Analysis):
         sourcdate/targetedate = field where date of source/target can be found (defaults to 'publication_date')
         keyword_source/_target = optional: specify keywords that need to be present in the textfield; list or string, in case of a list all words need to be present in the textfield (lowercase)
         condition_source/target = optional: supply the field and its value as a dict as a condition for analysis, e.g. {'topic':1} (defaults to None)
-        days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied
+        days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied. If you additionally specify merge_weekend=True, sunday will be merged with monday to account for publishing in weekends (default is False).
         threshold = threshold to determine at which point similarity is sufficient; if supplied only the rows who pass it are included in the dataset
         from_time, to_time = optional: specifying a date range to filter source and target articles. Supply the date in the yyyy-MM-dd format.
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
@@ -160,8 +184,12 @@ class softcosine_similarity(Analysis):
                 target_ids_new = []
                 target_doctype_new = []
                 for targettd in target_tuple:
-                    day_diff = self.date_comparison(sourcetd[1], targettd[1])
-                    if day_diff == "No date" or day_diff[2]<=days_before or day_diff[2]>=days_after:
+                    if merge_weekend == True:
+                        day_diff = self.date_comparison_6days(sourcetd[1], targettd[1])
+                    else:
+                        day_diff = self.date_comparison(sourcetd[1], targettd[1])
+                    
+                    if day_diff == "No date" or day_diff[2]<days_before or day_diff[2]>days_after:
                         pass
                     else:
                         texts_new.append(targettd[0])
@@ -258,7 +286,7 @@ class softcosine_similarity(Analysis):
             target_dict = dict(zip(target_ids, target_dates))
             target_doctype=[doc['_source']['doctype'] for doc in target_query]
             target_dict2 = dict(zip(target_ids, target_doctype))
-            
+
             #Create index out of target texts
             index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_text]],similarity_matrix)
 
@@ -307,7 +335,11 @@ class softcosine_similarity(Analysis):
                 # write to pajek
                 now = time.localtime()
                 nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
-        
+
+            # Weekend_merge without days_before/days_after
+            if merge_weekend == True:
+                logger.info('Merge_weekend is specified without days_before/days_after and will be ignored.')
+                pass
         
     def predict(self, *args, **kwargs):
         pass
