@@ -194,6 +194,7 @@ class softcosine_similarity(Analysis):
 
                         source_dates_new.append(sourcetd[1])
                         target_dates_new.append(targettd[1])
+                        print("source date:", sourcetd[1], ", target date:", targettd[1])
                         source_ids_new.append(sourcetd[2])
                         target_ids_new.append(targettd[2])
                         source_doctype_new.append(sourcetd[3])
