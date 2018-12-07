@@ -17,8 +17,6 @@ from gensim.similarities import SoftCosineSimilarity
 import time
 import networkx as nx
 
-from pandas.tseries.offsets import CustomBusinessDay
-
 
 
 logger = logging.getLogger("INCA")
