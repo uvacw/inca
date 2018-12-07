@@ -64,7 +64,7 @@ class softcosine_similarity(Analysis):
 
     def fit(self, path_to_model, source, target, sourcetext = 'text', sourcedate = 'publication_date',
             targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = None,
-            days_after = None, merge_weekend = False, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False):
+            days_after = None, include_monday = False, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False):
         '''
         path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
         can be found here: https://rare-technologies.com/word2vec-tutorial/
@@ -184,25 +184,47 @@ class softcosine_similarity(Analysis):
                 target_ids_new = []
                 target_doctype_new = []
                 for targettd in target_tuple:
-                    if merge_weekend == True:
-                        day_diff = self.date_comparison_6days(sourcetd[1], targettd[1])
-                    else:
-                        day_diff = self.date_comparison(sourcetd[1], targettd[1])
+                    day_diff = self.date_comparison(targettd[1], sourcetd[1])
 
-                    if days_before <= day_diff[2] <= days_after:
-                        texts_new.append(targettd[0])
-
-                        source_dates_new.append(sourcetd[1])
-                        target_dates_new.append(targettd[1])
-                        print("source date:", sourcetd[1], ", target date:", targettd[1])
-                        source_ids_new.append(sourcetd[2])
-                        target_ids_new.append(targettd[2])
-                        source_doctype_new.append(sourcetd[3])
-                        target_doctype_new.append(targettd[3])
-                    elif day_diff == "No date":
-                        pass
+                    if include_monday == True:
+                        #convert source date to datetime object
+                        source_date_object = [int(i) for i in sourcetd[1][:10].split("-")]
+                        #print(source_date_object)
+                        source_date_object = datetime.date(source_date_object[0], source_date_object[1], source_date_object[2])
+                        #print(source_date_object)
+                        if days_after == 2 and source_date_object.weekday() == 4:
+                            # include monday if source_date is Friday and days_after is 2 days.
+                            days_after = days_after+1
+                            if days_before <= day_diff[2] <= days_after:
+                                texts_new.append(targettd[0])
+                                source_dates_new.append(sourcetd[1])
+                                target_dates_new.append(targettd[1])
+                                source_ids_new.append(sourcetd[2])
+                                target_ids_new.append(targettd[2])
+                                source_doctype_new.append(sourcetd[3])
+                                target_doctype_new.append(targettd[3])
+                            else:
+                                pass
+                        else:
+                            if days_before <= day_diff[2] <= days_after:
+                                texts_new.append(targettd[0])
+                                source_dates_new.append(sourcetd[1])
+                                target_dates_new.append(targettd[1])
+                                source_ids_new.append(sourcetd[2])
+                                target_ids_new.append(targettd[2])
+                                source_doctype_new.append(sourcetd[3])
+                                target_doctype_new.append(targettd[3])
+                            else:
+                                pass
                     else:
-                        pass
+                        if days_before <= day_diff[2] <= days_after:
+                            texts_new.append(targettd[0])
+                            source_dates_new.append(sourcetd[1])
+                            target_dates_new.append(targettd[1])
+                            source_ids_new.append(sourcetd[2])
+                            target_ids_new.append(targettd[2])
+                            source_doctype_new.append(sourcetd[3])
+                            target_doctype_new.append(targettd[3])
                     
                 texts_final.append(texts_new)
                 
@@ -340,10 +362,9 @@ class softcosine_similarity(Analysis):
                 now = time.localtime()
                 nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
 
-            # Weekend_merge without days_before/days_after
-            if merge_weekend == True:
-                logger.info('Merge_weekend is specified without days_before/days_after and will be ignored.')
-                pass
+            # include_monday without days_before/days_after
+            if include_monday == True:
+                logger.info('Include_monday is specified without days_before/days_after and will be ingnored.')
         
     def predict(self, *args, **kwargs):
         pass
