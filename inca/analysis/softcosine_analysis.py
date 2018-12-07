@@ -39,28 +39,6 @@ class softcosine_similarity(Analysis):
                 second = datetime.date(second[0], second[1], second[2])
                 difference = (first-second).days
             return([first, second, difference])
-        
-    def date_comparison_6days(self, first_date, second_date):
-        '''Returns the date difference when sunday is merged with monday'''
-        c_weekmask = 'Mon Tue Wed Thu Fri Sat'
-        cbday = CustomBusinessDay(0, weekmask=c_weekmask)
-        if first_date is None or second_date is None:
-            return("No date")
-        else:
-            try:    #assume datetime objects
-                first_date2 = first_date.days+cbday
-                second_date2 = second_date.days+cbday
-                difference = (first_date2 - second_date2)
-            except:  # handle strings
-                first = [int(i) for i in first_date[:10].split("-")]
-                first = datetime.date(first[0], first[1], first[2])
-                first2 = first+cbday
-                second = [int(i) for i in second_date[:10].split("-")]
-                second = datetime.date(second[0], second[1], second[2])
-                second2 = second+cbday
-                difference = (first2-second2).days
-            return([first, second, difference])
-            
 
     def fit(self, path_to_model, source, target, sourcetext = 'text', sourcedate = 'publication_date',
             targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = None,
@@ -74,7 +52,7 @@ class softcosine_similarity(Analysis):
         sourcdate/targetedate = field where date of source/target can be found (defaults to 'publication_date')
         keyword_source/_target = optional: specify keywords that need to be present in the textfield; list or string, in case of a list all words need to be present in the textfield (lowercase)
         condition_source/target = optional: supply the field and its value as a dict as a condition for analysis, e.g. {'topic':1} (defaults to None)
-        days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied. If you additionally specify merge_weekend=True, sunday will be merged with monday to account for publishing in weekends (default is False).
+        days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied. Additionally, include_monday = True includes Monday if source date is Friday and days_after is 2. 
         threshold = threshold to determine at which point similarity is sufficient; if supplied only the rows who pass it are included in the dataset
         from_time, to_time = optional: specifying a date range to filter source and target articles. Supply the date in the yyyy-MM-dd format.
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
@@ -189,9 +167,7 @@ class softcosine_similarity(Analysis):
                     if include_monday == True:
                         #convert source date to datetime object
                         source_date_object = [int(i) for i in sourcetd[1][:10].split("-")]
-                        #print(source_date_object)
                         source_date_object = datetime.date(source_date_object[0], source_date_object[1], source_date_object[2])
-                        #print(source_date_object)
                         if days_after == 2 and source_date_object.weekday() == 4:
                             # include monday if source_date is Friday and days_after is 2 days.
                             days_after = days_after+1
