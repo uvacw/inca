@@ -6,6 +6,10 @@ import datetime
 from ..core.scraper_class import Scraper
 import time
 import requests
+import logging
+from lxml.html import fromstring
+
+logger = logging.getLogger("INCA")
 
 scraper = Scraper()
 
@@ -29,7 +33,7 @@ class junknews_scraper(Scraper):
         """ Find publishers, websites and facebooksites  """
 
         options = Options()
-        options.headless = True
+        options.set_headless(True)
         driver = webdriver.Firefox(options = options)
         driver.get(self.START_URL)
         time.sleep(5)
@@ -37,7 +41,7 @@ class junknews_scraper(Scraper):
         driver.find_element_by_xpath(hours_xpath).click()
         time.sleep(5)
 
-        x = driver.find_elements_by_xpath('//a[@class="link-website"]') # Websites
+        x = driver.find_elements_by_xpath('//a[@class="link-website"]') # Urls
         fb = driver.find_elements_by_xpath('//a[@class="link-facebook"]') # FBsites
         y = driver.find_elements_by_xpath('//span[@class="publisher"]') # Publishers
 
@@ -45,9 +49,9 @@ class junknews_scraper(Scraper):
         for i in y:
             publishers.append(i.text) 
 
-        websites = []
+        url = []
         for i in x: 
-            websites.append(str(i.get_attribute("href")))
+            url.append(str(i.get_attribute("href")))
 
         facebooksites = []
         for i in fb: 
@@ -68,14 +72,14 @@ class junknews_scraper(Scraper):
  
         def gettree_chicks(webpage):
             options = Options()
-            options.headless = True
+            options.set_headless(True)
             driver = webdriver.Firefox(options = options)
             driver.get(webpage)
             time.sleep(15)
             try:
                 driver.find_element_by_xpath('//button[@class="button_button intro_acceptAll "]').click()
             except:
-                print("No button.")
+                pass
             tree=driver.page_source
             driver.close()
             return(tree)
@@ -100,14 +104,14 @@ class junknews_scraper(Scraper):
                     return('NaN') #Or mystring?
 
         newssources = []
-        for a in websites:
+        for a in url:
             newssources.append(getnewssource(a))
 
         trees_data = []
-        for i in websites:
+        for i in url:
             trees_data.append(gettree(i))
 
-        all_data = [{'website': w, 'publisher': p, 'newssource': n, 'facebooksite': f, 'htmltree': t} for w, p, n, f, t in zip(websites, publishers, newssources, facebooksites, trees_data)]
+        all_data = [{'url': w, 'publisher': p, 'newssource': n, 'facebooksite': f, 'htmltree': t} for w, p, n, f, t in zip(url, publishers, newssources, facebooksites, trees_data)]
 
     
         """ General function for extracting article text """
@@ -117,7 +121,7 @@ class junknews_scraper(Scraper):
             article = s.find(chunck, {element : name}).findAll('p')
             entrycontent = ""
             for element in article:
-                entrycontent += '\n' + ' '.join(element.findAll(text = True))
+                entrycontent += '\n'  + ' ' + ' '.join(element.findAll(text = True))
             return entrycontent
 
 
@@ -139,19 +143,21 @@ class junknews_scraper(Scraper):
             entrycontent = entrycontent.split(sep, 1)[1]
             sep2 = "Bypass Tech Censorship!"
             entrycontent = entrycontent.split(sep2, 1)[0]
-            return(title, entrycontent, "bigleaguepolitics")
+            return{"title":title, "text":entrycontent, "function":"bigleaguepolitics"}
 
         def bizpacreview(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "entry-content")
             sep = "We know first-hand that censorship against conservative news is real"
             entrycontent = entrycontent.split(sep, 1)[0]
-            return(title, entrycontent, "bizpacreview")
+            return{"title":title, "text":entrycontent, "function":"bizpacreview"}
 
         def breitbart(soup):
-            title = soup.h1.text
-            entrycontent = getarticle(soup, "div", "class", "entry-content")
-            return(title, entrycontent, "breitbart")
+            title = soup.xpath("//h1")[0]
+            title = soup.xpath("//h1")[0].text_content()
+            entrycontent = soup.find_class("entry-content")[0] 
+            entrycontent = entrycontent.text_content()
+            return{"title":title, "text":entrycontent, "function":"breitbart"}
         """ Follow xxxx on Twitter/You can follow him on Twitter
             Should be deleted, or does it matter? """
 
@@ -165,23 +171,31 @@ class junknews_scraper(Scraper):
             for element in article:
                 element.findAll('p')
                 entrycontent += '\n' + ' '.join(element.findAll(text = True))
-            return(title, entrycontent, "canadafreepress")
+            return{"title":title, "text":entrycontent, "function":"canadafreepress"}
 
         def chicksonright(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "td-post-content")
             entrycontent = entrycontent.replace('Email address','')
-            return(title, entrycontent, "chicksonright")
-    
+            entrycontent = entrycontent.replace('This is a modal window.','')
+            tweet_ids = []
+            for element in soup.find_all("twitter-widget"):
+                tweet_id = element["data-tweet-id"]
+                tweet_ids.append(tweet_id)
+            if len(tweet_ids) == 0:
+                return{"title":title, "text":entrycontent, "function":"chicksonright"}
+            else:
+                return{"title":title, "text":entrycontent, "tweet_ids" : tweet_ids, "function":"chicksonright"}
+
         def cnsnews(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "field-items")
-            return(title, entrycontent, "cnsnews")
+            return{"title":title, "text":entrycontent, "function":"cnsnews"}
 
         def conspiracydailyupdate(soup): 
             title = soup.find("h1", {"class":  "entry-title"}).text
             entrycontent = getarticle(soup, "div", "class", "entry-content")
-            return(title, entrycontent, "conspiracydailyupdate")
+            return{"title":title, "text":entrycontent, "function":"conspiracydailyupdate"}
         """ Note! Most often no text, just links to other websites """
 
         def dailycaller(soup):
@@ -189,47 +203,47 @@ class junknews_scraper(Scraper):
             entrycontent = getarticle(soup, "div", "id", "ob-read-more-selector")
             sep = "Content created by The Daily Caller News Foundation is available without charge"
             entrycontent = entrycontent.split(sep, 1)[0]
-            return(title, entrycontent, "dailycaller")
+            return{"title":title, "text":entrycontent, "function":"dailycaller"}
 
         def dailywire(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "field-body")
-            return(title, entrycontent, "dailywire")
+            return{"title":title, "text":entrycontent, "function":"dailywire"}
 
         def davidharrisjr(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "vw-post-content clearfix")
             sep = 'To stay up to date with David’s No Nonsense News'
             entrycontent = entrycontent.split(sep, 1)[0]
-            return(title, entrycontent, "davidharrisjr")
+            return{"title":title, "text":entrycontent, "function": "davidharrisjr"}
 
         def envolve(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "itemprop", "articleBody")
-            return(title, entrycontent, "envolve")
+            return{"title":title, "text":entrycontent, "function":"envolve"}
 
         def gellerreport(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "entry-content")
             sep = "Your contribution supports independent journalism"
             entrycontent = entrycontent.split(sep, 1)[0]
-            return(title, entrycontent, "gellerreport")
+            return{"title":title, "text":entrycontent, "function":"gellerreport"}
 
         def hotair(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "col-xs-12 article-text")
-            return(title, entrycontent, "hotair")
+            return{"title":title, "text":entrycontent, "function":"hotair"}
 
         def legalinsurrection(soup):
             title = soup.find("h2", {"class":  "postTitle"}).text
             entrycontent = getarticle(soup, "div", "class", "postContent")
-            return(title, entrycontent, "legalinsurrection")
+            return{"title":title, "text":entrycontent, "function":"legalinsurrection"}
 
         def lifenews(soup):
             title = soup.h2.text
             entrycontent = getarticle(soup, "div", "class", "article")
             entrycontent = entrycontent.replace('ADVERTISEMENT','')
-            return(title, entrycontent, "lifenews")
+            return{"title":title, "text":entrycontent, "function":"lifenews"}
 
         def lifezette(soup):
             title = soup.h1.text
@@ -239,41 +253,39 @@ class junknews_scraper(Scraper):
                 script.extract()
             entrycontent = subtitle + soup.get_text()
             entrycontent = entrycontent.replace('Advertisement','')
-            return(title, entrycontent, "lifezette")
+            return{"title":title, "text":entrycontent, "function":"lifezette"}
 
         def naturalnews(soup):
             title = soup.find("h1", {"class":  "entry-title"}).text
             entrycontent = soup.find("div", {"class":  "entry-content"}).text
-            return(title, entrycontent, "naturalnews")
+            return{"title":title, "text":entrycontent, "function":"naturalnews"}
 
         def newrightnetwork(soup):
             title = soup.h1.text
             entrycontent = soup.find("div", {"class":  "mtl-post-content"}).text
-            return(title, entrycontent, "newrightnetwork")
+            return{"title":title, "text":entrycontent, "function":"newrightnetwork"}
 
         def nworeport(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "post-content")
-            return(title, entrycontent, "nworeport")
+            return{"title":title, "text":entrycontent, "function":"nworeport"}
 
         def palmerreport(soup):
             title = soup.h1.text
             for script in soup(["script", "style"]):
                 script.extract()
             entrycontent = getarticle(soup, "div", "class", "fl-post-content clearfix")
-            return(title, entrycontent, "palmerreport")
+            return{"title":title, "text":entrycontent, "function":"palmerreport"}
 
         def pjmedia(soup):
             title = soup.h3.text
             entrycontent = getarticle(soup, "div", "class", "pages")
-            return(title, entrycontent, "pjmedia")
-        """ Note: the second part of very long articles is dynamically loaded,
-            so can't be accessed. Should I write an additional HTML-scraper to it? """
+            return{"title":title, "text":entrycontent, "function":"pjmedia"}
     
         def rawstory(soup):
             title = soup.find("h1", {"class":  "blog-title"}).text
             entrycontent = getarticle(soup, "div", "class", "blog-content https-content")
-            return(title, entrycontent, "rawstory")
+            return{"title":title, "text":entrycontent, "function":"rawstory"}
 
         def redstate(soup):
             title = soup.h1.text
@@ -287,23 +299,26 @@ class junknews_scraper(Scraper):
             entrycontent = soup.get_text()
             sep = "Share on Facebook"
             entrycontent = entrycontent.split(sep, 1)[0]
-            return(title, entrycontent, "redstate")
+            return{"title":title, "text":entrycontent, "function":"redstate"}
 
         def rushlimbaugh(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "entry-content")
-            return(title, entrycontent, "rushlimbaugh")
+            return{"title":title, "text":entrycontent, "function":"rushlimbaugh"}
     
         def shareblue(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "td-post-content")
-            return(title, entrycontent, "shareblue")
+            return{"title":title, "text":entrycontent, "function":"shareblue"}
 
         def theblaze(soup):
             title = soup.h1.text
-            entrycontent = soup.find("div", {"class": "entry-content"}).text
-            return(title, entrycontent, "theblaze")
-        """ Some of the extracted sentences seem to not be space-delimited """
+            try:
+                subtitle = soup.h2.text
+            except:
+                subtitle = ""
+            entrycontent = subtitle + '\n' + soup.find("div", {"class": "body-description"}).text
+            return{"title": title, "text": entrycontent, "function": "theblaze"}
 
         def thefederalist(soup): 
             title = soup.h2.text
@@ -311,7 +326,7 @@ class junknews_scraper(Scraper):
             entrycontent = subtitle
             for element in soup.select("div[class*=entry-content]"):
                 entrycontent += '\n' + ' '.join(element.findAll(text = True))
-            return(title, entrycontent, "thefederalist")
+            return{"title":title, "text":entrycontent, "function":"thefederalist"}
 
         def thegatewaypundit(soup):
             title = soup.h2.text
@@ -322,41 +337,41 @@ class junknews_scraper(Scraper):
             entrycontent = subtitle + '\n' + getarticle(soup, "div", "class", "clearfix")
             sep = "As a privately owned web site"
             entrycontent = entrycontent.split(sep, 1)[0]
-            return(title, entrycontent, "thegatewaypundit")
+            return{"title":title, "text":entrycontent, "function": "thegatewaypundit"}
 
         def thepoliticalinsider(soup):
             title = soup.find("header", {"class":  "article-header row"}).text
             entrycontent = soup.find("div", {"id": "article-body"}).text
-            return(title, entrycontent, "thepoliticalinsider")
+            return{"title":title, "text":entrycontent, "function":"thepoliticalinsider"}
  
         def therightscoop(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "class", "entry-content")
-            return(title, entrycontent, "therightscoop")
+            return{"title":title, "text":entrycontent, "function": "therightscoop"}
 
         def truepundit(soup):
             title = soup.h1.text
             entrycontent = getarticle(soup, "div", "itemprop", "articleBody")
-            return(title, entrycontent, "truepundit")
+            return{"title": title, "text":entrycontent, "function":"truepundit"}
 
         def twitchy(soup):
             title = soup.h1.text
             soup = soup.find("div", {"class":"col-xs-9 article-text"})
             for item in soup.findAll("div", {"class":"home-trending-widget-article"}):
-                item.extract() # Trending-widget: not in all, but in some articles
+                item.extract() 
             for script in soup(["script", "style"]):
                 script.extract()
             entrycontent = soup.get_text()
             sep = "Share on Facebook\n"
             entrycontent = entrycontent.split(sep, 1)[0] 
-            return(title, entrycontent, "twitchy")
+            return{"title":title, "text":entrycontent, "function":"twitchy"}
 
         def westernfreepress(soup):
             title = soup.h1.text
             soup.find('ul', class_="essb_links_list").decompose()
             entrycontent = getarticle(soup, "div", "class", "entry-content")
             if len(entrycontent) > 0:
-                return(title, entrycontent, "westernfreepress")
+                return{"title":title, "text":entrycontent, "function":"westernfreepress"}
             else:
                 return fallback(soup)
 
@@ -364,15 +379,15 @@ class junknews_scraper(Scraper):
             title = soup.h1.text
             try:
                 entrycontent = getarticle(soup, "div", "class", "entry-content wnd")
-                return(title, entrycontent, "wnd")
+                return{"title":title, "text":entrycontent, "function":"wnd"}
             except:
                 entrycontent = getarticle(soup, "div", "class", "entry-content non-wnd")
-                return(title, entrycontent, "wnd")
+                return{"title":title, "text":entrycontent, "function":"wnd"}
 
         def zerohedge(soup):
             title = soup.find("h1", {"class": "page-title"}).text
             entrycontent = getarticle(soup, "div", "class", "node__content")
-            return(title, entrycontent, "zerohedge")
+            return {"title":title,"text": entrycontent, "function": "zerohedge"}
 
         def fallback(soup):
             print("Fallback-method.")
@@ -383,7 +398,7 @@ class junknews_scraper(Scraper):
             lines = (line.strip() for line in entrycontent.splitlines())
             chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
             entrycontent = '\n'.join(chunk for chunk in chunks if chunk)
-            return(title, entrycontent, "fallback")
+            return{"title":title, "text":entrycontent, "function": "fallback"}
 
  
         """ Mapping functions to newssources """
@@ -395,26 +410,31 @@ class junknews_scraper(Scraper):
         """ Fetch articles """
 
         idx=0
-        content = []
+        articles = []
+	
         while idx < len(all_data):
-            soup = BeautifulSoup(all_data[idx]['htmltree'], 'html.parser')
-            newssource = all_data[idx]['newssource']
-            print("Fetching article on index: " + str(idx))
-            idx = idx+1
+            if all_data[idx]['newssource'] == 'breitbart':
+                soup = fromstring(all_data[idx]['htmltree'])
+                newssource = all_data[idx]['newssource']
+                print("Fetching article on index: " + str(idx))
+                idx = idx+1
+            else:
+                soup = BeautifulSoup(all_data[idx]['htmltree'], 'html.parser')
+                newssource = all_data[idx]['newssource']
+                print("Fetching article on index: " + str(idx))
+                idx = idx+1
             try:
-                contents = mapping.get(newssource, fallback)(soup)
-                content.append(contents)
+                article = mapping.get(newssource, fallback)(soup)
+                articles.append(article)
             except:
-                contents = fallback(soup)
-                content.append(contents)
-
-        content = [{"1. Title": a, "2. Entrycontent": b, "3. Function": c} for a,b,c in content]
+                article = fallback(soup)
+                articles.append(article)
       
-        for i in content:
-            i['1. Title'] = u' '.join(i['1. Title'].split())
-            i['2. Entrycontent'] = u' '.join(i['2. Entrycontent'].split())
+        for i in articles:
+            i['title'] = u' '.join(i['title'].split())
+            i['text'] = u' '.join(i['text'].split())
 
-        result = [ {**d1, **d2} for d1, d2 in zip(all_data, content) ]
+        result = [ {**d1, **d2} for d1, d2 in zip(all_data, articles) ]
         
         print("Returning a dictionary.")
         
