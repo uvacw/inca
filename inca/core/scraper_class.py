@@ -22,7 +22,7 @@ language  : If you can safely assume the language of specified documents, please
 '''
 import logging
 from .document_class import Document
-from .database import check_exists, DATABASE_AVAILABLE
+from .database import check_exists, client, elastic_index
 
 logger = logging.getLogger("INCA")
 
@@ -62,7 +62,7 @@ class Scraper(Document):
         self._verify(doc)
         self._save_document(doc)
 
-    def run(self, save=True, *args, **kwargs):
+    def run(self, save=True, check_if_url_exists=False, *args, **kwargs):
         
         '''
         DO NOT OVERWRITE THIS METHOD
@@ -74,12 +74,16 @@ class Scraper(Document):
         logger.info("Started scraping")
         if save == True:
             for doc in self.get(save, *args, **kwargs):
-                if type(doc)==dict:
-                    doc = self._add_metadata(doc)
-                    self._save_document(doc)
+                if check_if_url_exists == False or client.search(index=elastic_index, body={
+                    'query': {'term': {'url': doc['url']}}})['hits']['total'] == 0:
+                    if type(doc)==dict:
+                        doc = self._add_metadata(doc)
+                        self._save_document(doc)
+                    else:
+                        doc = self._add_metadata(doc)
+                        self._save_documents(doc)
                 else:
-                    doc = self._add_metadata(doc)
-                    self._save_documents(doc)
+                    logger.info('A document with this URL already existed - did not save the new one.')
         else:
             return [self._add_metadata(doc) for doc in self.get(save, *args, **kwargs)]
 
