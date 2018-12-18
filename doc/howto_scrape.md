@@ -283,7 +283,7 @@ Consider this example:
 myinca.scrapers.groenlinks(startpage=1, maxpages=1)
 myinca.database.list_doctypes()
 ```
-If you run this code twice, then you will see that you have the press releases twice in their. To prevent this, you can use the `check_if_url_exists` argument:
+If you run this code twice, then you will see that you have the press releases twice in there. To prevent this, you can use the `check_if_url_exists` argument:
 
 ```python3
 myinca.scrapers.groenlinks(startpage=1, maxpages=1, check_if_url_exists = True)
