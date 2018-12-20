@@ -276,6 +276,20 @@ In contrast, for a generic scraper, you need to do all this yourself. As this is
 Make sure that you have some limits installed to avoid that the scraper continues infinitely.
 
 
+There is also a way to have INCA check whether an item with the same URL already exists to avoid getting multiple entries when running non-RSS scrapers as a cronjob (see below).
+Consider this example:
+
+```python3
+myinca.scrapers.groenlinks(startpage=1, maxpages=1)
+myinca.database.list_doctypes()
+```
+If you run this code twice, then you will see that you have the press releases twice in there. To prevent this, you can use the `check_if_url_exists` argument:
+
+```python3
+myinca.scrapers.groenlinks(startpage=1, maxpages=1, check_if_url_exists = True)
+```
+
+
 
 ## How to put scrapers into production
 After having written and tested your scrapers, you probably want to put them into production - i.e., want to run them automatically on a regular basis. In this section, we describe how to do so on a typical Linux (Ubuntu) system. On MacOS, this should work roughly similarly.
