@@ -16,6 +16,9 @@ from gensim.models import Word2Vec
 from gensim.similarities import SoftCosineSimilarity
 import time
 import networkx as nx
+from itertools import groupby, islice
+from collections import defaultdict, OrderedDict # is this one still neccessary?
+
 
 
 
@@ -38,9 +41,18 @@ class softcosine_similarity(Analysis):
                 difference = (first-second).days
             return([first, second, difference])
 
+    def window(self, seq, n):
+        it = iter(seq)
+        result = tuple(islice(it, n))
+        if len(result) == n:
+            yield result
+        for elem in it:
+            result = result[1:] + (elem,)
+            yield result
+
     def fit(self, path_to_model, source, target, sourcetext = 'text', sourcedate = 'publication_date',
             targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = None,
-            days_after = None, include_monday = False, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False):
+            days_after = None, merge_weekend = False, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False):
         '''
         path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
         can be found here: https://rare-technologies.com/word2vec-tutorial/
@@ -50,7 +62,7 @@ class softcosine_similarity(Analysis):
         sourcdate/targetedate = field where date of source/target can be found (defaults to 'publication_date')
         keyword_source/_target = optional: specify keywords that need to be present in the textfield; list or string, in case of a list all words need to be present in the textfield (lowercase)
         condition_source/target = optional: supply the field and its value as a dict as a condition for analysis, e.g. {'topic':1} (defaults to None)
-        days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied. Additionally, include_monday = True includes Monday if source date is Friday and days_after is 2. 
+        days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied. Additionally, merge_weekend = True will merge articles Saturday and Sunday. 
         threshold = threshold to determine at which point similarity is sufficient; if supplied only the rows who pass it are included in the dataset
         from_time, to_time = optional: specifying a date range to filter source and target articles. Supply the date in the yyyy-MM-dd format.
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
@@ -114,6 +126,7 @@ class softcosine_similarity(Analysis):
         #Make generators into lists and filter out those who do not have the specified keys (preventing KeyError)
         target_query = [a for a in target_query if targettext in a['_source'].keys() and targetdate in a['_source'].keys()]
         source_query = [a for a in source_query if sourcetext in a['_source'].keys() and sourcedate in a['_source'].keys()]
+        #print(source_query[0])
 
         #Target and source texts (split), and create total corpus for the similarity matrix
         target_text=[]
@@ -123,7 +136,8 @@ class softcosine_similarity(Analysis):
         for doc in source_query:
             source_text.append(doc['_source'][sourcetext].split())
         corpus = source_text + target_text
-        
+
+        # prepare dictionary, tfidf model and similarity matrix for softcosine analysis
         dictionary = Dictionary(corpus)
         tfidf = TfidfModel(dictionary=dictionary)
         similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)        
@@ -133,109 +147,138 @@ class softcosine_similarity(Analysis):
         source_tuple = []
         target_tuple = []
         if days_before != None or days_after != None:
-            days_before=-days_before # convert days_before to negative number
-            for doc in source_query:
-                source_tuple.append((doc['_source'][sourcetext], doc['_source'][sourcedate], doc['_id'], doc['_source']['doctype']))
-            for doc in target_query:
-                target_tuple.append((doc['_source'][targettext], doc['_source'][targetdate], doc['_id'], doc['_source']['doctype']))
-                
-            #Calculate day difference and make a separate corpus (basis for the index the source is compared to)
-            #for every source, only including target documents within the specified range
-            #also extracts additional information (dates, ids, doctypes) for both source and target for creating dataframe later on.
-            texts_final = []
 
-            source_dates_final = []
-            source_ids_final = []
-            source_doctype_final=[]
-            target_dates_final = []
-            target_ids_final = []
-            target_doctype_final=[]
-            for sourcetd in source_tuple:
-                texts_new = []
+            # sort dicts by date
+            # group information by date
+            # if merge: merge Sunday or Saturday together
+            # compare current date group with X days before or after group.
 
-                source_dates_new = []
-                source_ids_new = []
-                source_doctype_new = []
-                target_dates_new = []
-                target_ids_new = []
-                target_doctype_new = []
-                for targettd in target_tuple:
-                    day_diff = self.date_comparison(targettd[1], sourcetd[1])
+            # merge source_query and target_query including identifier key
+            for i in source_query:
+                i.update({'identifier':'source'})
+            for i in target_query:
+                i.update({'identifier':'target'})
+            source_query.extend(target_query)
 
-                    if include_monday == True:
-                        #convert source date to datetime object
-                        source_date_object = [int(i) for i in sourcetd[1][:10].split("-")]
-                        source_date_object = datetime.date(source_date_object[0], source_date_object[1], source_date_object[2])
-                        if days_after == 2 and source_date_object.weekday() == 4:
-                            # include monday if source_date is Friday and days_after is 2 days.
-                            days_after = days_after+1
-                            if days_before <= day_diff[2] <= days_after:
-                                texts_new.append(targettd[0])
-                                source_dates_new.append(sourcetd[1])
-                                target_dates_new.append(targettd[1])
-                                source_ids_new.append(sourcetd[2])
-                                target_ids_new.append(targettd[2])
-                                source_doctype_new.append(sourcetd[3])
-                                target_doctype_new.append(targettd[3])
-                            else:
-                                pass
-                        else:
-                            if days_before <= day_diff[2] <= days_after:
-                                texts_new.append(targettd[0])
-                                source_dates_new.append(sourcetd[1])
-                                target_dates_new.append(targettd[1])
-                                source_ids_new.append(sourcetd[2])
-                                target_ids_new.append(targettd[2])
-                                source_doctype_new.append(sourcetd[3])
-                                target_doctype_new.append(targettd[3])
-                            else:
-                                pass
+            # sourcedate and targetdate need to be the same key
+            if targetdate is not sourcedate:
+                logger.info('Make sure that sourcedate and targetdate are the same key.')
+
+            else: # do everything for sourcedate
+        
+                # convert targetdate and sourcedate into datetime objects if not already
+                for a in source_query:
+                    if isinstance(a['_source'][sourcedate], datetime.date) == True:
+                        pass
                     else:
-                        if days_before <= day_diff[2] <= days_after:
-                            texts_new.append(targettd[0])
-                            source_dates_new.append(sourcetd[1])
-                            target_dates_new.append(targettd[1])
-                            source_ids_new.append(sourcetd[2])
-                            target_ids_new.append(targettd[2])
-                            source_doctype_new.append(sourcetd[3])
-                            target_doctype_new.append(targettd[3])
+                        a['_source'][sourcedate]=[int(i) for i in a['_source'][sourcedate][:10].split("-")]
+                        a['_source'][sourcedate] = datetime.date(a['_source'][sourcedate][0],a['_source'][sourcedate][1], a['_source'][sourcedate][2])
+             
+                # sort query by date
+                source_query.sort(key = lambda item:item['_source'][sourcedate])
+
+                # create list of all possible dates
+                d1 = source_query[0]['_source'][sourcedate]
+                d2 = source_query[-1]['_source'][sourcedate]
+                delta = d2 - d1
+                date_list = []
+                for i in range(delta.days + 1):
+                    date_list.append([d1 + datetime.timedelta(i)])
+
+                # create lists per date
+                for date in date_list:
+                    for a in source_query:
+                        if a['_source'][sourcedate] == date[0]:
+                            date.append(a)
+                for date in date_list:
+                    del date[0] # delete date from list
+### POSSIBLE TO DELETE IMMEDIATELY?
+                
+                # split text
+                #count1 = 0
+                #count2 = 0
+                for date in date_list:
+                    for doc in date:
+                        if doc['identifier'] == 'source':
+                            #count1 += 1
+                            doc['_source'][sourcetext] = doc['_source'][sourcetext].split()
+                            #print('source:', count1)
+                        elif doc['identifier'] == 'target':
+                            #count2 += 1
+                            doc['_source'][targettext] = doc['_source'][targettext].split()
+                            #print('target:', count2)
+                            #print(doc['_source'][targettext])
+                
+                # Optional: merges saturday and sunday into one list
+                if merge_weekend == False:
+                    pass
+                if merge_weekend == True:
+                    # if date is sunday, merge with previous group
+                    pass
+                
+                sims_list = []
+                source_ids = []
+                source_dates = []
+                source_doctypes = []
+                target_ids = []
+                target_dates = []
+                target_doctypes = []
+                
+                len_window = days_before + days_after + 1
+                for e in self.window(date_list, n = len_window):
+                    # determine position of source in window tuple
+                    # index position is equivalent to days_before (e.g. 2 days before, means 3rd day is the source with index position [2]
+                    source_pos = days_before
+                    source_texts = []
+                    target_texts = []
+                    for item in e[source_pos]:
+                        for doc in item:
+                            # do everything for source, including making index.
+                        for item 
+
+                    for index, item in enumerate(e):
+                        if index == source_pos:
+                            for doc in item:
+                                if doc['identifier'] == 'source': # do only for the source documents
+                                    #print(doc['_source'][sourcetext])
+                                    source_texts.append(doc['_source'][sourcetext])
+                                    # extract other information
+                                    source_ids.append(doc['_id'])
+                                    source_dates.append(doc['_source'][sourcedate])
+                                    source_doctypes.append(doc['_source']['doctype'])
+                                else:
+                                    pass
+                            
+                        elif index != source_pos:
+                            for i in index:
+                            # other positions in window tuple are targets
+                            if doc['identifier'] == 'target':
+                                target_texts.append(doc['_source'][targettext])
+                                # extract other information
+                                target_ids.append(doc['_id'])
+                                target_dates.append(doc['_source'][targetdate])
+                                target_doctypes.append(doc['_source']['doctype'])
+                            else:
+                                pass
+                    print(len(target_texts))
+                    print(len(source_texts))
+                    print(len(source_ids))
+                    index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in source_texts]], similarity_matrix)
+                    query = tfidf[[dictionary.doc2bow(d) for d in target_texts]]
+                    sims = index[query]
+                    sims_list.append(sims)
+
+                #print(len(sims_list))
+                #print(len(source_ids))
                     
-                texts_final.append(texts_new)
-                
-                source_dates_final.extend(source_dates_new)
-                target_dates_final.extend(target_dates_new)
-                source_ids_final.extend(source_ids_new)
-                target_ids_final.extend(target_ids_new)
-                source_doctype_final.extend(source_doctype_new)
-                target_doctype_final.extend(target_doctype_new)
-                
-            #Split the target texts
-            targettext_split = []
-            for text in texts_final:
-                texts = [a.split() for a in text]
-                targettext_split.append(texts)
-
-            #Combine the source texts with the relevant target articles in 'source_index' and calculate the softcosine similarity
-            source_texts = [n['_source'][sourcetext].split() for n in source_query]
-            source_index = zip(targettext_split, source_texts)
-
-            sims_list = [] 
-            for item in source_index:
-                index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in item[0]]],similarity_matrix)
-                #Process the sources so that they can be compared to the indices
-                query = tfidf[dictionary.doc2bow(item[1])]
-
-                #Retrieve similarities
-                sims = index[query]
-                sims_list.extend(sims)
-
-            df = pd.DataFrame.from_dict({'source':source_ids_final,
-                                         'target':target_ids_final,
-                                         'source_date':source_dates_final,
-                                         'target_date':target_dates_final,
-                                         'source_doctype':source_doctype_final,
-                                         'target_doctype':target_doctype_final,
-                                         'similarity':sims_list})
+                # create dataframe
+                df = pd.DataFrame.from_dict({'source':source_ids,
+                                                 'target':target_ids,
+                                                 'source_date':source_dates,
+                                                 'target_date':target_dates,
+                                                 'source_doctype':source_doctypes,
+                                                 'target_doctype':target_doctypes,
+                                                 'similarity':sims_list})
             
             #Optional: if threshold is defined
             if threshold:
