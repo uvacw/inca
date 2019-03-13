@@ -27,20 +27,11 @@ logger = logging.getLogger("INCA")
 class softcosine_similarity(Analysis):
     '''Compares documents from source and target, showing their softcosine distance'''
 
-    def date_comparison(self, first_date, second_date):
-        if first_date is None or second_date is None:
-            return("No date")
-        else:
-            try:       # assume datetime objects
-                difference = (first_date-second_date).days
-            except:    # handle strings
-                first = [int(i) for i in first_date[:10].split("-")]
-                first = datetime.date(first[0], first[1], first[2])
-                second = [int(i) for i in second_date[:10].split("-")]
-                second = datetime.date(second[0], second[1], second[2])
-                difference = (first-second).days
-            return([first, second, difference])
-
+    ## TO DO -- ALSO MAKE THIS WORK IN THE BEGINNING OF THE SEQUENCE. 
+    def window2(self, seq, n):
+        for i in range(len(seq)):
+            yield seq[i:i+n]
+            
     def window(self, seq, n):
         it = iter(seq)
         result = tuple(islice(it, n))
@@ -62,7 +53,7 @@ class softcosine_similarity(Analysis):
         sourcdate/targetedate = field where date of source/target can be found (defaults to 'publication_date')
         keyword_source/_target = optional: specify keywords that need to be present in the textfield; list or string, in case of a list all words need to be present in the textfield (lowercase)
         condition_source/target = optional: supply the field and its value as a dict as a condition for analysis, e.g. {'topic':1} (defaults to None)
-        days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied. Additionally, merge_weekend = True will merge articles Saturday and Sunday. 
+        days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied. Additionally, merge_weekend = True will merge articles published on Saturday and Sunday. 
         threshold = threshold to determine at which point similarity is sufficient; if supplied only the rows who pass it are included in the dataset
         from_time, to_time = optional: specifying a date range to filter source and target articles. Supply the date in the yyyy-MM-dd format.
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
@@ -77,15 +68,15 @@ class softcosine_similarity(Analysis):
         except:
             softcosine_model = gensim.models.keyedvectors.KeyedVectors.load_word2vec_format(path_to_model, binary = True)
 
-        #Construct query for elasticsearch
-        if isinstance(source, list): # if multiple doctypes are specified
+        #Construct source and target queries for elasticsearch
+        if isinstance(source, list): # multiple doctypes
             source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':source}}]}}}}} 
-        elif isinstance(source, str):
+        elif isinstance(source, str): # one doctype
             source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':source}}]}}}}}
 
-        if isinstance(target, list): # if multiple doctypes are specified
+        if isinstance(target, list): # multiple doctypes
             target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':target}}]}}}}}
-        elif isinstance(target, str):
+        elif isinstance(target, str): # one doctype
             target_query = {'query':{'bool':{'filter':{'bool':{'must':[{'term':{'doctype':target}}]}}}}}
 
         #Change query if date range was specified
@@ -126,7 +117,6 @@ class softcosine_similarity(Analysis):
         #Make generators into lists and filter out those who do not have the specified keys (preventing KeyError)
         target_query = [a for a in target_query if targettext in a['_source'].keys() and targetdate in a['_source'].keys()]
         source_query = [a for a in source_query if sourcetext in a['_source'].keys() and sourcedate in a['_source'].keys()]
-        #print(source_query[0])
 
         #Target and source texts (split), and create total corpus for the similarity matrix
         target_text=[]
@@ -142,34 +132,40 @@ class softcosine_similarity(Analysis):
         tfidf = TfidfModel(dictionary=dictionary)
         similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)        
 
+        #extract additional information from sources
+        source_dates = [doc['_source'][sourcedate] for doc in source_query]
+        source_ids = [doc['_id'] for doc in source_query]
+        source_doctype = [doc['_source']['doctype'] for doc in source_query]
+        source_dict = dict(zip(source_ids, source_dates))
+        source_dict2 = dict(zip(source_ids, source_doctype))
+
+        #extract information from targets
+        target_ids = [doc['_id'] for doc in target_query]
+        target_dates = [doc['_source'][targetdate] for doc in target_query]
+        target_dict = dict(zip(target_ids, target_dates))
+        target_doctype=[doc['_source']['doctype'] for doc in target_query]
+        target_dict2 = dict(zip(target_ids, target_doctype))
+
         
-        #If specified, calculate day difference
-        source_tuple = []
-        target_tuple = []
+        #If specified, comparisons compare docs within sliding date window
         if days_before != None or days_after != None:
 
-            # sort dicts by date
-            # group information by date
-            # if merge: merge Sunday or Saturday together
-            # compare current date group with X days before or after group.
-
-            # merge source_query and target_query including identifier key
+            # merge queries including identifier key
             for i in source_query:
                 i.update({'identifier':'source'})
             for i in target_query:
                 i.update({'identifier':'target'})
             source_query.extend(target_query)
 
-            # sourcedate and targetdate need to be the same key
+            # sourcedate and targetdate need to be the same key (bc everything is done for sourcedate)
             if targetdate is not sourcedate:
                 logger.info('Make sure that sourcedate and targetdate are the same key.')
 
-            else: # do everything for sourcedate
-        
-                # convert targetdate and sourcedate into datetime objects if not already
+            else:
+                # convert dates into datetime objects
                 for a in source_query:
                     if isinstance(a['_source'][sourcedate], datetime.date) == True:
-                        pass
+                        pass # is already datetime object
                     else:
                         a['_source'][sourcedate]=[int(i) for i in a['_source'][sourcedate][:10].split("-")]
                         a['_source'][sourcedate] = datetime.date(a['_source'][sourcedate][0],a['_source'][sourcedate][1], a['_source'][sourcedate][2])
@@ -183,158 +179,119 @@ class softcosine_similarity(Analysis):
                 delta = d2 - d1
                 date_list = []
                 for i in range(delta.days + 1):
-                    date_list.append([d1 + datetime.timedelta(i)])
-
-                # create lists per date
-                for date in date_list:
+                    date_list.append(d1 + datetime.timedelta(i))
+                    
+                # create list of docs grouped by date (dates without docs are empty lists)
+                grouped_query = []
+                for d in date_list:
+                    dt = []
                     for a in source_query:
-                        if a['_source'][sourcedate] == date[0]:
-                            date.append(a)
-                for date in date_list:
-                    del date[0] # delete date from list
-### POSSIBLE TO DELETE IMMEDIATELY?
-                
-                # split text
-                #count1 = 0
-                #count2 = 0
-                for date in date_list:
-                    for doc in date:
-                        if doc['identifier'] == 'source':
-                            #count1 += 1
-                            doc['_source'][sourcetext] = doc['_source'][sourcetext].split()
-                            #print('source:', count1)
-                        elif doc['identifier'] == 'target':
-                            #count2 += 1
-                            doc['_source'][targettext] = doc['_source'][targettext].split()
-                            #print('target:', count2)
-                            #print(doc['_source'][targettext])
-                
-                # Optional: merges saturday and sunday into one list
+                        if a['_source'][sourcedate] == d:
+                            dt.append(a)
+                    grouped_query.append(dt)
+
+                #### ------ TO DO: CHECK WHETHER THIS WORKS! 
+                # Optional: merges saturday and sunday into one weekend group
+                # Checks whether group is Sunday, then merge together with previous (saturday) group.
                 if merge_weekend == False:
                     pass
                 if merge_weekend == True:
-                    # if date is sunday, merge with previous group
-                    pass
+                    grouped_query_new = []
+                    for group in grouped_query:
+                        # if group is sunday, extend previous (saturday) list, except when it is the first day in the data.
+                        if group[0]['_source'][sourcedate].weekday() == 6:
+                            if not grouped_query_new:
+                                grouped_query_new.append(group)
+                            else:
+                                grouped_query_new.extend(group)
+                        # if empty, append empty list
+                        elif not group:
+                            grouped_query_new.append([])
+                        # for all other weekdays, append new list
+                        else:
+                            grouped_query_new.append(group)
+                    grouped_query = grouped_query_new
+
                 
-                sims_list = []
-                source_ids = []
-                source_dates = []
-                source_doctypes = []
-                target_ids = []
-                target_dates = []
-                target_doctypes = []
+                ### SLIDING WINDOW SIMILARITY PART STARTS HERE.
+                # How it works:
+                # A sliding window cuts the documents into groups that should be compared to each other based on their publication dates. A list of source documents published on the reference date is created. For each of the target dates in the window, the source list is compared to the targets, the information is put in a dataframe, and the dataframe is added to a list. This process is repeated for each window. We end up with a list of dataframes, which are eventually merged together into one dataframe.
+
+
                 
                 len_window = days_before + days_after + 1
-                for e in self.window(date_list, n = len_window):
-                    # determine position of source in window tuple
-                    # index position is equivalent to days_before (e.g. 2 days before, means 3rd day is the source with index position [2]
-                    source_pos = days_before
+                source_pos = days_before # source position is equivalent to days_before (e.g. 2 days before, means 3rd day is source with the index position [2])
+
+                df_list = []
+
+                ## TEST SOURCE_POS!
+                #source_pos=0
+
+                for e in self.window(grouped_query, n = len_window):
                     source_texts = []
-                    target_texts = []
-                    for item in e[source_pos]:
-                        for doc in item:
-                            # do everything for source, including making index.
-                        for item 
-
-                    for index, item in enumerate(e):
-                        if index == source_pos:
-                            for doc in item:
-                                if doc['identifier'] == 'source': # do only for the source documents
-                                    #print(doc['_source'][sourcetext])
-                                    source_texts.append(doc['_source'][sourcetext])
-                                    # extract other information
-                                    source_ids.append(doc['_id'])
-                                    source_dates.append(doc['_source'][sourcedate])
-                                    source_doctypes.append(doc['_source']['doctype'])
-                                else:
-                                    pass
-                            
-                        elif index != source_pos:
-                            for i in index:
-                            # other positions in window tuple are targets
-                            if doc['identifier'] == 'target':
-                                target_texts.append(doc['_source'][targettext])
-                                # extract other information
-                                target_ids.append(doc['_id'])
-                                target_dates.append(doc['_source'][targetdate])
-                                target_doctypes.append(doc['_source']['doctype'])
-                            else:
-                                pass
-                    print(len(target_texts))
-                    print(len(source_texts))
-                    print(len(source_ids))
-                    index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in source_texts]], similarity_matrix)
-                    query = tfidf[[dictionary.doc2bow(d) for d in target_texts]]
-                    sims = index[query]
-                    sims_list.append(sims)
-
-                #print(len(sims_list))
-                #print(len(source_ids))
+                    source_ids = []
                     
-                # create dataframe
-                df = pd.DataFrame.from_dict({'source':source_ids,
-                                                 'target':target_ids,
-                                                 'source_date':source_dates,
-                                                 'target_date':target_dates,
-                                                 'source_doctype':source_doctypes,
-                                                 'target_doctype':target_doctypes,
-                                                 'similarity':sims_list})
-            
-            #Optional: if threshold is defined
-            if threshold:
-                df = df.loc[df['similarity'] >= threshold]
+                    if not e[source_pos]:
+                        ## TO DO ------ DO THIS FOR ONLY IDENTIFIER == SOURCE
+                        # if query does not include source articles published on this date, go to next window
+                        ## TO DO ------ DO NOT CREATE LISTS OF TEXTS; THIS TAKES TOO LONG.
+                        pass
+                    else:
+                        print('It should do this 4 times!!')
+                        for doc in e[source_pos]:
+                            if doc['identifier']=='source':
+                                # create sourcetext list to compare against
+                                source_texts.append(doc['_source'][sourcetext].split())
+                                # extract additional information
+                                source_ids.append(doc['_id'])
+                                
+                        #print('The length of source_texts is', len(source_texts))
 
-            #Make exports folder if it does not exist yet
-            if not 'comparisons' in os.listdir('.'):
-                os.mkdir('comparisons')
+                        # create index of source texts
+                        query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
 
-            #Optional: save as csv file
-            if to_csv == True:
-                now = time.localtime()
-                df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
+                        # iterate through targets
+                        for d in e:
+                            target_texts=[]
+                            target_ids = []
+                            if not d: # TO DO -- EMPTY IS ONLY FOR TARGET!
+                                #print('This is empty :)')
+                                pass # empty list, so pass comparison
+                            else:
+                                print('It should do this 4 times as well!!!')
+                                for doc in d:
+                                    if doc['identifier'] == 'target':
+                                        target_texts.append(doc['_source'][targettext].split())
+                                        # extract additional information
+                                        target_ids.append(doc['_id'])
+                                # do comparison
+                                index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
+                                sims = index[query]
+                                #make dataframe
+                                df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
+                                df_list.append(df_temp)
+                                #print(df_temp)
+                #print('This is the last df_temp that was made:', df_temp)
+                print('The length of df_list is now:', len(df_list))
+                
+                # make total dataframe
+                df = pd.concat(df_list, ignore_index=True)
+                df.columns = ['source', 'target', 'similarity']
+                df['source_date'] = df['source'].map(source_dict)
+                df['target_date'] = df['target'].map(target_dict)
+                df['source_doctype'] = df['source'].map(source_dict2)
+                df['target_doctype'] = df['target'].map(target_dict2)
 
-            #Otherwise: save as pickle file
-            else:
-                now = time.localtime()
-                df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
-            
-            #Optional: additionally save as pajek file
-            if to_pajek == True:
-                G = nx.Graph()
-
-                # change int to str (necessary for pajek format)
-                df['similarity'] = df['similarity'].apply(str)
-
-                # notes and weights from dataframe
-                G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='similarity')
-                # write to pajek
-                now = time.localtime()
-                nx.write_pajek(G, os.path.join(destination, r"INCA_pajek_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
-
-
+                ## TO DO -- DO WE NEED TO DELETE DUPLICATE COMPARISONS IN THE LIST?
 
                 
-        #Same procedure as above, but without specifying a limited difference between source and target date (thus: comparing all sources to the same index)
+        #Same procedure as above, but without specifying a time frame (thus: comparing all sources to all targets)
         else:
-            #extract information from sources
-            source_dates = [doc['_source'][sourcedate] for doc in source_query]
-            source_ids = [doc['_id'] for doc in source_query]
-            source_doctype = [doc['_source']['doctype'] for doc in source_query]
-            source_dict = dict(zip(source_ids, source_dates))
-            source_dict2 = dict(zip(source_ids, source_doctype))
-
-            #extract information from targets
-            target_ids = [doc['_id'] for doc in target_query]
-            target_dates = [doc['_source'][targetdate] for doc in target_query]
-            target_dict = dict(zip(target_ids, target_dates))
-            target_doctype=[doc['_source']['doctype'] for doc in target_query]
-            target_dict2 = dict(zip(target_ids, target_doctype))
-
+            
             #Create index out of target texts
             index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_text]],similarity_matrix)
 
             #Retrieve source IDs and make generator to compute similarities between each source and the index
-            source_ids = [a['_id'] for a in source_query]
             query = tfidf[[dictionary.doc2bow(d) for d in source_text]]
             query_generator = (item for item in query)
                             
@@ -342,46 +299,43 @@ class softcosine_similarity(Analysis):
             sims_list = [index[doc] for doc in query_generator]
 
             #make dataframe
-            df = pd.DataFrame(sims_list, columns=target_ids, index = source_ids).stack().reset_index()
+            df = pd.DataFrame(sims_list, columns=target_ids, index = source_ids).stack(). reset_index()
             df.columns = ['source', 'target', 'similarity']
             df["source_date"] = df["source"].map(source_dict)
             df["target_date"] = df["target"].map(target_dict)
             df['source_doctype'] = df['source'].map(source_dict2)
             df['target_doctype'] = df['target'].map(target_dict2)
 
-            #Optional: if threshold is specified
-            if threshold:
-                df = df.loc[df['similarity'] >= threshold]
+            
+        #Optional: if threshold is specified
+        if threshold:
+            df = df.loc[df['similarity'] >= threshold]
 
-            #Make exports folder if it does not exist yet
-            if not 'comparisons' in os.listdir('.'):
-                os.mkdir('comparisons')
+        #Make exports folder if it does not exist yet
+        if not 'comparisons' in os.listdir('.'):
+            os.mkdir('comparisons')
 
-            #Optional: save as csv file
-            if to_csv == True:
-                now = time.localtime()
-                df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
-            #Otherwise: save as pickle file
-            else:
-                now = time.localtime()
-                df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
+        #Optional: save as csv file
+        if to_csv == True:
+            now = time.localtime()
+            df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
+        #Otherwise: save as pickle file
+        else:
+            now = time.localtime()
+            df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
 
-            #Optional: additionally save as pajek file
-            if to_pajek == True:
-                G = nx.Graph()
+        #Optional: additionally save as pajek file
+        if to_pajek == True:
+            G = nx.Graph()
 
-                # change int to str (necessary for pajek format)
-                df['similarity'] = df['similarity'].apply(str)
+            # change int to str (necessary for pajek format)
+            df['similarity'] = df['similarity'].apply(str)
 
-                # notes and weights from dataframe
-                G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='similarity')
-                # write to pajek
-                now = time.localtime()
-                nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
-
-            # include_monday without days_before/days_after
-            if include_monday == True:
-                logger.info('Include_monday is specified without days_before/days_after and will be ingnored.')
+            # notes and weights from dataframe
+            G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='similarity')
+            # write to pajek
+            now = time.localtime()
+            nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
         
     def predict(self, *args, **kwargs):
         pass
