@@ -333,9 +333,10 @@ class softcosine_similarity(Analysis):
 
             # change int to str (necessary for pajek format)
             df['similarity'] = df['similarity'].apply(str)
-
+            # change column name to 'weights' to faciliate later analysis
+            df.rename({'similarity':'weight'}, axis=1, inplace=True) 
             # notes and weights from dataframe
-            G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='similarity')
+            G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='weight')
             # write to pajek
             now = time.localtime()
             nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
