@@ -132,9 +132,9 @@ class softcosine_similarity(Analysis):
 
         # prepare dictionary, tfidf model and similarity matrix for softcosine analysis
         logger.info('Preparing tfidf model and cosine similarity matrix')
-        dictionary = Dictionary(corpus)
-        tfidf = TfidfModel(dictionary=dictionary)
-        similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)        
+        # dictionary = Dictionary(corpus)
+        # tfidf = TfidfModel(dictionary=dictionary)
+        # similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)        
 
         #extract additional information from sources
         source_dates = [doc['_source'][sourcedate] for doc in source_query]
@@ -228,7 +228,9 @@ class softcosine_similarity(Analysis):
                 df_list = []
 
                 ## TEST SOURCE_POS!
-                #source_pos=0
+                #source_pos
+
+                windowdata = []  # will be filled with (source, target) tuples where source and target are (id, text) tuples
 
                 for e in tqdm(self.window(grouped_query, n = len_window)):
                     source_texts = []
@@ -250,8 +252,6 @@ class softcosine_similarity(Analysis):
                                 
                         #print('The length of source_texts is', len(source_texts))
 
-                        # create index of source texts
-                        query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
 
                         # iterate through targets
                         for d in e:
@@ -268,12 +268,34 @@ class softcosine_similarity(Analysis):
                                         # extract additional information
                                         target_ids.append(doc['_id'])
                                 # do comparison
-                                index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
-                                sims = index[query]
+                                #index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
+                                #sims = index[query]
                                 #make dataframe
-                                df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
-                                df_list.append(df_temp)
+                                # df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
+                                #df_list.append(df_temp)
                                 #print(df_temp)
+                        to_compare = list(zip( zip(source_ids,source_texts), zip(target_ids, target_texts)))
+
+                        corpus =[]
+                        for sourcedata, targetdata in to_compare:
+                            if sourcedata[1] not in corpus:
+                                corpus.append(sourcedata[1])
+                            if targetdata[1] not in corpus:
+                                corpus.append(targetdata[1])
+                        logger.info('create dictionary')
+                        dictionary = Dictionary(corpus)
+                        logger.info('TfIdfModel')
+                        tfidf = TfidfModel(dictionary=dictionary)
+                        logger.info('Similarity matrix')
+                        similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)
+                        logger.info('query')
+                        query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
+                        logger.info('soft cosine')
+                        index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
+                        sims = index[query]
+                        df_temp = pd.DataFrame(sims, columns=[e[1][0] for e in to_compare], index = [e[0][0] for e in to_compare]).stack().reset_index()
+                        df_list.append(df_temp)
+
                 #print('This is the last df_temp that was made:', df_temp)
                 print('The length of df_list is now:', len(df_list))
                 
