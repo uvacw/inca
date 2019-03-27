@@ -245,7 +245,7 @@ class softcosine_similarity(Analysis):
                         ## TO DO ------ DO NOT CREATE LISTS OF TEXTS; THIS TAKES TOO LONG.
                         pass
                     else:
-                        print('It should do this 4 times!!')
+                        logger.debug('It should do this 4 times!!')
                         for doc in e[source_pos]:
                             if doc['identifier']=='source':
                                 # create sourcetext list to compare against
@@ -266,7 +266,7 @@ class softcosine_similarity(Analysis):
                                 #print('This is empty :)')
                                 pass # empty list, so pass comparison
                             else:
-                                print('It should do this 4 times as well!!!')
+                                logger.debug('It should do this 4 times as well!!!')
                                 for doc in d:
                                     if doc['identifier'] == 'target':
                                         target_texts.append(doc['_source'][targettext].split())
@@ -280,7 +280,7 @@ class softcosine_similarity(Analysis):
                                 df_list.append(df_temp)
                                 #print(df_temp)
                 #print('This is the last df_temp that was made:', df_temp)
-                print('The length of df_list is now:', len(df_list))
+                logger.debug('The length of df_list is now:', len(df_list))
                 
                 # make total dataframe
                 df = pd.concat(df_list, ignore_index=True)
