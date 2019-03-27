@@ -134,7 +134,7 @@ class softcosine_similarity(Analysis):
 
         logger.info('Preparing dictionary')
         dictionary = Dictionary(corpus)
-        logger.info('Removing all tokens that occur in less than {} documents or in more than {:.1f}\% or all documents from dictionary'.format(filter_below,filter_above*100))
+        logger.info('Removing all tokens that occur in less than {} documents or in more than {:.1f}% or all documents from dictionary'.format(filter_below,filter_above*100))
         dictionary.filter_extremes(no_below=filter_below, no_above=filter_above)
         logger.info('Preparing tfidf model')
         tfidf = TfidfModel(dictionary=dictionary)
@@ -211,7 +211,7 @@ class softcosine_similarity(Analysis):
                             if not grouped_query_new:
                                 grouped_query_new.append(group)
                             else:
-                                grouped_query_new.extend(group)
+                                grouped_query_new[-1].extend(group)
                         # if empty, append empty list
                         elif not group:
                             grouped_query_new.append([])
@@ -247,12 +247,15 @@ class softcosine_similarity(Analysis):
                     else:
                         logger.debug('It should do this 4 times!!')
                         for doc in e[source_pos]:
-                            if doc['identifier']=='source':
-                                # create sourcetext list to compare against
-                                source_texts.append(doc['_source'][sourcetext].split())
-                                # extract additional information
-                                source_ids.append(doc['_id'])
-                                
+                            try:
+                                if doc['identifier']=='source':
+                                    # create sourcetext list to compare against
+                                    source_texts.append(doc['_source'][sourcetext].split())
+                                    # extract additional information
+                                    source_ids.append(doc['_id'])
+                            except:
+                                logger.error('This does not seem to be a valid document')
+                                print(doc)
                         #print('The length of source_texts is', len(source_texts))
 
                         # create index of source texts
