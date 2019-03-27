@@ -1,23 +1,21 @@
 '''
 This file contains the basics to determine the overlap based on softcosine similarity
 '''
-import datetime
-from sklearn.feature_extraction.text import TfidfVectorizer
+
 from ..core.analysis_base_class import Analysis
 from ..core.database import client, elastic_index, scroll_query
 import os
 import logging
 import pandas as pd
-import numpy as np
 import gensim
 from gensim.corpora import Dictionary
 from gensim.models import TfidfModel
 from gensim.models import Word2Vec
 from gensim.similarities import SoftCosineSimilarity
 import time
+import datetime
 import networkx as nx
 from itertools import groupby, islice
-from collections import defaultdict, OrderedDict # is this one still neccessary?
 from tqdm import tqdm
 
 
@@ -130,10 +128,9 @@ class softcosine_similarity(Analysis):
         source_text=[]
         for doc in source_query:
             source_text.append(doc['_source'][sourcetext].split())
-        corpus = source_text + target_text
-
+        
         logger.info('Preparing dictionary')
-        dictionary = Dictionary(corpus)
+        dictionary = Dictionary(source_text + target_text)
         logger.info('Removing all tokens that occur in less than {} documents or in more than {:.1f}% or all documents from dictionary'.format(filter_below,filter_above*100))
         dictionary.filter_extremes(no_below=filter_below, no_above=filter_above)
         logger.info('Preparing tfidf model')
@@ -201,8 +198,6 @@ class softcosine_similarity(Analysis):
                 #### ------ TO DO: CHECK WHETHER THIS WORKS! 
                 # Optional: merges saturday and sunday into one weekend group
                 # Checks whether group is Sunday, then merge together with previous (saturday) group.
-                if merge_weekend == False:
-                    pass
                 if merge_weekend == True:
                     grouped_query_new = []
                     for group in grouped_query:
@@ -226,7 +221,6 @@ class softcosine_similarity(Analysis):
                 # A sliding window cuts the documents into groups that should be compared to each other based on their publication dates. A list of source documents published on the reference date is created. For each of the target dates in the window, the source list is compared to the targets, the information is put in a dataframe, and the dataframe is added to a list. This process is repeated for each window. We end up with a list of dataframes, which are eventually merged together into one dataframe.
 
 
-                
                 len_window = days_before + days_after + 1
                 source_pos = days_before # source position is equivalent to days_before (e.g. 2 days before, means 3rd day is source with the index position [2])
 
@@ -326,19 +320,17 @@ class softcosine_similarity(Analysis):
         if not 'comparisons' in os.listdir('.'):
             os.mkdir('comparisons')
 
+        now = time.localtime()
         #Optional: save as csv file
         if to_csv == True:
-            now = time.localtime()
             df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
         #Otherwise: save as pickle file
         else:
-            now = time.localtime()
             df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
 
         #Optional: additionally save as pajek file
         if to_pajek == True:
             G = nx.Graph()
-
             # change int to str (necessary for pajek format)
             df['similarity'] = df['similarity'].apply(str)
             # change column name to 'weights' to faciliate later analysis
@@ -346,7 +338,6 @@ class softcosine_similarity(Analysis):
             # notes and weights from dataframe
             G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='weight')
             # write to pajek
-            now = time.localtime()
             nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
         
     def predict(self, *args, **kwargs):
