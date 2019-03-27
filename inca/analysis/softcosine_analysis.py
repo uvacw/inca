@@ -18,7 +18,7 @@ import time
 import networkx as nx
 from itertools import groupby, islice
 from collections import defaultdict, OrderedDict # is this one still neccessary?
-
+from tqdm import tqdm
 
 
 
@@ -63,11 +63,14 @@ class softcosine_similarity(Analysis):
         logger.info("The results of the similarity analysis could be inflated when not using the recommended text processing steps (stopword removal, punctuation removal, stemming) beforehand")
 
         #Load the pretrained model (different ways depending on how the model was saved)
+        logger.info('Loading word embeddings...')
         try:
             softcosine_model = gensim.models.Word2Vec.load(path_to_model)
         except:
             softcosine_model = gensim.models.keyedvectors.KeyedVectors.load_word2vec_format(path_to_model, binary = True)
 
+        logger.info('Done')
+        
         #Construct source and target queries for elasticsearch
         if isinstance(source, list): # multiple doctypes
             source_query = {'query':{'bool':{'filter':{'bool':{'must':[{'terms':{'doctype':source}}]}}}}} 
@@ -128,6 +131,7 @@ class softcosine_similarity(Analysis):
         corpus = source_text + target_text
 
         # prepare dictionary, tfidf model and similarity matrix for softcosine analysis
+        logger.info('Preparing tfidf model and cosine similarity matrix')
         dictionary = Dictionary(corpus)
         tfidf = TfidfModel(dictionary=dictionary)
         similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)        
@@ -145,11 +149,10 @@ class softcosine_similarity(Analysis):
         target_dict = dict(zip(target_ids, target_dates))
         target_doctype=[doc['_source']['doctype'] for doc in target_query]
         target_dict2 = dict(zip(target_ids, target_doctype))
-
         
         #If specified, comparisons compare docs within sliding date window
         if days_before != None or days_after != None:
-
+            logger.info('Performing sliding window comparisons...')
             # merge queries including identifier key
             for i in source_query:
                 i.update({'identifier':'source'})
@@ -227,7 +230,7 @@ class softcosine_similarity(Analysis):
                 ## TEST SOURCE_POS!
                 #source_pos=0
 
-                for e in self.window(grouped_query, n = len_window):
+                for e in tqdm(self.window(grouped_query, n = len_window)):
                     source_texts = []
                     source_ids = []
                     
