@@ -43,7 +43,7 @@ class softcosine_similarity(Analysis):
 
     def fit(self, path_to_model, source, target, sourcetext = 'text', sourcedate = 'publication_date',
             targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = None,
-            days_after = None, merge_weekend = False, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False):
+            days_after = None, merge_weekend = False, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False, filter_above=0.5, filter_below=5):
         '''
         path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
         can be found here: https://rare-technologies.com/word2vec-tutorial/
@@ -59,6 +59,8 @@ class softcosine_similarity(Analysis):
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
         destination = optional: where should the resulting datasets be saved? (defaults to 'comparisons' folder)
         to_pajek = if True save - in addition to csv/pickle - the result (source, target and similarity score) as pajek file to be used in the Infomap method (defaults to False)
+        filter_above = Words occuring in more than this fraction of all documents will be filtered
+        filter_below = Words occuring in less than this absolute number of docments will be filtered
         '''
         logger.info("The results of the similarity analysis could be inflated when not using the recommended text processing steps (stopword removal, punctuation removal, stemming) beforehand")
 
@@ -130,10 +132,13 @@ class softcosine_similarity(Analysis):
             source_text.append(doc['_source'][sourcetext].split())
         corpus = source_text + target_text
 
-        # prepare dictionary, tfidf model and similarity matrix for softcosine analysis
-        logger.info('Preparing tfidf model and cosine similarity matrix')
+        logger.info('Preparing dictionary')
         dictionary = Dictionary(corpus)
+        logger.info('Removing all tokens that occur in less than {} documents or in more than {:.1f}\% or all documents from dictionary'.format(filter_below,filter_above*100))
+        dictionary.filter_extremes(no_below=filter_below, no_above=filter_above)
+        logger.info('Preparing tfidf model')
         tfidf = TfidfModel(dictionary=dictionary)
+        logger.info('Preparing soft cosine similarity matrix')
         similarity_matrix = softcosine_model.wv.similarity_matrix(dictionary, tfidf)        
 
         #extract additional information from sources
