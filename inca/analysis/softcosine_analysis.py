@@ -195,6 +195,12 @@ class softcosine_similarity(Analysis):
                             dt.append(a)
                     grouped_query.append(dt)
 
+                #for group in grouped_query:
+                    #print(group[0])
+                    #print(group[0]['_source'])
+                print('The length of grouped_query is:', len(grouped_query), 'and the length of the first individual element is:', len(grouped_query[0]))    
+                print('The type of grouped_query elements are:', type(grouped_query[0]))
+                
                 #### ------ TO DO: CHECK WHETHER THIS WORKS! 
                 # Optional: merges saturday and sunday into one weekend group
                 # Checks whether group is Sunday, then merge together with previous (saturday) group.
@@ -202,7 +208,9 @@ class softcosine_similarity(Analysis):
                     grouped_query_new = []
                     for group in grouped_query:
                         # if group is sunday, extend previous (saturday) list, except when it is the first day in the data.
-                        if group[0]['_source'][sourcedate].weekday() == 6:
+                        if group[0]['_source'][sourcedate].weekday()==6:
+                            print('it goes here')
+                        #if group[0]['_source'][sourcedate].weekday() == 6:
                             if not grouped_query_new:
                                 grouped_query_new.append(group)
                             else:
@@ -232,50 +240,47 @@ class softcosine_similarity(Analysis):
                 for e in tqdm(self.window(grouped_query, n = len_window)):
                     source_texts = []
                     source_ids = []
-                    
-                    if not e[source_pos]:
-                        ## TO DO ------ DO THIS FOR ONLY IDENTIFIER == SOURCE
-                        # if query does not include source articles published on this date, go to next window
-                        ## TO DO ------ DO NOT CREATE LISTS OF TEXTS; THIS TAKES TOO LONG.
-                        pass
-                    else:
-                        logger.debug('It should do this 4 times!!')
-                        for doc in e[source_pos]:
+                
+                    logger.debug('It should do this 4 times!!')
+                    for doc in e[source_pos]:
+                        try:
+                            if doc['identifier']=='source':
+                                # create sourcetext list to compare against
+                                source_texts.append(doc['_source'][sourcetext].split())
+                                # extract additional information
+                                source_ids.append(doc['_id'])
+                        except:
+                            logger.error('This does not seem to be a valid document')
+                            print(doc)
+                            pass # continue because source_pos does not contain source docs.
+                        #print('The length of source_texts is', len(source_texts))
+
+                    # create index of source texts
+                    query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
+
+                    # iterate through targets
+                    for d in e:
+                        target_texts=[]
+                        target_ids = []
+          
+                        logger.debug('It should do this 4 times as well!!!')
+                        for doc in d:
                             try:
-                                if doc['identifier']=='source':
-                                    # create sourcetext list to compare against
-                                    source_texts.append(doc['_source'][sourcetext].split())
+                                if doc['identifier'] == 'target':
+                                    target_texts.append(doc['_source'][targettext].split())
                                     # extract additional information
-                                    source_ids.append(doc['_id'])
+                                    target_ids.append(doc['_id'])
                             except:
                                 logger.error('This does not seem to be a valid document')
                                 print(doc)
-                        #print('The length of source_texts is', len(source_texts))
-
-                        # create index of source texts
-                        query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
-
-                        # iterate through targets
-                        for d in e:
-                            target_texts=[]
-                            target_ids = []
-                            if not d: # TO DO -- EMPTY IS ONLY FOR TARGET!
-                                #print('This is empty :)')
-                                pass # empty list, so pass comparison
-                            else:
-                                logger.debug('It should do this 4 times as well!!!')
-                                for doc in d:
-                                    if doc['identifier'] == 'target':
-                                        target_texts.append(doc['_source'][targettext].split())
-                                        # extract additional information
-                                        target_ids.append(doc['_id'])
-                                # do comparison
-                                index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
-                                sims = index[query]
-                                #make dataframe
-                                df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
-                                df_list.append(df_temp)
-                                #print(df_temp)
+                                pass # continue because no target docs.
+                            # do comparison
+                            index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
+                            sims = index[query]
+                            #make dataframe
+                            df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
+                            df_list.append(df_temp)
+                            #print(df_temp)
                 #print('This is the last df_temp that was made:', df_temp)
                 logger.debug('The length of df_list is now:', len(df_list))
                 
