@@ -250,16 +250,16 @@ class softcosine_similarity(Analysis):
                                         target_texts.append(doc['_source'][targettext].split())
                                         # extract additional information
                                         target_ids.append(doc['_id'])
-                                        
-                                    # do comparison
-                                    index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
-                                    sims = index[query]
-                                    #make dataframe
-                                    df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
-                                    df_list.append(df_temp)
                                 except:
                                     logger.error('This does not seem to be a valid document')
-                                    print(doc)
+                                    print(doc)  
+                            # do comparison
+                            index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
+                            sims = index[query]
+                            #make dataframe
+                            df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
+                            df_list.append(df_temp)
+                     
                     
                 # make total dataframe
                 df = pd.concat(df_list, ignore_index=True)
