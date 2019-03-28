@@ -25,11 +25,6 @@ logger = logging.getLogger("INCA")
 class softcosine_similarity(Analysis):
     '''Compares documents from source and target, showing their softcosine distance'''
 
-    ## TO DO -- ALSO MAKE THIS WORK IN THE BEGINNING OF THE SEQUENCE. 
-    def window2(self, seq, n):
-        for i in range(len(seq)):
-            yield seq[i:i+n]
-            
     def window(self, seq, n):
         it = iter(seq)
         result = tuple(islice(it, n))
@@ -121,7 +116,7 @@ class softcosine_similarity(Analysis):
         target_query = [a for a in target_query if targettext in a['_source'].keys() and targetdate in a['_source'].keys()]
         source_query = [a for a in source_query if sourcetext in a['_source'].keys() and sourcedate in a['_source'].keys()]
 
-        #Target and source texts (split), and create total corpus for the similarity matrix
+        #Target and source texts (split)
         target_text=[]
         for doc in target_query:
             target_text.append(doc['_source'][targettext].split())
@@ -195,13 +190,6 @@ class softcosine_similarity(Analysis):
                             dt.append(a)
                     grouped_query.append(dt)
 
-                #for group in grouped_query:
-                    #print(group[0])
-                    #print(group[0]['_source'])
-                print('The length of grouped_query is:', len(grouped_query), 'and the length of the first individual element is:', len(grouped_query[0]))    
-                print('The type of grouped_query elements are:', type(grouped_query[0]))
-                
-                #### ------ TO DO: CHECK WHETHER THIS WORKS! 
                 # Optional: merges saturday and sunday into one weekend group
                 # Checks whether group is Sunday, then merge together with previous (saturday) group.
                 if merge_weekend == True:
@@ -209,8 +197,6 @@ class softcosine_similarity(Analysis):
                     for group in grouped_query:
                         # if group is sunday, extend previous (saturday) list, except when it is the first day in the data.
                         if group[0]['_source'][sourcedate].weekday()==6:
-                            print('it goes here')
-                        #if group[0]['_source'][sourcedate].weekday() == 6:
                             if not grouped_query_new:
                                 grouped_query_new.append(group)
                             else:
@@ -223,67 +209,58 @@ class softcosine_similarity(Analysis):
                             grouped_query_new.append(group)
                     grouped_query = grouped_query_new
 
-                
-                ### SLIDING WINDOW SIMILARITY PART STARTS HERE.
-                # How it works:
+                # Sliding window starts here... How it works:
                 # A sliding window cuts the documents into groups that should be compared to each other based on their publication dates. A list of source documents published on the reference date is created. For each of the target dates in the window, the source list is compared to the targets, the information is put in a dataframe, and the dataframe is added to a list. This process is repeated for each window. We end up with a list of dataframes, which are eventually merged together into one dataframe.
-
 
                 len_window = days_before + days_after + 1
                 source_pos = days_before # source position is equivalent to days_before (e.g. 2 days before, means 3rd day is source with the index position [2])
 
                 df_list = []
 
-                ## TEST SOURCE_POS!
-                #source_pos=0
-
                 for e in tqdm(self.window(grouped_query, n = len_window)):
                     source_texts = []
                     source_ids = []
-                
-                    logger.debug('It should do this 4 times!!')
-                    for doc in e[source_pos]:
-                        try:
-                            if doc['identifier']=='source':
-                                # create sourcetext list to compare against
-                                source_texts.append(doc['_source'][sourcetext].split())
-                                # extract additional information
-                                source_ids.append(doc['_id'])
-                        except:
-                            logger.error('This does not seem to be a valid document')
-                            print(doc)
-                            pass # continue because source_pos does not contain source docs.
-                        #print('The length of source_texts is', len(source_texts))
-
-                    # create index of source texts
-                    query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
-
-                    # iterate through targets
-                    for d in e:
-                        target_texts=[]
-                        target_ids = []
-          
-                        logger.debug('It should do this 4 times as well!!!')
-                        for doc in d:
+                    try: 
+                        for doc in e[source_pos]:
                             try:
-                                if doc['identifier'] == 'target':
-                                    target_texts.append(doc['_source'][targettext].split())
+                                if doc['identifier']=='source':
+                                    # create sourcetext list to compare against
+                                    source_texts.append(doc['_source'][sourcetext].split())
                                     # extract additional information
-                                    target_ids.append(doc['_id'])
+                                    source_ids.append(doc['_id'])
                             except:
                                 logger.error('This does not seem to be a valid document')
                                 print(doc)
-                                pass # continue because no target docs.
-                            # do comparison
-                            index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
-                            sims = index[query]
-                            #make dataframe
-                            df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
-                            df_list.append(df_temp)
-                            #print(df_temp)
-                #print('This is the last df_temp that was made:', df_temp)
-                logger.debug('The length of df_list is now:', len(df_list))
-                
+
+                        # create index of source texts
+                        query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
+
+                        # iterate through targets
+                        for d in e:
+                            target_texts=[]
+                            target_ids = []
+
+                            for doc in d:
+                                try:
+                                    if doc['identifier'] == 'target':
+                                        try:
+                                            target_texts.append(doc['_source'][targettext].split())
+                                            # extract additional information
+                                            target_ids.append(doc['_id'])
+                                        except:
+                                            logger.error('This does not seem to be a valid document')
+                                            print(doc)
+                                    # do comparison
+                                    index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
+                                    sims = index[query]
+                                    #make dataframe
+                                    df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
+                                    df_list.append(df_temp)
+                                except:
+                                    pass
+                    except:
+                        pass # no source docs in source_pos, so skip the whole window 
+                    
                 # make total dataframe
                 df = pd.concat(df_list, ignore_index=True)
                 df.columns = ['source', 'target', 'similarity']
@@ -291,8 +268,6 @@ class softcosine_similarity(Analysis):
                 df['target_date'] = df['target'].map(target_dict)
                 df['source_doctype'] = df['source'].map(source_dict2)
                 df['target_doctype'] = df['target'].map(target_dict2)
-
-                ## TO DO -- DO WE NEED TO DELETE DUPLICATE COMPARISONS IN THE LIST?
 
                 
         #Same procedure as above, but without specifying a time frame (thus: comparing all sources to all targets)
