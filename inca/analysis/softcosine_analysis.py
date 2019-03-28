@@ -220,44 +220,46 @@ class softcosine_similarity(Analysis):
                 for e in tqdm(self.window(grouped_query, n = len_window)):
                     source_texts = []
                     source_ids = [] 
-                    for doc in e[source_pos]:
-                        try:
-                            if doc['identifier']=='source':
-                                # create sourcetext list to compare against
-                                source_texts.append(doc['_source'][sourcetext].split())
-                                # extract additional information
-                                source_ids.append(doc['_id'])
 
-                                # create index of source texts
-                                query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
-                                
-                        except:
-                            logger.error('This does not seem to be a valid document')
-                            print(doc)
-                            pass # no source docs, so pass
-
-                    # iterate through targets
-                    for d in e:
-                        target_texts=[]
-                        target_ids = []
-
-                        for doc in d:
+                    if not e[source_pos]:
+                        pass
+                    else:
+                        for doc in e[source_pos]:
                             try:
-                                if doc['identifier'] == 'target':
-                                    target_texts.append(doc['_source'][targettext].split())
+                                if doc['identifier']=='source':
+                                    # create sourcetext list to compare against
+                                    source_texts.append(doc['_source'][sourcetext].split())
                                     # extract additional information
-                                    target_ids.append(doc['_id'])
-                
+                                    source_ids.append(doc['_id'])
+                            except:
+                                logger.error('This does not seem to be a valid document')
+                                print(doc)
+
+                        # create index of source texts
+                        query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
+                                
+                            
+                        # iterate through targets
+                        for d in e:
+                            target_texts=[]
+                            target_ids = []
+
+                            for doc in d:
+                                try:
+                                    if doc['identifier'] == 'target':
+                                        target_texts.append(doc['_source'][targettext].split())
+                                        # extract additional information
+                                        target_ids.append(doc['_id'])
+                                        
                                     # do comparison
                                     index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
                                     sims = index[query]
                                     #make dataframe
                                     df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
                                     df_list.append(df_temp)
-                            except:
-                                logger.error('This does not seem to be a valid document')
-                                print(doc)
-                                pass # no target docs or no query, so pass
+                                except:
+                                    logger.error('This does not seem to be a valid document')
+                                    print(doc)
                     
                 # make total dataframe
                 df = pd.concat(df_list, ignore_index=True)
