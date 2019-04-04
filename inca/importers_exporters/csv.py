@@ -139,15 +139,18 @@ class export_csv(Exporter):
 
         logger.info('Exporting these fields: {}'.format(self.fields))        
         self.extension = "csv"
+        new = False
         if  self.fileobj and not self.fileobj.closed:
             outputfile = self.fileobj
         elif self.fileobj:
             outputfile = self._makefile(destination, mode='a')
         else:
             outputfile = self._makefile(destination)
+            new = True
 
         writer = csv.DictWriter(outputfile, self.fields, extrasaction='ignore',*args, **kwargs)
-        writer.writeheader()
+        if new:
+            writer.writeheader()
         for doc in flat_batch:
             if remove_linebreaks:
                 doc = {k: v.replace('\n\r',' ').replace('\n',' ').replace('\'r',' ') for k,v in doc.items()}
