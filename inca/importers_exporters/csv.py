@@ -12,6 +12,7 @@ import logging
 import os
 from glob import glob
 
+
 logger = logging.getLogger("INCA")
 
 class import_csv(Importer):
@@ -136,6 +137,7 @@ class export_csv(Exporter):
         if len(self.fields)==0:
             keys = set.union(*[set(d.keys()) for d in flat_batch])
             [self.fields.append(k) for k in keys if k not in self.fields and k != '_source.images']
+            self.fields = sorted(self.fields)
 
         logger.info('Exporting these fields: {}'.format(self.fields))        
         self.extension = "csv"
