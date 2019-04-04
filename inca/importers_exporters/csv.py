@@ -12,6 +12,7 @@ import logging
 import os
 from glob import glob
 
+
 logger = logging.getLogger("INCA")
 
 class import_csv(Importer):
@@ -129,6 +130,7 @@ class export_csv(Exporter):
             expects in many locales (e.g., Dutch and German)
 
         """
+        new = False
         if fields is None: fields=[]
         self.fields = ['_source.{}'.format(f) for f in fields]
 
@@ -136,18 +138,22 @@ class export_csv(Exporter):
         if len(self.fields)==0:
             keys = set.union(*[set(d.keys()) for d in flat_batch])
             [self.fields.append(k) for k in keys if k not in self.fields and k != '_source.images']
-
-        logger.info('Exporting these fields: {}'.format(self.fields))        
+            self.fields = sorted(self.fields)
+        if new:
+            logger.info('Exporting these fields: {}'.format(self.fields))
         self.extension = "csv"
+
         if  self.fileobj and not self.fileobj.closed:
             outputfile = self.fileobj
         elif self.fileobj:
             outputfile = self._makefile(destination, mode='a')
         else:
             outputfile = self._makefile(destination)
+            new = True
 
         writer = csv.DictWriter(outputfile, self.fields, extrasaction='ignore',*args, **kwargs)
-        writer.writeheader()
+        if new:
+            writer.writeheader()
         for doc in flat_batch:
             if remove_linebreaks:
                 doc = {k: v.replace('\n\r',' ').replace('\n',' ').replace('\'r',' ') for k,v in doc.items()}
