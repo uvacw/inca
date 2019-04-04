@@ -130,6 +130,7 @@ class export_csv(Exporter):
             expects in many locales (e.g., Dutch and German)
 
         """
+        new = False
         if fields is None: fields=[]
         self.fields = ['_source.{}'.format(f) for f in fields]
 
@@ -138,10 +139,10 @@ class export_csv(Exporter):
             keys = set.union(*[set(d.keys()) for d in flat_batch])
             [self.fields.append(k) for k in keys if k not in self.fields and k != '_source.images']
             self.fields = sorted(self.fields)
-
-        logger.info('Exporting these fields: {}'.format(self.fields))        
+        if new:
+            logger.info('Exporting these fields: {}'.format(self.fields))
         self.extension = "csv"
-        new = False
+
         if  self.fileobj and not self.fileobj.closed:
             outputfile = self.fileobj
         elif self.fileobj:
