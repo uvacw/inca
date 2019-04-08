@@ -51,10 +51,12 @@ class softcosine_similarity(Analysis):
         from_time, to_time = optional: specifying a date range to filter source and target articles. Supply the date in the yyyy-MM-dd format.
         to_csv = if True save the resulting data in a csv file - otherwise a pandas dataframe is returned
         destination = optional: where should the resulting datasets be saved? (defaults to 'comparisons' folder)
-        to_pajek = if True save - in addition to csv/pickle - the result (source, target and similarity score) as pajek file to be used in the Infomap method (defaults to False)
+        to_pajek = if True save - in addition to csv/pickle - the result (source, target and similarity score) as pajek file to be used in the Infomap method (defaults to False) - not available in combination with days_before/days_after parameters
         filter_above = Words occuring in more than this fraction of all documents will be filtered
         filter_below = Words occuring in less than this absolute number of docments will be filtered
         '''
+        now = time.localtime()
+        
         logger.info("The results of the similarity analysis could be inflated when not using the recommended text processing steps (stopword removal, punctuation removal, stemming) beforehand")
 
         #Load the pretrained model (different ways depending on how the model was saved)
@@ -214,13 +216,15 @@ class softcosine_similarity(Analysis):
 
                 len_window = days_before + days_after + 1
                 source_pos = days_before # source position is equivalent to days_before (e.g. 2 days before, means 3rd day is source with the index position [2])
-
-                df_list = []
-
+                n_window = 0
+                
                 for e in tqdm(self.window(grouped_query, n = len_window)):
-                    source_texts = []
-                    source_ids = [] 
+                    n_window +=1
+                    df_window = []
 
+                    source_texts = []
+                    source_ids = []
+                    
                     if not e[source_pos]:
                         pass
                     else:
@@ -238,7 +242,6 @@ class softcosine_similarity(Analysis):
                         # create index of source texts
                         query = tfidf[[dictionary.doc2bow(d) for d in source_texts]]
                                 
-                            
                         # iterate through targets
                         for d in e:
                             target_texts=[]
@@ -256,18 +259,36 @@ class softcosine_similarity(Analysis):
                             # do comparison
                             index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
                             sims = index[query]
+                            
                             #make dataframe
                             df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
-                            df_list.append(df_temp)
-                     
-                    
-                # make total dataframe
-                df = pd.concat(df_list, ignore_index=True)
-                df.columns = ['source', 'target', 'similarity']
-                df['source_date'] = df['source'].map(source_dict)
-                df['target_date'] = df['target'].map(target_dict)
-                df['source_doctype'] = df['source'].map(source_dict2)
-                df['target_doctype'] = df['target'].map(target_dict2)
+                            df_window.append(df_temp)
+
+                        df = pd.concat(df_window, ignore_index=True)
+                        df.columns = ['source', 'target', 'similarity']
+                        df['source_date'] = df['source'].map(source_dict)
+                        df['target_date'] = df['target'].map(target_dict)
+                        df['source_doctype'] = df['source'].map(source_dict2)
+                        df['target_doctype'] = df['target'].map(target_dict2)
+
+                        #Optional: if threshold is specified
+                        if threshold:
+                            df = df.loc[df['similarity'] >= threshold]
+
+                        #Make exports folder if it does not exist yet
+                        if not 'comparisons' in os.listdir('.'):
+                            os.mkdir('comparisons')
+
+                        #Optional: save as csv file
+                        if to_csv == True:
+                            df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}_{n_window}.csv".format(now=now, target = target, source = source, n_window = n_window)))
+                            #Otherwise: save as pickle file
+                        else:
+                            df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}_{n_window}.pkl".format(now=now, target = target, source = source, n_window = n_window)))
+
+                #Optional: save as pajek file not for days_before/days_after
+                if to_pajek == True:
+                    logger.info("Does not save as Pajek file with days_before/days_after because of the size of the files.")
 
                 
         #Same procedure as above, but without specifying a time frame (thus: comparing all sources to all targets)
@@ -291,35 +312,33 @@ class softcosine_similarity(Analysis):
             df['source_doctype'] = df['source'].map(source_dict2)
             df['target_doctype'] = df['target'].map(target_dict2)
 
+            #Optional: if threshold is specified
+            if threshold:
+                df = df.loc[df['similarity'] >= threshold]
+
+            #Make exports folder if it does not exist yet
+            if not 'comparisons' in os.listdir('.'):
+                os.mkdir('comparisons')
+
+            #Optional: save as csv file
+            if to_csv == True:
+                df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
+            #Otherwise: save as pickle file
+            else:
+                df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
+
+            #Optional: additionally save as pajek file
+            if to_pajek == True:
+                G = nx.Graph()
+                # change int to str (necessary for pajek format)
+                df['similarity'] = df['similarity'].apply(str)
+                # change column name to 'weights' to faciliate later analysis
+                df.rename({'similarity':'weight'}, axis=1, inplace=True) 
+                # notes and weights from dataframe
+                G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='weight')
+                # write to pajek
+                nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
             
-        #Optional: if threshold is specified
-        if threshold:
-            df = df.loc[df['similarity'] >= threshold]
-
-        #Make exports folder if it does not exist yet
-        if not 'comparisons' in os.listdir('.'):
-            os.mkdir('comparisons')
-
-        now = time.localtime()
-        #Optional: save as csv file
-        if to_csv == True:
-            df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
-        #Otherwise: save as pickle file
-        else:
-            df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
-
-        #Optional: additionally save as pajek file
-        if to_pajek == True:
-            G = nx.Graph()
-            # change int to str (necessary for pajek format)
-            df['similarity'] = df['similarity'].apply(str)
-            # change column name to 'weights' to faciliate later analysis
-            df.rename({'similarity':'weight'}, axis=1, inplace=True) 
-            # notes and weights from dataframe
-            G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='weight')
-            # write to pajek
-            nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
-        
     def predict(self, *args, **kwargs):
         pass
 
