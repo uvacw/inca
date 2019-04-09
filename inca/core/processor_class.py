@@ -33,10 +33,10 @@ class Processer(Document):
 
     functiontype = 'processing'
 
-    def __init__(self, test=True, async=True):
+    def __init__(self, test=True, async_=True):
         '''Override test to save results and return an ID list instead of updated documents'''
         self.test  = test
-        self.async = async
+        self.async_ = async_
 
     def _test_function(self):
         '''OVERWRITE THIS METHOD, should yield True (if it works) or False (if it doesn't) '''
@@ -196,7 +196,7 @@ def _doctype_query_or_list(doctype_query_or_list, force=False, field=None, task=
     if type(doctype_query_or_list)==list:
         documents = doctype_query_or_list
     elif type(doctype_query_or_list)==str:
-        if doctype_query_or_list in core.database.client.indices.get_mapping()[config.get('elasticsearch','document_index')]['mappings'].keys():
+        if doctype_query_or_list in core.search_utils.list_doctypes():
             logger.info("assuming documents of given type should be processed")
             if force or not field:
                 documents = core.database.scroll_query({'query':{'term':{"doctype":"%s"%doctype_query_or_list}}})
