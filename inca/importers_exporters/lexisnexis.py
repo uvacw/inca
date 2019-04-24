@@ -82,7 +82,7 @@ class lnimporter(Importer):
                                 'de volkskrant (print)': 'volkskrant (print)',
                                 'nrc handelsblad (print)': 'nrc (print)'}
 
-
+        forced_encoding = kwargs.pop('encoding',False)
         exists  = os.path.exists(path)
         if not exists:
             logger.warning("Unable to open {path} : DOES NOT EXIST".format(path=path))
@@ -91,15 +91,17 @@ class lnimporter(Importer):
             if not is_dir:
                 list_of_files = glob(path)
             else:
+                if path[-1]!='/': path+='/'
                 list_of_files = glob(path + "*.txt") + glob(path + "*.TXT")
             if len(list_of_files) == 0:
                 logger.error('There are no files to be process. Please use a valid, non-empty directory')
             article = 0
             for item in list_of_files:
                 logger.info("Now processing file {}".format(item))
-                encoding = kwargs.pop('encoding',False)
-                if not encoding:
+                if not forced_encoding:
                     encoding = _detect_encoding(item)
+                else:
+                    encoding = forced_encoding
                 with open(item, "r", encoding=encoding, errors="replace") as f:
                     if _detect_has_header(item, encoding):
                         for skiplines in range(22):
@@ -143,7 +145,7 @@ class lnimporter(Importer):
                                 yield art
 
                             article += 1
-                            if article%5 == 0:
+                            if article%50 == 0:
                                 logger.info('{} articles processed so far'.format(article))
                             # logger.info('Now processing article {}'.format(article))
 
