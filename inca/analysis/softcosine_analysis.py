@@ -35,7 +35,7 @@ class softcosine_similarity(Analysis):
             yield result
 
     def fit(self, path_to_model, source, target, sourcetext = 'text', sourcedate = 'publication_date',
-            targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, condition_source = None, condition_target = None, days_before = None,
+            targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, keyword_source_must = False, keyword_target_must = False, condition_source = None, condition_target = None, days_before = None,
             days_after = None, merge_weekend = False, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False, filter_above=0.5, filter_below=5):
         '''
         path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
@@ -44,7 +44,8 @@ class softcosine_similarity(Analysis):
 
         sourcetext/targettext = field where text of target/source can be found (defaults to 'text')
         sourcdate/targetedate = field where date of source/target can be found (defaults to 'publication_date')
-        keyword_source/_target = optional: specify keywords that need to be present in the textfield; list or string, in case of a list all words need to be present in the textfield (lowercase)
+        keyword_source/_target = optional: specify keywords that need to be present in the textfield; list or string (lowercase)
+        keyword_source/_target_must = optional: In case of a list, do all keywords need to appear in the text (logical AND) or does at least one of the words need to be in the text (logical OR). Defaults to False (logical OR)
         condition_source/target = optional: supply the field and its value as a dict as a condition for analysis, e.g. {'topic':1} (defaults to None)
         days_before = days target is before source (e.g. 2); days_after = days target is after source (e.g. 2) -> either both or none should be supplied. Additionally, merge_weekend = True will merge articles published on Saturday and Sunday. 
         threshold = threshold to determine at which point similarity is sufficient; if supplied only the rows who pass it are included in the dataset
@@ -96,13 +97,25 @@ class softcosine_similarity(Analysis):
         if isinstance(keyword_source, str) == True:
             source_query['query']['bool']['filter']['bool']['must'].append({'term':{sourcetext:keyword_source}})
         elif isinstance(keyword_source, list) == True:
-            for item in keyword_source:
-                source_query['query']['bool']['filter']['bool']['must'].append({'term':{sourcetext:item}})
+            if keyword_source_must == True:
+                for item in keyword_source:
+                    source_query['query']['bool']['filter']['bool']['must'].append({'term':{sourcetext:item}})
+            elif keyword_source_must == False:
+                source_query['query']['bool']['should'] = []
+                source_query['query']['bool']['minimum_should_match'] = 1
+                for item in keyword_source:
+                    source_query['query']['bool']['should'].append({'term':{sourcetext:item}})
         if isinstance(keyword_target, str) == True:
             target_query['query']['bool']['filter']['bool']['must'].append({'term':{targettext:keyword_target}})
         elif isinstance(keyword_target, list) == True:
-            for item in keyword_target:
-                target_query['query']['bool']['filter']['bool']['must'].append({'term':{targettext:item}})
+            if keyword_target_must == True:
+                for item in keyword_target:
+                    target_query['query']['bool']['filter']['bool']['must'].append({'term':{targettext:item}})
+            elif keyword_target_must == False:
+                target_query['query']['bool']['should'] = []
+                target_query['query']['bool']['minimum_should_match'] = 1
+                for item in keyword_target:
+                    target_query['query']['bool']['should'].append({'term':{targettext:item}})
 
         #Change query if condition_target or condition_source is specified
         if isinstance(condition_target, dict) == True:
