@@ -58,14 +58,12 @@ class njr(Processer):
 
 class remove_punctuation(Processer):
     '''removes all punctuation. "Bla. Bla bla+" -> "Bla Bla bla". "Willem-Alexander" -> WillemAlexander'''
-    try:  #assume python2
-        tbl = dict.fromkeys(i for i in xrange(maxunicode) if unicodedata.category(unichr(i)).startswith('P'))
-    except:   #but do this in python3
-        tbl = dict.fromkeys(i for i in range(maxunicode) if unicodedata.category(chr(i)).startswith('P'))
+
+    tbl = dict.fromkeys(i for i in range(maxunicode) if unicodedata.category(chr(i)).startswith('P'))
 
     def process(self, document_field):
         '''punctuation removed'''
-        return document_field.replace(u"`",u"").replace(u"´",u"").translate(remove_punctuation.tbl)
+        return document_field.replace("`","").replace("´","").translate(remove_punctuation.tbl)
 
 
 class lowercase(Processer):
@@ -189,11 +187,8 @@ class stemming(Processer):
 class lower_punct(Processer):
     '''Combines lowercase and punctuation removal. Advised to use for softcosine/cosine analyses.'''
 
-    try:  #assume python2
-        tbl = dict.fromkeys(i for i in xrange(maxunicode) if unicodedata.category(unichr(i)).startswith('P'))
-    except:
-        tbl = dict.fromkeys(i for i in range(maxunicode) if unicodedata.category(chr(i)).startswith('P'))
+    tbl = dict.fromkeys(i for i in range(maxunicode) if unicodedata.category(chr(i)).startswith('P'))
         
     def process(self, document_field):
-        return document_field.replace(u"`",u"").replace(u"´",u"").translate(remove_punctuation.tbl).lower()
+        return document_field.replace("`","").replace("´","").translate(remove_punctuation.tbl).lower()
     
