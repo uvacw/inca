@@ -185,3 +185,15 @@ class stemming(Processer):
             doc+=(" "+stemmer.stem(w))
 
         return doc
+
+class lower_punct(Processer):
+    '''Combines lowercase and punctuation removal. Advised to use for softcosine/cosine analyses.'''
+
+    try:  #assume python2
+        tbl = dict.fromkeys(i for i in xrange(maxunicode) if unicodedata.category(unichr(i)).startswith('P'))
+    except:
+        tbl = dict.fromkeys(i for i in range(maxunicode) if unicodedata.category(chr(i)).startswith('P'))
+        
+    def process(self, document_field):
+        return document_field.replace(u"`",u"").replace(u"´",u"").translate(remove_punctuation.tbl).lower()
+    
