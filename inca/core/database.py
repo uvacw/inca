@@ -20,7 +20,7 @@ import requests
 from celery import Task
 import os
 from tqdm import tqdm
-
+from hashlib import md5
 from .filenames import id2filename
 
 config = configparser.ConfigParser()
@@ -515,3 +515,74 @@ def restore_backup(name):
     if name in [item['snapshot'] for item in list_backups()['snapshots']]:
         client.indices.close('inca')
         client.snapshot.restore(repository='inca_backup', snapshot=name)
+
+
+
+
+#################
+# deduplication
+################
+
+def deduplicate(g, dryrun=True, check_keys = ["text", "title", "doctype", "publication_date"]):
+    '''
+    Takes a document generator `g` as input and lists (if `dryrun=True`)
+    or remove (if `dryrun=False`) duplicate documents. 
+    With ```check_keys = ['key1', 'key2', ...] ``` you can specify the keys
+    on which the documents are compared.
+
+    Example usage:
+    ```
+    g = myinca.database.doctype_generator('nu')
+    myinca.database.deduplicate('nu', dryrun = True)
+    ```
+
+    Functionality inspired by https://www.elastic.co/blog/how-to-find-and-remove-duplicate-documents-in-elasticsearch
+    '''
+
+
+    dict_of_duplicate_docs = {}
+    for doc in g:
+        combined_key = ""
+        for mykey in check_keys:
+            combined_key += str(doc['_source'].get(mykey,''))
+        _id = doc["_id"]
+        hashval = md5(combined_key.encode('utf-8')).digest()
+        dict_of_duplicate_docs.setdefault(hashval, []).append(_id)
+    logger.info('Created hashtable')    
+        # Search through the hash of doc values to see if any
+        # duplicate hashes have been found
+    numdups = 0
+    if dryrun:
+        for hashval, array_of_ids in dict_of_duplicate_docs.items():
+            id_to_keep = array_of_ids.pop(0) # let's always keep the first doc
+            if len(array_of_ids) > 0:
+                # print("********** Duplicate docs hash=%s **********" % hashval)
+                # Get the documents that have mapped to the current hashval
+                matching_docs = client.mget(index=elastic_index, doc_type='doc',  body={"ids": array_of_ids})
+     
+                for doc in matching_docs['docs']:
+                    numdups +=1
+                    print("{}\t{}\t{}".format(
+                        doc['_source'].get('title',' '*20)[:20],
+                        doc['_source'].get('text',' '*20)[:20],
+                        doc['_source'].get('publication_date',' '*10)))
+        print('\nUse a fresh generator and run again with `dryrun=False` to remove these {} documents'.format(numdups))
+    else:
+        deleted = 0
+        to_delete = sum([len(array_of_ids)-1 for array_of_ids in dict_of_duplicate_docs.values()])
+        q = 'Type: Yes, go for it! if you really want to delete {} documents '.format(to_delete)
+        reallydelete = input(q)
+        if reallydelete == 'Yes, go for it!':
+            for hashval, array_of_ids in dict_of_duplicate_docs.items():
+                id_to_keep = array_of_ids.pop(0) # let's always keep the first doc
+                for _id in array_of_ids:
+                    client.delete(index=elastic_index,
+                          doc_type='doc',
+                          id=_id)
+                    deleted +=1
+            print('Deleted {} documents'.format(deleted))
+        
+
+
+
+    
