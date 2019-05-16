@@ -231,8 +231,6 @@ class softcosine_similarity(Analysis):
                 n_window = 0
                 
                 for e in tqdm(self.window(grouped_query, n = len_window)):
-                    with open('/home/felicia/test.json', mode='w') as f:
-                        json.dump(e,f,default=str)
                     n_window +=1
                     df_window = []
 
