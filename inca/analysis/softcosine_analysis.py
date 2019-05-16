@@ -17,7 +17,6 @@ import datetime
 import networkx as nx
 from itertools import groupby, islice
 from tqdm import tqdm
-import json
 
 
 logger = logging.getLogger("INCA")
