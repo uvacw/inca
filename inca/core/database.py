@@ -562,10 +562,13 @@ def deduplicate(g, dryrun=True, check_keys = ["text", "title", "doctype", "publi
      
                 for doc in matching_docs['docs']:
                     numdups +=1
-                    print("{}\t{}\t{}".format(
-                        doc['_source'].get('title',' '*20)[:20],
-                        doc['_source'].get('text',' '*20)[:20],
-                        doc['_source'].get('publication_date',' '*10)))
+                    try: 
+                        print("{}\t{}\t{}".format(
+                            doc['_source'].get('title',' '*20)[:20],
+                            doc['_source'].get('text',' '*20)[:20],
+                            doc['_source'].get('publication_date',' '*10)))
+                    except:
+                        pass
         print('\nUse a fresh generator and run again with `dryrun=False` to remove these {} documents'.format(numdups))
     else:
         deleted = 0
@@ -576,10 +579,13 @@ def deduplicate(g, dryrun=True, check_keys = ["text", "title", "doctype", "publi
             for hashval, array_of_ids in dict_of_duplicate_docs.items():
                 id_to_keep = array_of_ids.pop(0) # let's always keep the first doc
                 for _id in array_of_ids:
-                    client.delete(index=elastic_index,
-                          doc_type='doc',
-                          id=_id)
-                    deleted +=1
+                    try: 
+                        client.delete(index=elastic_index,
+                                      doc_type='doc',
+                                      id=_id)
+                        deleted +=1
+                    except:
+                        print('Could not delete {}.'.format(_id))
             print('Deleted {} documents'.format(deleted))
         
 

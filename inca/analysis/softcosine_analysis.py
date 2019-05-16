@@ -17,7 +17,7 @@ import datetime
 import networkx as nx
 from itertools import groupby, islice
 from tqdm import tqdm
-
+import json
 
 
 logger = logging.getLogger("INCA")
@@ -204,7 +204,6 @@ class softcosine_similarity(Analysis):
                         if a['_source'][sourcedate] == d:
                             dt.append(a)
                     grouped_query.append(dt)
-
                 # Optional: merges saturday and sunday into one weekend group
                 # Checks whether group is Sunday, then merge together with previous (saturday) group.
                 if merge_weekend == True:
@@ -232,14 +231,16 @@ class softcosine_similarity(Analysis):
                 n_window = 0
                 
                 for e in tqdm(self.window(grouped_query, n = len_window)):
+                    with open('/home/felicia/test.json', mode='w') as f:
+                        json.dump(e,f,default=str)
                     n_window +=1
                     df_window = []
 
                     source_texts = []
                     source_ids = []
-                    
-                    if not e[source_pos]:
+                    if not 'source' in [l2['identifier'] for l2 in e[source_pos]]:
                         pass
+                                        
                     else:
                         for doc in e[source_pos]:
                             try:
@@ -272,7 +273,6 @@ class softcosine_similarity(Analysis):
                             # do comparison
                             index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
                             sims = index[query]
-                            
                             #make dataframe
                             df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
                             df_window.append(df_temp)
