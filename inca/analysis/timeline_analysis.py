@@ -7,13 +7,14 @@ import pandas
 import numpy
 from ..core.database import client, elastic_index
 import logging
+from ..core.analysis_base_class import Analysis
 
 logger = logging.getLogger("INCA")
 
-class timeline_generator():
+class timeline_generator(Analysis):
     '''Generates timelines from elasticsearch string queries'''
 
-    def analyse(self, queries, timefield, granularity="week", querytype="count", field=None,
+    def fit(self, queries, timefield, granularity="week", querytype="count", field=None,
                 from_time=None, to_time=None, filter=None):
         '''returns a pandas dataframe '''
         if type(queries)==str:
