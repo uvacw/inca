@@ -592,3 +592,50 @@ def deduplicate(g, dryrun=True, check_keys = ["text", "title", "doctype", "publi
 
 
     
+######################
+# FIX BROKEN DOCUMENTS
+######################
+
+def reparse(g, f, dryrun=True, force=False):
+    '''
+    Takes a document generator `g` as reparses the `htmlsource` key using
+    a parse function f
+
+    Example usage:
+    ```
+    from inca.rssscrapers import news_scraper
+    f = news_scraper.nu.parsehtml 
+   
+    g = myinca.database.document_generator('doctype:"nu" AND publication_date:[2017-01-01 TO 2017-03-15]')
+
+    myinca.database.reparse(g, f, dryrun = True)
+    ```
+    '''
+    
+    for doc in g:
+        text_old = doc['_source'].get('text', '')
+        htmlsource = doc['_source'].get('htmlsource', None)
+        if not htmlsource:
+            logger.warning('No HTML source')
+            continue
+        
+        _id = doc["_id"]
+        if text_old.strip() == '':
+            logger.info('No text available for {}, reparsing'.format(_id))
+            text_new = f(None, htmlsource)['text'] # TODO WHAT IF NO SELF?
+        elif force==True:
+            logger.info('Overwriting extisting text for {}, reparsing'.format(_id))
+            text_new = f(None,htmlsource)['text'] # TODO WHAT IF NO SELF?
+        else:
+            logger.info('Old text exists, will not overwrite')
+            continue
+
+        logger.info("Old text: {} characters, first 30: {}".format(
+            len(text_old), text_old[:30]))
+        logger.info("New text: {} characters, first 30: {}".format(
+            len(text_new), text_new[:30]))
+
+
+        doc['_source']['text'] = text_new
+
+        update_document(doc, force=True)
