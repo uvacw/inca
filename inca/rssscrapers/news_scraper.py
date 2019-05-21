@@ -908,7 +908,7 @@ class telegraaf(rss):
         else:
             paywall_na = False
         try:
-            title = tree.xpath('//*/h1[@class="article-title playfair-bold-l no-top-margin no-bottom-margin gray1"]/text()|//*/h1[@class="article-title playfair-bold-l playfair-bold-xl--m playfair-bold-g--l no-top-margin no-bottom-margin gray1"]/text()|//*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()|//*/h2[@class="no-top-margin bottom-margin-3 bottom-margin-4--l roboto-black-l roboto-black-xl--l gray2"]/text()') [0] 
+            title = tree.xpath('//*/h1[@class="article-title playfair-bold-l no-top-margin no-bottom-margin gray1"]/text()|//*/h1[@class="article-title playfair-bold-l playfair-bold-xl--m playfair-bold-g--l no-top-margin no-bottom-margin gray1"]/text()|//*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()|//*/h2[@class="no-top-margin bottom-margin-3 bottom-margin-4--l roboto-black-l roboto-black-xl--l gray2"]/text() | //*/h1[@class="ArticleTitle__title"]/text()')[0] 
         except:
             title=""
             logger.warning("Could not parse article title")
@@ -923,10 +923,13 @@ class telegraaf(rss):
             logger.debug("Could not parse article teaser")
             teaser=""
         try:
-            text=" ".join(tree.xpath('//*/p[@class="false bottom-margin-6"]//text() | //*/p[@class="false bottom-margin-6"]/span[class="bold"]//text()')).strip()
+            text=" ".join(tree.xpath('//*/p[@class="false bottom-margin-6"]//text() | //*/p[@class="false bottom-margin-6"]/span[class="bold"]//text() | //*[@class="ArticleBodyHtmlBlock__body"]/text()')).strip()
         except:
             text = ""
             logger.warning("Could not parse article text")
+        #if text.strip() == "":
+            #logger.warning("Trying alternative method....")
+            # htmlsource has text included like so: "articleBody":"HERE IS THE TEXT.","author":
         try:
             author_door = tree.xpath('//*[@class="auteur"]/text() | //*[@class="ui-table ui-gray3"]/span[2]/text()')[0].strip().lstrip("Van ").lstrip("onze").lstrip("door").strip()
         except:
@@ -1000,7 +1003,7 @@ class metro(rss):
 
         tree = fromstring(htmlsource)
         try:
-            title = tree.xpath('//*[@class="row"]/h1/text()')[0]
+            title = tree.xpath('//*[@class="row"]/h1/text() | //*[@class="css-1edvzmo css-b21mdf"]/text()')[0]
         except:
             title=""
             logger.warning("Could not parse article title")
@@ -1026,7 +1029,9 @@ class metro(rss):
         #11. path: bold text, fi 2014 12 04
         #12. path: second headings
         #13. path: regular text
-            textrest=tree.xpath('//*[@class="field-item even"]/p/text() | //*[@class="field-item even"]/p/a/text() | //*[@class="field-item even"]/p/em/text() | //*[@class="field-item even"]/h2/text() | //*[@class="field-item even"]/p/span/text() | //*[@class="field-item even"]/h2/span/text() | //*[@class="field-item even"]/p/span/em/a/text() | //*[@class="field-item even"]/p/em/a/text() | //*[@class="field-item even"]/p/em/strong/text() | //*[@class="field-item even"]/p/b/text() | //*[@class="field-item even"]/div/text() | //*[@class="field-item even"]/p/strong/text()')
+        
+        #14. path: new layout. TO DO: -- also includes "invisible" text after 'bekijk ook'
+            textrest=tree.xpath('//*[@class="field-item even"]/p/text() | //*[@class="field-item even"]/p/a/text() | //*[@class="field-item even"]/p/em/text() | //*[@class="field-item even"]/h2/text() | //*[@class="field-item even"]/p/span/text() | //*[@class="field-item even"]/h2/span/text() | //*[@class="field-item even"]/p/span/em/a/text() | //*[@class="field-item even"]/p/em/a/text() | //*[@class="field-item even"]/p/em/strong/text() | //*[@class="field-item even"]/p/b/text() | //*[@class="field-item even"]/div/text() | //*[@class="field-item even"]/p/strong/text() | //*[@class="css-1uqapas  "]/p[@class="css-1qs30e6"]/descendant-or-self::text()')
         except:
             logger.debug("Could not parse article text")
             textrest = ""
@@ -1047,7 +1052,7 @@ class metro(rss):
         author_bron=""
         text=polish(text)
 
-        images = metronieuws._extract_images(self,tree)
+        images = metro._extract_images(self,tree)
 
         extractedinfo={"title":title.strip(),
                        "category":category.strip(),
