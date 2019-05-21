@@ -596,10 +596,17 @@ def deduplicate(g, dryrun=True, check_keys = ["text", "title", "doctype", "publi
 # FIX BROKEN DOCUMENTS
 ######################
 
-def reparse(g, f, dryrun=True, force=False):
+def reparse(g, f, force=False):
     '''
     Takes a document generator `g` as reparses the `htmlsource` key using
-    a parse function f
+    a parse function f taken from an INCA-scraper.
+  
+    In the current implementation, only the text field is considered.
+    By default, the text field is only updated if it was empty.
+
+    Arguments
+    ---------
+    force (bool): If True, non-empty text is replaced as well.
 
     Example usage:
     ```
@@ -607,10 +614,12 @@ def reparse(g, f, dryrun=True, force=False):
     f = news_scraper.nu.parsehtml 
    
     g = myinca.database.document_generator('doctype:"nu" AND publication_date:[2017-01-01 TO 2017-03-15]')
-
-    myinca.database.reparse(g, f, dryrun = True)
+    myinca.database.reparse(g, f, force = False)
     ```
     '''
+
+    # TODO reparse now only repareses the the texts, not other fields (such as author, title etc)
+    # To implement that, we need a better logic on which fields are to be replaced when
     
     for doc in g:
         text_old = doc['_source'].get('text', '')
@@ -622,10 +631,10 @@ def reparse(g, f, dryrun=True, force=False):
         _id = doc["_id"]
         if text_old.strip() == '':
             logger.info('No text available for {}, reparsing'.format(_id))
-            text_new = f(None, htmlsource)['text'] # TODO WHAT IF NO SELF?
+            text_new = f(None, htmlsource)['text'] 
         elif force==True:
             logger.info('Overwriting extisting text for {}, reparsing'.format(_id))
-            text_new = f(None,htmlsource)['text'] # TODO WHAT IF NO SELF?
+            text_new = f(None,htmlsource)['text'] 
         else:
             logger.info('Old text exists, will not overwrite')
             continue
@@ -638,4 +647,4 @@ def reparse(g, f, dryrun=True, force=False):
 
         doc['_source']['text'] = text_new
 
-        update_document(doc, force=True)
+        update_document(doc, force=True) # this force=True has nothing to do with the parameter passed to reparse()
