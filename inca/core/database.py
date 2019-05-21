@@ -636,7 +636,7 @@ def reparse(g, f, force=False):
             logger.info('Overwriting extisting text for {}, reparsing'.format(_id))
             text_new = f(None,htmlsource)['text'] 
         else:
-            logger.info('Old text exists, will not overwrite')
+            logger.debug('Old text exists, will not overwrite')
             continue
 
         logger.info("Old text: {} characters, first 30: {}".format(
@@ -646,5 +646,7 @@ def reparse(g, f, force=False):
 
 
         doc['_source']['text'] = text_new
+        if len(text_old.strip())>1:
+            doc['_source']['text_old'] = text_old   # to be sure, store old text as well
 
         update_document(doc, force=True) # this force=True has nothing to do with the parameter passed to reparse()
