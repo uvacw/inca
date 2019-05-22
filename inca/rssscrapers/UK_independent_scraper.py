@@ -73,7 +73,7 @@ class independent_uk(rss):
             category = ""
             logger.debug("Could not parse article category")
         try:
-            text = " ".join(tree.xpath("//*[@class='text-wrapper']/p/text()"))
+            text = " ".join(tree.xpath("//*[@class='text-wrapper']/p/text()|//*[@class='body-content']/p/descendant-or-self::text()"))
         except:
             text = ""
             logger.warning("Could not parse article teaser")
