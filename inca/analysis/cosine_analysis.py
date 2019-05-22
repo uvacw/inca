@@ -290,49 +290,78 @@ class cosine_similarity(Analysis):
         else:
 
             #Create index out of target texts
+            logger.info("Preparing the index out of target texts...")
             index = SparseMatrixSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_text]], num_features = len(dictionary))
 
             #Retrieve source IDs and make generator to compute similarities between each source and the index
+            logger.info("Preparing the query out of source texts...")
             query = tfidf[[dictionary.doc2bow(d) for d in source_text]]
             query_generator = (item for item in query)
 
             #Retrieve similarities
-            sims_list = [index[doc] for doc in query_generator]
+            logger.info("Starting comparisons...")
 
-            #make dataframe
-            df = pd.DataFrame(sims_list, columns=target_ids, index = source_ids).stack(). reset_index()
-            df.columns = ['source', 'target', 'similarity']
-            df["source_date"] = df["source"].map(source_dict)
-            df["target_date"] = df["target"].map(target_dict)
-            df['source_doctype'] = df['source'].map(source_dict2)
-            df['target_doctype'] = df['target'].map(target_dict2)
 
-            #Optional: if threshold is specified
-            if threshold:
-                df = df.loc[df['similarity'] >= threshold]
+            i=0
+            s_ids = 0
+            for doc in query_generator:
+                i+=1 # count each round of comparisons
+                # if doc is empty (which may happen due to pruning)
+                # then we skip this comparison
+                if len(doc) == 0:
+                    s_ids += 1
+                    logger.info('Skipped one empty document')
+                    continue
+                
 
-            #Make exports folder if it does not exist yet
-            if not 'comparisons' in os.listdir('.'):
-                os.mkdir('comparisons')
+            
+                #sims_list = [index[doc] for doc in query_generator]
+                sims = index[doc]
+                
+                #make dataframe
+                #df = pd.DataFrame(sims_list, columns=target_ids, index = source_ids).stack(). reset_index()
+                df = pd.DataFrame([sims]).transpose()
+                logger.debug('Created dataframe of shape {}'.format(df.shape))
+                logger.debug('Length of target_id list: {}'.format(len(target_ids)))
+                df['target'] = target_ids
+                df['source'] = source_ids[s_ids]
+                df.columns = ['similarity', 'target', 'source']
+                df["source_date"] = df["source"].map(source_dict)
+                df["target_date"] = df["target"].map(target_dict)
+                df['source_doctype'] = df['source'].map(source_dict2)
+                df['target_doctype'] = df['target'].map(target_dict2)
+                df = df.set_index('source')
 
-            #Optional: save as csv file
-            if to_csv == True:
-                df.to_csv(os.path.join(destination,r"INCA_cosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
-            #Otherwise: save as pickle file
-            else:
-                df.to_pickle(os.path.join(destination,r"INCA_cosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
+                #Optional: if threshold is specified
+                if threshold:
+                    df = df.loc[df['similarity'] >= threshold]
 
-            #Optional: additionally save as pajek file
-            if to_pajek == True:
-                G = nx.Graph()
-                # change int to str (necessary for pajek format)
-                df['similarity'] = df['similarity'].apply(str)
-                # change column name to 'weights' to faciliate later analysis
-                df.rename({'similarity':'weight'}, axis=1, inplace=True)
-                # notes and weights from dataframe
-                G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='weight')
-                # write to pajek
-                nx.write_pajek(G, os.path.join(destination, r"INCA_cosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
+                #Make exports folder if it does not exist yet
+                if not 'comparisons' in os.listdir('.'):
+                    os.mkdir('comparisons')
+
+                #Optional: save as csv file
+                if to_csv == True:
+                    df.to_csv(os.path.join(destination,r"INCA_cosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}_{i}.csv".format(now=now, target = target, source = source, i = i)))
+                #Otherwise: save as pickle file
+                else:
+                    df.to_pickle(os.path.join(destination,r"INCA_cosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}_{i}.pkl".format(now=now, target = target, source = source, i = i)))
+
+                #Optional: additionally save as pajek file
+                if to_pajek == True:
+                    G = nx.Graph()
+                    # change int to str (necessary for pajek format)
+                    df['similarity'] = df['similarity'].apply(str)
+                    # change column name to 'weights' to faciliate later analysis
+                    df.rename({'similarity':'weight'}, axis=1, inplace=True)
+                    # notes and weights from dataframe
+                    G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='weight')
+                    # write to pajek
+                    nx.write_pajek(G, os.path.join(destination, r"INCA_cosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}_{i}.net".format(now=now, target=target, source=source, i = i)))
+
+                s_ids += 1 # move one doc down in source_ids
+
+                logger.info("Done with source "+ str(i) + " out of " + str(len(source_text)))
 
     def predict(self, *args, **kwargs):
         pass
