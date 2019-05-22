@@ -21,7 +21,7 @@ from tqdm import tqdm
 logger = logging.getLogger("INCA")
 
 class cosine_similarity(Analysis):
-    '''Compares documents from source and target, showing their softcosine distance'''
+    '''Compares documents from source and target, showing their cosine distance'''
 
     def window(self, seq, n):
         it = iter(seq)
@@ -36,8 +36,6 @@ class cosine_similarity(Analysis):
             targettext = 'text', targetdate = 'publication_date', keyword_source = None, keyword_target = None, keyword_source_must = False, keyword_target_must = False, condition_source = None, condition_target = None, days_before = None,
             days_after = None, merge_weekend = False, threshold = None, from_time=None, to_time=None, to_csv = False, destination='comparisons', to_pajek = False, filter_above=0.5, filter_below=5):
         '''
-        path_to_model = Supply a pre-trained word2vec model. Information on how to train such a model
-        can be found here: https://rare-technologies.com/word2vec-tutorial/
         source/target = doctype of source/target (can also be a list of multiple doctypes)
         sourcetext/targettext = field where text of target/source can be found (defaults to 'text')
         sourcdate/targetedate = field where date of source/target can be found (defaults to 'publication_date')
@@ -319,10 +317,10 @@ class cosine_similarity(Analysis):
 
             #Optional: save as csv file
             if to_csv == True:
-                df.to_csv(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
+                df.to_csv(os.path.join(destination,r"INCA_cosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.csv".format(now=now, target = target, source = source)))
             #Otherwise: save as pickle file
             else:
-                df.to_pickle(os.path.join(destination,r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
+                df.to_pickle(os.path.join(destination,r"INCA_cosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.pkl".format(now=now, target = target, source = source)))
 
             #Optional: additionally save as pajek file
             if to_pajek == True:
@@ -334,7 +332,7 @@ class cosine_similarity(Analysis):
                 # notes and weights from dataframe
                 G = nx.from_pandas_edgelist(df, source='source', target='target', edge_attr='weight')
                 # write to pajek
-                nx.write_pajek(G, os.path.join(destination, r"INCA_softcosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
+                nx.write_pajek(G, os.path.join(destination, r"INCA_cosine_{source}_{target}_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.net".format(now=now, target=target, source=source)))
 
     def predict(self, *args, **kwargs):
         pass
