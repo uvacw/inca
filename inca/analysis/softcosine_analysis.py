@@ -321,12 +321,18 @@ class softcosine_similarity(Analysis):
             s_ids = 0
             for doc in query_generator:
                 i+=1 # count each round of comparisons
-                
+                # if doc is empty (which may happen due to pruning)
+                # then we skip this comparison
+                if len(doc) == 0:
+                    s_ids += 1
+                    logger.info('Skipped one empty document')
+                    continue
                 # make comparison
                 sims = index[doc]
-                
                 # make dataframe
                 df = pd.DataFrame([sims]).transpose()
+                logger.debug('Created dataframe of shape {}'.format(df.shape))
+                logger.debug('Length of target_id list: {}'.format(len(target_ids)))
                 df['target'] = target_ids
                 df['source'] = source_ids[s_ids]
                 df.columns = ['similarity', 'target', 'source']
