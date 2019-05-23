@@ -55,7 +55,7 @@ class export_timeline(Document):
 
         logger.info('Calling timeline generator...')
         timeline = timeline_generator()
-        df = timeline.analyse(queries=queries,timefield=timefield,**kwargs)
+        df = timeline.fit(queries=queries,timefield=timefield,**kwargs)
         
         logger.info('Saving timeline to {}'.format(outputfile))
         df.to_csv(outputfile)
