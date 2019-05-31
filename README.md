@@ -22,7 +22,7 @@ Please have a look at the documentation in the `inca/doc/` folder.
 - Make sure you have pip3 (`sudo apt install python3-pip`) and setuptools installed (`sudo pip3 install setuptools`)
 - Then:
 ```
-pip install git+https://github.com/uvacw/inca.git
+pip3 install git+https://github.com/uvacw/inca.git
 ```
 
 - If you want to use `pattern` for preprocessing, also do:
