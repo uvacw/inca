@@ -68,6 +68,7 @@ class rss(Scraper):
             RSS_URL=[RSS_URL]
 
         for thisurl in RSS_URL:
+            logger.info(thisurl)
             rss_body = self.get_page_body(thisurl)
             d = feedparser.parse(rss_body)
             for post in d.entries:
@@ -78,7 +79,10 @@ class rss(Scraper):
                 if _id == None:
                     _id=post.link
                 link=re.sub("/$","",self.getlink(post.link))
-
+                if 'cookiewall' in link:
+                    link = link.split("url=",1)[1]
+                else:
+                    link = link
                 # By now, we have retrieved the RSS feed. We now have to determine for the item that
                 # we are currently processing (post in d.entries), whether we want to follow its
                 # link and actually get the full text and process it. If we already have it,

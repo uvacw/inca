@@ -72,13 +72,18 @@ class ad(rss):
             logger.debug("Could not parse article category")
         #1. path: regular intro
         #2. path: intro when in <b>; found in a2014 04 130
-        teaser=tree.xpath('//*/p[@class="article__intro"]//text() | //*/p[@class="article__intro"]//span//text() | //*/p[@class="article__intro"]/span[@class="tag"]//text() | //*/p[@class="article__intro"]//b//text()') [0]
-        if teaser=="":
+        try: 
+            teaser=tree.xpath('//*/p[@class="article__intro"]//text() | //*/p[@class="article__intro"]//span//text() | //*/p[@class="article__intro"]/span[@class="tag"]//text() | //*/p[@class="article__intro"]//b//text()') [0]
+        except:
+            teaser = ""
             logger.debug("Could not parse article teaser")
         #1. path: regular text
         #2. path: text with link behind (shown in blue underlined); found in 2014 12 1057
         #3. path: second hadings found in 2014 11 1425
-        text=" ".join(tree.xpath('//*/p[@class="article__paragraph"]//text() | //*/h2[@class="article__subheader"]//text() | //*/p[@class="liveblog_time-text"]//text() | //*/time[@class="liveblog__time-text"]//text() | //*/p[@class="liveblog__intro"]//text() | //*/p[@class="liveblog__paragraph"]//text() | //*/p[@class="article__intro video"]//text()')).strip()
+        try: 
+            text=" ".join(tree.xpath('//*/p[@class="article__paragraph"]//text() | //*/h2[@class="article__subheader"]//text() | //*/p[@class="liveblog_time-text"]//text() | //*/time[@class="liveblog__time-text"]//text() | //*/p[@class="liveblog__intro"]//text() | //*/p[@class="liveblog__paragraph"]//text() | //*/p[@class="article__intro video"]//text()')).strip()
+        except:
+            logger.debug('Could not parse article text')
         try:
             author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
         except:
@@ -182,7 +187,7 @@ class nu(rss):
             logger.debug("Could not parse article teaser.")
             teaser=""
         try:
-            text=" ".join(tree.xpath('//*[@class="block-wrapper"]/div[@class="block-content"]/p//text()')).strip()
+            text="||".join(tree.xpath('//*[@class="block-wrapper"]/div[@class="block-content"]/p//text()')).strip()
         except:
             text = ""
             logger.warning("Could not parse article text")
@@ -226,7 +231,7 @@ class nu(rss):
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img_list = element.xpath('//div[@class="item-image"]//img')
+            img_list = element.xpath('//div[@class="particle headerimage"]//img')
             if len(img_list)>0:
                 img = img_list[0]
                 image = {'url' : img.attrib['src'],
@@ -902,13 +907,13 @@ class telegraaf(rss):
 
 
         tree = fromstring(htmlsource)
-        paywall = tree.xpath('//*[@class ="bg-premium all-paddings-6"]')
+        paywall = tree.xpath('//*[@class ="bg-premium all-paddings-6"] | //*/div[@class = "MeteringNotification"] | //*/div[@class = "PremiumLabelWithLine__body TextArticlePage__premiumLabel"]')
         if paywall:
             paywall_na = True
         else:
             paywall_na = False
         try:
-            title = tree.xpath('//*/h1[@class="article-title playfair-bold-l no-top-margin no-bottom-margin gray1"]/text()|//*/h1[@class="article-title playfair-bold-l playfair-bold-xl--m playfair-bold-g--l no-top-margin no-bottom-margin gray1"]/text()|//*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()|//*/h2[@class="no-top-margin bottom-margin-3 bottom-margin-4--l roboto-black-l roboto-black-xl--l gray2"]/text() | //*/h1[@class="ArticleTitle__title"]/text()')[0] 
+            title = tree.xpath('//*/h1[@class="article-title playfair-bold-l no-top-margin no-bottom-margin gray1"]/text()|//*/h1[@class="article-title playfair-bold-l playfair-bold-xl--m playfair-bold-g--l no-top-margin no-bottom-margin gray1"]/text()|//*/h2[@class="ui-tab-gothic-bold ui-text-medium"]/text() | //*/h1[@class="ui-stilson-bold ui-text-large ui-break-words ui-dark3 ui-no-top-margin ui-bottom-margin-2 ui-top-padding-2"]/text()|//*/h2[@class="no-top-margin bottom-margin-3 bottom-margin-4--l roboto-black-l roboto-black-xl--l gray2"]/text() | //*/h1[@class="ArticleTitle__title"]/text() | //*/h1[@class="ArticleTitleBlock__title"]/text() | //*/h1[@class="videoTopBlock__titleWrapper"]/text()')[0] 
         except:
             title=""
             logger.warning("Could not parse article title")
@@ -918,12 +923,12 @@ class telegraaf(rss):
             category = ""
             logger.debug("Could not parse article category")
         try:
-            teaser=tree.xpath('//*/p[@class="abril-bold no-top-margin"]//text()')[0]
+            teaser=tree.xpath('//*/p[@class="abril-bold no-top-margin"]//text() | //*/p[@class="ArticleIntroBlock__paragraph ArticleIntroBlock__paragraph--nieuws"]/span/text() | //*/p[@class="ArticleIntroBlock__paragraph ArticleIntroBlock__paragraph--entertainment"]/span/text() | //*/p[@class="ArticleIntroBlock__paragraph ArticleIntroBlock__paragraph--financieel"]/span/text() | //*/p[@class="ArticleIntroBlock__paragraph ArticleIntroBlock__paragraph--lifestyle"]/span/text() | //*/p[@class="ArticleIntroBlock__paragraph ArticleIntroBlock__paragraph--vrouw"]/span/text() | //*/p[@class="ArticleIntroBlock__paragraph ArticleIntroBlock__paragraph--sport"]/span/text() | //*/p[@class="ArticleIntroBlock__paragraph ArticleIntroBlock__paragraph--watuzegt"]/span/text()')[0]
         except:
             logger.debug("Could not parse article teaser")
             teaser=""
         try:
-            text=" ".join(tree.xpath('//*/p[@class="false bottom-margin-6"]//text() | //*/p[@class="false bottom-margin-6"]/span[class="bold"]//text() | //*[@class="ArticleBodyHtmlBlock__body"]/text()')).strip()
+            text="||".join(tree.xpath('//*/p[@class="false bottom-margin-6"]//text() | //*/p[@class="false bottom-margin-6"]/span[class="bold"]//text() | //*[@class="ArticleBodyHtmlBlock__body"]/text() | //*/p[@class="ArticleBodyBlocks__paragraph ArticleBodyBlocks__paragraph--nieuws"]/text() | //*/p[@class="ArticleBodyBlocks__paragraph ArticleBodyBlocks__paragraph--sport"]/text() | //*/p[@class="ArticleBodyBlocks__paragraph ArticleBodyBlocks__paragraph--entertainment"]/text() | //*/p[@class="ArticleBodyBlocks__paragraph ArticleBodyBlocks__paragraph--financieel"]/text() | //*/p[@class="ArticleBodyBlocks__paragraph ArticleBodyBlocks__paragraph--lifestyle"]/text() | //*/p[@class="ArticleBodyBlocks__paragraph ArticleBodyBlocks__paragraph--vrouw"]/text() | //*/p[@class="ArticleBodyBlocks__paragraph ArticleBodyBlocks__paragraph--watuzegt"]/text()')).strip()
         except:
             text = ""
             logger.warning("Could not parse article text")
