@@ -959,7 +959,7 @@ class telegraaf(rss):
     def _extract_images(self, dom_nodes):
         images = []
         for element in dom_nodes:
-            img_list = element.xpath('//*[@class="__picture picture height-100 absolute top-left-corner width-100 no-borders"]//img')
+            img_list = element.xpath('//*[@class="__picture picture height-100 absolute top-left-corner width-100 no-borders"]//img | //div[@class="FluidImage__contentWrapper FluidImage__contentWrapper--placeholder"]/img')
             if len(img_list)>0:
                 img = img_list[0]
                 image = {'url' : self.rss_url[:-4] + img.attrib['src'],
