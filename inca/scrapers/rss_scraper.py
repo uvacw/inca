@@ -7,20 +7,41 @@ from ..core.database import check_exists
 import logging
 import feedparser
 import re
+import requests
+from urllib.request import HTTPRedirectHandler
+from urllib.request import HTTPCookieProcessor
 
 logger = logging.getLogger("INCA")
 
+def set_cookies(link):
+    '''
+    Set cookies for the request to surpass cookie walls.
+    '''
+    persgroep = ['bd.nl', 'ad.nl', 'volkskrant.nl', 'parool.nl', 'trouw.nl', 'destentor.nl', 'gelderlander.nl', 'ed.nl','bndestem', 'pzc.nl', 'tubantia.nl']
+    if 'telegraaf.nl' in link:
+        link2 = requests.get(link, headers={'User-Agent' : "Wget/1.9"}).url
+        cookie_url = requests.utils.unquote(link2)
+        if 'tmgonlinemedia.nl' in cookie_url:
+            cookie = re.search('nl/&(.+?)&detect', cookie_url).group(1) + '.essential'
+            cookiewall_disable = {'cc2':cookie}
+        else:
+            cookiewall_disable = {}
+    elif any(paper in link for paper in persgroep) :
+        cookiewall_disable = {'pwv':'2', 'pws':'functional'}
+    elif 'fd.nl' in link:
+        cookiewall_disable = {'cookieconsent':'true'}
+    elif 'nos.nl' in link:
+        cookiewall_disable = {'Cookie_Consent':'Thu Sep 05 2019 15:04:13 GMT+0200 (Central European Summer Time)'}
+    elif 'metronieuws.nl' in link:
+        cookiewall_disable = {'acceptsCookies':'true'}
+    elif 'geenstijl.nl' in link:
+        cookiewall_disable = {'cpc':'10'}
+    elif 'fok.nl' in link:
+        cookiewall_disable = {'cookieok':'1'}
+    else:
+        cookiewall_disable = {}
+    return cookiewall_disable
 
-
-try: # assumes python 2
-    import urllib2
-    from urllib2 import HTTPRedirectHandler
-    from urllib2 import HTTPCookieProcessor
-
-except: # in case of python 3.X
-    import urllib.request as urllib2
-    from urllib.request import HTTPRedirectHandler
-    from urllib.request import HTTPCookieProcessor
 
 class MyHTTPRedirectHandler(HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
@@ -28,9 +49,6 @@ class MyHTTPRedirectHandler(HTTPRedirectHandler):
     http_error_301 = http_error_303 = http_error_307 = http_error_302
 
 cookieprocessor = HTTPCookieProcessor()
-
-opener = urllib2.build_opener(MyHTTPRedirectHandler, cookieprocessor)
-urllib2.install_opener(opener)
 
 
 class rss(Scraper):
@@ -50,6 +68,7 @@ class rss(Scraper):
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
+    
     def get(self,save,**kwargs):
         '''Document collected via {} feed reader'''.format(self.doctype)
 
@@ -68,7 +87,6 @@ class rss(Scraper):
             RSS_URL=[RSS_URL]
 
         for thisurl in RSS_URL:
-            logger.info(thisurl)
             rss_body = self.get_page_body(thisurl)
             d = feedparser.parse(rss_body)
             for post in d.entries:
@@ -79,10 +97,6 @@ class rss(Scraper):
                 if _id == None:
                     _id=post.link
                 link=re.sub("/$","",self.getlink(post.link))
-                if 'cookiewall' in link:
-                    link = link.split("url=",1)[1]
-                else:
-                    link = link
                 # By now, we have retrieved the RSS feed. We now have to determine for the item that
                 # we are currently processing (post in d.entries), whether we want to follow its
                 # link and actually get the full text and process it. If we already have it,
@@ -92,8 +106,8 @@ class rss(Scraper):
                 # that case.
                 if save==False or check_exists(_id)[0]==False:
                     try:
-                        req=urllib2.Request(link, headers={'User-Agent' : "Wget/1.9"})
-                        htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+                        req=requests.get(link, headers={'User-Agent' : "Wget/1.9"},cookies=set_cookies(link))
+                        htmlsource=req.text
                     except:
                         htmlsource=None
                         logger.info('Could not open link - will not retrieve full article, but will give it another try with different User Agent')
@@ -101,8 +115,8 @@ class rss(Scraper):
                     # not succed, try fetching the article pretending to user Firefox on Windows
                     if not htmlsource or htmlsource=="":
                         try:
-                            req=urllib2.Request(link, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"})
-                            htmlsource=urllib2.urlopen(req).read().decode(encoding="utf-8",errors="ignore")
+                            req=requests.get(link, headers={'User-Agent' : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"}, cookies=set_cookies(link))
+                            htmlsource=req.text
                         except:
                             htmlsource=None
                             logger.info('Could not open link - will not retrieve full article')
@@ -144,8 +158,8 @@ class rss(Scraper):
 
     def get_page_body(self,url,**kwargs):
         '''Makes an HTTP request to the given URL and returns a string containing the response body'''
-        request = urllib2.Request(url, headers={'User-Agent' : "Wget/1.9"})
-        response_body = urllib2.urlopen(request).read().decode(encoding="utf-8",errors="ignore")
+        request = requests.get(url, headers={'User-Agent' : "Wget/1.9"})
+        response_body = request.text
         return response_body
 
     def parsehtml(self,htmlsource):
@@ -171,6 +185,8 @@ class rss(Scraper):
         Overwrite this function with a function to do so if neccessary
         '''
         return link
+
+        
 
 if __name__=="__main__":
     rss().get()

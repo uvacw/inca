@@ -27,6 +27,7 @@ class ad(rss):
         self.version = ".1"
         self.date    = datetime.datetime(year=2016, month=8, day=2)
 
+        
     def parsehtml(self,htmlsource):
         '''
         Parses the html source to retrieve info that is not in the RSS-keys
@@ -55,7 +56,7 @@ class ad(rss):
             logger.warning("Could not parse HTML tree",type(doc),len(doc))
             #print(doc)
             return("","","", "")
-        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"]')
+        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"] | //*[@class="photo__logo--paying"]')
         if paywall:
             paywall_na = True
         else:
@@ -382,7 +383,7 @@ class volkskrant(rss):
 
 
         tree = fromstring(htmlsource)
-        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"]')
+        paywall = tree.xpath('//*[@class ="fjs-paywall--personal"] | //*[@class ="tm-paywall-overlay"]')
         if paywall:
             paywall_na = True
         else:
@@ -493,9 +494,11 @@ class volkskrant(rss):
         return images
 
     def getlink(self,link):
-        '''modifies the link to the article to bypass the cookie wall'''
-        link=re.sub("/$","",link)
-        link="http://www.volkskrant.nl//cookiewall/accept?url="+link
+        '''modifies the link to the article'''
+        if 'cookiewall' in link:
+            link = link.split("url=",1)[1]
+        else:
+            link = link
         return link
 
 
@@ -962,14 +965,24 @@ class telegraaf(rss):
             img_list = element.xpath('//*[@class="__picture picture height-100 absolute top-left-corner width-100 no-borders"]//img | //div[@class="FluidImage__contentWrapper FluidImage__contentWrapper--placeholder"]/img')
             if len(img_list)>0:
                 img = img_list[0]
-                image = {'url' : self.rss_url[:-4] + img.attrib['src'],
+                try:
+                    image_source = img.attrib['srcset']
+                    if '.jpg' in image_source:
+                        image_source = image_source.split(".jpg",1)[0] + '.jpg'
+                    elif 'png' in image_source:
+                        image_source = image_source.split('.png', 1)[0] + '.png'
+                    else:
+                        pass
+                    image = {'url' : self.rss_url[:-4] + image_source,
                      #'height' : img.attrib['height'],
                      #'width' : img.attrib['width'],
                      #'caption' : _fon(element.xpath('.//p[@Class="imageCaption"]/text()'))
                      #'alt' : img.attrib['alt']
-                }
-                if image['url'] not in [i['url'] for i in images]:
-                    images.append(image)
+                    }
+                    if image['url'] not in [i['url'] for i in images]:
+                        images.append(image)
+                except:
+                    images = []
             else:
                 images=[]
         return images
