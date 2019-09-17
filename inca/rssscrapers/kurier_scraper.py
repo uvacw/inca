@@ -19,19 +19,19 @@ def polish(textstring):
     else: result = lead
     return result.strip()
 
-class standard(rss):
+class kurier(rss):
     """Scrapes standard.at"""
 #rss feed different for all categories, only subcategories for nieuws so far included
 
     def __init__(self):
-        self.doctype = "standard (www)"
-        self.rss_url=['http://www.standard.at/rss']
+        self.doctype = "kurier (www)"
+        self.rss_url=['https://kurier.at/xml/rssd']
         self.version = ".1"
         self.date    = datetime.datetime(year=2019, month=9, day=17)
 
     def get_page_body(self,url):
         '''standards.at has a cookie wall which needs to be bypassed by setting a specific cookie in every request.'''
-        response = requests.get(url, headers={'Cookie': 'DSGVO_ZUSAGE_V1=true'})
+        response = requests.get(url, headers={'Cookie': 'gdprCookieConsen=true'})
         return response.text
         
     def parsehtml(self,htmlsource):
