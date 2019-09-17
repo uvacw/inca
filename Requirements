@@ -10,7 +10,7 @@ chardet==2.3.0
 coverage==4.1
 colorama
 cytoolz==0.8.0
-decorator==4.0.9
+decorator>=4.0.9
 elasticsearch>=6
 feedparser==5.2.1
 Flask==0.10.1
@@ -40,7 +40,7 @@ pyflakes==1.2.2
 pymongo==3.2.2
 python-dateutil==2.5.3
 pytz==2013b0
-requests==2.10.0
+requests<3.0.0,>=2.13.0
 requests-oauthlib==0.6.2
 # requirements==0.1
 rsa==3.4.2
@@ -51,9 +51,9 @@ six==1.10.0
 statsmodels>=0.8.0
 toolz>=0.8.0
 tornado==4.2
-traitlets==4.2.1
+traitlets>=4.3.1
 twython==3.4.0
-urllib3==1.15.1
+urllib3<1.25,>=1.20
 Werkzeug==0.11.10
 nltk==3.2.4
 ImageHash==3.7
@@ -65,7 +65,7 @@ gensim>3.4
 # uncomment to install it
 # if the next one fails, run sudo apt-get install libmysqlclient-dev
 # git+git://github.com/clips/pattern.git@development
-Pillow==4.3.0
+Pillow==5.0.0
 tqdm
 newspaper3k
 spacy
