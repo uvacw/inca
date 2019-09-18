@@ -20,7 +20,7 @@ def polish(textstring):
     return result.strip()
 
 class kurier(rss):
-    """Scrapes standard.at"""
+    """Scrapes kurier.at"""
 #rss feed different for all categories, only subcategories for nieuws so far included
 
     def __init__(self):
@@ -36,13 +36,7 @@ class kurier(rss):
         
     def parsehtml(self,htmlsource):
         '''                                                                                                                                                                                                                                  
-        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                
-
-        Parameters                                                                                                                                                                                                                                                         
-        ----                                                                                                                                                                                                                                                               
-        htmlsource: string                                                                                                                                                                                                                                                 
-            html retrived from RSS feed                                                                                                                                                                                                                                     
-            
+        Parses the html source to retrieve info that is not in the RSS-keys                                                                             Parameters                                                                                                                                      ----                                                                                                                                            htmlsource: string                                                                                                                              html retrived from RSS feed                                                                                                             
         yields                                                                                                                                                                                                                                                             
         ----                                                                               
         title    the title of the article                                                                           
@@ -60,27 +54,27 @@ class kurier(rss):
             return("","","", "")
 # category
         try:
-            category = tree.xpath('//ol/li[3]/a/b/text()')
+            category = tree.xpath('//*[@class="tag ng-star-inserted"]/text()')
         except:
             category=""
             logger.debug("Could not parse article category")
 # teaser
         try:
-            textfirstpara = "".join(tree.xpath('//*[@class="article-full"]/*[@class="article__body"]/*[@class="intro"]//text()')).strip()
+            textfirstpara = "".join(tree.xpath('//*[@class="article-header-leadText-main"]')[0].text
         except:
             textfirstpara =""
             logger.debug("Could not parse article teaser")
 
 # text
         try:
-            text = "".join(tree.xpath('//*[@class="article-full"]//*[@class="article__body"]/p/text()'))
+            text = "".join(tree.xpath('//paragraph[@class="ng-star-inserted"]/div/p/span[*]/text()')).strip().replace("\n","")
         except:
             text =""
             logger.warninig("Could not parse article text")
 
 # author
         try:
-            author = "".join(tree.xpath('//*[@itemprop="author"]/text()'))
+            author = "".join(tree.xpath('//a[@class="ng-star-inserted"]/text()')
         except:
             author =""
             logger.debug("Could not parse article source")
@@ -95,8 +89,10 @@ class kurier(rss):
                 source  = ""
         except:
             source = ""
+
+# title
         try:
-            title = tree.xpath('//*[@itemprop="name"]/text()')[0]
+            title = tree.xpath('//*[@class="article-header-title"]/span')[0].text
         except:
             title = ""
             logger.warning("Could not parse article source")
