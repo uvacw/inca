@@ -60,7 +60,7 @@ class kurier(rss):
             logger.debug("Could not parse article category")
 # teaser
         try:
-            textfirstpara = "".join(tree.xpath('//*[@class="article-header-leadText-main"]')[0].text
+            textfirstpara = "".join(tree.xpath('//*[@class="article-header-leadText-main"]')[0].text)
         except:
             textfirstpara =""
             logger.debug("Could not parse article teaser")
@@ -74,7 +74,7 @@ class kurier(rss):
 
 # author
         try:
-            author = "".join(tree.xpath('//a[@class="ng-star-inserted"]/text()')
+            author = "".join(tree.xpath('//a[@class="ng-star-inserted"]/text()'))
         except:
             author =""
             logger.debug("Could not parse article source")
@@ -82,7 +82,9 @@ class kurier(rss):
 # bylinesource
 # gives a list with either two or one entries: the first one is the date and if there is a second one it is the bylinesource
         try:
-            sourceorganisation = tree.xpath('//*[@class="blend-in"]/text()')
+
+            sourceorganisation = tree.xpath('//*[@class="article-header-intro-right"]/span/text()')
+            
             if len(sourceorganisation) == 2:
                 source = sourceorganisation[-1]
             else:
