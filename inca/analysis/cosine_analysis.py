@@ -194,14 +194,14 @@ class cosine_similarity(Analysis):
                     grouped_query_new = []
                     for group in grouped_query:
                         # if group is sunday, extend previous (saturday) list, except when it is the first day in the data.
-                        if group[0]['_source'][sourcedate].weekday()==6:
+                        # if empty, append empty list
+                        if not group:
+                            grouped_query_new.append([])
+                        elif group[0]['_source'][sourcedate].weekday()==6:
                             if not grouped_query_new:
                                 grouped_query_new.append(group)
                             else:
                                 grouped_query_new[-1].extend(group)
-                        # if empty, append empty list
-                        elif not group:
-                            grouped_query_new.append([])
                         # for all other weekdays, append new list
                         else:
                             grouped_query_new.append(group)
