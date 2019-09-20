@@ -31,7 +31,7 @@ class kurier(rss):
 
     def get_page_body(self,url):
         '''standards.at has a cookie wall which needs to be bypassed by setting a specific cookie in every request.'''
-        response = requests.get(url, headers={'Cookie': 'gdprCookieConsen=true'})
+        response = requests.get(url, headers={'Cookie': 'gdprCookieConsent=true'})
         return response.text
         
     def parsehtml(self,htmlsource):
