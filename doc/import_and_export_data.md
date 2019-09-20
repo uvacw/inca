@@ -114,3 +114,38 @@ elasticdump  --input=incathinkpad.json --output=http://localhost:9200/inca
 
 Type `elasticdump --help` for more options.
 
+
+Some example scripts:
+
+### Dumping everything
+To create a complete backup, split into several files, and to also backup the original mapping, you could run:
+
+```bash
+#!/bin/sh
+elasticdump \
+    --input=http://localhost:9200/inca6 \
+    --output=es-backup20190523/inca6_mapping.json \
+    --type=mapping
+
+elasticdump \
+    --input=http://localhost:9200/inca6 \
+    --output=es-backup20190523/inca6.json \
+    --type=data \
+    --fileSize=2048mb
+```
+
+If you, instead, want to limit yourself to, for instance, a specific time frame, you can specify a query:
+```bash
+#!/bin/sh
+elasticdump \
+    --input=http://localhost:9200/inca6 \
+    --output=es-backup20190523/inca6_mapping.json \
+    --type=mapping
+
+elasticdump \
+    --input=http://localhost:9200/inca6 \
+    --output=es-dump_april-june/inca6.json \
+    --type=data \
+    --fileSize=2048mb \
+   --searchBody '{ "query": { "range": {  "publication_date": {  "gte": "2019-04",  "lt": "2019-07" }}}}' 
+```
