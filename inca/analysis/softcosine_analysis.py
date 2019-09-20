@@ -268,9 +268,17 @@ class softcosine_similarity(Analysis):
                                     logger.error('This does not seem to be a valid document')
                                     print(doc)  
                             # do comparison
+                            if len(target_ids) == 0:
+                                logger.warning('Empty list of target ids. Skipping comparisons.')
+                                continue
                             index = SoftCosineSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], similarity_matrix)
-                            sims = index[query]
-                            #make dataframe
+                            try:
+                                sims = index[query]
+                            except:
+                                logger.warning('There was a problem calculating the similarities, skipping this one')
+                                print(target_ids)
+                                sims = []
+                            #make dataframe    
                             df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
                             df_window.append(df_temp)
 
@@ -286,8 +294,8 @@ class softcosine_similarity(Analysis):
                             df = df.loc[df['similarity'] >= threshold]
 
                         #Make exports folder if it does not exist yet
-                        if not 'comparisons' in os.listdir('.'):
-                            os.mkdir('comparisons')
+                        if not os.path.exists(destination):
+                            os.mkdir(destination)
 
                         #Optional: save as csv file
                         if to_csv == True:

@@ -274,8 +274,9 @@ class cosine_similarity(Analysis):
                             df = df.loc[df['similarity'] >= threshold]
 
                         #Make exports folder if it does not exist yet
-                        if not 'comparisons' in os.listdir('.'):
-                            os.mkdir('comparisons')
+                        if not os.path.exists(destination):
+                            os.mkdir(destination)
+
 
                         #Optional: save as csv file
                         if to_csv == True:

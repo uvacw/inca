@@ -60,6 +60,8 @@ ImageHash==3.7
 lxml
 selenium
 matplotlib
+# AT THIS MOMENT, THE SOFTCOSINE ANALYSIS REQUIRES THE NEWEST GENSIM
+# VERSION FROM THEIR DEVELOPMENT BRANCH INSTEAD
 gensim>3.4
 # Pattern is now optional as it is not stable for Python3 yet
 # uncomment to install it
