@@ -194,14 +194,14 @@ class cosine_similarity(Analysis):
                     grouped_query_new = []
                     for group in grouped_query:
                         # if group is sunday, extend previous (saturday) list, except when it is the first day in the data.
-                        if group[0]['_source'][sourcedate].weekday()==6:
+                        # if empty, append empty list
+                        if not group:
+                            grouped_query_new.append([])
+                        elif group[0]['_source'][sourcedate].weekday()==6:
                             if not grouped_query_new:
                                 grouped_query_new.append(group)
                             else:
                                 grouped_query_new[-1].extend(group)
-                        # if empty, append empty list
-                        elif not group:
-                            grouped_query_new.append([])
                         # for all other weekdays, append new list
                         else:
                             grouped_query_new.append(group)
@@ -256,9 +256,12 @@ class cosine_similarity(Analysis):
                             index = SparseMatrixSimilarity(tfidf[[dictionary.doc2bow(d) for d in target_texts]], num_features = len(dictionary))
                             sims = index[query]
                             #make dataframe
-                            df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
-                            df_window.append(df_temp)
-
+                            try:
+                                df_temp = pd.DataFrame(sims, columns=target_ids, index = source_ids).stack().reset_index()
+                                df_window.append(df_temp)
+                            except Exception as e:
+                                logger.info("Could not create dataframe; probably, there is nothing to compare here.")
+                                logger.debug(e)
                         df = pd.concat(df_window, ignore_index=True)
                         df.columns = ['source', 'target', 'similarity']
                         df['source_date'] = df['source'].map(source_dict)
