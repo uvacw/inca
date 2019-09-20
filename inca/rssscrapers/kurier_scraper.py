@@ -35,15 +35,18 @@ class kurier(rss):
         return response.text
         
     def parsehtml(self,htmlsource):
-        '''                                                                                                                                                                                                                                  
-        Parses the html source to retrieve info that is not in the RSS-keys                                                                             Parameters                                                                                                                                      ----                                                                                                                                            htmlsource: string                                                                                                                              html retrived from RSS feed                                                                                                             
-        yields                                                                                                                                                                                                                                                             
-        ----                                                                               
-        title    the title of the article                                                                           
-        text    the plain text of the article                                                                         
-        byline    the author, e.g. "Bob Smith"                                                                                   
-        byline_source    sth like ANP                                                                     
-        category    sth. like economy, sports, ...                                                      
+        '''
+        Parses the html source to retrieve info that is not in the RSS-keys
+        
+        Parameters
+        
+        htmlsource: string
+        yields
+        
+        title    the title of the article        text    the plain text of the article
+        byline    the author, e.g. "Bob Smith"
+        byline_source    sth like ANP 
+        category    sth. like economy, sports,
         '''
         
         try:
@@ -54,7 +57,11 @@ class kurier(rss):
             return("","","", "")
 # category
         try:
-            category = tree.xpath('//*[@class="tag ng-star-inserted"]/text()')
+            # kurier.at has category tags, usually but not always the first ine
+            # is the main one. For now, we only keep the first one
+            # but we might consider using other indicators (e.g, url)
+            # instead or storing multiple categories as sub-categories.
+            category = tree.xpath('//*[@class="tag ng-star-inserted"]/text()')[0].strip()
         except:
             category=""
             logger.debug("Could not parse article category")
