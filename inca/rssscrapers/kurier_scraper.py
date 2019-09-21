@@ -43,7 +43,8 @@ class kurier(rss):
         htmlsource: string
         yields
         
-        title    the title of the article        text    the plain text of the article
+        title    the title of the article        
+        text    the plain text of the article
         byline    the author, e.g. "Bob Smith"
         byline_source    sth like ANP 
         category    sth. like economy, sports,
@@ -67,14 +68,14 @@ class kurier(rss):
             logger.debug("Could not parse article category")
 # teaser
         try:
-            textfirstpara = "".join(tree.xpath('//*[@class="article-header-leadText-main"]')[0].text)
+            teaser = "".join(tree.xpath('//*[@class="article-header-leadText-main"]/text()')).strip().replace("\n","")
         except:
-            textfirstpara =""
+            teaser =""
             logger.debug("Could not parse article teaser")
 
 # text
         try:
-            text = "".join(tree.xpath('//paragraph[@class="ng-star-inserted"]/div/p/span[*]/text()')).strip().replace("\n","")
+            text = "".join(tree.xpath('//*[@class="paragraph"]//text()')).strip().replace("\n","")
         except:
             text =""
             logger.warninig("Could not parse article text")
@@ -107,12 +108,13 @@ class kurier(rss):
             logger.warning("Could not parse article source")
 
         text = text.replace("\xad","")
-        text = textfirstpara + " " + text
+        text = teaser + " " + text
         extractedinfo = {"title":title.strip(),
                          "text":text.strip(),
                          "byline":author.strip(),
                          "byline_source":source.strip(),
                          "category":category,
+                         "teaser":teaser,
                         }
 
         return extractedinfo
