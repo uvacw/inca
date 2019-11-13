@@ -5,7 +5,7 @@ import logging
 import re
 import sys
 
-from sklearn.externals import joblib
+import joblib
 from numpy import ndarray, int64
 
 
