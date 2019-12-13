@@ -30,11 +30,14 @@ logger = logging.getLogger("INCA")
 logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 
 try:
+    auth = (config.get('elasticsearch','%s.http_auth_user' %config.get('inca','dependencies')),
+            config.get('elasticsearch','%s.http_auth_pass' %config.get('inca','dependencies')))
+    
     client = Elasticsearch(
         host=config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
         port=int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies') )),
         scheme=config.get('elasticsearch','%s.scheme' %config.get('inca','dependencies')),
-        http_auth=config.get('elasticsearch','%s.http_auth' %config.get('inca','dependencies')),        
+        http_auth= auth,
         timeout=60
         )
     elastic_index  = config.get("elasticsearch","document_index")
