@@ -18,7 +18,7 @@ _logger = _logging.getLogger("INCA")
 def list_doctypes():
     if not _DATABASE_AVAILABLE:
         _logger.warning("Could not list documents: No database instance available")
-        return []
+        return {"NO DOCUMENTS: DATABASE UNAVAILABLE": 0}
 
     existing_doctypes = _client.search(_elastic_index, body = {"size": 0, "aggs":{"doctypes":{"terms":{"field":"doctype", "size":1000}}}})["aggregations"]["doctypes"]["buckets"]
     overview  = {}

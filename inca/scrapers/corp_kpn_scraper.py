@@ -13,6 +13,7 @@ from ..core.database import check_exists
 import feedparser
 import re
 import logging
+import selenium
 from selenium import webdriver
 import time
 
@@ -55,7 +56,12 @@ class kpn(Scraper):
         '''                                                                             
         Fetches articles from KPN
         '''
-        driver = webdriver.PhantomJS()
+        try:
+            driver = webdriver.PhantomJS()
+        except selenium.common.exceptions.WebDriverException:
+            logger.critical("Unable to run KPN scraper, no PhantomJS in path. Try (re)installing PhantomJS.")
+            return []
+
         driver.get(self.START_URL)
         time.sleep(2)
         # don't ask me why but driver.page_source must explicitly be referenced

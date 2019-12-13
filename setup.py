@@ -25,6 +25,7 @@ requirements = [
       'twython',
       'nltk',
       'tqdm',
+      'pattern',
       'nl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/nl_core_news_sm-2.1.0/nl_core_news_sm-2.1.0.tar.gz'
       ]
 

@@ -10,8 +10,8 @@ logger = logging.getLogger("INCA")
 
 try:
     from pattern.nl import parse
-except:
-    logger.warn("No working version of the pattern library found. For Python 3, you cannot pip install it yet. Clone the development branch from https://github.com/clips/pattern and copy the pattern folder manually to your site-packages directory.")
+except ImportError:
+    logger.warn("Pattern seems to be missing. Please re-install.")
     def parse(*args, **kwargs):
         raise "Unavailable because you don't have the pattern library installed"
 
