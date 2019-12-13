@@ -54,7 +54,6 @@ murmurhash==1.0.2
 mysqlclient==1.4.5
 networkx==2.4
 newspaper3k==0.2.8
-nl-core-news-sm==2.1.0
 nltk==3.2.4
 numpy==1.17.4
 oauth2client==4.1.2

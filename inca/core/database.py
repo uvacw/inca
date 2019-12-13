@@ -33,8 +33,10 @@ try:
     client = Elasticsearch(
         host=config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
         port=int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies') )),
+        scheme=config.get('elasticsearch','%s.scheme' %config.get('inca','dependencies')),
+        http_auth=config.get('elasticsearch','%s.http_auth' %config.get('inca','dependencies')),        
         timeout=60
-    )   # should be updated to reflect config
+        )
     elastic_index  = config.get("elasticsearch","document_index")
     DATABASE_AVAILABLE = True
     check = int(client.info()['version']['number'][0])
@@ -48,7 +50,8 @@ try:
             client.indices.create(elastic_index, json.load(open('schema.json')))
     except Exception as e:
         raise Exception("Unable to communicate with elasticsearch, {}".format(e))
-except:
+except Exception as e:
+    #logger.warning(e)
     logger.warning("No database functionality available. This means you will not be able to SAVE the results of any scraper or processor!")
     DATABASE_AVAILABLE = False
 
