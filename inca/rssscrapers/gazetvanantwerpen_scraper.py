@@ -9,26 +9,32 @@ import logging
 
 logger = logging.getLogger("INCA")
 
+
 def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-    lines = textstring.strip().split('\n')
+    # This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split("\n")
     lead = lines[0].strip()
-    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-    if rest: result = lead + ' ||| ' + rest
-    else: result = lead
+    rest = "||".join([l.strip() for l in lines[1:] if l.strip()])
+    if rest:
+        result = lead + " ||| " + rest
+    else:
+        result = lead
     return result.strip()
+
 
 class gazetvanantwerpen(rss):
     """Scrapes gva.be """
 
     def __init__(self):
         self.doctype = "gazetvanantwerpen (www)"
-        self.rss_url= "http://www.gva.be/rss/section/ca750cdf-3d1e-4621-90ef-a3260118e21c"
+        self.rss_url = (
+            "http://www.gva.be/rss/section/ca750cdf-3d1e-4621-90ef-a3260118e21c"
+        )
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=5, day=3)
+        self.date = datetime.datetime(year=2017, month=5, day=3)
 
-    def parsehtml(self,htmlsource):
-        '''                                                                                                                                                                                                                                                                 
+    def parsehtml(self, htmlsource):
+        """                                                                                                                                                                                                                                                                 
         Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                 
         
         Parameters                                                                                                                                                                                                                                                         
@@ -43,7 +49,7 @@ class gazetvanantwerpen(rss):
         text    the plain text of the article                                                                                                                                                                                                                              
         byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                             
         byline_source    sth like ANP                                                                                                                                                                                                                                       
-        '''
+        """
 
         tree = fromstring(htmlsource)
 
@@ -60,12 +66,18 @@ class gazetvanantwerpen(rss):
             bylinesource = ""
             logger.debug("Could not parse article byline source")
         try:
-            textfirstpara = " ".join(tree.xpath('//*[@class="article__intro"]/p/text()')).strip()
+            textfirstpara = " ".join(
+                tree.xpath('//*[@class="article__intro"]/p/text()')
+            ).strip()
         except:
             textfirstpara = ""
             logger.debug("Could not parse article teaser")
         try:
-            textrest = " ".join(tree.xpath('//*[@class="article__body"]/p/text() | //*[@class="article__body"]/p/b/text() | //*[@class="article__body"]/p/i/text() | //*[@class="article__body"]/p/a/text()')).strip()
+            textrest = " ".join(
+                tree.xpath(
+                    '//*[@class="article__body"]/p/text() | //*[@class="article__body"]/p/b/text() | //*[@class="article__body"]/p/i/text() | //*[@class="article__body"]/p/a/text()'
+                )
+            ).strip()
         except:
             textrest = ""
             logger.warning("Could not parse article text")
@@ -82,14 +94,14 @@ class gazetvanantwerpen(rss):
             category = ""
             logger.debug("Could not parse article category")
 
-
         text = textfirstpara + " " + textrest
 
-        extractedinfo={"title":title.strip(),
-                       "category":category.strip(),
-                       "text":text.strip(),
-                       "byline":byline.strip(),
-                       "bylinesource":bylinesource.strip()
-                       }
+        extractedinfo = {
+            "title": title.strip(),
+            "category": category.strip(),
+            "text": text.strip(),
+            "byline": byline.strip(),
+            "bylinesource": bylinesource.strip(),
+        }
 
         return extractedinfo

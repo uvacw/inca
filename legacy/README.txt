@@ -1,1 +1,0 @@
-This directory contains legacy code. It is not directly usable any more, as the structure of INCA has fundamentally changed, but it still contains some functionality that may or may not be ported to the current version of INCA. At one point in time, these files will be removed.

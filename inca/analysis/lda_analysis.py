@@ -16,11 +16,14 @@ from ..helpers.text_preprocessing import *
 root_dir = os.path.dirname(os.path.realpath(__file__))
 
 config = configparser.ConfigParser()
-config.read('settings.cfg')
+config.read("settings.cfg")
 
-DEFAULTLANGUAGE = config.get('inca','default_data_language')
+DEFAULTLANGUAGE = config.get("inca", "default_data_language")
 
-def create_corpus(documents, field='text', normalizing='lemmatize', language = DEFAULTLANGUAGE):
+
+def create_corpus(
+    documents, field="text", normalizing="lemmatize", language=DEFAULTLANGUAGE
+):
     """
     :param documents: an iterable of documents (dictionaries)
     :param field: the field from which to extract data
@@ -28,19 +31,26 @@ def create_corpus(documents, field='text', normalizing='lemmatize', language = D
                         if 'stem' perform stemming with the porter stemmer
                         else uses the input words as they are.
     """
-    print('Creating corpus ...')
-    print('caching token represetation from documents ...')
-    token_lists = [[word for word in generate_word(doc_data, normalize=normalizing, language = language)] for doc_data in get_data_generator(documents, field=field)]
+    print("Creating corpus ...")
+    print("caching token represetation from documents ...")
+    token_lists = [
+        [
+            word
+            for word in generate_word(
+                doc_data, normalize=normalizing, language=language
+            )
+        ]
+        for doc_data in get_data_generator(documents, field=field)
+    ]
 
     vocabulary = Dictionary(token_lists)
     corpus = [vocabulary.doc2bow(token_list) for token_list in token_lists]
-#    gensim.corpora.MmCorpus.serialize('/tmp/lda.mm', corpus)
+    #    gensim.corpora.MmCorpus.serialize('/tmp/lda.mm', corpus)
 
     return vocabulary, corpus
 
 
 class Lda(Analysis):
-
     def __init__(self):
         self.times_fitted = 0
         self.corpus = None
@@ -49,7 +59,16 @@ class Lda(Analysis):
         self.nb_docs_trained = 0
         self.selected_clusters = set()
 
-    def fit(self, documents, add_prediction='', field='text', nb_topics=20,  normalizing='stem', language = DEFAULTLANGUAGE, **kwargs):
+    def fit(
+        self,
+        documents,
+        add_prediction="",
+        field="text",
+        nb_topics=20,
+        normalizing="stem",
+        language=DEFAULTLANGUAGE,
+        **kwargs
+    ):
         """
         This method trains the Lda model by fitting its parameters to the extracted textual data from the given documents\
         (dictionaries) and selected field key. It infers n number of topics/clusters equal to the given parameter.\
@@ -80,36 +99,68 @@ class Lda(Analysis):
         * https://radimrehurek.com/gensim/models/ldamodel.html : gensim.models.ldamodel
         * https://www.di.ens.fr/~fbach/mdhnips2010.pdf : Hoffman et al
         """
-        self.vocabulary, self.corpus = create_corpus(documents, field=field, normalizing=normalizing, language=language)
-        print('Training Lda model ...')
-        self.lda = LdaModel(corpus=self.corpus, num_topics=nb_topics, alpha='auto')  # alpha can be also set to 'symmetric' or to an explicit array
+        self.vocabulary, self.corpus = create_corpus(
+            documents, field=field, normalizing=normalizing, language=language
+        )
+        print("Training Lda model ...")
+        self.lda = LdaModel(
+            corpus=self.corpus, num_topics=nb_topics, alpha="auto"
+        )  # alpha can be also set to 'symmetric' or to an explicit array
         self.nb_docs_trained = len(self.corpus)
-        #lda = gensim.models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=100, update_every=0, passes=20)
+        # lda = gensim.models.ldamodel.LdaModel(corpus=mm, id2word=id2word, num_topics=100, update_every=0, passes=20)
 
-    def predict(self, documents, add_prediction='', field='text'):
+    def predict(self, documents, add_prediction="", field="text"):
         docs_lda = []
         for doc in documents:
-            docs_lda.append(self.lda[get_bow(extract_data(doc, field=field), self.corpus)])
-            if add_prediction != '':
+            docs_lda.append(
+                self.lda[get_bow(extract_data(doc, field=field), self.corpus)]
+            )
+            if add_prediction != "":
                 doc[add_prediction] = str(docs_lda[-1])
 
-    def update(self, documents, field='text'):
+    def update(self, documents, field="text"):
         pass
         # corp = CorpusCreator.create_corpus(documents, field=field, normalizing=self.corpus.normalizer)
         # print('Updating model ...')
         # self.lda.update((get_bow(text_data, corp) for text_data in get_data_generator(documents, field=field)))
 
     def interpretation(self, prec=3):
-        ordered_selected_clusters = [_id for _id in range(self.lda.num_topics) if _id in self.selected_clusters]
-        body, max_len = self.get_rows([self.lda.show_topic(i) for i in ordered_selected_clusters], prob_precision=prec)
-        header = ' - '.join('{}'.format(idd) + ' '*(3+prec+max_len-len(str(idd))) for idd in ordered_selected_clusters) + '\n'
+        ordered_selected_clusters = [
+            _id for _id in range(self.lda.num_topics) if _id in self.selected_clusters
+        ]
+        body, max_len = self.get_rows(
+            [self.lda.show_topic(i) for i in ordered_selected_clusters],
+            prob_precision=prec,
+        )
+        header = (
+            " - ".join(
+                "{}".format(idd) + " " * (3 + prec + max_len - len(str(idd)))
+                for idd in ordered_selected_clusters
+            )
+            + "\n"
+        )
         return header + body
 
     def get_rows(self, top, prob_precision=3):
-        max_token_len = max(len(self.vocabulary[int(top[j][i][0])]) for j in range(len(top)) for i in range(len(top[0])))
-        b = ''
+        max_token_len = max(
+            len(self.vocabulary[int(top[j][i][0])])
+            for j in range(len(top))
+            for i in range(len(top[0]))
+        )
+        b = ""
         for i in range(len(top[0])):
-            b += ' | '.join('{} '.format(str(self.vocabulary[int(top[j][i][0])]) + ' '*(max_token_len-len(self.vocabulary[int(top[j][i][0])]))) + "{1:.{0}f}".format(prob_precision, top[j][i][1]) for j in range(len(top))) + '\n'
+            b += (
+                " | ".join(
+                    "{} ".format(
+                        str(self.vocabulary[int(top[j][i][0])])
+                        + " "
+                        * (max_token_len - len(self.vocabulary[int(top[j][i][0])]))
+                    )
+                    + "{1:.{0}f}".format(prob_precision, top[j][i][1])
+                    for j in range(len(top))
+                )
+                + "\n"
+            )
         return b, max_token_len
 
     def select_topics(self, topic_ids):
@@ -136,11 +187,13 @@ class Lda(Analysis):
 
 
 def get_bow(text_data, corpus):
-    return corpus.dict_obj.doc2bow([w for w in generate_word(text_data, normalize=corpus.normalizer)])
+    return corpus.dict_obj.doc2bow(
+        [w for w in generate_word(text_data, normalize=corpus.normalizer)]
+    )
 
 
-if __name__ == '__main__':
-    print('')
+if __name__ == "__main__":
+    print("")
     train_dir = sys.argv[1]
     test_dir = sys.argv[2]
 
@@ -152,7 +205,7 @@ if __name__ == '__main__':
 
     l.select_all_topics()
     b = l.interpretation()
-    print('\n', b)
+    print("\n", b)
 
     # for t in test_docs:
     #     lda.get_topic_distribution(t)

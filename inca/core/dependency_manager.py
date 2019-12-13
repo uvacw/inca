@@ -2,7 +2,8 @@ import os
 import sys
 import requests
 
-class dependency():
+
+class dependency:
     def get_dependency(self, name):
         pass
 

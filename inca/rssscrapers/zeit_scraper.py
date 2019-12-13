@@ -9,68 +9,83 @@ import logging
 
 logger = logging.getLogger("INCA")
 
+
 class zeit(rss):
     """Scrapes zeit.de"""
 
     def __init__(self):
         self.doctype = "zeit (www)"
-        self.rss_url='http://newsfeed.zeit.de/all'
+        self.rss_url = "http://newsfeed.zeit.de/all"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2018, month=5, day=16)
+        self.date = datetime.datetime(year=2018, month=5, day=16)
 
-    def parsehtml(self,htmlsource):
-        '''
+    def parsehtml(self, htmlsource):
+        """
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
-        '''
+        """
         try:
             tree = fromstring(htmlsource)
         except:
             logger.warning("HTML tree cannot be parsed")
-#title
+        # title
         try:
-            title = ''.join(tree.xpath('//*[@class="article-header"]//h1/span/text()'))
+            title = "".join(tree.xpath('//*[@class="article-header"]//h1/span/text()'))
         except:
-            title =""
-#category
+            title = ""
+        # category
         try:
-            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()')
+            category = tree.xpath(
+                '//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()'
+            )
         except:
-            category =""
-#author
+            category = ""
+        # author
         try:
             author = tree.xpath('//*[@itemprop="author"]/a/span/text()')
         except:
-            author =""
-#source
+            author = ""
+        # source
         try:
-            source = tree.xpath('//*[@class="metadata"]//span/text()')[0].replace("Quelle:","").strip()
+            source = (
+                tree.xpath('//*[@class="metadata"]//span/text()')[0]
+                .replace("Quelle:", "")
+                .strip()
+            )
 
         except:
-            source =""
-#teaser
+            source = ""
+        # teaser
         try:
-            teaser = ''.join(tree.xpath('//*[@class="summary"]//text()')).replace('\n','').strip()
+            teaser = (
+                "".join(tree.xpath('//*[@class="summary"]//text()'))
+                .replace("\n", "")
+                .strip()
+            )
         except:
-            teaser =""
-#text
+            teaser = ""
+        # text
         try:
-            text = "".join(tree.xpath('//*[@class="paragraph article__item"]//text()')).strip().replace("\n","")
+            text = (
+                "".join(tree.xpath('//*[@class="paragraph article__item"]//text()'))
+                .strip()
+                .replace("\n", "")
+            )
 
         except:
-            text  =""
-        
+            text = ""
 
-        extractedinfo={"title":title,
-                       "category":category,
-                       "teaser":teaser,
-                       "byline":author,
-                       "byline_source":source,
-                       "text":text
-                       }
+        extractedinfo = {
+            "title": title,
+            "category": category,
+            "teaser": teaser,
+            "byline": author,
+            "byline_source": source,
+            "text": text,
+        }
 
         return extractedinfo

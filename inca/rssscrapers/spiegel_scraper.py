@@ -15,66 +15,75 @@ class spiegel(rss):
 
     def __init__(self):
         self.doctype = "spiegel (www)"
-        self.rss_url=['http://www.spiegel.de/schlagzeilen/index.rss']
-        
-        self.version = ".1"
-        self.date    = datetime.datetime(year=2018, month=5, day=16)
+        self.rss_url = ["http://www.spiegel.de/schlagzeilen/index.rss"]
 
-    def parsehtml(self,htmlsource):
-        '''
+        self.version = ".1"
+        self.date = datetime.datetime(year=2018, month=5, day=16)
+
+    def parsehtml(self, htmlsource):
+        """
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
-        '''
+        """
         try:
             tree = fromstring(htmlsource)
         except:
             logger.warning("HTML tree cannot be parsed")
-# category
+        # category
         try:
-            category = tree.xpath('//*[@id="wrapper"]//*[@class="current-channel-name"]//text()')[0]
+            category = tree.xpath(
+                '//*[@id="wrapper"]//*[@class="current-channel-name"]//text()'
+            )[0]
         except:
             category = ""
-# title
+        # title
         try:
             title1 = tree.xpath('//*[@class="headline-intro"]//text()')[0]
         except:
-            title1 =""
+            title1 = ""
 
         try:
             title2 = tree.xpath('//*[@class="headline"]//text()')[0]
         except:
-            title2 =""
-            
+            title2 = ""
+
         title = title1 + ": " + title2
-# teaser
+        # teaser
         try:
             teaser = tree.xpath('//*[@class="article-intro"]//text()')[0]
         except:
-            teaser =""
-            
-# text
+            teaser = ""
+
+        # text
         try:
-            text = " ".join(tree.xpath('//*[@class="article-section clearfix"]//p//text()|//*[@class="article-section clearfix"]/blockquote/i/text()')).replace("\n", "").replace("\x85", "")
+            text = (
+                " ".join(
+                    tree.xpath(
+                        '//*[@class="article-section clearfix"]//p//text()|//*[@class="article-section clearfix"]/blockquote/i/text()'
+                    )
+                )
+                .replace("\n", "")
+                .replace("\x85", "")
+            )
         except:
-            text =""
-            
-# author
+            text = ""
+
+        # author
         try:
             author = tree.xpath('//*[@class="author"]/a/text()')[0]
         except:
-            author =""
+            author = ""
 
-
-
-        extractedinfo = {"category":category,
-                         "teaser":teaser.strip(),
-                         "byline":author,
-                         "title":title.strip(),
-                         "text":text.strip()
-                        }
+        extractedinfo = {
+            "category": category,
+            "teaser": teaser.strip(),
+            "byline": author,
+            "title": title.strip(),
+            "text": text.strip(),
+        }
 
         return extractedinfo

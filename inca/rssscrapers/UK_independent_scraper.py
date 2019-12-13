@@ -10,14 +10,18 @@ import requests
 
 logger = logging.getLogger("INCA")
 
+
 def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-    lines = textstring.strip().split('\n')
+    # This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split("\n")
     lead = lines[0].strip()
-    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-    if rest: result = lead + ' ||| ' + rest
-    else: result = lead
+    rest = "||".join([l.strip() for l in lines[1:] if l.strip()])
+    if rest:
+        result = lead + " ||| " + rest
+    else:
+        result = lead
     return result.strip()
+
 
 class independent_uk(rss):
     """Scrapes independent.co.uk"""
@@ -26,10 +30,10 @@ class independent_uk(rss):
         self.doctype = "independent-uk (www)"
         self.rss_url = "http://www.independent.co.uk/rss"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=9, day=12)
+        self.date = datetime.datetime(year=2017, month=9, day=12)
 
-    def parsehtml(self,htmlsource):
-        '''
+    def parsehtml(self, htmlsource):
+        """
         Parses the html source to retrieve info that is not in the RSS-keys
         
 
@@ -44,14 +48,14 @@ class independent_uk(rss):
         byline      the author, e.g. "Bob Smith" 
         category    sth. like economy, sports, ... 
         text    the plain text of the article                                                                                                                                      
-        '''
+        """
 
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("Cannot parse HTML tree",type(doc),len(doc))
-            #logger.warning(doc)
-            return("","","", "")
+            logger.warning("Cannot parse HTML tree", type(doc), len(doc))
+            # logger.warning(doc)
+            return ("", "", "", "")
         try:
             title = " ".join(tree.xpath("//*[@itemprop='headline']/text()"))
         except:
@@ -73,16 +77,21 @@ class independent_uk(rss):
             category = ""
             logger.debug("Could not parse article category")
         try:
-            text = " ".join(tree.xpath("//*[@class='text-wrapper']/p/text()|//*[@class='body-content']/p/descendant-or-self::text()"))
+            text = " ".join(
+                tree.xpath(
+                    "//*[@class='text-wrapper']/p/text()|//*[@class='body-content']/p/descendant-or-self::text()"
+                )
+            )
         except:
             text = ""
             logger.warning("Could not parse article teaser")
 
-        extractedinfo={"title":title.strip(),
-                       "teaser":teaser.strip().replace("\xa0",""),
-                       "byline":byline.strip(),
-                       "category":category.strip(),
-                       "text":text.strip()
-                      }
+        extractedinfo = {
+            "title": title.strip(),
+            "teaser": teaser.strip().replace("\xa0", ""),
+            "byline": byline.strip(),
+            "category": category.strip(),
+            "text": text.strip(),
+        }
 
         return extractedinfo

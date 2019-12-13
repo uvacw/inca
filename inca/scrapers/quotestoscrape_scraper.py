@@ -4,6 +4,7 @@ from lxml import html
 from ..core.scraper_class import Scraper
 from collections import defaultdict
 
+
 class quotestoscrape(Scraper):
 
     """A simple example of a scraper. Scrapes quotes.toscrape.com."""
@@ -11,7 +12,9 @@ class quotestoscrape(Scraper):
     def __init__(self):
 
         self.doctype = "quotestoscrape"
-        self.START_URL = "http://quotes.toscrape.com/" # the webpage from where you want to start scraping
+        self.START_URL = (
+            "http://quotes.toscrape.com/"
+        )  # the webpage from where you want to start scraping
         self.version = ".1"
         self.datetime = datetime.datetime(year=2018, month=11, day=7)
 
@@ -23,27 +26,28 @@ class quotestoscrape(Scraper):
         maxpages: number of pages to be scraped.    
         """
 
-        quotes = [] # create a list for the scraped quotes
-        authors = [] # create a list for the scraped author names
-        pageno = 1 # start scraping from page number one
+        quotes = []  # create a list for the scraped quotes
+        authors = []  # create a list for the scraped author names
+        pageno = 1  # start scraping from page number one
 
         while pageno <= maxpages:
-            current_url = self.START_URL+"page/"+str(pageno)+"/"
+            current_url = self.START_URL + "page/" + str(pageno) + "/"
             page = requests.get(current_url)
-            tree=html.fromstring(page.content) 
-            quotes.extend(tree.xpath('//span[@class="text"]/text()'))  
-            authors.extend(tree.xpath('//small[@class="author"]/text()')) 
-            pageno=pageno+1 
+            tree = html.fromstring(page.content)
+            quotes.extend(tree.xpath('//span[@class="text"]/text()'))
+            authors.extend(tree.xpath('//small[@class="author"]/text()'))
+            pageno = pageno + 1
         dictionary = defaultdict(list)
         for k, v in zip(authors, quotes):
             dictionary[k].append(v)
 
-        yield(dictionary)
+        yield (dictionary)
+
 
 # Testing:
 # from inca import Inca
 # from inca.scrapers.groenlinks_scraper import groenlinks
-# data = myinca.scrapers.groenlinks(save=False, maxpages = 3, startpage = 1) 
+# data = myinca.scrapers.groenlinks(save=False, maxpages = 3, startpage = 1)
 # print(data)
 
 # This worked for a while...

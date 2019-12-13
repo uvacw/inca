@@ -13,32 +13,32 @@ import bz2
 import os
 import re
 
-logger = logging.getLogger("INCA:"+__name__)
+logger = logging.getLogger("INCA:" + __name__)
 
 
 class BaseImportExport(Document):
-
-    def __init__(self, raise_on_fail=False, verbose = True):
+    def __init__(self, raise_on_fail=False, verbose=True):
 
         self.processed = 0
-        self.failed    = 0
+        self.failed = 0
         self.failed_ids = []
         self.missing_keys = Counter()
         self.raise_on_fail = raise_on_fail
-        self.verbose   = verbose
+        self.verbose = verbose
 
     from .basic_utils import dotkeys
 
-    def _detect_zip(self,path):
+    def _detect_zip(self, path):
         filename = os.path.basename(path)
-        for zip_ext in  ['gz','bz2']:
-            if filename[-len(zip_ext):] == zip_ext:
+        for zip_ext in ["gz", "bz2"]:
+            if filename[-len(zip_ext) :] == zip_ext:
                 return zip_ext
         return False
 
-
-    def open_file(self, filename, mode='r', force=False, compression="autodetect"):
-        if mode not in ["w","wb","wt","a","ab","at"] and not os.path.exists(filename):
+    def open_file(self, filename, mode="r", force=False, compression="autodetect"):
+        if mode not in ["w", "wb", "wt", "a", "ab", "at"] and not os.path.exists(
+            filename
+        ):
             logger.warning("File not found at {filename}".format(filename=filename))
         if compression == "autodetect":
             compression = self._detect_zip(filename)
@@ -53,7 +53,9 @@ class BaseImportExport(Document):
             return bz2.open(filename, mode=mode)
         return fileobj
 
-    def open_dir(self, path,  mode='r', match=".*", force=False, compression="autodetect"):
+    def open_dir(
+        self, path, mode="r", match=".*", force=False, compression="autodetect"
+    ):
         """Generator that yields all files in given directory
 
         Parameters
@@ -74,11 +76,14 @@ class BaseImportExport(Document):
         matcher = re.compile(match)
         for filename in os.listdir(path):
             # ignore non-matching filenames
-            if not matcher.search(filename): continue
-            fileobj = self.open_file(os.path.join(path,filename),
-                                    mode=mode,
-                                    force=force,
-                                    compression=compression)
+            if not matcher.search(filename):
+                continue
+            fileobj = self.open_file(
+                os.path.join(path, filename),
+                mode=mode,
+                force=force,
+                compression=compression,
+            )
             yield fileobj
 
     def _process_by_batch(self, iterable, batchsize=100):
@@ -91,7 +96,6 @@ class BaseImportExport(Document):
                 batch = []
         if batch:
             yield batch
-
 
 
 class Importer(BaseImportExport):
@@ -118,14 +122,13 @@ class Importer(BaseImportExport):
 
         # handle batches
         if type(iterable) == list:
-            i = [ self._add_metadata(ii.get('_source',ii)) for ii in iterable ]
+            i = [self._add_metadata(ii.get("_source", ii)) for ii in iterable]
         # handle individual docs
         else:
-            i = self._add_metadata(iterable.get('_source',iterable))
+            i = self._add_metadata(iterable.get("_source", iterable))
 
         # Save document(s) using document base-class method
         self._save_document(i)
-
 
     def _apply_mapping(self, document, mapping):
         """Apply a given mapping to a document
@@ -151,14 +154,16 @@ class Importer(BaseImportExport):
         """
         if not mapping:
             return document
-        new_document = {v:document[k] for k,v in mapping.items() if k in document}
+        new_document = {v: document[k] for k, v in mapping.items() if k in document}
         # Keep track of missing keys
         self.missing_keys.update([k for k in mapping if k not in document])
 
         # Document errors for missing documents
         if not new_document:
             self.failed += 1
-            self.failed_ids.append(document.get('id',document.get('ID',document.get('_id',None))))
+            self.failed_ids.append(
+                document.get("id", document.get("ID", document.get("_id", None)))
+            )
         return new_document
 
     def load(self):
@@ -186,12 +191,13 @@ class Importer(BaseImportExport):
     def run(self, mapping={}, *args, **kwargs):
         """uses the documents from the load method in batches """
         self.processed = 0
-        for batch in self._process_by_batch(self.load(*args,**kwargs)):
-            batch = list(map(lambda doc: self._apply_mapping(doc,mapping), batch))
+        for batch in self._process_by_batch(self.load(*args, **kwargs)):
+            batch = list(map(lambda doc: self._apply_mapping(doc, mapping), batch))
             for doc in batch:
-                self._ingest(iterable=doc, doctype=doc['doctype'])
+                self._ingest(iterable=doc, doctype=doc["doctype"])
                 self.processed += 1
         logger.info("Added {} documents to the database.".format(self.processed))
+
 
 class Exporter(BaseImportExport):
     """Base class for exporting"""
@@ -201,12 +207,12 @@ class Exporter(BaseImportExport):
     to_file = True
     batchsize = 100
 
-    def __init__(self,*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         BaseImportExport.__init__(self, *args, **kwargs)
         self.fileobj = None
-        self.extension = ''
+        self.extension = ""
 
-    def save(self, batch_of_documents, destination = "exports", *args, **kwargs):
+    def save(self, batch_of_documents, destination="exports", *args, **kwargs):
         """To be implemented in subclass
 
         This method should process batches of documents by exporting them in
@@ -238,17 +244,19 @@ class Exporter(BaseImportExport):
             merged by '.'
 
         """
-        flat_dict={}
-        for k,v in document.items():
-            if k=='META' and not include_meta: continue
-            if k=='htmlsource' and not include_html: continue
+        flat_dict = {}
+        for k, v in document.items():
+            if k == "META" and not include_meta:
+                continue
+            if k == "htmlsource" and not include_html:
+                continue
             if type(v) == str:
-                flat_dict[k]=v
+                flat_dict[k] = v
             elif type(v) == list:
-                flat_dict[k]=str(v)
+                flat_dict[k] = str(v)
             elif type(v) == dict:
-                for kk,vv in self._flatten_doc(v).items():
-                    flat_dict["{k}.{kk}".format(k=k,kk=kk)] = vv
+                for kk, vv in self._flatten_doc(v).items():
+                    flat_dict["{k}.{kk}".format(k=k, kk=kk)] = vv
             else:
                 try:
                     flat_dict[k] = str(v)
@@ -261,26 +269,41 @@ class Exporter(BaseImportExport):
             self.processed += 1
             yield doc
 
-    def _makefile(self, filename, mode='wt', force=False, compression=False):
+    def _makefile(self, filename, mode="wt", force=False, compression=False):
         filepath = os.path.dirname(filename)
         os.makedirs(filepath, exist_ok=True)
         # handle cases when a path instead of a filename is provided
         if os.path.isdir(filename):
             now = time.localtime()
-            newname = "INCA_export_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.{extension}".format(now=now, extension=self.extension)
-            filename = os.path.join(filename,newname)
+            newname = "INCA_export_{now.tm_year}_{now.tm_mon}_{now.tm_mday}_{now.tm_hour}_{now.tm_min}_{now.tm_sec}.{extension}".format(
+                now=now, extension=self.extension
+            )
+            filename = os.path.join(filename, newname)
         if self.extension not in filename:
-            filename = "{filename}.{extension}".format(filename=filename, extension=self.extension)
+            filename = "{filename}.{extension}".format(
+                filename=filename, extension=self.extension
+            )
         if filename in os.listdir(filepath) and not force:
-            logger.warning("file called {filename} already exists, either provide new filename"
-            "or set `overwrite=True`".format(filename=filename)
+            logger.warning(
+                "file called {filename} already exists, either provide new filename"
+                "or set `overwrite=True`".format(filename=filename)
             )
             return False
         else:
-            self.fileobj=self.open_file(filename, mode=mode, force=force,compression=compression)
+            self.fileobj = self.open_file(
+                filename, mode=mode, force=force, compression=compression
+            )
             return self.fileobj
 
-    def run(self, query="*", destination='exports/', overwrite=False, batchsize=None, *args, **kwargs):
+    def run(
+        self,
+        query="*",
+        destination="exports/",
+        overwrite=False,
+        batchsize=None,
+        *args,
+        **kwargs
+    ):
         """Exports documents from the INCA elasticsearch index
 
         DO NOT OVERWRITE
@@ -313,7 +336,9 @@ class Exporter(BaseImportExport):
         """
         if not batchsize:
             batchsize = self.batchsize
-        for docbatch in self._process_by_batch(self._retrieve(query), batchsize=batchsize):
+        for docbatch in self._process_by_batch(
+            self._retrieve(query), batchsize=batchsize
+        ):
             self.save(docbatch, destination=destination, *args, **kwargs)
         if self.fileobj:
             self.fileobj.close()

@@ -10,26 +10,30 @@ import logging
 
 logger = logging.getLogger("INCA")
 
+
 def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-    lines = textstring.strip().split('\n')
+    # This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split("\n")
     lead = lines[0].strip()
-    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-    if rest: result = lead + ' ||| ' + rest
-    else: result = lead
+    rest = "||".join([l.strip() for l in lines[1:] if l.strip()])
+    if rest:
+        result = lead + " ||| " + rest
+    else:
+        result = lead
     return result.strip()
-    
-class btgroup (rss):
+
+
+class btgroup(rss):
     """Scrapes BTGroup"""
 
     def __init__(self):
         self.doctype = "btgroup (corp)"
-        self.rss_url ='http://bt.mynewsdesk.com/rss/source/56578/pressrelease'
+        self.rss_url = "http://bt.mynewsdesk.com/rss/source/56578/pressrelease"
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=7, day=28)
 
-    def parsehtml(self,htmlsource):
-        '''                                                                                                                                                                                                        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                
+    def parsehtml(self, htmlsource):
+        """                                                                                                                                                                                                        Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                
 
         Parameters                                                                                                                                                                                                                                                         
         ----                                                                                                                                                                                                                                                              
@@ -41,22 +45,22 @@ class btgroup (rss):
          ----                                                                                                                                                                                                                                                               
          title    the title of the article                                                                                                                                                                                                                                   
          text    the plain text of the article                                                                                                                                                                                                                              
-        '''
-        
+        """
+
         tree = fromstring(htmlsource)
         try:
-            title="".join(tree.xpath('//*/h1[@class="newsroom-headline fn"]/text()')).strip()
+            title = "".join(
+                tree.xpath('//*/h1[@class="newsroom-headline fn"]/text()')
+            ).strip()
         except:
             logger.warning("could not parse article title")
             title = ""
         try:
-            text="".join(tree.xpath('//*[@class="clearfix"]//text()')).strip()
+            text = "".join(tree.xpath('//*[@class="clearfix"]//text()')).strip()
         except:
             logger.warning("could not parse text title")
             text = ""
         text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "text":polish(text).strip()
-                       }
+        extractedinfo = {"title": title.strip(), "text": polish(text).strip()}
 
         return extractedinfo

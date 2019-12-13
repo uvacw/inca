@@ -9,26 +9,30 @@ import logging
 
 logger = logging.getLogger("INCA")
 
+
 def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-    lines = textstring.strip().split('\n')
+    # This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split("\n")
     lead = lines[0].strip()
-    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-    if rest: result = lead + ' ||| ' + rest
-    else: result = lead
+    rest = "||".join([l.strip() for l in lines[1:] if l.strip()])
+    if rest:
+        result = lead + " ||| " + rest
+    else:
+        result = lead
     return result.strip()
+
 
 class nieuwsblad(rss):
     """Scrapes nieuwsblad.be"""
 
     def __init__(self):
         self.doctype = "nieuwsblad (www)"
-        self.rss_url='http://feeds.nieuwsblad.be/nieuws/snelnieuws'
+        self.rss_url = "http://feeds.nieuwsblad.be/nieuws/snelnieuws"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2016, month=8, day=2)
+        self.date = datetime.datetime(year=2016, month=8, day=2)
 
-    def parsehtml(self,htmlsource):
-        '''                                                                                                                                                                                                                                                                 
+    def parsehtml(self, htmlsource):
+        """                                                                                                                                                                                                                                                                 
         Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                 
         
         Parameters                                                                                                                                                                                                                                                        
@@ -43,28 +47,34 @@ class nieuwsblad(rss):
         byline    the author, e.g. "Bob Smith"    
         byline_source    sth like ANP                                                                                                                                                                                                                         
         category    sth. like economy, sports, ...                                                                                                                                                                                                                         
-        '''
-        
+        """
+
         try:
             tree = fromstring(htmlsource)
         except:
-            print("kon dit niet parsen",type(doc),len(doc))
+            print("kon dit niet parsen", type(doc), len(doc))
             print(doc)
-            return("","","", "")
-# category
+            return ("", "", "", "")
+        # category
         try:
             category = tree.xpath('//*[@class="is-active"]/text()')[0]
         except:
-            category= ""
+            category = ""
             logger.debug("Could not parse article category")
-# text
+        # text
         try:
-            textfirstpara = "".join(tree.xpath('//*[@class="article__intro"]/p/text()')).strip()
+            textfirstpara = "".join(
+                tree.xpath('//*[@class="article__intro"]/p/text()')
+            ).strip()
         except:
             textfirstpara = ""
             logger.debug("Could not parse article teaser")
         try:
-            textrest = "".join(tree.xpath('//*[@class="article__body"]/p/text() | //*[@class="article__body"]/p/a/text() | //*[@class="article__body"]/p/strong/text()')).strip()
+            textrest = "".join(
+                tree.xpath(
+                    '//*[@class="article__body"]/p/text() | //*[@class="article__body"]/p/a/text() | //*[@class="article__body"]/p/strong/text()'
+                )
+            ).strip()
         except:
             textrest = ""
             logger.warning("Could not parse article text")
@@ -85,12 +95,13 @@ class nieuwsblad(rss):
             logger.debug("Could not parse article byline source")
 
         text = textfirstpara + " " + textrest
-        text = text.replace("\xa0","")
-        extractedinfo={"title":title.strip(),
-                       "text":text.strip(),
-                       "byline":byline.strip(),
-                       "bylinesource":bylinesource.strip(),
-                       "category":category.strip()
-                       }
+        text = text.replace("\xa0", "")
+        extractedinfo = {
+            "title": title.strip(),
+            "text": text.strip(),
+            "byline": byline.strip(),
+            "bylinesource": bylinesource.strip(),
+            "category": category.strip(),
+        }
 
         return extractedinfo

@@ -1,25 +1,31 @@
-'''
+"""
 This file provides the base-class for API clients
 
 Because clients require stored credentials, the client
 requires a functioning elasticsearch instance.
 
 
-'''
+"""
 from .scraper_class import Scraper
 from ..clients._general_utils import *
 from .database import DATABASE_AVAILABLE
+
 if DATABASE_AVAILABLE:
     from .database import client
-    from elasticsearch.exceptions import ConnectionError, ConnectionTimeout, NotFoundError, RequestError
+    from elasticsearch.exceptions import (
+        ConnectionError,
+        ConnectionTimeout,
+        NotFoundError,
+        RequestError,
+    )
 import time
 import datetime
 import logging
 
-logger = logging.getLogger("INCA.%s" %__name__)
+logger = logging.getLogger("INCA.%s" % __name__)
 
 APPLICATIONS_INDEX = ".apps"
-CREDENTIALS_INDEX  = ".credentials"
+CREDENTIALS_INDEX = ".credentials"
 
 # It's dangerous to go alone, take this.
 #
@@ -31,6 +37,7 @@ def elasticsearch_required(function):
     """Throw warning and refrain from running function when no Elasticsearch
     database is available.
     """
+
     def wrapper(*args, **kwargs):
         if not DATABASE_AVAILABLE:
             logger.warning("No database available")
@@ -39,11 +46,12 @@ def elasticsearch_required(function):
         else:
             logger.debug("Calling function")
             return function(*args, **kwargs)
+
     return wrapper
 
 
 class Client(Scraper):
-    '''Clients provide access to APIs.
+    """Clients provide access to APIs.
 
     Subclasses of `Client` should implement the following:
 
@@ -96,7 +104,7 @@ class Client(Scraper):
 
 
 
-    '''
+    """
 
     service_name = "UNKNOWN"
 
@@ -110,20 +118,18 @@ class Client(Scraper):
             if not APPLICATIONS_INDEX in known_indices:
                 logger.info("No applications index found, creating now")
                 client.indices.create(
-                    index=APPLICATIONS_INDEX,
-                    body={"mapping.total_fields.limit": 20000}
-                    )
+                    index=APPLICATIONS_INDEX, body={"mapping.total_fields.limit": 20000}
+                )
             if not CREDENTIALS_INDEX in known_indices:
                 logger.info("No Credentials index found, creating now")
                 client.indices.create(
-                    index = CREDENTIALS_INDEX,
-                    body={"mapping.total_fields.limit": 20000}
+                    index=CREDENTIALS_INDEX, body={"mapping.total_fields.limit": 20000}
                 )
         else:
-            logger.info("No Database available, so API client functionality"
-            "will be severely limited"
+            logger.info(
+                "No Database available, so API client functionality"
+                "will be severely limited"
             )
-
 
     def prompt(self):
         """SHOULD BE SET BY INCA CLASS """
@@ -145,7 +151,7 @@ class Client(Scraper):
         yield
 
     @elasticsearch_required
-    def add_app(self,appname="default", token=None, secret=None):
+    def add_app(self, appname="default", token=None, secret=None):
         """OVERRIDE THIS METHOD
 
         This method should implement the app certification process,
@@ -180,7 +186,7 @@ class Client(Scraper):
         logger.warning("THIS METHOD IS NOT IMPLEMENTED")
         return False
 
-    def run(self,app='default', *args, **kwargs):
+    def run(self, app="default", *args, **kwargs):
         """Run the .get() method of a class
 
         This is the wrapper that calls the `self.get()` method implemented
@@ -198,8 +204,8 @@ class Client(Scraper):
             return []
 
         logger.info("Starting client")
-        if DATABASE_AVAILABLE == True and kwargs.get('database',True):
-            for docs in self.get(credentials = usable_credentials, *args, **kwargs):
+        if DATABASE_AVAILABLE == True and kwargs.get("database", True):
+            for docs in self.get(credentials=usable_credentials, *args, **kwargs):
                 # in case the function yields individual rather than batch results
                 if type(docs) == dict:
                     docs = [docs]
@@ -219,10 +225,12 @@ class Client(Scraper):
                     results.append(doc)
             return results
 
-        logger.info('Done with retrieval')
+        logger.info("Done with retrieval")
 
     @elasticsearch_required
-    def store_application(self, app_credentials, appname="default", retries=3,**kwargs):
+    def store_application(
+        self, app_credentials, appname="default", retries=3, **kwargs
+    ):
         """Create a new app to which credentials can be tied
 
         Oauth services require an app as a basis for credentials. In INCA
@@ -258,20 +266,22 @@ class Client(Scraper):
 
         """
         logger.info("Adding new application: {appname}".format(**locals()))
-        body  = {"credentials" : app_credentials, "other" : kwargs}
+        body = {"credentials": app_credentials, "other": kwargs}
         try:
-            attempt  = client.index(
-                index = APPLICATIONS_INDEX,
-                doc_type = self.service_name,
-                id = appname,
-                body = body
+            attempt = client.index(
+                index=APPLICATIONS_INDEX,
+                doc_type=self.service_name,
+                id=appname,
+                body=body,
             )
         except ConnectionTimeout:
             retries -= 1
             logger.debug("Failed to index, retrying {retries} more times")
             if retries:
                 time.sleep(1)
-                return self.store_application(app_credentials,appname, retries, **kwargs)
+                return self.store_application(
+                    app_credentials, appname, retries, **kwargs
+                )
             else:
                 return {}
         except ConnectionError:
@@ -281,7 +291,7 @@ class Client(Scraper):
         return self.load_application(appname)
 
     @elasticsearch_required
-    def load_application(self, app="default",retries=3):
+    def load_application(self, app="default", retries=3):
         """Loads a specified application
 
         This function returns the named application, based in part on
@@ -305,16 +315,16 @@ class Client(Scraper):
         """
         try:
             app_credentials = client.get(
-                index = APPLICATIONS_INDEX,
-                doc_type = self.service_name,
-                id = app
+                index=APPLICATIONS_INDEX, doc_type=self.service_name, id=app
             )
         except ConnectionError:
             logger.warning("Could not connect to Elasticsearch, is it up?")
             return {}
         except ConnectionTimeout:
             retries -= 1
-            logger.info("Connection timeout, retrieing {retries} more times").format(**locals())
+            logger.info("Connection timeout, retrieing {retries} more times").format(
+                **locals()
+            )
             if retries:
                 time.sleep(1)
                 return self.load_application(app=app)
@@ -346,16 +356,16 @@ class Client(Scraper):
         """
         try:
             app_credentials = client.delete(
-                index = APPLICATIONS_INDEX,
-                doc_type = self.service_name,
-                id = app
+                index=APPLICATIONS_INDEX, doc_type=self.service_name, id=app
             )
         except ConnectionError:
             logger.warning("Could not connect to Elasticsearch, is it up?")
             return False
         except ConnectionTimeout:
             retries -= 1
-            logger.info("Connection timeout, retrieing {retries} more times").format(**locals())
+            logger.info("Connection timeout, retrieing {retries} more times").format(
+                **locals()
+            )
             if retries:
                 time.sleep(1)
                 return self.remove_application(app=app)
@@ -367,7 +377,7 @@ class Client(Scraper):
         return True
 
     @elasticsearch_required
-    def store_credentials(self, id, app='default', credentials={}, retries=3, **kwargs):
+    def store_credentials(self, id, app="default", credentials={}, retries=3, **kwargs):
         """adds a new credential to a app in the database
 
         Credentials are the authentication keys for API clients. They are divided
@@ -408,11 +418,15 @@ class Client(Scraper):
             A True or False value indicating succesful saving.
 
         """
-        if 'content' in kwargs:
-            kwargs = kwargs.pop('content')
-        doc = {'credentials': credentials, 'id':id, 'app':app,
-                'content':kwargs,
-                'last_loaded': datetime.datetime(year=1990,month=1,day=1).isoformat()}
+        if "content" in kwargs:
+            kwargs = kwargs.pop("content")
+        doc = {
+            "credentials": credentials,
+            "id": id,
+            "app": app,
+            "content": kwargs,
+            "last_loaded": datetime.datetime(year=1990, month=1, day=1).isoformat(),
+        }
         doctype = "{self.service_name}_{app}".format(**locals())
 
         app_available = self.load_application(app=app)
@@ -422,12 +436,9 @@ class Client(Scraper):
 
         try:
             credentials_stored = client.index(
-                index = CREDENTIALS_INDEX,
-                doc_type = doctype,
-                id = id,
-                body = doc
+                index=CREDENTIALS_INDEX, doc_type=doctype, id=id, body=doc
             )
-            if credentials_stored['created']:
+            if credentials_stored["created"]:
                 logger.info("CREATED credentials [{id}] for {app}".format(**locals()))
             else:
                 logger.info("UPDATED credentials {id} for {app}".format(**locals()))
@@ -436,17 +447,23 @@ class Client(Scraper):
             return {}
         except ConnectionTimeout:
             retries -= 1
-            logger.info("Connection timeout, retrieing {retries} more times").format(**locals())
+            logger.info("Connection timeout, retrieing {retries} more times").format(
+                **locals()
+            )
             if retries:
                 time.sleep(1)
-                return self.store_credentials(id=id, app=app, credentials=credentials, retries=retries, **kwargs)
+                return self.store_credentials(
+                    id=id, app=app, credentials=credentials, retries=retries, **kwargs
+                )
             else:
                 return {}
 
         return self.load_credentials(app=app, id=id, update_last_loaded=False)
 
     @elasticsearch_required
-    def load_credentials(self, app='default', id=None, update_last_loaded=True,retries=3):
+    def load_credentials(
+        self, app="default", id=None, update_last_loaded=True, retries=3
+    ):
         """Load a credential from the specified app
 
         Retrieves credentials from a specified app. Choices are based
@@ -480,46 +497,49 @@ class Client(Scraper):
         time.
 
         """
-        ordering = {'lowest':'asc','highest':'desc'}
-        doctype  = "{self.service_name}_{app}".format(**locals())
+        ordering = {"lowest": "asc", "highest": "desc"}
+        doctype = "{self.service_name}_{app}".format(**locals())
         try:
             if id:
                 credentials = client.get(
-                    index=CREDENTIALS_INDEX,
-                    doc_type=doctype,
-                    id=id
-                    )
+                    index=CREDENTIALS_INDEX, doc_type=doctype, id=id
+                )
 
             else:
-                docs = client.search(index=CREDENTIALS_INDEX,
-                              body={
-                                  "sort": [
-                                      {self.sort_field : {"order":ordering[self.preference]}}
-                                      ],
-                                  "size":1,
-                                  "query":
-                                  {"match":
-                                   {"_type":
-                                    doctype
-                                   }
-                                  }}).get('hits',{}).get('hits',[])
+                docs = (
+                    client.search(
+                        index=CREDENTIALS_INDEX,
+                        body={
+                            "sort": [
+                                {self.sort_field: {"order": ordering[self.preference]}}
+                            ],
+                            "size": 1,
+                            "query": {"match": {"_type": doctype}},
+                        },
+                    )
+                    .get("hits", {})
+                    .get("hits", [])
+                )
                 if not docs:
                     logger.warning("No credentials found for {app}".format(**locals()))
                     return {}
                 credentials = docs[0]
             if update_last_loaded:
                 logger.debug("Updating last-loaded field")
-                self.store_credentials(id=credentials['_id'],
-                        doc_type = doctype,
-                        app=app,
-                        credentials = credentials['_source']['credentials'],
-                        last_loaded=datetime.datetime.now().isoformat(),
-                        content = credentials['_source']['content']
-                        )
+                self.store_credentials(
+                    id=credentials["_id"],
+                    doc_type=doctype,
+                    app=app,
+                    credentials=credentials["_source"]["credentials"],
+                    last_loaded=datetime.datetime.now().isoformat(),
+                    content=credentials["_source"]["content"],
+                )
 
         except ConnectionTimeout:
             retries -= 1
-            logger.info("Connection timeout when trying to retrieve, retrying {retries} more times")
+            logger.info(
+                "Connection timeout when trying to retrieve, retrying {retries} more times"
+            )
             if retries:
                 return self.load_credentials(app=app, id=id, retries=retries)
             else:
@@ -536,9 +556,8 @@ class Client(Scraper):
 
         return credentials
 
-
     @elasticsearch_required
-    def update_credentials(self, id, content={}, app='default',*args,**kwargs):
+    def update_credentials(self, id, content={}, app="default", *args, **kwargs):
         """Update credentials information
 
         This method should be called to add additional information to
@@ -594,29 +613,28 @@ class Client(Scraper):
         """
         old_credentials = self.load_credentials(app=app, id=id)
         if not old_credentials:
-            logger.warning("Failed to update credentials {id} for app {app}".format(**locals()))
+            logger.warning(
+                "Failed to update credentials {id} for app {app}".format(**locals())
+            )
             return False
         content.update(**kwargs)
-        if not 'credentials' in content:
-            credentials = old_credentials['_source']['credentials']
+        if not "credentials" in content:
+            credentials = old_credentials["_source"]["credentials"]
         else:
             logger.debug("Updating credentials information as well")
-            credentials=content["credentials"]
-        updated = self.store_credentials(app=app, id=id, credentials=credentials,**content)
+            credentials = content["credentials"]
+        updated = self.store_credentials(
+            app=app, id=id, credentials=credentials, **content
+        )
         return updated
 
-        #TODO IMPLEMENT remove credentials
+        # TODO IMPLEMENT remove credentials
 
-        #TODO: IMPLEMENT DECENTRALIZED POSTPONE
-    def postpone(self,
-        seconds=0,
-        minutes=0,
-        hours=0,
-        days=0,
-        until=None,
-        *args,
-        **kwargs
-         ):
+        # TODO: IMPLEMENT DECENTRALIZED POSTPONE
+
+    def postpone(
+        self, seconds=0, minutes=0, hours=0, days=0, until=None, *args, **kwargs
+    ):
         """postpones call to self.run()
 
         Given a delay time or start time, postpones call to the run method.
@@ -652,14 +670,14 @@ class Client(Scraper):
             waittime = until - now
         else:
             waittime = datetime.timedelta(
-                         seconds=seconds,
-                         minutes=minutes,
-                         hours = hours,
-                         days = days
-                         )
-        logger.info("Delaying for {waittime} until {end_of_wait}".format(waittime=waittime, end_of_wait = now +waittime))
-
+                seconds=seconds, minutes=minutes, hours=hours, days=days
+            )
+        logger.info(
+            "Delaying for {waittime} until {end_of_wait}".format(
+                waittime=waittime, end_of_wait=now + waittime
+            )
+        )
 
         time.sleep(seconds)
         for d in self.run(*args, **kwargs):
-             yield d
+            yield d
