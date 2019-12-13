@@ -12,6 +12,44 @@ INCA is currently under heavy development. We cannot guarantee that it works as 
 
 ## For those brave enough:
 
+### Direct pip-install, because it's easy (not for development)
+
+```bash
+pip install git+https://github.com/uvacw/inca.git
+```
+
+### Starting INCA using Docker containers
+
+This is the most basic setup for inca in self-built container, without
+linking it to Elasticsearch. 
+
+1. Starting Elasticsearch for data storage
+```bash
+docker run -it \
+  -p 9200:9200 \
+  -p 9300:9300 \
+  -e "discovery.type=single-node" \
+  --name=inca-elastic \
+  docker.elastic.co/elasticsearch/elasticsearch:6.8.5
+```
+
+2. Building the INCA container ... 
+```bash
+cd path/to/folder/inca
+docker build -t inca .
+```
+
+3. Run the container
+```bash
+# first time
+docker run --name test-inca -it inca python
+# thereafter
+docker start test-inca
+docker attach test-inca
+```
+
+### Starting INCA directly on your machine ('bare metal')
+
 Please have a look at the documentation in the `inca/doc/` folder.
 
 ... and/or use the following to quickly install inca:

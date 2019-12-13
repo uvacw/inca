@@ -94,3 +94,6 @@ adhoc/
 
 # no jupyter notebook checkpoints
 .ipynb_checkpoints/
+
+# IDE specific settings
+.vscode/settings.json
