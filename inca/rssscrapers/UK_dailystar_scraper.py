@@ -10,14 +10,18 @@ import requests
 
 logger = logging.getLogger("INCA")
 
+
 def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-    lines = textstring.strip().split('\n')
+    # This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split("\n")
     lead = lines[0].strip()
-    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-    if rest: result = lead + ' ||| ' + rest
-    else: result = lead
+    rest = "||".join([l.strip() for l in lines[1:] if l.strip()])
+    if rest:
+        result = lead + " ||| " + rest
+    else:
+        result = lead
     return result.strip()
+
 
 class dailystar(rss):
     """Scrapes dailystar.co.uk"""
@@ -26,10 +30,10 @@ class dailystar(rss):
         self.doctype = "dailystar (www)"
         self.rss_url = "http://feeds.feedburner.com/daily-star-Latest-News"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=9, day=8)
+        self.date = datetime.datetime(year=2017, month=9, day=8)
 
-    def parsehtml(self,htmlsource):
-        '''
+    def parsehtml(self, htmlsource):
+        """
         Parses the html source to retrieve info that is not in the RSS-keys
 
 
@@ -43,14 +47,14 @@ class dailystar(rss):
         teaser    the intro to the artcile
         byline      the author, e.g. "Bob Smith"
         text    the plain text of the article
-        '''
+        """
 
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("Cannot parse HTML tree",type(doc),len(doc))
-            #logger.warning(doc)
-            return("","","", "")
+            logger.warning("Cannot parse HTML tree", type(doc), len(doc))
+            # logger.warning(doc)
+            return ("", "", "", "")
         try:
             title = tree.xpath("//*[@itemprop='headline']//text()")[0]
         except:
@@ -72,11 +76,11 @@ class dailystar(rss):
             text = ""
             logger.warning("Could not parse article text")
 
-
-        extractedinfo={"title":title.strip(),
-                       "teaser":teaser.strip(),
-                       "byline":byline.strip(),
-                       "text":text.replace("\r\n","").replace("\\","").strip()
-                      }
+        extractedinfo = {
+            "title": title.strip(),
+            "teaser": teaser.strip(),
+            "byline": byline.strip(),
+            "text": text.replace("\r\n", "").replace("\\", "").strip(),
+        }
 
         return extractedinfo

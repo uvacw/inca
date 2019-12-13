@@ -15,6 +15,7 @@ from glob import glob
 
 logger = logging.getLogger("INCA")
 
+
 class import_csv(Importer):
     """Read csv files"""
 
@@ -22,12 +23,14 @@ class import_csv(Importer):
 
     def _detect_encoding(self, filename):
         try:
-            with open(filename, mode='rb') as filebuf:
+            with open(filename, mode="rb") as filebuf:
                 encoding = chardet.detect(filebuf.peek(10000000))
         except FileNotFoundError:
-            logger.warning("File `{filename}` does not seem to exist".format(filename=filename))
+            logger.warning(
+                "File `{filename}` does not seem to exist".format(filename=filename)
+            )
             return False
-        return encoding['encoding']
+        return encoding["encoding"]
 
     def load(self, path, fieldnames=None, *args, **kwargs):
         """Loads a csv file into INCA
@@ -61,7 +64,7 @@ class import_csv(Importer):
             One dict per row of data in the excel file
 
         """
-        exists  = os.path.exists(path)
+        exists = os.path.exists(path)
         if not exists:
             logger.warning("Unable to open {path} : DOES NOT EXIST".format(path=path))
         else:
@@ -71,7 +74,7 @@ class import_csv(Importer):
             else:
                 list_of_files = glob(path + "*.csv")
             for item in list_of_files:
-                encoding = kwargs.pop('encoding','utf-8')
+                encoding = kwargs.pop("encoding", "utf-8")
                 if encoding:
                     with open(item, encoding=encoding) as fileobj:
                         csv_content = csv.DictReader(fileobj, *args, **kwargs)
@@ -79,19 +82,20 @@ class import_csv(Importer):
                             for k in list(row):
                                 if k.startswith("_source."):
                                     row[k[8:]] = row.pop(k)
-                                elif k in ['_type', '_index']:
+                                elif k in ["_type", "_index"]:
                                     row.pop(k)
                                 else:
                                     pass
                             try:
-                                row['doctype'] = row['_source.doctype']
+                                row["doctype"] = row["_source.doctype"]
                                 yield row
                             except:
-                                if 'doctype' in row:
+                                if "doctype" in row:
                                     yield row
                                 else:
-                                    logger.warning("You need a key named 'doctype' to insert the document in the database")
-                            
+                                    logger.warning(
+                                        "You need a key named 'doctype' to insert the document in the database"
+                                    )
 
 
 class export_csv(Exporter):
@@ -99,7 +103,17 @@ class export_csv(Exporter):
 
     batchsize = 1000
 
-    def save(self, documents, destination, fields=None, include_meta=False, include_html=False, remove_linebreaks=True, *args, **kwargs):
+    def save(
+        self,
+        documents,
+        destination,
+        fields=None,
+        include_meta=False,
+        include_html=False,
+        remove_linebreaks=True,
+        *args,
+        **kwargs
+    ):
         """
 
         Parameters
@@ -131,30 +145,45 @@ class export_csv(Exporter):
 
         """
         new = False
-        if fields is None: fields=[]
-        self.fields = ['_source.{}'.format(f) for f in fields]
+        if fields is None:
+            fields = []
+        self.fields = ["_source.{}".format(f) for f in fields]
 
-        flat_batch = list(map(lambda doc: self._flatten_doc(doc, include_meta, include_html), documents))
-        if len(self.fields)==0:
+        flat_batch = list(
+            map(
+                lambda doc: self._flatten_doc(doc, include_meta, include_html),
+                documents,
+            )
+        )
+        if len(self.fields) == 0:
             keys = set.union(*[set(d.keys()) for d in flat_batch])
-            [self.fields.append(k) for k in keys if k not in self.fields and k != '_source.images']
+            [
+                self.fields.append(k)
+                for k in keys
+                if k not in self.fields and k != "_source.images"
+            ]
             self.fields = sorted(self.fields)
         if new:
-            logger.info('Exporting these fields: {}'.format(self.fields))
+            logger.info("Exporting these fields: {}".format(self.fields))
         self.extension = "csv"
 
-        if  self.fileobj and not self.fileobj.closed:
+        if self.fileobj and not self.fileobj.closed:
             outputfile = self.fileobj
         elif self.fileobj:
-            outputfile = self._makefile(destination, mode='a')
+            outputfile = self._makefile(destination, mode="a")
         else:
             outputfile = self._makefile(destination)
             new = True
 
-        writer = csv.DictWriter(outputfile, self.fields, extrasaction='ignore',*args, **kwargs)
+        writer = csv.DictWriter(
+            outputfile, self.fields, extrasaction="ignore", *args, **kwargs
+        )
         if new:
             writer.writeheader()
         for doc in flat_batch:
             if remove_linebreaks:
-                doc = {k: v.replace('\n\r',' ').replace('\n',' ').replace('\'r',' ') for k,v in doc.items()}
+                doc = {
+                    k: v.replace("\n\r", " ").replace("\n", " ").replace("'r", " ")
+                    for k, v in doc.items()
+                }
             writer.writerow(doc)

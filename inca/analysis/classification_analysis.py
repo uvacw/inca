@@ -1,7 +1,8 @@
 import sys
 import pandas as pd
-#from ..core import search_utils
-#from ..core import database
+
+# from ..core import search_utils
+# from ..core import database
 import logging
 import numpy as np
 import string
@@ -17,15 +18,26 @@ from sklearn import svm
 from datetime import datetime
 
 
-
 logger = logging.getLogger("INCA")
 
-class classification(Analysis):
 
+class classification(Analysis):
     def __init__(self):
         pass
 
-    def fit(self, documents, x_field, label_field, add_prediction=False, testsize = 0.2, mindf = 0.0, maxdf = 1.0, rand_shuffle = True, tfidf = True, vocabul = None):
+    def fit(
+        self,
+        documents,
+        x_field,
+        label_field,
+        add_prediction=False,
+        testsize=0.2,
+        mindf=0.0,
+        maxdf=1.0,
+        rand_shuffle=True,
+        tfidf=True,
+        vocabul=None,
+    ):
         """
         This method should train a Classifier model on the input documents.\n
         @param documents: the documents (stored in elasticsearch) to train on
@@ -71,7 +83,6 @@ class classification(Analysis):
         @param one_pass: Keeps all documents in memory instead of retrieving them twice from ElasticSearch
         """
 
-
         self.model = None
         self.vocab = None
         self.train_predictions = None
@@ -85,56 +96,73 @@ class classification(Analysis):
         self.labels = []
         self.documents_fulltext = []
 
-
         counter = 0
         invalidchars = set(string.punctuation)
 
         for doc in documents:
-            counter+=1
-            if len(core.basic_utils.dotkeys(doc, x_field))>0:
-                self.valid_docs.append(doc['_id'])
+            counter += 1
+            if len(core.basic_utils.dotkeys(doc, x_field)) > 0:
+                self.valid_docs.append(doc["_id"])
                 self.labels.append(core.basic_utils.dotkeys(doc, label_field))
                 self.documents_fulltext.append(core.basic_utils.dotkeys(doc, x_field))
 
-                if counter <5:
+                if counter < 5:
                     text = core.basic_utils.dotkeys(doc, x_field).lower()
                     if any(char in invalidchars for char in text):
-                        logger.info('Punctuation has not been removed. Proceeding without pre-processing.')
-
+                        logger.info(
+                            "Punctuation has not been removed. Proceeding without pre-processing."
+                        )
 
             else:
-                self.invalid_docs.append(doc['_id'])
-
+                self.invalid_docs.append(doc["_id"])
 
         assert len(self.valid_docs) == len(self.labels)
-        
-    
+
         assert len(self.labels) == len(self.documents_fulltext)
-        logger.info("Using one-pass processing. Keeping {} documents in memory".format(len(self.documents_fulltext)))
+        logger.info(
+            "Using one-pass processing. Keeping {} documents in memory".format(
+                len(self.documents_fulltext)
+            )
+        )
 
-        #Extracting word counts as featires from example documents
-        #If tfidf is set to True, it extracts the term-frequency-inverse-document-frequency features from the example documents.
-
+        # Extracting word counts as featires from example documents
+        # If tfidf is set to True, it extracts the term-frequency-inverse-document-frequency features from the example documents.
 
         if tfidf:
-            self.vectorizer = TfidfVectorizer(min_df = mindf, max_df = maxdf, vocabulary = vocabul)
+            self.vectorizer = TfidfVectorizer(
+                min_df=mindf, max_df=maxdf, vocabulary=vocabul
+            )
         else:
-            self.vectorizer = CountVectorizer(min_df = mindf, max_df = maxdf, vocabulary = vocabul)
-        self.fitted = self.vectorizer.fit_transform(self.documents_fulltext, self.labels)
+            self.vectorizer = CountVectorizer(
+                min_df=mindf, max_df=maxdf, vocabulary=vocabul
+            )
+        self.fitted = self.vectorizer.fit_transform(
+            self.documents_fulltext, self.labels
+        )
         self.vocab = np.array(self.vectorizer.get_feature_names())
-        logger.info('{} x entries and {} y entries'.format(self.fitted.shape[0], len(self.labels )))
-        X_train, self.X_test, y_train, self.y_test = train_test_split(self.fitted, self.labels, test_size=testsize, shuffle = rand_shuffle, random_state=42)
-        self.model =  SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=1000, random_state=42).fit(X_train, y_train)
-        if add_prediction ==True:
+        logger.info(
+            "{} x entries and {} y entries".format(
+                self.fitted.shape[0], len(self.labels)
+            )
+        )
+        X_train, self.X_test, y_train, self.y_test = train_test_split(
+            self.fitted,
+            self.labels,
+            test_size=testsize,
+            shuffle=rand_shuffle,
+            random_state=42,
+        )
+        self.model = SGDClassifier(
+            loss="hinge", penalty="l2", alpha=1e-3, max_iter=1000, random_state=42
+        ).fit(X_train, y_train)
+        if add_prediction == True:
             self.train_predictions = self.model.predict(X_train)
         else:
             self.train_predictions = None
 
         return (self.vocab, self.fitted, self.labels)
 
-
-
-    def predict(self, documents = None, x_field=None,  **kwargs):
+    def predict(self, documents=None, x_field=None, **kwargs):
         """
         This method performs classification of new unseen documents.\n
         @param documents: the documents to classify.
@@ -151,24 +179,31 @@ class classification(Analysis):
 
         if documents == None:
             documents = self.X_test
-            logger.info('Since no documents were inputted, this shall run the trained model on the test dataset reserved as 20% of the original labeled example dataset.')
+            logger.info(
+                "Since no documents were inputted, this shall run the trained model on the test dataset reserved as 20% of the original labeled example dataset."
+            )
         else:
             if type(documents[0]) is str:
-                logger.info('It seems that the input documents are a list of strings, proceeding without extracting any specific field')
+                logger.info(
+                    "It seems that the input documents are a list of strings, proceeding without extracting any specific field"
+                )
                 documents = self.vectorizer.transform(documents)
             elif type(documents[0]) is dict and x_field is not None:
-                logger.info('It seems that the input documents are a list of dicts, extracting the provided x_field')
-                documents = self.vectorizer.transform((core.basic_utils.dotkeys(doc, x_field) for doc in documents))
+                logger.info(
+                    "It seems that the input documents are a list of dicts, extracting the provided x_field"
+                )
+                documents = self.vectorizer.transform(
+                    (core.basic_utils.dotkeys(doc, x_field) for doc in documents)
+                )
             else:
-                raise Exception('You have to input either nothing, or a list of strings, or a list of dicts together with the x_field')
-                
+                raise Exception(
+                    "You have to input either nothing, or a list of strings, or a list of dicts together with the x_field"
+                )
 
         self.predictions = self.model.predict(documents)
-        print('no_of predictions : ',len(self.predictions))
+        print("no_of predictions : ", len(self.predictions))
 
-        return (self.predictions)
-
-
+        return self.predictions
 
     def quality(self, **kwargs):
         """
@@ -177,16 +212,26 @@ class classification(Analysis):
         It calculates the categorization accuracy, precision, recall and f1-score on the test set of examples.\n
 
         """
-        #make the test predictions as an attribute.
+        # make the test predictions as an attribute.
 
         test_pred = self.model.predict(self.X_test)
         self.test_accuracy = accuracy_score(self.y_test, test_pred)
-        self.test_precision = precision_score(self.y_test, test_pred, average = 'macro')
-        self.test_recall = recall_score(self.y_test, test_pred, average = 'macro')
-        self.test_f1score = f1_score(self.y_test, test_pred, average = 'macro')
-        print("accuracy on test set: ", self.test_accuracy , "\n Precision on test set: " , self.test_precision , "\n Recall on test set: "
-             , self.test_recall , "\n f1score : " , self.test_f1score)
-        return ({'accuracy':self.test_accuracy, 
-                 'precision':self.test_precision, 
-                 'recall':self.test_recall, 
-                 'f1':self.test_f1score})
+        self.test_precision = precision_score(self.y_test, test_pred, average="macro")
+        self.test_recall = recall_score(self.y_test, test_pred, average="macro")
+        self.test_f1score = f1_score(self.y_test, test_pred, average="macro")
+        print(
+            "accuracy on test set: ",
+            self.test_accuracy,
+            "\n Precision on test set: ",
+            self.test_precision,
+            "\n Recall on test set: ",
+            self.test_recall,
+            "\n f1score : ",
+            self.test_f1score,
+        )
+        return {
+            "accuracy": self.test_accuracy,
+            "precision": self.test_precision,
+            "recall": self.test_recall,
+            "f1": self.test_f1score,
+        }

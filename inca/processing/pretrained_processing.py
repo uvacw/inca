@@ -9,19 +9,18 @@ import joblib
 from numpy import ndarray, int64
 
 
-
 class pretrained(Processer):
-    '''annotated based on pretrained model'''
-    
+    """annotated based on pretrained model"""
+
     def process(self, document_field, path_to_model):
-        '''classification based on pretrained model'''
+        """classification based on pretrained model"""
         try:
             prediction = self.clf.predict([document_field])
         except AttributeError:
             self.load_model(path_to_model)
             prediction = self.clf.predict([document_field])
 
-        if type(prediction) is ndarray and len(prediction)==1:
+        if type(prediction) is ndarray and len(prediction) == 1:
             prediction = prediction[0]
         if type(prediction) is int64:
             prediction = int(prediction)

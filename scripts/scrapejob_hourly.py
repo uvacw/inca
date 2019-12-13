@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from inca import Inca
 
-myinca  = Inca()
+myinca = Inca()
 
-outlets = [outlet for outlet in dir(myinca.rssscrapers) if not outlet.startswith('__')]
+outlets = [outlet for outlet in dir(myinca.rssscrapers) if not outlet.startswith("__")]
 
 
 for outlet in outlets:
@@ -13,4 +13,4 @@ for outlet in outlets:
     except Exception as ex:
         print("'\nERROR SCRAPING {}.".format(outlet))
         print(ex)
-        print('\n')
+        print("\n")

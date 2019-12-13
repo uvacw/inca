@@ -6,7 +6,8 @@ logger = logging.getLogger("INCA")
 
 
 class randomfield(Processer):
-    '''adds a random field'''
-    def process(self, field = None, choiceset = [0,1]):
-        '''random field'''
+    """adds a random field"""
+
+    def process(self, field=None, choiceset=[0, 1]):
+        """random field"""
         return random.choice(choiceset)
