@@ -13,7 +13,6 @@ try:
     from pattern.nl import parse
 except ImportError:
     logger.warn("Pattern seems to be missing, please reinstall.")
-
     def parse(*args, **kwargs):
         raise "Unavailable because you don't have the pattern library installed"
 
