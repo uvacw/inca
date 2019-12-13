@@ -28,15 +28,21 @@ logger = logging.getLogger("INCA")
 
 currentdir = os.getcwd()
 incadir = os.path.dirname(__file__)
-os.chdir(incadir)
 
-if not 'settings.cfg' in os.listdir(incadir):
-    logger.info('No settings found, applying default settings (change in `settings.cfg`)')
-    from shutil import copyfile
-    copyfile(os.path.join(incadir,'default_settings.cfg'),os.path.join(incadir,'settings.cfg'))
+if 'settings.cfg' in os.listdir(currentdir):
+    logger.warning('Found settings.cfg in current working directory, using these settings instead of the general ones')
+    os.environ['INCACONFIG']=os.path.join(currentdir,'settings.cfg')
+
+else:
+    os.chdir(incadir)
+    if not 'settings.cfg' in os.listdir(incadir):
+        logger.info('No settings found, applying default settings (change in `settings.cfg`)')
+        from shutil import copyfile
+        copyfile(os.path.join(incadir,'default_settings.cfg'),os.path.join(incadir,'settings.cfg'))
+    os.environ['INCACONFIG']=os.path.join(incadir,'settings.cfg')
 
 config = configparser.ConfigParser()
-config.read('settings.cfg')
+config.read(os.environ['INCACONFIG'])
 
 defaultconfig = configparser.ConfigParser()
 defaultconfig.read('default_settings.cfg')
@@ -52,7 +58,7 @@ for s in defaultconfig.sections():
             from sys import exit
             exit()
 
-
+os.chdir(incadir)
 from celery import Celery, group, chain, chord
 from . import core
 import configparser

@@ -24,7 +24,8 @@ from hashlib import md5
 from .filenames import id2filename
 
 config = configparser.ConfigParser()
-config.read('settings.cfg')
+
+config.read(os.environ['INCACONFIG'])
 
 logger = logging.getLogger("INCA")
 logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
