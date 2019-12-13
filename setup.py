@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 
-requirements = ['celery>3.1,<4.0','colorama','tqdm','elasticsearch>=6',
+requirements = ['python-dateutil<2.8.1',
+                'celery>3.1,<4.0','colorama','tqdm','elasticsearch==6.4.0',
                 'feedparser', 'httplib2','imagehash', 'loremipsum',
                 'lxml','requests<3.0.0,>=2.13.0','statsmodels','pandas',
                 'pillow==6.2.0','gensim>3.4','oauth2client','matplotlib',
