@@ -9,71 +9,88 @@ import logging
 
 logger = logging.getLogger("INCA")
 
+
 class cicero(rss):
     """Scrapes cicero.de"""
 
     def __init__(self):
         self.doctype = "cicero (www)"
-        self.rss_url=['http://cicero.de/rss.xml']
-        
-        self.version = ".1"
-        self.date    = datetime.datetime(year=2018, month=5, day=16)
+        self.rss_url = ["http://cicero.de/rss.xml"]
 
-    def parsehtml(self,htmlsource):
-        '''
+        self.version = ".1"
+        self.date = datetime.datetime(year=2018, month=5, day=16)
+
+    def parsehtml(self, htmlsource):
+        """
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
-        '''
+        """
         try:
             tree = fromstring(htmlsource)
         except:
             logger.warning("HTML tree cannot be parsed")
-        
-# category
+
+        # category
         try:
-            category = r[0]['url'].split('/')[3]
+            category = r[0]["url"].split("/")[3]
         except:
             category = ""
-# title
+        # title
         try:
-            title1 = tree.xpath('//*[@itemprop="headline"]//span/text()')[0].strip().replace('\n', '')
+            title1 = (
+                tree.xpath('//*[@itemprop="headline"]//span/text()')[0]
+                .strip()
+                .replace("\n", "")
+            )
         except:
-            title1 =""
+            title1 = ""
 
         try:
-            title2 = tree.xpath('//*[@class="h1 font-41-sans-serif"]//text()')[0].strip().replace('\n', '')
+            title2 = (
+                tree.xpath('//*[@class="h1 font-41-sans-serif"]//text()')[0]
+                .strip()
+                .replace("\n", "")
+            )
         except:
-            title2 =""
-            
+            title2 = ""
+
         title = title1 + ": " + title2
-# teaser
+        # teaser
         try:
             teaser = tree.xpath('//*[@class="lead"]//text()')[0]
         except:
-            teaser =""
-            
-# text
+            teaser = ""
+
+        # text
         try:
-            text = ' '.join(tree.xpath('//*[@class="field field-name-field-cc-body"]/p//text()|//*[@class="field field-name-field-cc-body"]/h3//text()')).replace('\xa0','').replace('\n', '')  
+            text = (
+                " ".join(
+                    tree.xpath(
+                        '//*[@class="field field-name-field-cc-body"]/p//text()|//*[@class="field field-name-field-cc-body"]/h3//text()'
+                    )
+                )
+                .replace("\xa0", "")
+                .replace("\n", "")
+            )
         except:
-            text =""
-            
-# author
+            text = ""
+
+        # author
         try:
             author = tree.xpath('//*[@class="teaser-small__metadata"]//a/text()')
         except:
-            author =""
+            author = ""
 
-
-        extractedinfo = {"category":category,
-                         "teaser":teaser.strip(),
-                         "byline":author,
-                         "title":title.strip(),
-                         "text":text.strip()
-                        }
+        extractedinfo = {
+            "category": category,
+            "teaser": teaser.strip(),
+            "byline": author,
+            "title": title.strip(),
+            "text": text.strip(),
+        }
 
         return extractedinfo

@@ -10,14 +10,18 @@ import requests
 
 logger = logging.getLogger("INCA")
 
+
 def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-    lines = textstring.strip().split('\n')
+    # This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split("\n")
     lead = lines[0].strip()
-    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-    if rest: result = lead + ' ||| ' + rest
-    else: result = lead
+    rest = "||".join([l.strip() for l in lines[1:] if l.strip()])
+    if rest:
+        result = lead + " ||| " + rest
+    else:
+        result = lead
     return result.strip()
+
 
 class theguardian(rss):
     """Scrapes theguardian.com"""
@@ -26,10 +30,10 @@ class theguardian(rss):
         self.doctype = "theguardian (www)"
         self.rss_url = "https://www.theguardian.com/uk/rss"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=9, day=13)
+        self.date = datetime.datetime(year=2017, month=9, day=13)
 
-    def parsehtml(self,htmlsource):    
-        '''                                                                                                                                                                                                                                                                 
+    def parsehtml(self, htmlsource):
+        """                                                                                                                                                                                                                                                                 
         Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                 
         
 
@@ -45,14 +49,14 @@ class theguardian(rss):
         byline    the author, e.g. "Bob Smith" 
         category    sth. like economy, sports, ...                                                                                                                                                                                                                           
         text    the plain text of the article                                                                                                                                                                                                                               
-        '''
+        """
 
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("Could not HTML tree",type(doc),len(doc))
-            #logger.warning(doc)
-            return("","","", "")
+            logger.warning("Could not HTML tree", type(doc), len(doc))
+            # logger.warning(doc)
+            return ("", "", "", "")
         try:
             title = tree.xpath("//*[@class='content__headline']/text()")[0]
         except:
@@ -69,23 +73,28 @@ class theguardian(rss):
             byline = ""
             logger.debug("Could not parse article source")
         try:
-            category = tree.xpath("//*[@class='content__section-label__link']//text()")[0]
+            category = tree.xpath("//*[@class='content__section-label__link']//text()")[
+                0
+            ]
         except:
             category = ""
             logger.debug("Could not parse article category")
         try:
-            text = " ".join(tree.xpath("//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']//a/text()"))
+            text = " ".join(
+                tree.xpath(
+                    "//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']//a/text()"
+                )
+            )
         except:
             text = ""
             logger.warning("Could not parse article text")
 
-
-
-        extractedinfo={"title":title.replace("\n",""),
-                       "teaser":teaser.strip(),
-                       "byline":byline.strip().replace("\n",""),
-                       "category":category.strip(),
-                       "text":text.replace("\\","")
-                      }
+        extractedinfo = {
+            "title": title.replace("\n", ""),
+            "teaser": teaser.strip(),
+            "byline": byline.strip().replace("\n", ""),
+            "category": category.strip(),
+            "text": text.replace("\\", ""),
+        }
 
         return extractedinfo

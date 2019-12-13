@@ -6,6 +6,7 @@ from inca.core.database import check_exists
 import feedparser
 import re
 import logging
+import requests
 
 logger = logging.getLogger("INCA")
 
@@ -22,29 +23,24 @@ def polish(textstring):
     return result.strip()
 
 
-class standaard(rss):
-    """Scrapes standaard.be"""
+class standard(rss):
+    """Scrapes standard.at"""
 
     # rss feed different for all categories, only subcategories for nieuws so far included
 
     def __init__(self):
-        self.doctype = "standaard (www)"
-        self.rss_url = [
-            "http://www.standaard.be/rss/section/1f2838d4-99ea-49f0-9102-138784c7ea7c",
-            "http://www.standaard.be/rss/section/e70ccf13-a2f0-42b0-8bd3-e32d424a0aa0",
-            "http://www.standaard.be/rss/section/ab8d3fd8-bf2f-487a-818b-9ea546e9a859",
-            "http://www.standaard.be/rss/section/eb1a6433-ca3f-4a3b-ab48-a81a5fb8f6e2",
-            "http://www.standaard.be/rss/section/451c8e1e-f9e4-450e-aa1f-341eab6742cc",
-            "http://www.standaard.be/rss/section/8f693cea-dba8-46e4-8575-807d1dc2bcb7",
-            "http://www.standaard.be/rss/section/113a9a78-f65a-47a8-bd1c-b24483321d0f",
-            "http://www.standaard.be/rss/section/1f2838d4-99ea-49f0-9102-138784c7ea7c",
-        ]
-
+        self.doctype = "standard (www)"
+        self.rss_url = ["http://www.standard.at/rss"]
         self.version = ".1"
-        self.date = datetime.datetime(year=2016, month=5, day=3)
+        self.date = datetime.datetime(year=2019, month=9, day=17)
+
+    def get_page_body(self, url):
+        """standards.at has a cookie wall which needs to be bypassed by setting a specific cookie in every request."""
+        response = requests.get(url, headers={"Cookie": "DSGVO_ZUSAGE_V1=true"})
+        return response.text
 
     def parsehtml(self, htmlsource):
-        """                                                                                                                                                                                                                                                                
+        """                                                                                                                                                                                                                                  
         Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                
 
         Parameters                                                                                                                                                                                                                                                         
@@ -53,12 +49,12 @@ class standaard(rss):
             html retrived from RSS feed                                                                                                                                                                                                                                     
             
         yields                                                                                                                                                                                                                                                             
-        ----                                                                                                                                                                                                                                                               
-        title    the title of the article                                                                                                                                                                                                                                  
-        text    the plain text of the article                                                                                                                                                                                                                             
-        byline    the author, e.g. "Bob Smith"                                                                                                                                                                                                                             
-        byline_source    sth like ANP                                                                                                                                                                                                                                      
-        category    sth. like economy, sports, ...                                                                                                                                                                                                                         
+        ----                                                                               
+        title    the title of the article                                                                           
+        text    the plain text of the article                                                                         
+        byline    the author, e.g. "Bob Smith"                                                                                   
+        byline_source    sth like ANP                                                                     
+        category    sth. like economy, sports, ...                                                      
         """
 
         try:

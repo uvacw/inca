@@ -2,8 +2,7 @@ from celery import Task
 
 
 class Analysis(Task):
-
-    def fit(self, documents, add_prediction='', **kwargs):
+    def fit(self, documents, add_prediction="", **kwargs):
         """
         This method should train a model on the input documents.\n
         :param documents: the documents (dictionaries) to train on
@@ -16,7 +15,7 @@ class Analysis(Task):
         """
         raise NotImplementedError
 
-    def predict(self, documents, add_prediction='', **kwargs):
+    def predict(self, documents, add_prediction="", **kwargs):
         """
         This method should perform inference on new unseen documents.\n
         :param documents: the documents (dictionaries) to perform inference on
@@ -70,20 +69,18 @@ class Analysis(Task):
         """
         raise NotImplementedError
 
-
-    def runwrap(self, action='run', *args, **kwargs):
-        '''
+    def runwrap(self, action="run", *args, **kwargs):
+        """
         Call the task as either a local or distributed process
-        '''
-        if action == 'run':
+        """
+        if action == "run":
             return self.run(*args, **kwargs)
 
-        if action == 'delay':
+        if action == "delay":
             return self.delay(*args, **kwargs)
-            
-    def run(self, *args, **kwargs):
-        self.fit(*args,**kwargs)
-        # self.predict(*args,**kwargs)
-        self.quality(*args,**kwargs)
-        self.interpetation(*args,**kwargs)
 
+    def run(self, *args, **kwargs):
+        self.fit(*args, **kwargs)
+        # self.predict(*args,**kwargs)
+        self.quality(*args, **kwargs)
+        self.interpetation(*args, **kwargs)

@@ -10,14 +10,18 @@ import requests
 
 logger = logging.getLogger("INCA")
 
+
 def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-    lines = textstring.strip().split('\n')
+    # This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split("\n")
     lead = lines[0].strip()
-    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-    if rest: result = lead + ' ||| ' + rest
-    else: result = lead
+    rest = "||".join([l.strip() for l in lines[1:] if l.strip()])
+    if rest:
+        result = lead + " ||| " + rest
+    else:
+        result = lead
     return result.strip()
+
 
 class thesun(rss):
     """Scrapes thesun.co.uk"""
@@ -26,10 +30,10 @@ class thesun(rss):
         self.doctype = "thesun (www)"
         self.rss_url = "https://www.thesun.co.uk/feed/"
         self.version = ".1"
-        self.date    = datetime.datetime(year=2017, month=9, day=8)
+        self.date = datetime.datetime(year=2017, month=9, day=8)
 
-    def parsehtml(self,htmlsource):
-        '''
+    def parsehtml(self, htmlsource):
+        """
         Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                
 
         Parameters                                                                                                                                                                                                                                                      
@@ -42,21 +46,25 @@ class thesun(rss):
         teaser    the intro to the artcile                                                                                                                                                                                                                                  
         byline      the author, e.g. "Bob Smith"                                                                                                                                                                                                                            
         text    the plain text of the article                                                                                                                                                                                                                               
-        '''        
+        """
 
         try:
             tree = fromstring(htmlsource)
         except:
-            logger.warning("Could not parse HTML tree",type(doc),len(doc))
-            #logger.warning(doc)
-            return("","","", "")
+            logger.warning("Could not parse HTML tree", type(doc), len(doc))
+            # logger.warning(doc)
+            return ("", "", "", "")
         try:
-            title = " ".join(tree.xpath("//*[@class='article__headline-section']//text()"))
+            title = " ".join(
+                tree.xpath("//*[@class='article__headline-section']//text()")
+            )
         except:
             title = ""
             logger.warning("Could not parse article title")
         try:
-            teaser = " ".join(tree.xpath("//*[@class='article__subdeck theme__border-color']//text()"))
+            teaser = " ".join(
+                tree.xpath("//*[@class='article__subdeck theme__border-color']//text()")
+            )
         except:
             teaser = ""
             logger.debug("Could not parse article teaser")
@@ -71,18 +79,22 @@ class thesun(rss):
             text = ""
             logger.warning("Could not parse article source")
 
-
-        extractedinfo={"title":title.strip(),
-                       "teaser":teaser.strip(),
-                       "byline":byline.strip().replace("\t","").replace("\n",""),
-                       "text":text.strip().replace("\xa0","").replace("\\","").replace("\t","").replace("\n","")
-                      }
+        extractedinfo = {
+            "title": title.strip(),
+            "teaser": teaser.strip(),
+            "byline": byline.strip().replace("\t", "").replace("\n", ""),
+            "text": text.strip()
+            .replace("\xa0", "")
+            .replace("\\", "")
+            .replace("\t", "")
+            .replace("\n", ""),
+        }
 
         return extractedinfo
 
-    def parseurl(self,url):
-        '''
+    def parseurl(self, url):
+        """
         Parses the category based on the url
-        '''
-        category = url.split('/')[3]
-        return {'category': category}
+        """
+        category = url.split("/")[3]
+        return {"category": category}

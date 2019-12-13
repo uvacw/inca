@@ -10,27 +10,30 @@ import logging
 
 logger = logging.getLogger("INCA")
 
+
 def polish(textstring):
-    #This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
-    lines = textstring.strip().split('\n')
+    # This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split("\n")
     lead = lines[0].strip()
-    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
-    if rest: result = lead + ' ||| ' + rest
-    else: result = lead
+    rest = "||".join([l.strip() for l in lines[1:] if l.strip()])
+    if rest:
+        result = lead + " ||| " + rest
+    else:
+        result = lead
     return result.strip()
 
-class boskalispress (rss):
+
+class boskalispress(rss):
     """Scrapes Boskalis Westminster Press Releases"""
 
     def __init__(self):
         self.doctype = "boskalispress (corp)"
-        self.rss_url ='https://boskalis.com/syndication/press-releases/feed.rss'
+        self.rss_url = "https://boskalis.com/syndication/press-releases/feed.rss"
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=6, day=14)
 
-
-    def parsehtml(self,htmlsource):
-        '''                                                                                                                                                                                                                                                               
+    def parsehtml(self, htmlsource):
+        """                                                                                                                                                                                                                                                               
         Parses the html source to retrieve info that is not in the RSS-keys                                                                                                                                                                                                
         
         Parameters                                                                                                                                                                                                                                                        
@@ -43,74 +46,86 @@ class boskalispress (rss):
         title    the title of the article                                                                                                                                                                                                                                 
         category    sth. like economy, sports, ...
         text    the plain text of the article                                                                                                                                                                                                                              
-        '''
+        """
 
         tree = fromstring(htmlsource)
         try:
-            title="".join(tree.xpath('//*/h1[@class="heading--section"]/text()')).strip()
+            title = "".join(
+                tree.xpath('//*/h1[@class="heading--section"]/text()')
+            ).strip()
         except:
             logger.warning("Could not parse article title")
             title = ""
         try:
-            category="".join(tree.xpath('//*/a[@class="btn btn--link"]//text()')).strip()
+            category = "".join(
+                tree.xpath('//*/a[@class="btn btn--link"]//text()')
+            ).strip()
         except:
             logger.debug("Could not parse article category")
             category = ""
-        if len(category.split(" ")) >1:
-            category=""
+        if len(category.split(" ")) > 1:
+            category = ""
         try:
-            text="".join(tree.xpath('//*[@class="page-content content--main"]//text()')).strip()
+            text = "".join(
+                tree.xpath('//*[@class="page-content content--main"]//text()')
+            ).strip()
         except:
             logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "category":category.strip(),
-                       "text":polish(text).strip()
-                       }
+        extractedinfo = {
+            "title": title.strip(),
+            "category": category.strip(),
+            "text": polish(text).strip(),
+        }
 
         return extractedinfo
 
-class boskalisnews (rss):
+
+class boskalisnews(rss):
     """Scrapes Boskalis Westminster News Releases"""
 
     def __init__(self):
         self.doctype = "boskalisnews (corp)"
-        self.rss_url ='https://boskalis.com/syndication/news-releases/feed.rss'
+        self.rss_url = "https://boskalis.com/syndication/news-releases/feed.rss"
         self.version = ".1"
         self.date = datetime.datetime(year=2017, month=6, day=14)
 
-
-    def parsehtml(self,htmlsource):
-        '''                                                                             
+    def parsehtml(self, htmlsource):
+        """                                                                             
         Parses the html source to retrieve info that is not in the RSS-keys
         In particular, it extracts the following keys (which should be available in most online news:
         section    sth. like economy, sports, ...
         text        the plain text of the article
         byline      the author, e.g. "Bob Smith"
         byline_source   sth like ANP
-        '''
+        """
         tree = fromstring(htmlsource)
         try:
-            title="".join(tree.xpath('//*/h1[@class="heading--section"]/text()')).strip()
+            title = "".join(
+                tree.xpath('//*/h1[@class="heading--section"]/text()')
+            ).strip()
         except:
             logger.warning("Could not parse article title")
             title = ""
         try:
-            category="".join(tree.xpath('//*/span[@class="tag"]//text()')).strip()
+            category = "".join(tree.xpath('//*/span[@class="tag"]//text()')).strip()
         except:
             category = ""
-        if len(category.split(" ")) >1:
-            category=""
+        if len(category.split(" ")) > 1:
+            category = ""
         try:
-            text="".join(tree.xpath('//*[@class="page-content content--main"]//text()')).strip()
+            text = "".join(
+                tree.xpath('//*[@class="page-content content--main"]//text()')
+            ).strip()
         except:
             logger.warning("Could not parse article text")
             text = ""
         text = "".join(text)
-        extractedinfo={"title":title.strip(),
-                       "category":category.strip(),
-                       "text":polish(text).strip()
-                       }
+        extractedinfo = {
+            "title": title.strip(),
+            "category": category.strip(),
+            "text": polish(text).strip(),
+        }
 
         return extractedinfo

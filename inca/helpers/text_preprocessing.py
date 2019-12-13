@@ -5,12 +5,12 @@ from gensim.utils import tokenize
 import configparser
 
 config = configparser.ConfigParser()
-config.read('settings.cfg')
+config.read("settings.cfg")
 
-DEFAULTLANGUAGE = config.get('inca','default_data_language')
+DEFAULTLANGUAGE = config.get("inca", "default_data_language")
 
 
-def get_normalizer(norm_type, language = DEFAULTLANGUAGE):
+def get_normalizer(norm_type, language=DEFAULTLANGUAGE):
     """
     Returns a lambda function that acts as a normalizer for input words/tokens.\n
     :param norm_type: the normalizer type to "construct". Recommended 'lemmatize'. If type is not in the allowed types then does not normalize (lambda just forwards the input to output as it is)
@@ -18,26 +18,34 @@ def get_normalizer(norm_type, language = DEFAULTLANGUAGE):
     :return: the lambda callable object to perform normalization
     :rtype: lambda
     """
-    if norm_type == 'stem' and language == "english":
+    if norm_type == "stem" and language == "english":
         from nltk.stem import PorterStemmer
+
         stemmer = PorterStemmer()
         return lambda x: stemmer.stem(x)
     elif norm_type == "stem" and language != "english":
         from nltk.stem.snowball import SnowballStemmer
+
         stemmer = SnowballStemmer(language)
         return lambda x: stemmer.stem(x)
-    elif norm_type == 'lemmatize' and language =="english":
+    elif norm_type == "lemmatize" and language == "english":
         from nltk.stem import WordNetLemmatizer
+
         lemmatizer = WordNetLemmatizer()
         return lambda x: lemmatizer.lemmatize(x)
-    elif norm_type == 'lemmatize' and language != "english":
-        print('Lemmatization only supported for english. Please use stem, otherwise no normalization')
-        return lambda x: x 
+    elif norm_type == "lemmatize" and language != "english":
+        print(
+            "Lemmatization only supported for english. Please use stem, otherwise no normalization"
+        )
+        return lambda x: x
     else:
-        print('No normalization. Not recommended')
+        print("No normalization. Not recommended")
         return lambda x: x
 
-def generate_word(text_data, normalize='lemmatize', word_filter=True, language = DEFAULTLANGUAGE):
+
+def generate_word(
+    text_data, normalize="lemmatize", word_filter=True, language=DEFAULTLANGUAGE
+):
     """
     Given input text_data, a normalize 'command' and a stopwords filtering flag, generates a normalized, lowercased word/token provided that it passes the filter and that its length is bigger than 2 characters.\n
     :param text_data: the text from which to generate (i.e. doc['text'])
@@ -52,7 +60,7 @@ def generate_word(text_data, normalize='lemmatize', word_filter=True, language =
     :rtype: str
     """
     stop_words = set(stopwords.words(language))
-    normalizer = get_normalizer(normalize, language = language)
+    normalizer = get_normalizer(normalize, language=language)
     if word_filter:
         print("  stopwords are being filtered")
     for word in (_.lower() for _ in tokenize(text_data)):
@@ -63,7 +71,7 @@ def generate_word(text_data, normalize='lemmatize', word_filter=True, language =
         yield normalizer(word)
 
 
-def extract_data(document, field='text'):
+def extract_data(document, field="text"):
     """
     Extracts data from the input document, given a field of interest.\n
     :param document: the dictionary to extract data from
@@ -73,17 +81,18 @@ def extract_data(document, field='text'):
     :return: the requested textual data if key is found or if key == 'all'. Else returns None
     :rtype: str
     """
-    if '_source' in document:    # handle ES-style documents
-        document = document['_source']
-        
+    if "_source" in document:  # handle ES-style documents
+        document = document["_source"]
+
     if field in document:
         return document[field]
-    elif field == 'all':
-        return '\n'.join((text_data for text_data in document.values()))
+    elif field == "all":
+        return "\n".join((text_data for text_data in document.values()))
     else:
         return ""
 
-def get_data_generator(documents, field='text'):
+
+def get_data_generator(documents, field="text"):
     """
     Returns a generator that can be iterated to extract textual data per document, according to the given field key.\n
     :param documents: the input dictionaries to generate from
@@ -108,6 +117,6 @@ def dir2docs(dir):
     root_dir = os.path.dirname(dir)
     docs = []
     for text_file in docs_list:
-        with open(root_dir + '/' + dir + '/' + text_file, 'r') as f:
-            docs.append({'text': f.read()})
+        with open(root_dir + "/" + dir + "/" + text_file, "r") as f:
+            docs.append({"text": f.read()})
     return docs
