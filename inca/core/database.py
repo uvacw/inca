@@ -33,11 +33,26 @@ logging.getLogger("elasticsearch").setLevel(logging.CRITICAL)
 try:
     auth = (config.get('elasticsearch','%s.http_auth_user' %config.get('inca','dependencies')),
             config.get('elasticsearch','%s.http_auth_pass' %config.get('inca','dependencies')))
-    
+    host = config.get('elasticsearch','%s.host' %config.get('inca','dependencies'))
+    port = int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies')))
+    scheme = config.get('elasticsearch','%s.scheme' %config.get('inca','dependencies'))
+
+    # override with env variables if present
+
+    if os.environ.get('INCA_USER'):
+        auth = (os.environ.get('INCA_USER'),
+                os.environ.get('INCA_PASS'))
+    if os.environ.get('INCA_HOST'):
+        host = os.environ.get('INCA_HOST')
+    if os.environ.get('INCA_PORT'):
+        port = int(os.environ.get('INCA_PORT'))
+    if os.environ.get('INCA_SCHEME'):
+        scheme = os.environ.get('INCA_SCHEME')
+        
     client = Elasticsearch(
-        host=config.get('elasticsearch','%s.host' %config.get('inca','dependencies')),
-        port=int(config.get('elasticsearch','%s.port'%config.get('inca','dependencies') )),
-        scheme=config.get('elasticsearch','%s.scheme' %config.get('inca','dependencies')),
+        host=host,
+        port=port,
+        scheme=scheme,
         http_auth= auth,
         timeout=60
         )
