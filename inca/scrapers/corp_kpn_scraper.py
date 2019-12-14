@@ -55,7 +55,12 @@ class kpn(Scraper):
         '''                                                                             
         Fetches articles from KPN
         '''
-        driver = webdriver.PhantomJS()
+        try:
+            driver = webdriver.PhantomJS()
+        except selenium.common.exceptions.WebDriverException:
+            logger.critical("Unable to run Randstad scraper, no PhantomJS in path. Try (re)installing PhantomJS.")
+            return []
+        
         driver.get(self.START_URL)
         time.sleep(2)
         # don't ask me why but driver.page_source must explicitly be referenced
