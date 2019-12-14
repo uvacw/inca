@@ -13,7 +13,6 @@ from ..core.database import check_exists
 import feedparser
 import re
 import logging
-from selenium import webdriver
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,7 +20,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 logger = logging.getLogger("INCA")
-driver = webdriver.PhantomJS()
 timeout = 10
 MAAND2INT = {'January':1,'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 'July':7, 'August':8, 'September':9, 'October':10, 'November':11, 'December':12}
 
@@ -74,7 +72,13 @@ class randstad(Scraper):
         '''                                                                             
         Fetches articles from Randstad
         '''
-        driver = webdriver.PhantomJS()
+        try:
+            driver = webdriver.PhantomJS()
+        except selenium.common.exceptions.WebDriverException:
+            logger.critical("Unable to run Randstad scraper, no PhantomJS in path. Try (re)installing PhantomJS.")
+            return []
+
+        
         timeout = 10
 
         try:
