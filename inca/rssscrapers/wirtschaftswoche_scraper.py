@@ -53,12 +53,12 @@ class wirtschaftswoche(rss):
 #title
 
         try:
-            title = "".join(tree.xpath('//*[@class="c-headline c-headline--article u-margin-m"]/span/text()|//*[@class="c-headline c-headline--article u-margin-m"]/text()')).replace("\n", "")
+            title = "".join(tree.xpath('//*[@class="c-headline c-headline--article u-margin-m"]/text()|//*[@class="o-article__element"]//h2/text()')).replace("\n", "")
         except:
             title = ""
 #source
         try:
-            source="".join(tree.xpath('//*[@class="c-metadata__source"]/a/text()'))
+            source="".join(tree.xpath('//*[@class="c-metadata u-margin-xl"]/a/span/text()'))   
         except:
             source = ""
 
