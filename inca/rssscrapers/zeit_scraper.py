@@ -33,12 +33,13 @@ class zeit(rss):
             logger.warning("HTML tree cannot be parsed")
 #title
         try:
-            title = ''.join(tree.xpath('//*[@class="article-header"]//h1/span/text()'))
+            title = ''.join(tree.xpath('//*[@class="article-header"]//h1/span/text()|//*[@class="header-article header-article--text-only"]//h1/span/text()|//*[@class="article__item "]//h1/span/text()')) 
         except:
             title =""
+            
 #category
         try:
-            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()')
+            category = tree.xpath('//*[@id="navigation"]//*[@class="nav__ressorts-link--current"]//text()|//*[@class="svg-symbol header__logo"]//text()')
         except:
             category =""
 #author
@@ -59,8 +60,8 @@ class zeit(rss):
             teaser =""
 #text
         try:
-            text = "".join(tree.xpath('//*[@class="paragraph article__item"]//text()')).strip().replace("\n","")
-
+            text = "".join(tree.xpath('//*[@class="paragraph article__item"]//text()|//*[@class="list article__item"]//text()|//*[@class="lb-item lb-item--text"]//text()')).strip().replace("\n","")  
+        
         except:
             text  =""
         
