@@ -80,6 +80,15 @@ class standaard(rss):
             author =""
             logger.debug("Could not parse article source")
 
+
+#title
+        try:
+            title="".join(tree.xpath('//*[@class="article__header"]/h1/text()|//*[@class="DS-headline DS-headline--x-large "]/text()')).strip()
+        except:
+            title=""
+            logger.warning("Could not parse article title")
+
+
 # bylinesource
 # gives a list with either two or one entries: the first one is the date and if there is a second one it is the bylinesource
         try:
@@ -90,12 +99,7 @@ class standaard(rss):
                 source  = ""
         except:
             source = ""
-        try:
-            title = tree.xpath('//*[@itemprop="name"]/text()')[0]
-        except:
-            title = ""
-            logger.warning("Could not parse article source")
-
+            
         text = text.replace("\xad","")
         text = textfirstpara + " " + text
         extractedinfo = {"title":title.strip(),

@@ -38,7 +38,7 @@ class sueddeutsche(rss):
             teaser = ""
 #title
         try:
-            title = "".join(tree.xpath('//*[@class="sz-article-header__title"]/text()|//*[@class="header"]/h2/text()|//*[@class="header"]/h2/strong/text()')).replace("\n        ",' ').strip()
+            title = "".join(tree.xpath('//*[@class="header"]/h2/text()|//*[@class="header"]/h2/strong/text()')).replace("\n        ",' ').strip()
         except:
             title =""
 #text

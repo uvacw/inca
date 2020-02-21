@@ -52,12 +52,12 @@ class dailystar(rss):
             #logger.warning(doc)
             return("","","", "")
         try:
-            title = tree.xpath("//*[@itemprop='headline']//text()")[0]
+            title = " ".join(tree.xpath("//*[@itemprop='headline name']//text()"))
         except:
             title = ""
             logger.warning("Could not parse article title")
         try:
-            teaser = tree.xpath("//*[@id='singleArticle']/header/p/text()")[0]
+            teaser = " ".join(tree.xpath("//*[@itemprop='description']//text()"))
         except:
             teaser = ""
             logger.debug("Could not parse article teaser")
@@ -67,16 +67,17 @@ class dailystar(rss):
             byline = ""
             logger.debug("Could not parse article source")
         try:
-            text = " ".join(tree.xpath("//*[@data-type='article-body']//p/text()"))
+            text = " ".join(tree.xpath("//*[@itemprop='articleBody']//p/text()"))
         except:
             text = ""
             logger.warning("Could not parse article text")
 
 
-        extractedinfo={"title":title.strip(),
-                       "teaser":teaser.strip(),
-                       "byline":byline.strip(),
-                       "text":text.replace("\r\n","").replace("\\","").strip()
+        extractedinfo={"title":title,
+                       "teaser":teaser,
+                       "byline":byline,
+                       "text":text
                       }
+
 
         return extractedinfo

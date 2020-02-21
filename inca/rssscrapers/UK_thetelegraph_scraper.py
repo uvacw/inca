@@ -50,21 +50,25 @@ class thetelegraph(rss):
             logger.warning("Could not parse HTML tree",type(doc),len(doc))
             #logger.warning(doc)
             return("","","", "")
+        
         try:
-            title = "".join(tree.xpath("//*[@class='headline__heading']/text()"))
+            title = "".join(tree.xpath("//*[@class='headline__heading']/text()|//*[@class='e-headline u-heading-1']/text()")).replace('\n','').strip()
         except:
             title = ""
             logger.warning("Could not parse article title")
+        
         try:
             category = tree.xpath("//*[@class='breadcrumbs__item-content']/text()")[1]
         except:
             category = ""
             logger.debug("Could not parse article category")
-        try:
-            byline = "".join(tree.xpath("//*[@class='byline__author-name']//text()"))
+        
+        try:            
+            byline = " ".join(tree.xpath("//*[@class='byline__author-name']//text()|//*[@class='article-author']//a/text()|//*[@class='article__byline-date']//a/span/text()")).replace("\n","").replace("By","").strip()
         except:
             byline = ""
             logger.debug("Could not parse article source")
+        
         try:
             text = "".join(tree.xpath("//*[@itemprop='articleBody']//p/text()|//*[@itemprop='articleBody']//a/text()|//*[@class='m_first-letter m_first-letter--flagged']//text()"))
         except:

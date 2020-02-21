@@ -52,28 +52,27 @@ class detijd(rss):
             print(doc)
             return("","","", "")
         try:
-             author = tree.xpath('//*[@class="c-articlehead__detail__authors__author"]/span/text()')
+             author = tree.xpath('//*[@class="m-meta__item-container"]//a/text()')[0]
         except:
              author = ""
              logger.debug("Could not parse article source")
         try:
-            textfirstpara = " ".join(tree.xpath('//*[@class="ac_paragraph ac_paragraph--first"]/p/text()|//*[@class="c-blogheader__text"]//text()')).strip()
+            textfirstpara = tree.xpath('//*[@class="l-main-container-article__intro highlightable "]/text()').strip()
         except:
             textfirstpara = ""
             logger.debug("Could not parse article teaser")
         try:
-            textrest = "".join(tree.xpath('//*[@class="ac_paragraph"]//text()')).replace("â\x80\x98","").replace("\n","").replace("â\x80\x9c","").replace("\xa0","").replace("â\x80\x9d","").strip()
-        
+            textrest = "".join(tree.xpath('//*[@class="l-main-container-article__body clearfix highlightable "]//text()')).strip()
         except:
             textrest =""
             logger.warning("Could not parse article text")
         try:
-            category = tree.xpath('//*[@itemprop="name"]/text()')[0]
+            category = tree.xpath('//*[@class="m-breadcrumb__item--last"]/a/span/text()')[0]
         except:
             category =""
             logger.debug("Could not parse article category")
         try:
-            title = "".join(tree.xpath('//*[@itemprop="headline"]//text()')).strip()
+            title = "".join(tree.xpath('//*[@class="l-grid__item desk-big-five-sixths push-desk-big-one-sixth"]//text()')).strip()
         except:
             title = ""
             logger.warning("Could not parse article title")

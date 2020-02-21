@@ -51,12 +51,12 @@ class thesun(rss):
             #logger.warning(doc)
             return("","","", "")
         try:
-            title = " ".join(tree.xpath("//*[@class='article__headline-section']//text()"))
+            title = " ".join(tree.xpath("//*[@class='article__headline-section']//text()|//*[@class='article__headline']/text()"))
         except:
             title = ""
             logger.warning("Could not parse article title")
         try:
-            teaser = " ".join(tree.xpath("//*[@class='article__subdeck theme__border-color']//text()"))
+            teaser = " ".join(tree.xpath("//*[@class='article__content article__content--intro']//text()"))
         except:
             teaser = ""
             logger.debug("Could not parse article teaser")
@@ -66,7 +66,7 @@ class thesun(rss):
             byline = ""
             logger.debug("Could not parse article source")
         try:
-            text = " ".join(tree.xpath("//*[@class='article__content']/p//text()"))
+            text = " ".join(tree.xpath("//*[@class='article__content']/p//text()|//*[@class='article__content live-blog-article__content']/p//text()"))
         except:
             text = ""
             logger.warning("Could not parse article source")

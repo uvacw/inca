@@ -53,12 +53,12 @@ class independent_uk(rss):
             #logger.warning(doc)
             return("","","", "")
         try:
-            title = " ".join(tree.xpath("//*[@itemprop='headline']/text()"))
+            title = " ".join(tree.xpath("//*[@class='headline']//text()"))
         except:
             title = ""
             logger.warning("Could not parse article title")
         try:
-            teaser = " ".join(tree.xpath("//*[@class='intro']/p/text()"))
+            teaser = " ".join(tree.xpath("//*[@class='sub-headline']/p/text()"))
         except:
             teaser = ""
             logger.debug("Could not parse article teaser")
