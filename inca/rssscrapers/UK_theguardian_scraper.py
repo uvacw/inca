@@ -58,42 +58,36 @@ class theguardian(rss):
             # logger.warning(doc)
             return ("", "", "", "")
         try:
-            title = tree.xpath("//*[@class='content__headline']/text()")[0]
+            title = ''.join(tree.xpath("//*[@class='gs-container']//h1//text()"))
         except:
             title = ""
             logger.warning("Could not parse article title")
         try:
-            teaser = tree.xpath("//*[@class='content__standfirst']/p/text()")[0]
+            teaser = tree.xpath("//*[@class='content__standfirst']//text()|//*[@class='content__standfirst content__standfirst--immersive-article']//p//text()|//*[@class='content__standfirst content__standfirst--gallery']//p//text()")
         except:
             teaser = ""
             logger.debug("Could not parse article title")
         try:
-            byline = " ".join(tree.xpath("//*[@class='byline']//text()"))
+            byline = " ".join(tree.xpath("//*[@class='byline']//text()|//*[@itemprop='name']//text()|//*[@class='content__standfirst content__standfirst--immersive-article']/p[2]/text()"))
         except:
             byline = ""
             logger.debug("Could not parse article source")
         try:
-            category = tree.xpath("//*[@class='content__section-label__link']//text()")[
-                0
-            ]
+            category = tree.xpath("//*[@class='label__link-wrapper']//text()")
         except:
             category = ""
             logger.debug("Could not parse article category")
         try:
-            text = " ".join(
-                tree.xpath(
-                    "//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']//a/text()"
-                )
-            )
+            text = " ".join(tree.xpath("//*[@itemprop='articleBody']/p/text()|//*[@itemprop='articleBody']//a/text()|//*[@itemprop='reviewBody']/p/text()"))
         except:
             text = ""
             logger.warning("Could not parse article text")
 
         extractedinfo = {
             "title": title.replace("\n", ""),
-            "teaser": teaser.strip(),
+            "teaser": teaser,
             "byline": byline.strip().replace("\n", ""),
-            "category": category.strip(),
+            "category": category,
             "text": text.replace("\\", ""),
         }
 
