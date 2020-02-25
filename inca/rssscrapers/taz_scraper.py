@@ -36,6 +36,7 @@ class taz(rss):
             tree = fromstring(htmlsource)
         except:
             logger.warning("HTML tree cannot be parsed")
+        
         # teaser
         try:
             teaser = tree.xpath('//*[@class="intro "]/text()')[0]
@@ -47,9 +48,7 @@ class taz(rss):
             text = (
                 " ".join(
                     tree.xpath(
-                        "//p[@class='article first odd']/text() | //p[@class='article odd']/text() | //p[@class='article even']/text() | //*[@class='sectbody']/h6//text() | //p[@class='article first odd']/a/text()| //p[@class='article odd']/a/text() | //p[@class='article even']/a/text() "
-                    )
-                )
+                        "//p[@class='article first odd']/text() | //p[@class='article odd']/text() | //p[@class='article even']/text() | //*[@class='sectbody']/h6//text() | //p[@class='article first odd']/a/text()| //p[@class='article odd']/a/text() | //p[@class='article even']/a/text() "))
                 .replace("\xa0", "")
                 .replace("|", "")
                 .strip()
@@ -58,26 +57,40 @@ class taz(rss):
             text = ""
 
         # title
-
         try:
             title = " ".join(
-                tree.xpath(
-                    '//*[@itemprop="articleBody"]/h4/text()|//*[@itemprop="articleBody"]/h1/text()'
-                )
+                tree.xpath('//*[@itemprop="articleBody"]/h4/text()|//*[@itemprop="articleBody"]/h1/text()|//*[@class="headlineWrapper"]//text()')
             ).replace("\n", "")
         except:
             title = ""
+        
         # source
         try:
             source = "".join(tree.xpath('//*[@class="article first odd"]/em/text()'))
         except:
             source = ""
+        
+        #byline
+        try:
+            author = " ".join(tree.xpath('//*[@itemprop="name"]//text()|//*[@class="secthead"]/h2/a/span/text()'))                        
+        except:
+            author = " "
+        
+        #category    
+        try:
+            category = " ".join(tree.xpath('//*[@class="left rootline toolbar"]//li//text()')).replace(" ",", ") 
+
+        except:
+            category = ""
+
 
         extractedinfo = {
             "title": title,
             "text": text,
             "teaser": teaser,
             "byline_source": source,
+            "byline": author,
+            "category": category,
         }
 
         return extractedinfo
