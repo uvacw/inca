@@ -39,7 +39,7 @@ class taz(rss):
         
         # teaser
         try:
-            teaser = tree.xpath('//*[@class="intro "]/text()')[0]
+            teaser = "".join(tree.xpath('//*[@class="intro "]/text()'))
         except:
             teaser = ""
 
