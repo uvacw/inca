@@ -47,9 +47,9 @@ class dertagesspiegel(rss):
 
         # category
         try:
-            category = tree.xpath(
+            category = "".join(tree.xpath(
                 '//*[@class="ts-breadcrumb"]//*[@class="ts-inverse-link"]//text()'
-            )
+            )).replace(" ",", ")
         except:
             category = ""
 
@@ -72,12 +72,13 @@ class dertagesspiegel(rss):
             teaser = ""
         # author
         try:
-            author = tree.xpath('//*[@class="ts-author"]/a/text()')
+            author = "".join(tree.xpath('//*[@class="ts-author"]/a/text()'))
+
         except:
             author = ""
         # text
         try:
-            text = "".join(tree.xpath('//*[@class="ts-article-content"]//p/text()'))
+            text = "".join(tree.xpath('//*[@class="ts-article-content"]//p/text()')).replace("()","") 
         except:
             text = ""
 
