@@ -10,25 +10,16 @@ import logging
 logger = logging.getLogger("INCA")
 
 
-class dertagesspiegel(rss):
-    """Scrapes https://www.tagesspiegel.de"""
+class aachenerzeitungpolitik(rss):
+    """Scrapes the politics section of https://www.aachener-zeitung.de """
 
     def __init__(self):
-        self.doctype = "der tagesspiegel (www)"
+        self.doctype = "aachener zeitung (www)"
         self.rss_url = [
-            "http://www.tagesspiegel.de/contentexport/feed/home",
-            "http://www.tagesspiegel.de/contentexport/feed/politik",
-            "http://www.tagesspiegel.de/contentexport/feed/queerspiegel",
-            "http://www.tagesspiegel.de/contentexport/feed/wirtschaft",
-            "http://www.tagesspiegel.de/contentexport/feed/sport",
-            "http://www.tagesspiegel.de/contentexport/feed/kultur",
-            "http://www.tagesspiegel.de/contentexport/feed/weltspiegel",
-            "http://www.tagesspiegel.de/contentexport/feed/meinung",
-            "http://www.tagesspiegel.de/contentexport/feed/medien",
-            "http://www.tagesspiegel.de/contentexport/feed/wissen",
+            "https://www.aachener-zeitung.de/politik/feed.rss",
         ]
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=3, day=29)
+        self.date = datetime.datetime(year=2020, month=3, day=23)
 
     def parsehtml(self, htmlsource):
         """
@@ -46,44 +37,42 @@ class dertagesspiegel(rss):
 
         # category
         try:
-            category = tree.xpath(
-                '//*[@class="ts-breadcrumb"]//*[@class="ts-inverse-link"]//text()'
-            )
+            category = tree.xpath('//*[@class="park-section-breadcrumb__link "]//span/text()')[1]
         except:
             category = ""
 
-        # title: consists out of two parts:
+        # title: consists out of two parts, a kicker and a headline:
         # title1
         try:
-            title1 = tree.xpath('//*[@class="ts-overline"]//text()')[0]
+            title1 = tree.xpath('//*[@class="park-article__kicker"]/text()')
         except:
             title1 = ""
         # title2
         try:
-            title2 = tree.xpath('//*[@class="ts-headline"]//text()')[0]
+            title2 = tree.xpath('//*[@class="park-article__headline"]/text()')
         except:
             title2 = ""
         title = title1 + title2
         # teaser
         try:
-            teaser = tree.xpath('//*[@class="ts-intro"]//text()')[0].replace("\n", "")
+            teaser = tree.xpath('//*[@class="park-article__intro park-article__content"]/text()')
         except:
             teaser = ""
         # author
         try:
-            author = tree.xpath('//*[@class="ts-author"]/a/text()')
+            author = tree.xpath('//*[@class="park-article__sign"]/text()')
         except:
             author = ""
         # text
         try:
-            text = "".join(tree.xpath('//*[@class="ts-article-content"]//p/text()'))
+            text = "".join(tree.xpath('//*[@class="park-article-content"]//p/text()'))
         except:
             text = ""
 
         extractedinfo = {
             "category": category,
-            "title": title,
             "teaser": teaser,
+            "title": title,
             "text": text,
             "byline": author,
         }
