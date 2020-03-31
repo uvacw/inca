@@ -6,18 +6,17 @@ from inca.core.database import check_exists
 import feedparser
 import re
 import logging
-
 logger = logging.getLogger("INCA")
 
-
+# Die Welt - Politik
 class diewelt(rss):
-    """Scrapes welt.de"""
+    """Scrapes the latest news from welt.de"""
 
     def __init__(self):
         self.doctype = "die welt (www)"
-        self.rss_url = "http://www.welt.de/?service=Rss"
+        self.rss_url = "https://www.welt.de/feeds/latest.rss"
         self.version = ".1"
-        self.date = datetime.datetime(year=2018, month=5, day=16)
+        self.date = datetime.datetime(year=2020, month=3, day=30)
 
     def parsehtml(self, htmlsource):
         """
@@ -44,61 +43,51 @@ class diewelt(rss):
             teaser = " ".join(tree.xpath('//*[@class="c-summary__intro"]//text()'))
         except:
             teaser = ""
-        # title1
+        # title
         try:
             title1 = tree.xpath(
-                '//*[@class="c-dreifaltigkeit__headline-wrapper"]//text()'
-            )[1]
+                '//*[@class="rf-o-topic c-topic"]//text()'
+            )
         except:
             title1 = ""
-        # title2
         try:
             title2 = tree.xpath(
-                '//*[@class="c-dreifaltigkeit__headline-wrapper"]//text()'
-            )[3]
+                '//*[@class="c-headline o-dreifaltigkeit__headline rf-o-headline"]//text()'
+            )
         except:
             title2 = ""
+        title = ": ".join(title1 + title2).strip()
 
-        title = title1 + ": " + title2
         # text
         try:
             text = " ".join(
                 tree.xpath(
-                    '//*[@itemprop="articleBody"]/p/text()|//*[@itemprop="articleBody"]/h3/text()'
+                    '//*[@itemprop="articleBody"]//p/text()|//*[@itemprop="articleBody"]//h3/text()'
                 )
             )
         except:
             text = ""
-        # firstletter
+        ## firstletter
         try:
-            firstletter = " ".join(
+            firstletter = "".join(
                 tree.xpath('//*[@itemprop="articleBody"]/p/span/text()')
             )
         except:
             firstletter = ""
+        text = firstletter + text
         # author
         try:
-            author1 = tree.xpath('//*[@class="c-author__name"]//a/text()')
-            if len(author1) == 2:
-                author = tree.xpath('//*[@class="c-author__name"]//a/text()')[0]
-            else:
-                author = ""
+            author = "".join(tree.xpath('//*[@class="c-author"]//a/text()'))
         except:
             author = ""
-
-        # source
-        try:
-            source = tree.xpath('//*[@class="c-source"]//text()')
-        except:
-            source = ""
+        author = author.strip()
 
         extractedinfo = {
             "category": category,
             "title": title,
-            "text": firstletter + text,
+            "text": text,
             "teaser": teaser,
             "byline": author,
-            "byline_source": source,
         }
 
         return extractedinfo
