@@ -16,7 +16,7 @@ class diewelt(rss):
         self.doctype = "die welt (www)"
         self.rss_url = "https://www.welt.de/feeds/latest.rss"
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=4, day=7)
+        self.date = datetime.datetime(year=2020, month=4, day=8)
 
     def parsehtml(self, htmlsource):
         """
@@ -68,7 +68,7 @@ class diewelt(rss):
         text = firstletter + text
         # author
         try:
-            author = "".join(tree.xpath('//*[@class="c-author"]//a/text()|//*[@class="c-author"]//span/text()'))
+            author = "".join(tree.xpath('//*[@class="c-author"]//a/text()'))
         except:
             logger.warning("No author")
             author = ""
