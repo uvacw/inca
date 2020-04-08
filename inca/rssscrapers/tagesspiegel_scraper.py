@@ -28,7 +28,7 @@ class dertagesspiegel(rss):
             "http://www.tagesspiegel.de/contentexport/feed/wissen",
         ]
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=4, day=7)
+        self.date = datetime.datetime(year=2020, month=4, day=8)
 
     def parsehtml(self, htmlsource):
         """
@@ -72,7 +72,7 @@ class dertagesspiegel(rss):
             author = tree.xpath('//*[@class="ts-author"]//a/text()')
         except:
             author = ""
-        author = "".join(author).strip()
+        author = ", ".join(author).strip()
         # text
         try:
             text = "".join(tree.xpath('//*[@class="ts-article-content"]//p/text()'))
