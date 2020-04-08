@@ -60,6 +60,7 @@ class diesueddeutsche(rss):
         except:
             title2 = ""
         title = ": ".join(title1 + title2)
+        title = title.replace("\xa0", "")
         # text
         try:
             text = "".join(tree.xpath('//*[@class="sz-article__body css-uswvo e1lg1pmy0"]/p/text()|//*[@class="sz-article__body css-uswvo e1lg1pmy0"]/h3/text()'))
