@@ -6,7 +6,6 @@ from inca.core.database import check_exists
 import feedparser
 import re
 import logging
-
 logger = logging.getLogger("INCA")
 
 

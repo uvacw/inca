@@ -52,7 +52,7 @@ class diewelt(rss):
             title2 = tree.xpath('//*[@class="c-headline o-dreifaltigkeit__headline rf-o-headline"]//text()')
         except:
             title2 = ""
-        title = ": ".join(title1 + title2).strip()
+        title = ": ".join(title1 + title2).strip().replace("\xa0", "")
 
         # text
         try:

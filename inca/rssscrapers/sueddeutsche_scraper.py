@@ -16,7 +16,7 @@ class diesueddeutsche(rss):
         self.doctype = "sueddeutschet politik (www)"
         self.rss_url = "https://rss.sueddeutsche.de/app/service/rss/alles/index.rss?output=rss"
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=4, day=7)
+        self.date = datetime.datetime(year=2020, month=4, day=8)
 
     def parsehtml(self, htmlsource):
         """
@@ -63,7 +63,7 @@ class diesueddeutsche(rss):
         title = title.replace("\xa0", "")
         # text
         try:
-            text = "".join(tree.xpath('//*[@class="sz-article__body css-uswvo e1lg1pmy0"]/p/text()|//*[@class="sz-article__body css-uswvo e1lg1pmy0"]/h3/text()'))
+            text = "".join(tree.xpath('//*[@class="sz-article__body css-uswvo e1lg1pmy0"]/p/text()|//*[@class="sz-article__body css-uswvo e1lg1pmy0"]/h3/text()|//*[@class="tickaroo-event-item-content-text"]//h2/text()|//*[@class="tickaroo-event-item-content-text"]//br/text()'))
         except:
             logger.warning("Text could not be accessed - most likely a premium article")
             text = ""
