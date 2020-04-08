@@ -25,7 +25,7 @@ class aachenerzeitung(rss):
             "https://www.aachener-zeitung.de/nrw-region/feed.rss",
         ]
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=3, day=29)
+        self.date = datetime.datetime(year=2020, month=4, day=8)
 
     def parsehtml(self, htmlsource):
         """
@@ -46,7 +46,6 @@ class aachenerzeitung(rss):
             category = tree.xpath('//*[@class="park-section-breadcrumb__link "]//span/text()')[1]
         except:
             category = ""
-
         # title: consists out of two parts, a kicker and a headline:
         # title1
         try:
@@ -58,7 +57,12 @@ class aachenerzeitung(rss):
             title2 = tree.xpath('//*[@class="park-article__headline"]/text()')
         except:
             title2 = ""
-        title = ": ".join(title1 + title2).replace("\n", "")
+        title = title1 + title2
+        title = ": ".join(title).strip().replace("\n", "").replace("         ", "").replace("        ", "")
+        if title.startswith(":") == True:
+            title = title.strip().replace(":", "")
+        else:
+            title = title
         # teaser
         try:
             teaser = "".join(tree.xpath('//*[@class="park-article__intro park-article__content"]/text()')).strip().replace("\n", "")
@@ -69,10 +73,12 @@ class aachenerzeitung(rss):
             author = "".join(tree.xpath('//*[@class="park-article__sign"]/text()'))
         except:
             author = ""
+        author = author.replace("(", "").replace(")", "")
         # text
         try:
             text = "".join(tree.xpath('//*[@class="park-article-content"]//p/text()'))
         except:
+            logger.warning("Text could not be accessed - most likely a premium article")
             text = ""
 
         extractedinfo = {

@@ -16,7 +16,7 @@ class diesueddeutsche(rss):
         self.doctype = "sueddeutschet politik (www)"
         self.rss_url = "https://rss.sueddeutsche.de/app/service/rss/alles/index.rss?output=rss"
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=3, day=29)
+        self.date = datetime.datetime(year=2020, month=4, day=7)
 
     def parsehtml(self, htmlsource):
         """
@@ -35,54 +35,46 @@ class diesueddeutsche(rss):
             logger.warning("HTML tree cannot be parsed")
 
         # category
-        """ The following code's output it a list with the general category first, followed by more detailled category descriptions"""
         try:
-            category = tree.xpath('//*[@class="css-5m4t2m"]//a/text()')
+            category = tree.xpath('//*[@class="css-5m4t2m"]//a/text()')[0]
         except:
             category = ""
-
         # teaser
         try:
-            teaser = " ".join(
-                tree.xpath('//*[@class="css-1psf6fc"]/text()')
-            )
+            teaser = " ".join(tree.xpath('//*[@class="css-1psf6fc"]/text()'))
         except:
             teaser = ""
         # bulletpoints
         try:
-            bulletpoints = " ".join(
-                tree.xpath('//*[@class="css-13lgcsh"]//li/text()')
-            )
+            bulletpoints = " ".join(tree.xpath('//*[@class="css-13lgcsh"]//li/text()'))
         except:
             bulletpoints = ""
         # title1
         try:
-            title1 = tree.xpath(
-                '//*[@class="css-1keap3i"]/text()'
-            )
+            title1 = tree.xpath('//*[@class="css-1keap3i"]/text()')
         except:
             title1 = ""
         # title2
         try:
-            title2 = tree.xpath(
-                '//*[@class="css-1kuo4az"]/text()'
-            )
+            title2 = tree.xpath('//*[@class="css-1kuo4az"]/text()')
         except:
             title2 = ""
         title = ": ".join(title1 + title2)
-
         # text
         try:
             text = "".join(tree.xpath('//*[@class="sz-article__body css-uswvo e1lg1pmy0"]/p/text()|//*[@class="sz-article__body css-uswvo e1lg1pmy0"]/h3/text()'))
         except:
+            logger.warning("Text could not be accessed - most likely a premium article")
             text = ""
-         
+        text = text.replace("\xa0", "")
         # author
         try:
             author = tree.xpath('//*[@class="sz-article__byline css-141ob1d emhdic30"]//text()')
         except:
+            logger.warning("No author")
             author = ""
-
+        author = "".join(author).strip().replace(".css-viqvuv{border-bottom:1px solid #29293a;-webkit-text-decoration:none;text-decoration:none;-webkit-transition:border-bottom 150ms ease-in-out;transition:border-bottom 150ms ease-in-out;}.css-viqvuv:hover{border-bottom-color:transparent;}", "").replace("Von ", "").replace("Gastbeitrag von ", "").replace("Interview von ", "")
+        
         extractedinfo = {
             "category": category,
             "title": title,

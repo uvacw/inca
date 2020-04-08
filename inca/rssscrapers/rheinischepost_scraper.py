@@ -31,7 +31,7 @@ class rheinischepost(rss):
             "https://rp-online.de/leben/beruf/feed.rss", 
         ]
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=3, day=23)
+        self.date = datetime.datetime(year=2020, month=4, day=7)
 
     def parsehtml(self, htmlsource):
         """
@@ -58,7 +58,12 @@ class rheinischepost(rss):
             title2 = tree.xpath('//*[@class="park-article__headline"]/text()')
         except:
             title2 = ""
-        title = ": ".join(title1 + title2).strip().replace("\n", "")
+        title = title1 + title2
+        title = ": ".join(title).strip().replace("\n", "").replace("         ", "").replace("        ", "")
+        if title.startswith(":") == True:
+            title = title.strip().replace(":", "")
+        else:
+            title = title
         # teaser
         try:
             teaser = tree.xpath('//*[@class="park-article__intro park-article__content"]/text()')[1]
@@ -70,10 +75,12 @@ class rheinischepost(rss):
             author = "".join(tree.xpath('//*[@class="park-article__sign"]/text()'))
         except:
             author = ""
+        author = author.strip().replace("(", "").replace(")", "")
         # text
         try:
             text = "".join(tree.xpath('//*[@class="park-article-content"]//p/text()'))
         except:
+            logger.warning("Text could not be accessed - most likely a premium article")
             text = ""
         # category
         try:

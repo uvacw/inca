@@ -28,7 +28,7 @@ class dertagesspiegel(rss):
             "http://www.tagesspiegel.de/contentexport/feed/wissen",
         ]
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=3, day=29)
+        self.date = datetime.datetime(year=2020, month=4, day=7)
 
     def parsehtml(self, htmlsource):
         """
@@ -46,9 +46,7 @@ class dertagesspiegel(rss):
 
         # category
         try:
-            category = tree.xpath(
-                '//*[@class="ts-breadcrumb"]//*[@class="ts-inverse-link"]//text()'
-            )
+            category = tree.xpath('//*[@class="ts-breadcrumb"]//*[@class="ts-inverse-link"]//text()')[0]
         except:
             category = ""
 
@@ -63,7 +61,7 @@ class dertagesspiegel(rss):
             title2 = tree.xpath('//*[@class="ts-headline"]//text()')[0]
         except:
             title2 = ""
-        title = title1 + title2
+        title = title1 + ": " + title2
         # teaser
         try:
             teaser = tree.xpath('//*[@class="ts-intro"]//text()')[0].replace("\n", "")
@@ -71,14 +69,17 @@ class dertagesspiegel(rss):
             teaser = ""
         # author
         try:
-            author = tree.xpath('//*[@class="ts-author"]/a/text()')
+            author = tree.xpath('//*[@class="ts-author"]//a/text()')
         except:
             author = ""
+        author = "".join(author).strip()
         # text
         try:
             text = "".join(tree.xpath('//*[@class="ts-article-content"]//p/text()'))
         except:
+            logger.warning("Text could not be accessed - most likely a premium article")
             text = ""
+        text = text.replace("\xa0", "")
 
         extractedinfo = {
             "category": category,
