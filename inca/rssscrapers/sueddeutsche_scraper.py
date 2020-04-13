@@ -41,15 +41,10 @@ class diesueddeutsche(rss):
             category = ""
         # teaser
         try:
-            teaser = " ".join(tree.xpath('//*[@class="css-1psf6fc"]/text()'))
+            teaser = " ".join(tree.xpath('//*[@class="css-1psf6fc"]/text()|//*[@class="css-13lgcsh"]//li/text()'))
         except:
             teaser = ""
-        # bulletpoints
-        try:
-            bulletpoints = " ".join(tree.xpath('//*[@class="css-13lgcsh"]//li/text()'))
-        except:
-            bulletpoints = ""
-        bulletpoints = bulletpoints.replace("\xa0", "")
+        teaser = teaser.replace("\xa0", "")
         # title1
         try:
             title1 = tree.xpath('//*[@class="css-1keap3i"]/text()')
@@ -83,7 +78,6 @@ class diesueddeutsche(rss):
             "text": text,
             "teaser": teaser,
             "byline": author,
-            "bulletpoints": bulletpoints,
         }
 
         return extractedinfo
