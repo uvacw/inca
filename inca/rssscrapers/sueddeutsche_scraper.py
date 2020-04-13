@@ -49,6 +49,7 @@ class diesueddeutsche(rss):
             bulletpoints = " ".join(tree.xpath('//*[@class="css-13lgcsh"]//li/text()'))
         except:
             bulletpoints = ""
+        bulletpoints = bulletpoints.replace("\xa0", "")
         # title1
         try:
             title1 = tree.xpath('//*[@class="css-1keap3i"]/text()')
