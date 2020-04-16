@@ -12,6 +12,7 @@ logger = logging.getLogger("INCA")
 
 class stuttgarterzeitung(rss):
     """Scrapes the news from https://www.stuttgarter-zeitung.de/ """
+    """Note for developers: The Stuttgarter Zeitung features a blog (https://www.stadtkind-stuttgart.de/). Currently, only the titles from this blog are parsed"""
 
     def __init__(self):
         self.doctype = "stuttgarter zeitung (www)"
@@ -19,7 +20,7 @@ class stuttgarterzeitung(rss):
             "https://www.stuttgarter-zeitung.de/news.rss.feed",
         ]
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=3, day=29)
+        self.date = datetime.datetime(year=2020, month=4, day=7)
 
     def parsehtml(self, htmlsource):
         """
@@ -44,11 +45,10 @@ class stuttgarterzeitung(rss):
             category = ""
         category = category.replace("\n\t        \t\t", "")
 
-            
         # title: consists out of two parts:
         # title1
         try:
-            title1 = tree.xpath('//*[@class="mod-header-article"]/h1/em//text()')
+            title1 = tree.xpath('//*[@class="mod-header-article"]/h1/em//text()|//*[@class="entry-title entry-title-single"]//text()')
         except:
             title1 = ""
         # title2
@@ -62,18 +62,25 @@ class stuttgarterzeitung(rss):
             teaser = "".join(tree.xpath('//*[@class="box-lead"]//text()'))
         except:
             teaser = ""
+        teaser = teaser.strip()
         # author
         try:
-            author = tree.xpath('//*[@class="contentbrick box-author"]//text()')[0]
+            author = tree.xpath('//*[@class="contentbrick box-author"]//text()|/*[@class="entry-author-name"]//text()')[0]
+            if author.endswith("Von ") == True:
+                author = tree.xpath('//*[@class="contentbrick box-author"]//text()')[1]
+            else:
+                author = author.replace("Von", "")
         except:
             author = ""
-        author = author.replace("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t", "").replace("\xa0", "")
+        author = author.strip().replace("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t", "").replace("\xa0", "")
         # text
         try:
             text = "".join(tree.xpath('//*[@class="brickgroup mod-article"]//p/text()'))
         except:
+            logger.warning("Text could not be accessed - most likely a premium article")
             text = ""
-
+        text = text.strip()
+        
         extractedinfo = {
             "category": category,
             "title": title,
