@@ -10,22 +10,19 @@ import logging
 logger = logging.getLogger("INCA")
 
 
-class dertagesspiegel(rss):
-    """Scrapes https://www.tagesspiegel.de"""
+class aachenerzeitung(rss):
+    """Scrapes the news from https://www.aachener-zeitung.de. Note"""
 
     def __init__(self):
-        self.doctype = "der tagesspiegel (www)"
+        self.doctype = "aachener zeitung (www)"
         self.rss_url = [
-            "http://www.tagesspiegel.de/contentexport/feed/home",
-            "http://www.tagesspiegel.de/contentexport/feed/politik",
-            "http://www.tagesspiegel.de/contentexport/feed/queerspiegel",
-            "http://www.tagesspiegel.de/contentexport/feed/wirtschaft",
-            "http://www.tagesspiegel.de/contentexport/feed/sport",
-            "http://www.tagesspiegel.de/contentexport/feed/kultur",
-            "http://www.tagesspiegel.de/contentexport/feed/weltspiegel",
-            "http://www.tagesspiegel.de/contentexport/feed/meinung",
-            "http://www.tagesspiegel.de/contentexport/feed/medien",
-            "http://www.tagesspiegel.de/contentexport/feed/wissen",
+            "https://www.aachener-zeitung.de/politik/feed.rss",
+            "https://www.aachener-zeitung.de/wirtschaft/feed.rss",
+            "https://www.aachener-zeitung.de/kultur/feed.rss",
+            "https://www.aachener-zeitung.de/ratgeber/feed.rss",
+            "https://www.aachener-zeitung.de/panorama/feed.rss",
+            "https://www.aachener-zeitung.de/sport/feed.rss",
+            "https://www.aachener-zeitung.de/nrw-region/feed.rss",
         ]
         self.version = ".1"
         self.date = datetime.datetime(year=2020, month=4, day=8)
@@ -46,45 +43,48 @@ class dertagesspiegel(rss):
 
         # category
         try:
-            category = tree.xpath('//*[@class="ts-breadcrumb"]//*[@class="ts-inverse-link"]//text()')[0]
+            category = tree.xpath('//*[@class="park-section-breadcrumb__link "]//span/text()')[1]
         except:
             category = ""
-
-        # title: consists out of two parts:
+        # title: consists out of two parts, a kicker and a headline:
         # title1
         try:
-            title1 = tree.xpath('//*[@class="ts-overline"]//text()')[0]
+            title1 = tree.xpath('//*[@class="park-article__kicker"]/text()')
         except:
             title1 = ""
         # title2
         try:
-            title2 = tree.xpath('//*[@class="ts-headline"]//text()')[0]
+            title2 = tree.xpath('//*[@class="park-article__headline"]/text()')
         except:
             title2 = ""
-        title = title1 + ": " + title2
+        title = title1 + title2
+        title = ": ".join(title).strip().replace("\n", "").replace("         ", "").replace("        ", "")
+        if title.startswith(":") == True:
+            title = title.strip().replace(":", "")
+        else:
+            title = title
         # teaser
         try:
-            teaser = tree.xpath('//*[@class="ts-intro"]//text()')[0].replace("\n", "")
+            teaser = "".join(tree.xpath('//*[@class="park-article__intro park-article__content"]/text()')).strip().replace("\n", "")
         except:
             teaser = ""
         # author
         try:
-            author = tree.xpath('//*[@class="ts-author"]//a/text()')
+            author = "".join(tree.xpath('//*[@class="park-article__sign"]/text()'))
         except:
             author = ""
-        author = ", ".join(author).strip()
+        author = author.replace("(", "").replace(")", "")
         # text
         try:
-            text = "".join(tree.xpath('//*[@class="ts-article-content"]//p/text()'))
+            text = "".join(tree.xpath('//*[@class="park-article-content"]//p/text()'))
         except:
             logger.warning("Text could not be accessed - most likely a premium article")
             text = ""
-        text = text.replace("\xa0", "")
 
         extractedinfo = {
             "category": category,
-            "title": title,
             "teaser": teaser,
+            "title": title,
             "text": text,
             "byline": author,
         }

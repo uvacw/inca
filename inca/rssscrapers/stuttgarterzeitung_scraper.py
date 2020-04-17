@@ -10,25 +10,17 @@ import logging
 logger = logging.getLogger("INCA")
 
 
-class dertagesspiegel(rss):
-    """Scrapes https://www.tagesspiegel.de"""
+class stuttgarterzeitung(rss):
+    """Scrapes the news from https://www.stuttgarter-zeitung.de/ """
+    """Note for developers: The Stuttgarter Zeitung features a blog (https://www.stadtkind-stuttgart.de/). Currently, only the titles from this blog are parsed"""
 
     def __init__(self):
-        self.doctype = "der tagesspiegel (www)"
+        self.doctype = "stuttgarter zeitung (www)"
         self.rss_url = [
-            "http://www.tagesspiegel.de/contentexport/feed/home",
-            "http://www.tagesspiegel.de/contentexport/feed/politik",
-            "http://www.tagesspiegel.de/contentexport/feed/queerspiegel",
-            "http://www.tagesspiegel.de/contentexport/feed/wirtschaft",
-            "http://www.tagesspiegel.de/contentexport/feed/sport",
-            "http://www.tagesspiegel.de/contentexport/feed/kultur",
-            "http://www.tagesspiegel.de/contentexport/feed/weltspiegel",
-            "http://www.tagesspiegel.de/contentexport/feed/meinung",
-            "http://www.tagesspiegel.de/contentexport/feed/medien",
-            "http://www.tagesspiegel.de/contentexport/feed/wissen",
+            "https://www.stuttgarter-zeitung.de/news.rss.feed",
         ]
         self.version = ".1"
-        self.date = datetime.datetime(year=2020, month=4, day=8)
+        self.date = datetime.datetime(year=2020, month=4, day=7)
 
     def parsehtml(self, htmlsource):
         """
@@ -46,41 +38,49 @@ class dertagesspiegel(rss):
 
         # category
         try:
-            category = tree.xpath('//*[@class="ts-breadcrumb"]//*[@class="ts-inverse-link"]//text()')[0]
+            category = tree.xpath(
+                '//*[@class="brickgroup nav-breadcrumb cf"]//text()'
+            )[8]
         except:
             category = ""
+        category = category.replace("\n\t        \t\t", "")
 
         # title: consists out of two parts:
         # title1
         try:
-            title1 = tree.xpath('//*[@class="ts-overline"]//text()')[0]
+            title1 = tree.xpath('//*[@class="mod-header-article"]/h1/em//text()|//*[@class="entry-title entry-title-single"]//text()')
         except:
             title1 = ""
         # title2
         try:
-            title2 = tree.xpath('//*[@class="ts-headline"]//text()')[0]
+            title2 = tree.xpath('//*[@class="mod-header-article"]/h1/strong//text()')
         except:
             title2 = ""
-        title = title1 + ": " + title2
+        title = ": ".join(title1 + title2)
         # teaser
         try:
-            teaser = tree.xpath('//*[@class="ts-intro"]//text()')[0].replace("\n", "")
+            teaser = "".join(tree.xpath('//*[@class="box-lead"]//text()'))
         except:
             teaser = ""
+        teaser = teaser.strip()
         # author
         try:
-            author = tree.xpath('//*[@class="ts-author"]//a/text()')
+            author = tree.xpath('//*[@class="contentbrick box-author"]//text()|/*[@class="entry-author-name"]//text()')[0]
+            if author.endswith("Von ") == True:
+                author = tree.xpath('//*[@class="contentbrick box-author"]//text()')[1]
+            else:
+                author = author.replace("Von", "")
         except:
             author = ""
-        author = ", ".join(author).strip()
+        author = author.strip().replace("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t", "").replace("\xa0", "")
         # text
         try:
-            text = "".join(tree.xpath('//*[@class="ts-article-content"]//p/text()'))
+            text = "".join(tree.xpath('//*[@class="brickgroup mod-article"]//p/text()'))
         except:
             logger.warning("Text could not be accessed - most likely a premium article")
             text = ""
-        text = text.replace("\xa0", "")
-
+        text = text.strip()
+        
         extractedinfo = {
             "category": category,
             "title": title,
