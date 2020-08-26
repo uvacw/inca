@@ -2,7 +2,6 @@ from ..core.client_class import Client, elasticsearch_required
 from ..core.basic_utils import dotkeys
 import praw
 import json
-from collections import defaultdict
 import logging
 logger = logging.getLogger("INCA.%s" % __name__)
 
@@ -54,29 +53,12 @@ class reddit(Client):
                     "label": "Application User-Agent String",
                     "description": "use the following format:\n"
                                    "'script:app_ID:app_version (by /u/username)'\n"
-                                   "for example: 'script:my_reddit_app:v1 (by /u/inca_user)'\n",
+                                   "for example: 'script:my_reddit_app:v1 (by /u/my_reddit_username)'\n",
                     "help": "Reddit requires that the User-Agent string is unique and descriptive of your app:\n" 
                             "Please see https://github.com/reddit-archive/reddit/wiki/API for more details.\n",
                     "input_type": "text",
                     "mimimum": 8,
-                },
-                {
-                    # INCA uses this info for organizing credentials internally.
-                    # The read-only version of PRAW's Reddit instance does not require username information.
-                    "label": "Account Username",
-                    "description": "Type in the username of the account you used to create the app on Reddit.\n",
-                    "help": "",
-                    "input_type": "text",
-                    "mimimum": 3,
                 }
-                # {
-                #     "label": "Account Password",
-                #     "description": "Type in the password of the account you used to create the app on Reddit\n"
-                #                    "(read-only version of API does not require password.)\n",
-                #     "help": "",
-                #     "input_type": "text",
-                #     "mimimum": 6,
-                # }
             ],
         }
         response = self.prompt(app_prompt, verify=True)
@@ -84,9 +66,7 @@ class reddit(Client):
             app_credentials={
                 "client_id": response["Application Client Id"],
                 "client_secret": response["Application Client Secret"],
-                "client_useragent": response["Application User-Agent String"],
-                "account_username": response["Account Username"]
-                # "account_password": response["Account Password"]
+                "client_useragent": response["Application User-Agent String"]
             },
             appname=response["Application Name"]
         )
@@ -102,17 +82,32 @@ class reddit(Client):
             logger.warning("Sorry, no application found")
             return False
 
+        user_prompt = {
+            "header": "Provide your Reddit username",
+            "description": "INCA uses your Reddit username for storing credentials internally.\n",
+            "inputs": [
+                {
+                    # The read-only version of PRAW's Reddit instance does not require username information.
+                    "label": "Account Username",
+                    "description": "Type in the username of the account you used to create the app on Reddit.\n",
+                    "help": "",
+                    "input_type": "text",
+                    "mimimum": 3,
+                }
+            ],
+        }
+
+        response = self.prompt(user_prompt, verify=True)
+
         credentials = {"client_id": dotkeys(application, "_source.credentials.client_id"),
                        "client_secret": dotkeys(application, "_source.credentials.client_secret"),
-                       "user_agent": dotkeys(application, "_source.credentials.client_useragent"),
-                       "username": dotkeys(application, "_source.credentials.account_username")
-                       # "password": dotkeys(application, "_source.credentials.account_password")
+                       "user_agent": dotkeys(application, "_source.credentials.client_useragent")
                        }
 
         return self.store_credentials(
             app=appname,
             credentials=json.dumps(credentials),
-            id=credentials["username"]
+            id=response["Account Username"]
         )
 
     def _get_client(self, credentials):
