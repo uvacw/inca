@@ -1,0 +1,213 @@
+from ..core.client_class import Client, elasticsearch_required
+from ..core.basic_utils import dotkeys
+import praw
+import json
+from collections import defaultdict
+import logging
+logger = logging.getLogger("INCA.%s" % __name__)
+
+class reddit(Client):
+    """Class defined mainly to add credentials"""
+
+    service_name = "reddit"
+
+    @elasticsearch_required
+    def add_application(self, appname="default"):
+        """Add a Twitter app to generate credentials """
+
+        app_prompt = {
+            "header": "Add Reddit application",
+            "description": "Please go to https://www.reddit.com/prefs/apps and click on 'create app'.\n"
+                           "Fill out the form that appears:\n"
+                           "name: enter any name you'd like for the app\n"
+                           "type of app: select 'script'\n"
+                           "description: (optional field)\n"
+                           "about url: (optional field)\n"
+                           "redirect uri: 'http://localhost:8080'\n"
+                           "(a script app doesn't involve redirection, but Reddit requires this field to be filled to create the app)\n"
+                           "Go to https://www.reddit.com/wiki/api and follow the API requirements (e.g. registering the app).\n",
+            "inputs": [
+                {
+                    "label": "Application Name",
+                    "description": "Name for internal use",
+                    "help": "Just a string to denote the application within INCA",
+                    "input_type": "text",
+                    "mimimum": 4,
+                    "maximum": 15,
+                    "default": appname,
+                },
+                {
+                    "label": "Application Client Id",
+                    "description": "Copy-paste the code shown on your app",
+                    "help": "You can find the client ID under your app's listing at https://www.reddit.com/prefs/apps",
+                    "input_type": "text",
+                    "mimimum": 8,
+                },
+                {
+                    "label": "Application Client Secret",
+                    "description": "Click 'edit' and copy-paste the code shown in the 'secret' field",
+                    "help": "You can find the client secret under your app's listing at https://www.reddit.com/prefs/apps",
+                    "input_type": "text",
+                    "mimimum": 8,
+                },
+                {
+                    "label": "Application User-Agent String",
+                    "description": "use the following format:\n"
+                                   "'script:app_ID:app_version (by /u/username)'\n"
+                                   "for example: 'script:my_reddit_app:v1 (by /u/inca_user)'\n",
+                    "help": "Reddit requires that the User-Agent string is unique and descriptive of your app:\n" 
+                            "Please see https://github.com/reddit-archive/reddit/wiki/API for more details.\n",
+                    "input_type": "text",
+                    "mimimum": 8,
+                },
+                {
+                    # INCA uses this info for organizing credentials internally.
+                    # The read-only version of PRAW's Reddit instance does not require username information.
+                    "label": "Account Username",
+                    "description": "Type in the username of the account you used to create the app on Reddit.\n",
+                    "help": "",
+                    "input_type": "text",
+                    "mimimum": 3,
+                }
+                # {
+                #     "label": "Account Password",
+                #     "description": "Type in the password of the account you used to create the app on Reddit\n"
+                #                    "(read-only version of API does not require password.)\n",
+                #     "help": "",
+                #     "input_type": "text",
+                #     "mimimum": 6,
+                # }
+            ],
+        }
+        response = self.prompt(app_prompt, verify=True)
+        return self.store_application(
+            app_credentials={
+                "client_id": response["Application Client Id"],
+                "client_secret": response["Application Client Secret"],
+                "client_useragent": response["Application User-Agent String"],
+                "account_username": response["Account Username"]
+                # "account_password": response["Account Password"]
+            },
+            appname=response["Application Name"]
+        )
+
+    @elasticsearch_required
+    def add_credentials(self, appname="default"):
+        """Add credentials to a specified app """
+
+        logger.info("Adding credentials to {appname}".format(**locals()))
+
+        application = self.load_application(app=appname)
+        if not application:
+            logger.warning("Sorry, no application found")
+            return False
+
+        credentials = {"client_id": dotkeys(application, "_source.credentials.client_id"),
+                       "client_secret": dotkeys(application, "_source.credentials.client_secret"),
+                       "user_agent": dotkeys(application, "_source.credentials.client_useragent"),
+                       "username": dotkeys(application, "_source.credentials.account_username")
+                       # "password": dotkeys(application, "_source.credentials.account_password")
+                       }
+
+        return self.store_credentials(
+            app=appname,
+            credentials=json.dumps(credentials),
+            id=credentials["username"]
+        )
+
+    def _get_client(self, credentials):
+        """Get a read-only instance of PRAW's (Python Reddit API Wrapper) Reddit class."""
+
+        if type(credentials) == str:
+            credentials = json.loads(credentials)
+        return praw.Reddit(
+            client_id = credentials["client_id"],
+            client_secret = credentials["client_secret"],
+            user_agent = credentials["user_agent"]
+        )
+
+
+class reddit_posts(reddit):
+    """
+    "posts" is a generic term used to refer to PRAW's "submission" and "comment" classes
+    """
+
+    doctype = "reddit_post"
+    version = 0.1
+
+    def get(self,
+            credentials,
+            subreddit_name
+    ):
+
+        api = self._get_client(credentials=dotkeys(credentials, "_source.credentials"))
+
+        # get a subreddit
+        subreddit = api.subreddit(subreddit_name)
+
+        for submission in subreddit.new(limit=5): # Reddit's API returns up to 1,000 results if 'limit=None'
+        # for submission in [api.submission(id='h8wb6h')]: # test smaller example submission
+        # https://www.reddit.com/r/Netherlands/comments/h8wb6h/stroopwafels_do_these_heavenly_things_expire/
+            title = submission.title  # makes submission non-lazy to get more attributes
+            submission.comments.replace_more(limit=None)  # expand the submission's CommentForest
+            yield from self._get_submission(submission, title)
+
+            if len(submission.comments) > 0:
+                for comment in submission.comments:
+                    yield from self._process_comment(comment)
+
+    def _process_comment(self, comment, depth=1):
+        """
+        Yields a dictionary of content related to a PRAW Comment.
+        A 'reply' is also PRAW Comment object.
+        The depth is set to 1 or higher, indicating how nested a Comment is within a thread.
+        Note that we don't use the 'depth' attribute of PRAW Comment (which starts at 0)
+        because we want to record the top-level post's (i.e. Submission) depth as 0.
+        0 = Submission
+        1 = Comment on Submission (0)
+        2 = Reply to Comment (1)
+        3 = Reply to 1st Reply (2)
+        4 = Reply to 2nd Reply (3), etc.
+        - modified from https://stackoverflow.com/questions/57243140/how-to-store-a-comments-depth-in-praw
+        """
+
+        comment_content = dict(
+            subreddit_name_prefixed=comment.subreddit_name_prefixed if hasattr(comment,'subreddit_name_prefixed') else None,
+            subreddit_id=comment.subreddit_id if hasattr(comment, 'subreddit_id') else None,
+            created_utc=comment.created_utc if hasattr(comment, 'created_utc') else None,
+            id='t1_' + comment.id if hasattr(comment, 'id') else None,
+            link_id=comment.link_id if hasattr(comment, 'link_id') else None,
+            parent_id=comment.parent_id if hasattr(comment, 'parent_id') else None,
+            author_fullname=comment.author_fullname if hasattr(comment, 'author_fullname') else None,
+            author_name=comment.author.name if hasattr(comment, 'author') else None,
+            text=comment.body if hasattr(comment, 'body') else None,
+            depth=depth
+        )
+
+        yield comment_content
+
+        for reply in comment.replies:
+            yield from self._process_comment(reply, depth + 1)
+
+    def _get_submission(self, submission, title, more_limit=None, threshold=0):
+        """
+        Yields a dictionary of content related to a PRAW Submission.
+        The depth is set to 0 to indicate that this post is at the top-level within a thread.
+        """
+        submission_content = dict(
+            subreddit_name_prefixed=submission.subreddit_name_prefixed if hasattr(submission,'subreddit_name_prefixed') else None,
+            subreddit_id=submission.subreddit_id if hasattr(submission, 'subreddit_id') else None,
+            created_utc=submission.created_utc if hasattr(submission, 'created_utc') else None,
+            id='t3_' + submission.id if hasattr(submission, 'id') else None,
+            link_id='t3_' + submission.id if hasattr(submission, 'id') else None,
+            title=title,
+            num_comments=submission.num_comments if hasattr(submission, 'num_comments') else None,
+            author_fullname=submission.author_fullname if hasattr(submission, 'author_fullname') else None,
+            author_name=submission.author.name if hasattr(submission, 'author') else None,
+            text=submission.selftext if hasattr(submission, 'selftext') else None,
+            depth=0
+        )
+
+        yield submission_content
+
+
