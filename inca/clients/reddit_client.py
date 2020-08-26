@@ -6,13 +6,17 @@ import logging
 logger = logging.getLogger("INCA.%s" % __name__)
 
 class reddit(Client):
-    """Class defined mainly to add credentials"""
+    """
+    Class defined mainly to add credentials
+    """
 
     service_name = "reddit"
 
     @elasticsearch_required
     def add_application(self, appname="default"):
-        """Add a Twitter app to generate credentials """
+        """
+        Add a Reddit app
+        """
 
         app_prompt = {
             "header": "Add Reddit application",
@@ -73,7 +77,9 @@ class reddit(Client):
 
     @elasticsearch_required
     def add_credentials(self, appname="default"):
-        """Add credentials to a specified app """
+        """
+        Add credentials to a specified app
+        """
 
         logger.info("Adding credentials to {appname}".format(**locals()))
 
@@ -87,7 +93,6 @@ class reddit(Client):
             "description": "INCA uses your Reddit username for storing credentials internally.\n",
             "inputs": [
                 {
-                    # The read-only version of PRAW's Reddit instance does not require username information.
                     "label": "Account Username",
                     "description": "Type in the username of the account you used to create the app on Reddit.\n",
                     "help": "",
@@ -111,7 +116,9 @@ class reddit(Client):
         )
 
     def _get_client(self, credentials):
-        """Get a read-only instance of PRAW's (Python Reddit API Wrapper) Reddit class."""
+        """
+        Get a read-only instance of PRAW's (Python Reddit API Wrapper) Reddit class.
+        """
 
         if type(credentials) == str:
             credentials = json.loads(credentials)
@@ -124,7 +131,15 @@ class reddit(Client):
 
 class reddit_posts(reddit):
     """
-    "posts" is a generic term used to refer to PRAW's "submission" and "comment" classes
+    "posts" is a generic term used to refer to PRAW's Submission and Comment classes
+
+    - id prefixes:
+        comment_kind=t1
+        redditor_kind=t2
+        submission_kind=t3
+        message_kind=t4
+        subreddit_kind=t5
+        trophy_kind=t6
     """
 
     doctype = "reddit_post"
@@ -154,7 +169,7 @@ class reddit_posts(reddit):
     def _process_comment(self, comment, depth=1):
         """
         Yields a dictionary of content related to a PRAW Comment.
-        A 'reply' is also PRAW Comment object.
+        A reply is also a PRAW Comment object.
         The depth is set to 1 or higher, indicating how nested a Comment is within a thread.
         Note that we don't use the 'depth' attribute of PRAW Comment (which starts at 0)
         because we want to record the top-level post's (i.e. Submission) depth as 0.
