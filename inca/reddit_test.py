@@ -9,13 +9,6 @@ myinca.database.list_apps() # see which apps already exist
 # one time: create a reddit app and add credentials
 # myinca.clients.reddit_remove_app('health_convos')
 myinca.clients.reddit_create_app() # create a Reddit app
-# health_convos
-# uu1ErgZ71o2-DA
-# 3dVzxv-s09etWJyq-vrEiJ7YjWw
-# script:health_convos:v1 (by /u/wlm_wng)
-# wlm_wng
-# luroCsBeUiXrG9MRV4CSnfsFBSLhL6oSY8K6vthtyz1TJEm2Lw
-# E5Los3Cr6morpcwy2oUYEmHr8
 
 myinca.clients.reddit_create_credentials(appname='health_convos')
 myinca.clients.reddit_posts(app='health_convos', subreddit_name='Netherlands')
@@ -89,9 +82,4 @@ myinca.importers_exporters.export_json_file(query = 'doctype:"reddit_post"',
 # TODO: client_class.py - find another field for logging info?
 # TODO: 'tree' of example Submission
 # TODO: add tag processor #524
-
-# TODO: pull data available for r/Netherlands locally or somewhere shared (server)?
-# TODO: pull data for YouTube channels using youtube_client
-# a way to make Requirements.txt more flexible to avoid conflicts between packages?
-
 
