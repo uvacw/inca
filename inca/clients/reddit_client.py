@@ -234,9 +234,7 @@ class reddit_posts(reddit):
         :param content_dict: dictionary of content related to a Submission or Comment
         :return: dictionary with specified key values hashed for privacy
         """
-        keys_to_hash = ['subreddit_name_prefixed',
-                        'subreddit_id',
-                        'id',
+        keys_to_hash = ['id',
                         'link_id',
                         'parent_id',
                         'author_fullname',
@@ -248,6 +246,6 @@ class reddit_posts(reddit):
                 try:
                     content_dict[key] = hashlib.sha256(content_dict[key].encode('utf-8')).hexdigest()
                 except Exception as e:
-                    logger.info(f"Didn't pseudonymize '{key}' for id={id} because {e}. Returned value as-is.")
+                    logger.warning(f"Didn't pseudonymize '{key}' for id={id} because {e}. Returned value as-is.")
 
         return(content_dict)
