@@ -2,6 +2,7 @@ from ..core.client_class import Client, elasticsearch_required
 from ..core.basic_utils import dotkeys
 import praw
 import json
+import hashlib
 import logging
 logger = logging.getLogger("INCA.%s" % __name__)
 
@@ -147,7 +148,9 @@ class reddit_posts(reddit):
 
     def get(self,
             credentials,
-            subreddit_name
+            subreddit_name,
+            pseudo_output=True,
+            max_results=5 # Reddit's API returns up to 1,000 results if 'limit=None'
     ):
 
         api = self._get_client(credentials=dotkeys(credentials, "_source.credentials"))
@@ -155,18 +158,41 @@ class reddit_posts(reddit):
         # get a subreddit
         subreddit = api.subreddit(subreddit_name)
 
-        for submission in subreddit.new(limit=5): # Reddit's API returns up to 1,000 results if 'limit=None'
-        # for submission in [api.submission(id='h8wb6h')]: # test smaller example submission
-        # https://www.reddit.com/r/Netherlands/comments/h8wb6h/stroopwafels_do_these_heavenly_things_expire/
-            title = submission.title  # makes submission non-lazy to get more attributes
+        for submission in subreddit.new(limit=max_results):
+            submission.title  # makes submission non-lazy to get more attributes
             submission.comments.replace_more(limit=None)  # expand the submission's CommentForest
-            yield from self._get_submission(submission, title)
+            yield from self._get_submission(submission=submission, pseudo_output=pseudo_output)
 
             if len(submission.comments) > 0:
                 for comment in submission.comments:
-                    yield from self._process_comment(comment)
+                    yield from self._process_comment(comment=comment, pseudo_output=pseudo_output, depth=1)
 
-    def _process_comment(self, comment, depth=1):
+    def _get_submission(self, submission, pseudo_output):
+        """
+        Yields a dictionary of content related to a PRAW Submission.
+        The depth is set to 0 to indicate that this post is at the top-level within a thread.
+        """
+        submission_content = dict(
+            subreddit_name_prefixed=submission.subreddit_name_prefixed if hasattr(submission,'subreddit_name_prefixed') else None,
+            subreddit_id=submission.subreddit_id if hasattr(submission, 'subreddit_id') else None,
+            created_utc=submission.created_utc if hasattr(submission, 'created_utc') else None,
+            id='t3_' + submission.id if hasattr(submission, 'id') else None,
+            link_id='t3_' + submission.id if hasattr(submission, 'id') else None,
+            title=submission.title if hasattr(submission, 'title') else None,
+            num_comments=submission.num_comments if hasattr(submission, 'num_comments') else None,
+            author_fullname=submission.author_fullname if hasattr(submission, 'author_fullname') else None,
+            author_name=submission.author.name if hasattr(submission, 'author') else None,
+            text=submission.selftext if hasattr(submission, 'selftext') else None,
+            depth=0
+        )
+
+        if pseudo_output:
+            submission_content = self._pseudonymize(submission_content)
+
+        yield submission_content
+
+
+    def _process_comment(self, comment, pseudo_output, depth=1):
         """
         Yields a dictionary of content related to a PRAW Comment.
         A reply is also a PRAW Comment object.
@@ -194,30 +220,34 @@ class reddit_posts(reddit):
             depth=depth
         )
 
+        if pseudo_output:
+            comment_content = self._pseudonymize(comment_content)
+
         yield comment_content
 
         for reply in comment.replies:
-            yield from self._process_comment(reply, depth + 1)
+            yield from self._process_comment(comment=reply, pseudo_output=pseudo_output, depth = depth + 1)
 
-    def _get_submission(self, submission, title, more_limit=None, threshold=0):
+
+    def _pseudonymize(self, content_dict):
         """
-        Yields a dictionary of content related to a PRAW Submission.
-        The depth is set to 0 to indicate that this post is at the top-level within a thread.
+        :param content_dict: dictionary of content related to a Submission or Comment
+        :return: dictionary with specified key values hashed for privacy
         """
-        submission_content = dict(
-            subreddit_name_prefixed=submission.subreddit_name_prefixed if hasattr(submission,'subreddit_name_prefixed') else None,
-            subreddit_id=submission.subreddit_id if hasattr(submission, 'subreddit_id') else None,
-            created_utc=submission.created_utc if hasattr(submission, 'created_utc') else None,
-            id='t3_' + submission.id if hasattr(submission, 'id') else None,
-            link_id='t3_' + submission.id if hasattr(submission, 'id') else None,
-            title=title,
-            num_comments=submission.num_comments if hasattr(submission, 'num_comments') else None,
-            author_fullname=submission.author_fullname if hasattr(submission, 'author_fullname') else None,
-            author_name=submission.author.name if hasattr(submission, 'author') else None,
-            text=submission.selftext if hasattr(submission, 'selftext') else None,
-            depth=0
-        )
+        keys_to_hash = ['subreddit_name_prefixed',
+                        'subreddit_id',
+                        'id',
+                        'link_id',
+                        'parent_id',
+                        'author_fullname',
+                        'author_name'
+                        ]
 
-        yield submission_content
+        for key in content_dict:
+            if key in keys_to_hash:
+                try:
+                    content_dict[key] = hashlib.sha256(content_dict[key].encode('utf-8')).hexdigest()
+                except Exception as e:
+                    logger.info(f"Didn't pseudonymize '{key}' for id={id} because {e}. Returned value as-is.")
 
-
+        return(content_dict)
