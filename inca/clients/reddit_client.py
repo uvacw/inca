@@ -246,6 +246,6 @@ class reddit_posts(reddit):
                 try:
                     content_dict[key] = hashlib.sha256(content_dict[key].encode('utf-8')).hexdigest()
                 except Exception as e:
-                    logger.warning(f"Didn't pseudonymize '{key}' for id={id} because {e}. Returned value as-is.")
+                    logger.warning(f"Didn't pseudonymize '{key}' for id={content_dict['id']} because {e}. Returned value as-is.")
 
         return(content_dict)
