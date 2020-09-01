@@ -172,24 +172,40 @@ class reddit_posts(reddit):
         Yields a dictionary of content related to a PRAW Submission.
         The depth is set to 0 to indicate that this post is at the top-level within a thread.
         """
-        submission_content = dict(
-            subreddit_name_prefixed=submission.subreddit_name_prefixed if hasattr(submission,'subreddit_name_prefixed') else None,
-            subreddit_id=submission.subreddit_id if hasattr(submission, 'subreddit_id') else None,
-            created_utc=submission.created_utc if hasattr(submission, 'created_utc') else None,
-            id='t3_' + submission.id if hasattr(submission, 'id') else None,
-            link_id='t3_' + submission.id if hasattr(submission, 'id') else None,
-            title=submission.title if hasattr(submission, 'title') else None,
-            num_comments=submission.num_comments if hasattr(submission, 'num_comments') else None,
-            author_fullname=submission.author_fullname if hasattr(submission, 'author_fullname') else None,
-            author_name=submission.author.name if hasattr(submission, 'author') else None,
-            text=submission.selftext if hasattr(submission, 'selftext') else None,
-            depth=0
-        )
 
-        if pseudo_output:
-            submission_content = self._pseudonymize(submission_content)
+        try:
+            submission_content = dict(
+                subreddit_name_prefixed=submission.subreddit_name_prefixed if hasattr(submission,'subreddit_name_prefixed') else None,
+                subreddit_id=submission.subreddit_id if hasattr(submission, 'subreddit_id') else None,
+                created_utc=submission.created_utc if hasattr(submission, 'created_utc') else None,
+                id='t3_' + submission.id if hasattr(submission, 'id') else None,
+                link_id='t3_' + submission.id if hasattr(submission, 'id') else None,
+                title=submission.title if hasattr(submission, 'title') else None,
+                num_comments=submission.num_comments if hasattr(submission, 'num_comments') else None,
+                author_fullname=submission.author_fullname if hasattr(submission, 'author_fullname') else None,
+                author_name=submission.author.name if hasattr(submission, 'author') and hasattr(submission.author, 'name') else None,
+                text=submission.selftext if hasattr(submission, 'selftext') else None,
+                depth=0
+            )
 
-        yield submission_content
+            # raise ValueError('dummy Submission error')
+
+            if pseudo_output:
+                submission_content = self._pseudonymize(submission_content)
+
+            yield submission_content
+
+        except Exception as e:
+            logger.warning("An exception occurred while scraping a Submission. Printing the error message:\n"
+                           f"{e}\n"
+                           "Attempting to print the Submission's id...\n")
+            try:
+                # raise ValueError('dummy Submission error in logging')
+                logger.warning(f"t3_{submission.id}")
+
+            except:
+                logger.warning("failed, Submission id is unavailable.")
+
 
 
     def _process_comment(self, comment, pseudo_output, depth=1):
@@ -207,26 +223,40 @@ class reddit_posts(reddit):
         - modified from https://stackoverflow.com/questions/57243140/how-to-store-a-comments-depth-in-praw
         """
 
-        comment_content = dict(
-            subreddit_name_prefixed=comment.subreddit_name_prefixed if hasattr(comment,'subreddit_name_prefixed') else None,
-            subreddit_id=comment.subreddit_id if hasattr(comment, 'subreddit_id') else None,
-            created_utc=comment.created_utc if hasattr(comment, 'created_utc') else None,
-            id='t1_' + comment.id if hasattr(comment, 'id') else None,
-            link_id=comment.link_id if hasattr(comment, 'link_id') else None,
-            parent_id=comment.parent_id if hasattr(comment, 'parent_id') else None,
-            author_fullname=comment.author_fullname if hasattr(comment, 'author_fullname') else None,
-            author_name=comment.author.name if hasattr(comment, 'author') else None,
-            text=comment.body if hasattr(comment, 'body') else None,
-            depth=depth
-        )
+        try:
+            comment_content = dict(
+                subreddit_name_prefixed=comment.subreddit_name_prefixed if hasattr(comment,'subreddit_name_prefixed') else None,
+                subreddit_id=comment.subreddit_id if hasattr(comment, 'subreddit_id') else None,
+                created_utc=comment.created_utc if hasattr(comment, 'created_utc') else None,
+                id='t1_' + comment.id if hasattr(comment, 'id') else None,
+                link_id=comment.link_id if hasattr(comment, 'link_id') else None,
+                parent_id=comment.parent_id if hasattr(comment, 'parent_id') else None,
+                author_fullname=comment.author_fullname if hasattr(comment, 'author_fullname') else None,
+                author_name=comment.author.name if hasattr(comment, 'author') and hasattr(comment.author, 'name') else None,
+                text=comment.body if hasattr(comment, 'body') else None,
+                depth=depth
+            )
 
-        if pseudo_output:
-            comment_content = self._pseudonymize(comment_content)
+            # raise ValueError('dummy Comment error')
 
-        yield comment_content
+            if pseudo_output:
+                comment_content = self._pseudonymize(comment_content)
 
-        for reply in comment.replies:
-            yield from self._process_comment(comment=reply, pseudo_output=pseudo_output, depth = depth + 1)
+            yield comment_content
+
+            for reply in comment.replies:
+                yield from self._process_comment(comment=reply, pseudo_output=pseudo_output, depth = depth + 1)
+
+        except Exception as e:
+            logger.warning("An exception occurred while scraping a Comment. Printing the error message:\n"
+                           f"{e}\n"
+                           "Attempting to print the Comment's id...\n")
+            try:
+                # raise ValueError('dummy Comment error in logging')
+                logger.warning(f"t1_{comment.id}")
+
+            except:
+                logger.warning("failed, Comment id is unavailable.")
 
 
     def _pseudonymize(self, content_dict):
