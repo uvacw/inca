@@ -1,6 +1,6 @@
 # How to use social media APIs
 
-In this document, we will explain how to connect to social media APIs with INCA, specificially Twitter and YouTube.
+In this document, we will explain how to connect to social media APIs with INCA, specifically Twitter and YouTube.
 
 ## Instantiating Inca
 ```
@@ -74,3 +74,37 @@ myinca.clients.youtube_comments(app='YOURAPPNAME', parent_id='VIDEO_OR_CHANNEL_I
 
 Other parameters can be found in the helpfile.
 
+## Reddit (PRAW)
+
+### Creating an app for Reddit
+The process to create a Reddit app is similar to Twitter and YouTube.
+Run the commands below and follow the instructions as you're prompted.
+If you decide not to name your app, the info will be stored in the default app
+and you do not have to specify the appname when creating credentials or collecting data.
+```
+myinca.clients.reddit_create_app()
+myinca.clients.reddit_create_credentials(appname='YOURAPPNAME')
+```
+
+### Collecting Reddit data
+
+#### By subreddit
+You can collect threads on a subreddit by providing the name of the subreddit.\
+A thread contains the top-level post along with any associated responses.
+- Set `app` to the name of the app you created. If you didn't name your app, you don't have to specify the `appname` argument as `default` will be used instead.
+- Required: set `subreddit_name` to the name of the subreddit you're interested in collecting data from.
+- Optional: set `pseudo_output` to `False` if you do not want to pseudonymize the data.\
+If you don't set this argument to `False`, it will be evaluated as `True` so the data will automatically be pseudonymized.
+- Optional: set `max_results` to `None` to retrieve the maximum number of items available through Reddit's official API ([~1,000 submissions](https://www.reddit.com/r/redditdev/comments/8bia9n/praw_psa_the_subredditsubmissions_method_no/)).
+The default value is `5` if you do not provide a value.
+
+```
+myinca.clients.reddit_posts(app='YOURAPPNAME',
+                            subreddit_name='SUBREDDITNAME',
+                            pseudo_output=True,
+                            max_results=5)
+```
+
+For a visual example of how posts from the same thread are related to each other in INCA,
+please see the jupyter notebook in the "inca/doc/example_reddit_thread" directory.
+The notebook also has more details about the attributes which are collected per post.
