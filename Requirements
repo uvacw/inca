@@ -54,7 +54,6 @@ murmurhash==1.0.2
 mysqlclient==1.4.5
 networkx==2.4
 newspaper3k==0.2.8
-nl-core-news-sm==2.3.0
 nltk==3.2.4
 numpy==1.17.4
 oauth2client==4.1.2
@@ -69,6 +68,7 @@ pickleshare==0.7.2
 Pillow==6.2.0
 plac==0.9.6
 portend==2.6
+praw==7.1.0
 preshed==2.0.1
 prompt-toolkit==2.0.10
 ptyprocess==0.6.0
@@ -95,6 +95,7 @@ smart-open==1.9.0
 sortedcontainers==2.1.0
 soupsieve==1.9.5
 spacy==2.3.0
+https://github.com/explosion/spacy-models/releases/download/nl_core_news_sm-2.3.0/nl_core_news_sm-2.3.0.tar.gz#egg=nl_core_news_sm
 srsly==0.2.0
 statsmodels==0.10.1
 tempora==1.14.1
@@ -112,4 +113,3 @@ wasabi==0.4.0
 wcwidth==0.1.7
 Werkzeug==0.11.10
 zc.lockfile==2.0
-https://github.com/explosion/spacy-models/releases/download/nl_core_news_sm-2.3.0/nl_core_news_sm-2.3.0.tar.gz

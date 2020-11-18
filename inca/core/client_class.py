@@ -438,10 +438,10 @@ class Client(Scraper):
             credentials_stored = client.index(
                 index=CREDENTIALS_INDEX, doc_type=doctype, id=id, body=doc
             )
-            if credentials_stored["created"]:
-                logger.info("CREATED credentials [{id}] for {app}".format(**locals()))
-            else:
-                logger.info("UPDATED credentials {id} for {app}".format(**locals()))
+            # if credentials_stored["created"]:
+            #     logger.info("CREATED credentials [{id}] for {app}".format(**locals()))
+            # else:
+            #     logger.info("UPDATED credentials {id} for {app}".format(**locals()))
         except ConnectionError:
             logger.warning("Could not connect to Elasticsearch, is it up?")
             return {}
