@@ -15,7 +15,7 @@ requirements = [
     "requests<3.0.0,>=2.13.0",
     "statsmodels",
     "pandas",
-    "pillow==6.2.0",
+    "pillow==9.0.1",
     "gensim>3.4",
     "oauth2client",
     "matplotlib",
